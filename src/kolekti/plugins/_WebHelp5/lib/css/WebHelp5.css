@@ -1,0 +1,26 @@
+
+.navbar #ksearchinput {
+    min-height: 2em;
+}
+
+.navbar #ksearchmenu a {
+    width:360px;
+    white-space: normal;
+}
+
+.navbar #ksearchmenu:after {
+    right: 10px;
+    left: auto;
+}
+
+@media print {
+    html { margin: 1em; font: 11pt "Gill Sans", sans-serif; }
+    body {padding-top:0;}
+    #k-menu, #k-navhead, #k-navfoot,  #k-topictools, #header
+    { display: none }
+
+    #k-main {width:95%;}
+    #k-topic, #k-topic>div,
+    #k-topiccontent
+    {width:100% !important}
+}

@@ -1,0 +1,14 @@
+
+<k:bindings xmlns:k="uri:kolekti">
+    <k:bind encoding="WINDOWS-1250">
+        <k:lang code="cs" />
+        <k:lang code="cz" />
+        <k:lang code="sk" />
+    </k:bind>
+    <k:bind encoding="WINDOWS-1251">
+        <k:lang code="ru" />
+    </k:bind>
+    <k:bind encoding="WINDOWS-1253">
+        <k:lang code="el" />
+    </k:bind>
+</k:bindings>

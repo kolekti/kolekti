@@ -1,0 +1,25 @@
+
+html, body { overflow: auto; }
+
+body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size:12px;
+}
+
+p,div,body,html {
+padding:0;
+margin:5px;
+}
+
+---------------------------------------         */
+/* Identité visuelle   */
+
+#visuel{
+  position:absolute;
+  top:30px;
+  right:0;
+  display:block;
+}
+#visuel img{
+  border-width:0;
+}

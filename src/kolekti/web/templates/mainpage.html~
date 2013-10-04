@@ -1,0 +1,7 @@
+{% extend "ui_page.html" %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}{% endblock %}
+
+{% block footscripts %}{% endblock %}
