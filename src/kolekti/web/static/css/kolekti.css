@@ -55,12 +55,12 @@
     padding: 10px 0 10px 30px;
 }
 
-.xplrbrand {
-    line-height: 15px;
-    vertical-align: bottom;
+body 
+{
+  padding-top: 0px;
 }
 
-ul.directorylist li 
+.index_base a.dir 
 { 
-  list-style-type : none;
- }
+  font-weight:bold;
+  }

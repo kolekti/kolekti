@@ -1,4 +1,6 @@
 import os
+import json
+
 import mimetypes
 mimetypes.init()
 from kolekti.common import kolektiBase
@@ -7,6 +9,7 @@ from kolekti.server.templates import render
 class wsgiclass:
     def __init__(self, path):
         self.kolekti = kolektiBase(path)
+        self.routes = None
         
     def servefile(self, root, environ, start_response):
         if os.path.isfile(root):
@@ -25,7 +28,7 @@ class wsgiclass:
             yield "nope"
             print "ERROR",root
         return
-    
+
 
     def __call__(self,environ, start_response):
         pathparts = environ['PATH_INFO'].split('/')[1:]
@@ -39,12 +42,18 @@ class wsgiclass:
         elif pathparts[0] =='ui':
             
             template ="mainpage"
-            headers = []
-            
+            headers = []            
             headers.append(('Content-type', 'text/html'))
             start_response("200 OK", headers)
-            yield render(template, {'kolekti':self.kolekti})
             
+            yield render(template, {'kolekti':self.kolekti})
+
+        elif pathparts[0] == 'xhr':
+            headers = []            
+            if pathparts[1] == 'tree':
+                headers.append(('Content-type', 'application/javascript+json'))
+                start_response("200 OK", headers)
+                yield json.dumps(self.kolekti.get_tree())
         else:
             root = self.kolekti.getOsPath('/'.join(pathparts))        
             for c in self.servefile(root, environ, start_response):

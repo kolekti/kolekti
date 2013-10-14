@@ -63,10 +63,10 @@ if __name__ == '__main__':
         config = readConfig(config_sections,args.config)
     else:
         config = readConfig(config_sections)
-
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
     defaults=config.get("kolekti",{})
+    print defaults
     parser.set_defaults(**defaults)
     
     parser.add_argument('-b','--base', action='store',help="kolekti base path")
@@ -100,8 +100,10 @@ if __name__ == '__main__':
     if args.cmd == 'publish':
         from kolekti import publish
         langs = args.lang
+        
         if langs is None:
             p = publish.Publisher(args.base)
+            print p
             p.publish(args.orders)
         else:
             for lang in langs:

@@ -42,6 +42,7 @@
     <xsl:apply-templates mode="aggreg"/>
   </xsl:template>
  
+  <!-- trames 0.6 -->
 
   <xsl:template match="kt:trame" mode="aggreg">
     <html>
@@ -138,6 +139,77 @@
   </xsl:template>
 
 
+
+
+
+
+  <!-- trames 0.7 -->
+
+  <xsl:template match="html:*" mode="aggreg">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*" mode="aggreg"/>
+    </xsl:copy>
+ </xsl:template>
+
+
+  <xsl:template match="html:html" mode="aggreg">
+    <html>
+      <head>
+        <title>
+          <xsl:copy-of select="html:head/html:title/text()"/>
+         </title>
+      </head>
+      <body lang="{$lang}" xml:lang="{$lang}">
+        <xsl:apply-templates select="html:body" mode="aggreg">
+          <xsl:with-param name="section_depth" select="'0'"/>
+        </xsl:apply-templates>
+      </body>
+    </html>
+  </xsl:template>
+
+
+
+
+  <xsl:template match="html:body" mode="aggreg">
+    <xsl:param name="section_depth"/>
+    <xsl:apply-templates mode="aggreg">
+      <xsl:with-param name="section_depth" select="$section_depth"/>
+    </xsl:apply-templates>
+  </xsl:template>
+
+  
+  <!-- traitement d'une section -->
+  <xsl:template match="html:section" mode="aggreg">
+    <xsl:param name="section_depth"/>
+    <div class="section">
+      <xsl:apply-templates mode="aggreg">
+        <xsl:with-param name="section_depth" select="$section_depth+1"/>
+      </xsl:apply-templates>
+    </div>
+  </xsl:template>
+
+
+  <xsl:template match="html:a[@role = 'kolekti:include']" mode="aggreg" >
+    <xsl:param name="section_depth"/>
+    
+    <xsl:variable name="modurl" select="kfp:getmodule(string(@href))"/>
+    <xsl:variable name="module" select="document($modurl)"/>
+
+    <div class="module" id="{generate-id()}">
+      <div class="moduleinfo">
+         <xsl:comment>Do not translate</xsl:comment>
+         <p><span class="infolabel">source</span><span class="infovalue"><a href="{$modurl}"><xsl:value-of select="$modurl"/></a></span></p>
+         <xsl:apply-templates select="$module/html:html/html:head/html:meta" mode="module_info"/>
+      </div>
+
+      <xsl:apply-templates select="$module/html:html/html:body" mode="aggreg">
+	<xsl:with-param name="section_depth" select="$section_depth"/>
+      </xsl:apply-templates>
+    </div>
+  </xsl:template>
+
+
+
   <!-- traitement des modules -->
 
   <xsl:template match="kt:module[@resid='kolekti://TDM']" mode="aggreg" >
@@ -184,6 +256,7 @@
     </div>
   </xsl:template>
 
+
   <xsl:template match="kt:module[@resid='kolekti://REVNOTES']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     <xsl:variable name="hx">
@@ -224,6 +297,16 @@
       </xsl:apply-templates>
     </div>
   </xsl:template>
+
+
+
+
+
+
+
+
+
+
 
   <xsl:template match="html:meta[@name]" mode="module_info">
     <p><span class="infolabel"><xsl:value-of select="@name"/></span><span class="infovalue"><xsl:value-of select="@content"/></span></p>

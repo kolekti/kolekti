@@ -70,7 +70,7 @@ class kolektiBase(object):
 
         self.xmlparser = ET.XMLParser()
         self.xmlparser.resolvers.add(PrefixResolver())
-
+        
         try:
             conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
             projectdir = os.path.basename(path)
@@ -108,7 +108,27 @@ class kolektiBase(object):
         return plugins.getPlugin(plugin,self.__path)
         
 
+    def get_tree(self, root=None):
+        if root is None:
+            root = self.__path
+        else:
+            root = self.__makepath(root)
+        return self.__get_directory_structure(root).values()
+            
+    def __get_directory_structure(self, rootdir):
+        """
+        Creates a nested dictionary that represents the folder structure of rootdir
+        """
+        dir = {}
+        rootdir = rootdir.rstrip(os.sep)
+        start = rootdir.rfind(os.sep) + 1
+        for path, dirs, files in os.walk(rootdir):
+            folders = path[start:].split(os.sep)
+            subdir = dict.fromkeys(files)
+            parent = reduce(dict.get, folders[:-1], dir)
+            parent[folders[-1]] = subdir
 
+        return dir
 
     def get_extensions(self, extclass, **kwargs):
         extensions = {}

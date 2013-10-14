@@ -29,7 +29,7 @@ class PublishExtensions(XSLExtensions):
     def getmodule(self, _, *args):
         modid = args[0]
         urlf = urllib.pathname2url(modid[1:].encode('utf-8'))
-        if self.kolektiversion == "0.6":
+        if self.config['version'] == "0.6":
             url =  'file://'+urllib.pathname2url(self.path)+'/'+urlf
         else:
             url =  'file://'+urllib.pathname2url(self.path)+"/sources/"+self.publang+"/"+urlf
@@ -112,13 +112,13 @@ class Publisher(kolektiBase):
             kwargs.pop('lang')
         super(Publisher, self).__init__(*args, **kwargs)
         if self.publang is None:
-            self.publang = self.sourcelang
+            self.publang = self.config.get("sourcelang","en")
         
         self.scriptdefs = ET.parse(os.path.join(self.appdir,'pubscripts.xml')).getroot()
 
         
     def _variable(self, varfile, name):
-        if self.kolektiversion == "0.6":
+        if self.config['version'] == "0.6":
             fvar = '/sheets/xml/'+varfile+'.xml'
         else:
             fvar = '/sources/share/xml/'+varfile+'.xml'
@@ -171,7 +171,7 @@ class Publisher(kolektiBase):
         return pubref
     
     def get_order(self, order):
-        if self.version == "0.6":
+        if self.config['version'] == "0.6":
             order = "configuration/orders/" + order + ".xml"
         else:
             order = "kolekti/orders/" + order + ".xml"
@@ -191,7 +191,7 @@ class Publisher(kolektiBase):
         pubdir = self.publication_init(pubdir, pubtitle)
         xtrame = self.parse(trame)
         assembly = self.publish_assemble(pubdir, pubtitle, xtrame)
-        
+        print "publishing profiles"
         for profile in xorder.xpath('/order/profiles/profile'):
             if profile.get('enabled',False):
                 pivot = self.publish_profile(profile, pubdir, assembly)
@@ -205,7 +205,7 @@ class Publisher(kolektiBase):
                         print traceback.format_exc()
                 
     def publish_assemble(self, pubdir, pubtitle, trame):
-        xsassembly = self.get_xsl('assembly', PublishExtensions)
+        xsassembly = self.get_xsl('assembly', PublishExtensions, lang=self.publang)
         assembly = xsassembly(trame, lang=self.publang, title="'%s'"%pubtitle)
         assfile = pubdir + "_c/content.xhtml"
         self.write(str(assembly), assfile)
@@ -514,7 +514,10 @@ class Publisher(kolektiBase):
 
     def script_copy(self, value, dirname, pubdir, copyto, ext):
         print "script copy",value, dirname, pubdir, copyto, ext
-        srcpath = u'design/publication/%s' %dirname
+        if self.version == "0.6":        
+            srcpath = u'design/publication/%s' %dirname
+        else:
+            srcpath = u'kolekti/stylesheets/%s' %dirname
         destcd = unicode(pubdir+'/'+copyto)
 
         print "script copy to",destcd
