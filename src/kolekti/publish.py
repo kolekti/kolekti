@@ -150,10 +150,10 @@ class Publisher(kolektiBase):
 
 
 
-    def publish(self, orders):        
-        for order in orders:
-            xorder = self.get_order(order)
-            self.publish_order(xorder)
+    def publish(self, jobs):        
+        for job in jobs:
+            xjob = self.get_job(job)
+            self.publish_job(xjob)
 
     def publication_init(self, path, pubtitle):
         try:
@@ -170,19 +170,18 @@ class Publisher(kolektiBase):
             pass
         return pubref
     
-    def get_order(self, order):
+    def get_job(self, job):
         if self.config['version'] == "0.6":
-            order = "configuration/orders/" + order + ".xml"
+            job = "configuration/orders/" + job + ".xml"
         else:
-            order = "kolekti/orders/" + order + ".xml"
-        xorder = self.parse(order)
-        return xorder
+            job = "kolekti/jobs/" + job + ".xml"
+        xjob = self.parse(job)
+        return xjob
 
-    def publish_order(self, xorder):
-        
-        pubdir = self.substvar(xorder.xpath('string(/order/pubdir/@value)'))
-        pubtitle = self.substvar(xorder.xpath('string(/order/pubtitle/@value)'))
-        trame = xorder.xpath('string(/order/trame/@value)')
+    def publish_job(self, xjob):
+        pubdir = self.substvar(xjob.xpath('string(/*/pubdir/@value)'))
+        pubtitle = self.substvar(xjob.xpath('string(/*/pubtitle/@value)'))
+        trame = xjob.xpath('string(/*/*[self::trame or self::toc]/@value)')
         if self.version == "0.6":
             trame = trame[1:]
         else:
@@ -192,10 +191,10 @@ class Publisher(kolektiBase):
         xtrame = self.parse(trame)
         assembly = self.publish_assemble(pubdir, pubtitle, xtrame)
         print "publishing profiles"
-        for profile in xorder.xpath('/order/profiles/profile'):
+        for profile in xjob.xpath('/*/profiles/profile'):
             if profile.get('enabled',False):
                 pivot = self.publish_profile(profile, pubdir, assembly)
-                for script in xorder.xpath("/order/scripts/script[@enabled = 1]"):
+                for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     print "Starting",script.get('name')
                     try:
                         self.publish_script(script, profile, pubdir, pivot)

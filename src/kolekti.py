@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # publication
     parser_pub = subparsers.add_parser('publish', help="publish documents")
     parser_pub.add_argument('-l', '--lang', action='store', nargs="*")
-    parser_pub.add_argument('orders', action='store', nargs="+")
+    parser_pub.add_argument('jobs', action='store', nargs="+")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_pub.set_defaults(**defaults)
@@ -104,11 +104,11 @@ if __name__ == '__main__':
         if langs is None:
             p = publish.Publisher(args.base)
             print p
-            p.publish(args.orders)
+            p.publish(args.jobs)
         else:
             for lang in langs:
                 p = publish.Publisher(args.base, lang=lang)
-                p.publish(args.orders)
+                p.publish(args.jobs)
 
     if args.cmd == 'convert':
         from kolekti import convert

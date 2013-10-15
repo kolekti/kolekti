@@ -48,7 +48,7 @@ objpathes = {
         "publication" : "publication",
         "variables" : "sheets/xml",
         "styles" : "design/publication",
-        "orders" : "configuration/orders",
+        "jobs" : "configuration/orders",
         "profiles" : "configuration/profiles"
         },
     "0.7":{
@@ -57,7 +57,7 @@ objpathes = {
         "publication" : "publications",
         "variables" : "source/LANG/variable",
         "styles" : "kolekti/stylesheets",
-        "orders" : "kolekti/layouts",
+        "jobs" : "kolekti/jobs",
         "profiles" : "kolekti/layouts/profiles",
         }
     }
