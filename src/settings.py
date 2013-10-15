@@ -1,0 +1,1 @@
+# kolekti default settings
