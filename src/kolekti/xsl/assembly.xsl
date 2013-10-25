@@ -179,7 +179,7 @@
 
   
   <!-- traitement d'une section -->
-  <xsl:template match="html:section" mode="aggreg">
+  <xsl:template match="html:section|html:div[@class='section']" mode="aggreg">
     <xsl:param name="section_depth"/>
     <div class="section">
       <xsl:apply-templates mode="aggreg">
@@ -467,7 +467,7 @@
 
 
   <!-- illustrations : cree la référence dans le sous-repertoire illustrations du repertoire de publication -->
-
+<!--
   <xsl:template match="html:img|html:embed" mode="aggreg">
     <xsl:param name="section_depth"/>    
     <xsl:copy>
@@ -488,7 +488,7 @@
   </xsl:template>
   
   <xsl:template match="html:img/@src" mode="aggreg"/>
-
+-->
   <!-- marques d'index : normalize le contenu des entrées -->
 
   <xsl:template match="html:ins[@class='index']|html:span[@rel='index']" mode="aggreg">

@@ -77,6 +77,13 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         srcstr = args[0]
         return self.substitute_variables(srcstr, self._profile)
 
+    def replace_crit(self, _, args):
+        srcstr = args[0]
+        print "EXT replace crit in ",args
+        r = self.substitute_criterias(srcstr, self._profile)
+        print r
+        return r
+
     def variable(self, _, *args):
         sheet = args[0]
         variable = args[1]
@@ -151,7 +158,7 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(trame)
         # assfile = pubdir + "_c/content.xhtml"
-        # self.write(str(assembly), assfile)
+        self.write(str(assembly), "/publications/ass.xml")
         return assembly
     
     def publish_profile(self, profile, pubdir, assembly):
@@ -196,21 +203,24 @@ class Publisher(PublisherMixin, kolektiBase):
         except ET.XSLTApplyError, e:
             print s.error_log
 
-        # media
+        # write pivot
+        pivot = assembly
+        pivfile = pubdirprofile_c + "/document.xhtml"
+        print pivfile
+        self.write(str(pivot), pivfile)
+
+        # copy media to _c
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
+            print ref
             ref = self.getPathFromUrl(self.substitute_criterias(ref, profile))
+            print ref
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
                 pass
             self.copyFile(ref, pubdirprofile_c + "/" + ref)
             
-        # write pivot
-        pivot = assembly
-        pivfile = pubdirprofile_c + "/document.xhtml"
-        print pivfile
-        self.write(str(pivot), pivfile)
         return pivot
 
     def copy_script_params(self, script, profile, pubdir):
