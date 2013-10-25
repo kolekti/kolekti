@@ -1,116 +1,96 @@
 from lxml import etree as ET
 import os
+import re
 import urllib2
+import urllib
 import shutil
-
-class XSLExtensions(object):
-    """
-    Extensions functions for xslt that are applied during publishing process
-    """
-    ens = "kolekti:extension"
-    def __init__(self, path):
-        self.path = path
-        try:
-            conf = ET.parse(os.path.join(self.path, 'kolekti', 'settings.xml')).getroot()
-            self.config = {
-                "sourcelang":conf.get('sourcelang'),
-                "version":conf.get('version'),
-                "languages":[l.text() for l in conf.xpath('/config/languages/lang')],
-                }
-        except:
-            self.config = {
-                "sourcelang":'en',
-                "version":"7.0",
-                "languages":["en","fr"],
-                }
-            
-class PrefixResolver(ET.Resolver):
-    """
-    lxml url resolver for kolekti:// url
-    """
-    def resolve(self, url, pubid, context):
-        """Resolves wether it's a kolekti, kolektiapp, or project url scheme"""
-        if url.startswith('kolekti://'):
-            localpath=url.split('/')[2:]
-            return self.resolve_filename(os.path.join(conf.get('fmkdir'), *localpath),context)
-        if url.startswith('kolektiapp://'):
-            localpath=url.split('/')[2:]
-            return self.resolve_filename(os.path.join(conf.get('appdir'), *localpath),context)
-        if url.startswith('project://'):
-            localpath=url.split('/')[2:]
-            return self.resolve_filename(os.path.join(self.model.projectpath, *localpath),context)
 
 
 objpathes = {
     "0.6":{
-        "module" : "modules",
-        "trame"  : "trames",
-        "publication" : "publication",
+        "modules" : "modules",
+        "trames"  : "trames",
+        "publications" : "publication",
         "variables" : "sheets/xml",
-        "styles" : "design/publication",
+        "layouts" : "design/publication",
         "jobs" : "configuration/orders",
         "profiles" : "configuration/profiles"
         },
     "0.7":{
-        "module" : "sources/LANG/pages",
-        "trame"  : "sources/LANG/pages",
-        "publication" : "publications",
-        "variables" : "source/LANG/variable",
-        "styles" : "kolekti/stylesheets",
+        "modules" : "sources/${LANG}",
+        "trames"  : "sources/${LANG}",
+        "publications" : "publications",
+        "variables" : "source/${LANG}/variable",
+        "layouts" : "kolekti/layouts",
         "jobs" : "kolekti/jobs",
         "profiles" : "kolekti/layouts/profiles",
         }
     }
+
+
  
-    
 class kolektiBase(object):
     def __init__(self,path):
-        self.__path = path
-        self.appdir = os.path.dirname(os.path.realpath( __file__ ))
-
-        self.xmlparser = ET.XMLParser()
-        self.xmlparser.resolvers.add(PrefixResolver())
+        self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+        self._path = path
+        self._xmlparser = ET.XMLParser()
+        self._xmlparser.resolvers.add(PrefixResolver())
         
+        projectdir = os.path.basename(path)
+
         try:
             conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
-            projectdir = os.path.basename(path)
-            self.config = {
+            self._config = {
+                "project":conf.get('project',projectdir),
                 "sourcelang":conf.get('sourcelang'),
                 "version":conf.get('version'),
                 "languages":[l.text() for l in conf.xpath('/config/languages/lang')],
                 "projectdir":projectdir,
-                "project":conf.get('project',projectdir),
                 }
 
-
-
+        except:
+            print "project configuration file settings.xml not found, using defaults" 
+            self._config = {
+                "project":"Kolekti",
+                "sourcelang":'en',
+                "version":"0.7",
+                "languages":["en","fr"],
+                "projectdir":projectdir,
+                }
+            
+        self._version = self._config['version']
+        print "kolekti ",self._version
+        
+    def __getattribute__(self, name):
+        try:
+            if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._config['version']]:
+                def f(objpath):
+                    return self.process_path(objpathes[self._config['version']][name[9:]+"s"] + "/" + objpath)
+                return f
         except:
             import traceback
             print traceback.format_exc()
-            self.config = {
-                "project":"Kolekti",
-                "sourcelang":'en',
-                "version":"7.0",
-                "languages":["en","fr"],
-                }
-        self.version = self.config['version']
-        print "kolekti version",self.version
-        
+            pass
+        return super(kolektiBase, self).__getattribute__(name)
+
+    def process_path(self,path):
+        return path
+    
     def __makepath(self, path):
         # returns os absolute path from relative path
         pathparts = urllib2.url2pathname(path).split('/')
         #        print self.__path, pathparts
-        return os.path.join(self.__path, *pathparts)
+        return os.path.join(self._path, *pathparts)
 
 
     def get_script(self, plugin):
         import plugins
-        return plugins.getPlugin(plugin,self.__path)
+        return plugins.getPlugin(plugin,self._path)
         
 
     def get_tree(self, root=None):
         if root is None:
-            root = self.__path
+            root = self._path
         else:
             root = self.__makepath(root)
         return self.__get_directory_structure(root).values()
@@ -132,19 +112,19 @@ class kolektiBase(object):
 
     def get_extensions(self, extclass, **kwargs):
         extensions = {}
-        print "get_extensions",extclass,self.__path,kwargs
-        extf_obj = extclass(self.__path, **kwargs)
+#        print "get_extensions",extclass,self.__path,kwargs
+        extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
         return extensions
         
 
     def get_xsl(self, stylesheet, extclass = None, xsldir = None, **kwargs):
-        print "get xsl",stylesheet, extclass , xsldir , kwargs
+#        print "get xsl",stylesheet, extclass , xsldir , kwargs
         if xsldir is None:
-            xsldir = self.appdir
-        path = os.path.join(xsldir, 'xsl', stylesheet+".xsl")
-        xsldoc  = ET.parse(path,self.xmlparser)
+            xsldir = os.path.join(self._appdir, 'xsl')
+        path = os.path.join(xsldir, stylesheet+".xsl")
+        xsldoc  = ET.parse(path,self._xmlparser)
         if extclass is None:
             extclass = XSLExtensions
         xsl = ET.XSLT(xsldoc, extensions=self.get_extensions(extclass, **kwargs))
@@ -152,7 +132,7 @@ class kolektiBase(object):
 
     def parse(self, filename):
         src = self.__makepath(filename)
-        return ET.parse(src,self.xmlparser)
+        return ET.parse(src,self._xmlparser)
     
     def read(self, filename):
         ospath = self.__makepath(filename)
@@ -163,6 +143,11 @@ class kolektiBase(object):
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(content)
+            
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True):
+        ospath = self.__makepath(filename)
+        with open(ospath, "w") as f:
+            f.write(ET.tostring(content, encoding = encoding, pretty_print = pretty_print))
             
     def makedirs(self, path):
         ospath = self.__makepath(path)
@@ -191,9 +176,84 @@ class kolektiBase(object):
 
     def getUrlPath(self, source):
         path = self.__makepath(source)
-        print 'file://' + '/'.join(os.path.split(path))
-        return 'file://' + '/'.join(os.path.split(path))
+        
+        return 'file://' + urllib.pathname2url(path.encode('utf-8'))
 
 
     def getPathFromUrl(self, url):
-        return '/'.join(url.split('/')[3:])
+        return os.path.join(url.split('/')[3:])
+
+
+    def substitute_criterias(self,string, profile, extra={}):
+        crits = profile.xpath("criterias/criteria[@checked='1']")
+        critdict={}
+        for c in crits:
+            critdict.update({c.get('code'):c.get('value')})
+            
+        critdict.update(extra)
+
+        for crit,val in critdict.iteritems():
+            string=string.replace('${%s}'%crit,val)
+
+        return string
+
+        
+    def substitute_variables(self, string, profile):
+        for variab in re.findall('\${[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+            splitVar = variab[2:-1].split(':')
+            sheet = splitVar[0].strip()
+            v = splitVar[1].strip()
+            val = self.variable_value(sheet, v, profile)
+            string = string.replace(variab, val)
+        return string
+
+
+    def variable_value(self, sheet, variable, profile):
+        fvar = self.get_base_variable(sheet)
+        xvar = self.parse(fvar)
+#        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
+        values = xvar.xpath('//h:variable[@code="%s"]/h:value')
+        for value in values:
+            accept = True
+            for crit in values.findall('crit'):
+                critname = crit.get('name')
+                if critname in critdict:
+                    if not critdict.get(critname) == crit.get('value'):
+                        accept = False
+                else:
+                    accept = False
+            if accept:
+                return value.find('content').text()
+        
+                
+#        [crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
+#                         namespaces=self.nsmap)
+#        return unicode(var)
+
+#        def critdict()
+
+class XSLExtensions(kolektiBase):
+    """
+    Extensions functions for xslt that are applied during publishing process
+    """
+    ens = "kolekti:extension"
+    def __init__(self, path):
+        super(XSLExtensions, self).__init__(path)
+            
+class PrefixResolver(ET.Resolver):
+    """
+    lxml url resolver for kolekti:// url
+    """
+    def resolve(self, url, pubid, context):
+        """Resolves wether it's a kolekti, kolektiapp, or project url scheme"""
+        if url.startswith('kolekti://'):
+            localpath=url.split('/')[2:]
+            return self.resolve_filename(os.path.join(conf.get('fmkdir'), *localpath),context)
+        if url.startswith('kolektiapp://'):
+            localpath=url.split('/')[2:]
+            return self.resolve_filename(os.path.join(conf.get('appdir'), *localpath),context)
+        if url.startswith('project://'):
+            localpath=url.split('/')[2:]
+            return self.resolve_filename(os.path.join(self.model.projectpath, *localpath),context)
+
+

@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scripts>
+
+  <pubscript id="princexml" type="shell">
+    <name>Générer pdf avec PrinceXML</name>
+    <cmd>prince "_PIVOT_" -s "_SRCDIR_/layouts/princexml/css/_CSS_.css" -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
+    <parameters>
+      <parameter name="CSS" label="Feuille de style" 
+		 type="filelist" dir="princexml/css" ext="css"/>
+      <parameter name="pivot_filter" label="Filtre de pivot" 
+		 type="filelist" dir="princexml/filters" ext="xsl"/>
+    </parameters>
+  </pubscript>
+
+<!--
   <pubscript id="xhtml" type="xslt">
     <name>Publication xhtml+css</name>
     <stylesheet>pubxhtml.xsl</stylesheet>
@@ -20,7 +34,7 @@
 		 type="filelist" 
 		 dir="S5/styles" 
 		 ext="css"
-		 copyto="ui/kolekti"/>
+		 copytopub="ui/kolekti"/>
       <parameter name="zip" label="Créer zip" 
 		 type="boolean"/>
     </parameters>
@@ -38,7 +52,7 @@
 		 type="filelist" 
 		 dir="WebHelp/styles" 
 		 ext="css"
-		 copyto="usercss"/>
+		 copytopub="usercss"/>
       <parameter name="zip" label="Créer zip" 
 		 type="boolean"/>
     </parameters>
@@ -56,7 +70,7 @@
          type="filelist" 
          dir="WebHelp5/styles" 
          ext="css"
-         copyto="usercss"/>
+         copytopub="usercss"/>
       <parameter name="zip" label="Créer zip" 
          type="boolean"/>
     </parameters>
@@ -74,7 +88,7 @@
          type="filelist" 
          dir="easiware/styles" 
          ext="css"
-         copyto="usercss"/>
+         copytopub="usercss"/>
       <parameter name="zip" label="Créer zip" 
          type="boolean"/>
       <parameter name="urlform" label="URL formulaire" 
@@ -94,16 +108,6 @@
     </parameters>
   </pubscript>
   
-  <pubscript id="princexml" type="shell">
-    <name>Générer pdf avec PrinceXML</name>
-    <cmd>prince "_PIVLOCAL_" -s "_PUBDIR_/_LABEL_/css/_CSS_.css" -o "_PUBDIR_/_LABEL_/_DOCNAME_.pdf"</cmd>
-    <link name="_DOCNAME_.pdf" ref="_PUBURL_/_LABEL_/_DOCNAME_.pdf"/>
-    <parameters>
-      <parameter name="CSS" label="Feuille de style" 
-		 type="filelist" dir="princexml/styles" ext="css"
-		 copyto="css"/>
-    </parameters>
-  </pubscript>
 
   <pubscript id="odt" type="plugin">
     <name>Générer OpenDocument Text, créer un pdf</name>
@@ -184,4 +188,6 @@
        </parameter>
     </parameters>
   </pubscript>
+-->
+
 </scripts> 

@@ -27,12 +27,16 @@ def readConfig(cmds = None, alternatefile = None):
     """
     
     config = ConfigParser.SafeConfigParser()
-    # shall we read the alternate or default config file
-    if alternatefile is not None:
-        config.read(alternatefile)
-    else:
-        config.read(os.path.expanduser('~/.kolekti'))
     res={}
+
+    # shall we read the alternate or default config file
+    try:
+        if alternatefile is not None:
+            config.read(alternatefile)
+        else:
+            config.read(os.path.expanduser('~/.kolekti'))
+    except:
+        print "Info : No config file, using default parameters"
 
     try:
         res.update({'kolekti':dict(config.items("kolekti"))})
@@ -66,7 +70,8 @@ if __name__ == '__main__':
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
     defaults=config.get("kolekti",{})
-    print defaults
+    
+#    print defaults
     parser.set_defaults(**defaults)
     
     parser.add_argument('-b','--base', action='store',help="kolekti base path")
@@ -81,16 +86,16 @@ if __name__ == '__main__':
 
     # publication
     parser_pub = subparsers.add_parser('publish', help="publish documents")
-    parser_pub.add_argument('-l', '--lang', action='store', nargs="*")
     parser_pub.add_argument('jobs', action='store', nargs="+")
+    parser_pub.add_argument('-l', '--lang', action='store', nargs="+")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_pub.set_defaults(**defaults)
     
     args = parser.parse_args()
 
-    print args
-    print '-----'
+    #print args
+
     if args.cmd == 'server':
         host,port = args.host.split(':')
         from paste import httpserver
@@ -100,16 +105,21 @@ if __name__ == '__main__':
     if args.cmd == 'publish':
         from kolekti import publish
         langs = args.lang
-        
-        if langs is None:
-            p = publish.Publisher(args.base)
-            print p
-            p.publish(args.jobs)
-        else:
-            for lang in langs:
-                p = publish.Publisher(args.base, lang=lang)
+        try:
+            if langs is None:
+                p = publish.Publisher(args.base)
+                print p
                 p.publish(args.jobs)
-
+            else:
+                for lang in langs:
+                    p = publish.Publisher(args.base, lang=lang)
+                    p.publish(args.jobs)
+            print "Publication sucessful"
+        except:
+            import traceback
+            print traceback.format_exc()
+            print "Publication ended with errors"
+            
     if args.cmd == 'convert':
         from kolekti import convert
         c = convert.converter(args.base)

@@ -7,53 +7,49 @@ import urllib
 import re
 import sys
 import os
+import copy
 
 from lxml import etree as ET
 
 from common import kolektiBase, XSLExtensions
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-class PublishExtensions(XSLExtensions):
+class PublisherMixin(object):
+    def __init__(self, *args, **kwargs):
+        self._publang = None
+        if kwargs.has_key('lang'):
+            self._publang = kwargs.get('lang')
+            kwargs.pop('lang')
+    
+        super(PublisherMixin, self).__init__(*args, **kwargs)
+        if self._publang is None:
+            self._publang = self._config.get("sourcelang","en")
+
+    def process_path(self, path):
+        return self.substitute_criterias(path, ET.XML('<criterias/>'), {"LANG":self._publang})
+
+
+class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
 
     def __init__(self, *args, **kwargs):
         if kwargs.has_key('profile'):
-            self.profile = kwargs.get('profile')
+            self._profile = kwargs.get('profile')
             kwargs.pop('profile')
-        if kwargs.has_key('lang'):
-            self.publang = kwargs.get('lang')
-            kwargs.pop('lang')
-        super(PublishExtensions,self).__init__(*args, **kwargs)
+        super(PublisherExtensions,self).__init__(*args, **kwargs)
         
     def getmodule(self, _, *args):
         modid = args[0]
-        urlf = urllib.pathname2url(modid[1:].encode('utf-8'))
-        if self.config['version'] == "0.6":
-            url =  'file://'+urllib.pathname2url(self.path)+'/'+urlf
-        else:
-            url =  'file://'+urllib.pathname2url(self.path)+"/sources/"+self.publang+"/"+urlf
-        return url
-    
+        path = self.get_base_module(modid)
+        return self.getUrlPath(path)
+        
     def criterias(self, _, *args):
-        return self.profile.xpath("criterias/criteria[@checked='1']")
+        return self._profile.xpath("criterias/criteria[@checked='1']")
 
     def lang(self, _, *args):
-        return self.publang
+        return self._publang
     
-    def replace_crit(self,_,*args):
-        srcstr=args[0]
-        crits=self.profile.xpath("criterias/criteria[@checked='1']")
-        critdict={}
-        for c in crits:
-            critdict.update({c.get('code'):c.get('value')})
-        critdict.update({'LANG':self.publang})
-
-        for crit,val in critdict.iteritems():
-            srcstr=srcstr.replace('_%s_'%crit,val)
-        srcstr=srcstr.replace("_LANG_", self.publang)
-        return srcstr
-
     def normpath(self, _, *args):
         """Returns normalized path"""
 
@@ -77,142 +73,90 @@ class PublishExtensions(XSLExtensions):
         r= '/'.join(newdir)
         return r
         
-    def replace_strvar(self, _, args):        
+    def replace_strvar(self, _, args):
         srcstr = args[0]
-        for variab in re.findall('\[var[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+\]', srcstr):
-            splitVar = variab[4:-1].split(':')
-            sheet = splitVar[0].strip()
-            v = splitVar[1].strip()
-            val = self.variable(None, sheet, v)
-            srcstr=srcstr.replace(variab, val)
-        return srcstr
+        return self.substitute_variables(srcstr, self._profile)
 
     def variable(self, _, *args):
-        varfile = args[0]
-        name = args[1]
-        if self.kolektiversion == "0.6":
-            fvar = 'sheets/xml/'+varfile+'.xml'
-        else:
-            fvar = 'sources/share/xml/'+varfile+'.xml'
-        xvar = ET.parse(os.path.join(self.path, fvar))
-        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
-                         namespaces=self.nsmap)
-        return unicode(var)
+        sheet = args[0]
+        variable = args[1]
+        return unicode(self.variable_value(sheet, variable, self._profile))
 
 
-
-
-class Publisher(kolektiBase):
+class Publisher(PublisherMixin, kolektiBase):
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
 
     def __init__(self, *args,**kwargs):
-        self.publang = None
-        if kwargs.has_key('lang'):
-            self.publang = kwargs.get('lang')
-            kwargs.pop('lang')
         super(Publisher, self).__init__(*args, **kwargs)
-        if self.publang is None:
-            self.publang = self.config.get("sourcelang","en")
+        if self._publang is None:
+            self._publang = self._config.get("sourcelang","en")
         
-        self.scriptdefs = ET.parse(os.path.join(self.appdir,'pubscripts.xml')).getroot()
+        self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
 
         
     def _variable(self, varfile, name):
-        if self.config['version'] == "0.6":
-            fvar = '/sheets/xml/'+varfile+'.xml'
-        else:
-            fvar = '/sources/share/xml/'+varfile+'.xml'
+        fvar = self.get_base_variable(varfile+'.xml')
         xvar = self.parse(fvar)
-        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
+        
+        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self._publang),
                          namespaces=self.nsmap)
         return unicode(var)
 
-    def substvar(self, srcstr):
-        for variab in re.findall('\[var[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+\]', srcstr):
-            splitVar = variab[4:-1].split(':')
-            sheet = splitVar[0].strip()
-            v = splitVar[1].strip()
-            val = self._variable(sheet, v)
-            srcstr=srcstr.replace(variab, val)
-        return srcstr
 
-    def substcrit(self,srcstr, profile):
-        crits=profile.xpath("criterias/criteria[@checked='1']")
-        critdict={}
-        for c in crits:
-            critdict.update({c.get('code'):c.get('value')})
-        critdict.update({'LANG':self.publang})
-
-        for crit,val in critdict.iteritems():
-            srcstr=srcstr.replace('_%s_'%crit,val)
-        srcstr=srcstr.replace("_LANG_", self.publang)
-        return srcstr
-
-
+    def __substscript(self, s, subst, profile):
+        for k,v in subst.iteritems():
+            s = s.replace('_%s_'%k,v)
+        return self.substitute_variables(self.substitute_criterias(s,profile),profile)
 
     def publish(self, jobs):        
         for job in jobs:
             xjob = self.get_job(job)
             self.publish_job(xjob)
-
-    def publication_init(self, path, pubtitle):
-        try:
-            pubref='/publications/'+path
-            self.makedirs(pubref)
-        except:
-            # import traceback
-            # print traceback.format_exc()
-            print "Warning: publication path", path, "already exists"
-        try:
-            pubref_c='/publications/'+path + '_c'
-            self.makedirs(pubref_c)
-        except:
-            pass
-        return pubref
     
     def get_job(self, job):
-        if self.config['version'] == "0.6":
-            job = "configuration/orders/" + job + ".xml"
-        else:
-            job = "kolekti/jobs/" + job + ".xml"
+        job = self.get_base_job(job) + ".xml"
         xjob = self.parse(job)
         return xjob
 
     def publish_job(self, xjob):
-        pubdir = self.substvar(xjob.xpath('string(/*/pubdir/@value)'))
-        pubtitle = self.substvar(xjob.xpath('string(/*/pubtitle/@value)'))
         trame = xjob.xpath('string(/*/*[self::trame or self::toc]/@value)')
-        if self.version == "0.6":
-            trame = trame[1:]
-        else:
-            trame = '/sources/' + self.publang + '/' + trame[1:]
-            
-        pubdir = self.publication_init(pubdir, pubtitle)
+        trame = self.get_base_trame(trame)
         xtrame = self.parse(trame)
-        assembly = self.publish_assemble(pubdir, pubtitle, xtrame)
-        print "publishing profiles"
+        assembly = self.publish_assemble(xtrame)
+        
         for profile in xjob.xpath('/*/profiles/profile'):
             if profile.get('enabled',False):
+                pubdir = self.substitute_variables(xjob.xpath('string(/*/pubdir/@value)'),profile)
+                pubdir = self.get_base_publication(pubdir)
+                try:
+                    self.makedirs(pubdir)
+                except:
+                    print "Info: publication path", pubdir, "already exists"
+                
                 pivot = self.publish_profile(profile, pubdir, assembly)
+                
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
-                    print "Starting",script.get('name')
+                    print "--> Starting script:"
                     try:
-                        self.publish_script(script, profile, pubdir, pivot)
+                        self.copy_script_params(script, profile, pubdir)
+                        self.start_script(script, profile, pubdir, pivot)
+                        print "--> Done script:",script.get('name')
                     except:
-                        print "Error with",script.get('name')
                         import traceback
                         print traceback.format_exc()
+                        print "Error with",script.get('name')
+                        raise Exception
                 
-    def publish_assemble(self, pubdir, pubtitle, trame):
-        xsassembly = self.get_xsl('assembly', PublishExtensions, lang=self.publang)
-        assembly = xsassembly(trame, lang=self.publang, title="'%s'"%pubtitle)
-        assfile = pubdir + "_c/content.xhtml"
-        self.write(str(assembly), assfile)
+    def publish_assemble(self, trame):
+        xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
+        assembly = xsassembly(trame)
+        # assfile = pubdir + "_c/content.xhtml"
+        # self.write(str(assembly), assfile)
         return assembly
     
     def publish_profile(self, profile, pubdir, assembly):
-        print "publish profile",profile.xpath('string(label)')
-        pubdirprofile = pubdir + "/" + profile.xpath('string(label)')
+        print "-> Profile:",profile.xpath('string(label)')
+        pubdirprofile = pubdir 
         pubdirprofile_c = pubdir + "/" + profile.xpath('string(label)') + '_c'
         try:
             self.makedirs(pubdirprofile)
@@ -224,25 +168,25 @@ class Publisher(kolektiBase):
             pass
         try:
             # criterias
-            s = self.get_xsl('criterias', PublishExtensions, profile=profile, lang=self.publang)
+            s = self.get_xsl('criterias', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
             # filter
-            s = self.get_xsl('filter', PublishExtensions, profile=profile, lang=self.publang)
+            s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
             # substvars
-            s = self.get_xsl('variables', PublishExtensions, profile = profile, lang=self.publang)
+            s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
             # process links
-            s = self.get_xsl('links', PublishExtensions, profile = profile, lang=self.publang)
+            s = self.get_xsl('links', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
             # make index
             if assembly.xpath("//h:div[@class='INDEX']", namespaces=self.nsmap):
                 s = self.get_xsl('index')
                 assembly = s(assembly)
             # make toc
-            if assembly.xpath("//h:div[@class='INDEX']", namespaces=self.nsmap):
+            if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
                 s = self.get_xsl('tdm')
                 assembly = s(assembly)
             
@@ -255,7 +199,7 @@ class Publisher(kolektiBase):
         # media
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
-            ref = self.getPathFromUrl(self.substcrit(ref, profile))
+            ref = self.getPathFromUrl(self.substitute_criterias(ref, profile))
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
@@ -265,56 +209,97 @@ class Publisher(kolektiBase):
         # write pivot
         pivot = assembly
         pivfile = pubdirprofile_c + "/document.xhtml"
+        print pivfile
         self.write(str(pivot), pivfile)
         return pivot
 
-    def publish_script(self, script, profile, pubdir, pivot):
-        print
-        print "script", script, profile, pubdir
-        pubdirprofile = pubdir + "/" + profile.xpath('string(label)')
+    def copy_script_params(self, script, profile, pubdir):
+        
         pubdirprofile_c = pubdir + "/" + profile.xpath('string(label)') + '_c'
-        suffix = self.substvar(self.substcrit(unicode(script.xpath("string(suffix[@enabled='1'])")),profile))
+        name=script.get('name')
+        try:
+            scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
+        except IndexError:
+            print "Impossible de trouver le script: %s" %name
+            raise Exception
+
+        params = {}
+        try:
+            params = {}
+            for p in script.xpath('parameters/parameter'):
+                params.update({p.get('name'):p.get('value')})
+
+            for pdef in scrdef.xpath('parameters/parameter'):
+                pname = pdef.get('name')
+                pval =  params.get(pname)
+                if pdef.get('type')=='filelist':
+                    print "copying", pdef.get('name'), pname, pval
+                    if pdef.get('ext') == "less":
+                        # TODO less compil
+                        self.script_lesscompile(pval,
+                                                unicode(pdef.get('dir')),
+                                                pubdirprofile_c,
+                                                '%s/%s'%(label,copyto))
+                            
+                    else:
+                        self.script_copy(filer = pval,
+                                         srcdir = unicode(pdef.get('dir')),
+                                         targetroot = pubdirprofile_c,
+                                         ext = pdef.get('ext'))
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            print "[Script %s] Erreur lors de la copie des ressources"%name
+            raise Exception
+
+        
+
+    def start_script(self, script, profile, pubdir, pivot):
+        print ET.tostring(script)
+        label = profile.xpath('string(label)') 
+        pubdirprofile = pubdir 
+        pubdirprofile_c = pubdir + "/" + label + '_c'
+        suffix = self.substitute_variables(self.substitute_criterias(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
+        if len(suffix):
+            pubname = "%s_%s"%(label, suffix)
+        else:
+            pubname = label
+            
         name=script.get('name')
         params = {}
         for p in script.xpath('parameters/parameter'):
             params.update({p.get('name'):p.get('value')})
-        label=name + suffix
+
 
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
             print "Impossible de trouver le script: %s" %label
-            return
-        
-        try:
-            # copy when parameters says to copy
-            for pname,pval in params.iteritems():
-                pdef=scrdef.xpath("parameters/parameter[@name='%s']"%pname)[0]
-                if pdef.get('type')=='filelist' and pdef.get('copyto') is not None: 
-                    if pdef.get('ext') == "less":
-                        self.script_lesscompile(pval,
-                                                unicode(pdef.get('dir')),
-                                                pubdirprofile,
-                                                '%s/%s'%(label,pdef.get('copyto')))
-                            
-                    else:
-                        self.script_copy(pval,
-                                         unicode(pdef.get('dir')),
-                                         pubdirprofile,
-                                         '%s/%s'%(label,pdef.get('copyto')),
-                                         pdef.get('ext'))
-                        self.script_copy(pval,
-                                         unicode(pdef.get('dir')),
-                                         pubdirprofile_c,
-                                         'stylesheets/%s/%s'%(label,pdef.get('copyto')),
-                                         pdef.get('ext'))
+            raise Exception
 
-            stype=scrdef.get('type')
-        except:
-            import traceback
-            print traceback.format_exc()
-            print "[Script %s] Erreur lors de la copie des ressources"%label
-            return
+        
+        # shall we filter the pivot before applying the script
+        if 'pivot_filter' in params :
+            xfilter = params['pivot_filter']
+            xdir = scrdef.xpath("parameters/parameter[@name='pivot_filter']/@dir")
+            xf = self.xsl(fil, xsldir = xdir)
+            fpivot = xf(pivot)
+            pivfile = pubdirprofile_c + "/filtered_" + pubname + ".xhtml"
+            self.xwrite(pivfile, fpivot, pretty_print = False)
+        else:
+            fpivot = pivot
+            pivfile = pubdirprofile_c + "/document.xhtml"
+
+        subst = copy.copy(params)
+        subst.update({
+            "PUBDIR":self.getOsPath(pubdirprofile),
+            "SRCDIR":self.getOsPath(pubdirprofile_c),
+            "PUBNAME": pubname,
+            "PIVOT": self.getOsPath(pivfile)
+            })
+
+        stype = scrdef.get('type')
         try:
             if stype=="plugin":
                 from kolekti.plugins import getPlugin
@@ -326,43 +311,27 @@ class Publisher(kolektiBase):
                     import traceback
                     print traceback.format_exc()
                     print "Impossible de charger le script %(label)s", {'label': label.encode('utf-8')}
-                    return
+                    raise Exception
 
-                for msg in plugin(script, profile, pubdir, pivot, self.publang):
+                for msg in plugin(script, profile, pubdir, fpivot, self._publang):
                     print msg
 
                 print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
+
                 
-
-
-        except:
-            print "Impossible d'exécuter le script %(label)s"% {'label': label.encode('utf-8')}
-            import traceback
-            print traceback.format_exc()
-        
-
-
-
-
-    def foo(self):
-        try:
-            if stype=="shell":
+            elif stype=="shell":
                 cmd=scrdef.find("cmd").text
-                # if get file with local url
-                if cmd.find("_PIVLOCAL_") >= 0:
-                    localdocument = pivot
-                    for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
-                        localsrc = self.model.abstractIO.local2unicode(self.model.url2local(str(media.get('src'))))
-                        media.set('src', localsrc)
-                    #save the pivot file
-                    self.model.pubsavepivot(ET.tostring(pivot, xml_declaration=True, encoding="UTF-8"),
-                                            '%s-local.xml'%self.pivname,
-                                            False,
-                                            profilename=self.pivname)
 
-                cmd=self.__substscript(cmd, label, params)
+                # if get file with local url                
+                if cmd.find("_PIVLOCAL_") >= 0:
+                    localdocument = fpivot
+                    for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
+                        localsrc = self.getOsPath(str(media.get('src')))
+                        media.set('src', localsrc)
+
+                cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
-                debug(cmd)
+                print cmd
 
                 try:
                     import subprocess
@@ -382,7 +351,7 @@ class Publisher(kolektiBase):
                             continue
                         # display warning or error
                         if re.search('warning', line):
-                            print "Attention %(warn)s", {'warn': line}
+                            print "Attention %(warn)s"% {'warn': line}
                         elif re.search('error', line) or re.search('not found', line):
                             print "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(LOCAL_ENCODING).encode('utf-8'),
                                                                                                        'error': line.encode('utf-8')}
@@ -392,28 +361,29 @@ class Publisher(kolektiBase):
                     
                     if not has_error:
                         xl=scrdef.find('link')
-                        outfile=self.__substscript(xl.get('name'), label, params)
-                        outref=self.__substscript(xl.get('ref'), label, params)
-                        print "Exécution du script %(label)s réussie", {'label': label.encode('utf-8')}
+                        outfile=self.__substscript(xl.get('name'), subst, profile)
+                        outref=self.__substscript(xl.get('ref'), subst, profile)
+                        print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
                 except:
-                    print "Erreur lors de l'execution du script %(label)s", {'label': label.encode('utf-8')}
-                    return
-                    
+                    print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
+                    raise Exception
 
-            if stype=="xslt":
+            elif stype=="xslt":
                 try:
                     sxsl=scrdef.find("stylesheet").text
-                    xslt_doc=ET.parse(os.path.join(conf.get('appdir'),'publication','xsl','plugins',sxsl))
+                    ### 
+                    xslt_doc=ET.parse(os.path.join(self._appdir,'publication','xsl','plugins',sxsl))
                     xslt=ET.XSLT(xslt_doc)
                     sout=scrdef.find("output").text
-                    debug(sout)
-                    sout=self.__substscript(sout, label, params)
+
+                    ###
+                    sout=self.__substscript(sout, subst, profile)
 
                     xparams={}
                     for n,v in params.iteritems():
                         xparams[n]="'%s'"%v
 
-                    xparams['LANG']="'%s'"%self.lang
+                    xparams['LANG']="'%s'"%self._publang
                     xparams['ZONE']="'%s'"%self.critdict.get('zone','')
                     xparams['DOCNAME']="'%s'"%self.docname
                     xparams['PUBDIR']="'%s'"%self.model.pubpath.decode(LOCAL_ENCODING)
@@ -422,47 +392,54 @@ class Publisher(kolektiBase):
                     try:
                         self.model.pubsave(str(docf),'/'.join((label,sout)))
                     except:
-                        yield(self.view.error(self.setmessage(u"[0058]Impossible d'exécuter le script %(label)s", {'label': label.encode('utf-8')})))
+                        print "Impossible d'exécuter le script %(label)s"%{'label': label.encode('utf-8')}
                         return
                     errors = set()
                     for err in xslt.error_log:
                         if not err.message in errors:
-                            yield(self.view.error(err.message))
+                            print err.message
                             errors.add(err.message)
-                    yield(self.view.success(self.setmessage(u"[0057]Exécution du script %(label)s réussie", {'label': label.encode('utf-8')})))
+                    print "Exécution du script %(label)s réussie"%{'label': label.encode('utf-8')}
 
                     # output link to result of transformation
-                    yield (self.view.publink(sout.split('/')[-1],
-                                             label,
-                                             '/'.join((self.model.local2url(self.model.pubpath), label, sout))))
+                    #                    yield (self.view.publink(sout.split('/')[-1],
+                    #                          label,
+                    #                          '/'.join((self.model.local2url(self.model.pubpath), label, sout))))
 
                     # copy medias
-                    try:
-                        msrc = self.model.abstractIO.getid(os.path.join(self.model.pubpath, 'medias'))
-                        dsrc = self.model.abstractIO.getid(os.path.join(self.model.pubpath, str(label), 'medias'))
-                        self.model.abstractIO.copyDirs(msrc, dsrc)
-                    except OSError:
-                        pass
+                    #try:
+                    #    msrc = self.model.abstractIO.getid(os.path.join(self.model.pubpath, 'medias'))
+                    #    dsrc = self.model.abstractIO.getid(os.path.join(self.model.pubpath, str(label), 'medias'))
+                    #    self.model.abstractIO.copyDirs(msrc, dsrc)
+                    #except OSError:
+                    #    pass
                     # make a zip with label directory
-                    zipname=label+".zip"
-                    zippy = self.model._loadMVCobject_('ZipFileIO')
-                    zippy.open(os.path.join(self.model.pubpath,zipname), 'w')
-                    top=os.path.join(self.model.pubpath,label)
-                    for root, dirs, files in os.walk(top):
-                        for name in files:
-                            rt=root[len(top) + 1:]
-                            zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
-                    zippy.close()
+                    #zipname=label+".zip"
+                    #zippy = self.model._loadMVCobject_('ZipFileIO')
+                    #zippy.open(os.path.join(self.model.pubpath,zipname), 'w')
+                    #top=os.path.join(self.model.pubpath,label)
+                    #for root, dirs, files in os.walk(top):
+                    #    for name in files:
+                    #        rt=root[len(top) + 1:]
+                    #        zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+                    #zippy.close()
 
                     # link to the zip
-                    yield (self.view.publink('Zip',
-                                             label,
-                                             '/'.join((self.model.local2url(self.model.pubpath), zipname))))
-
+                    #yield (self.view.publink('Zip',
+                    #                         label,
+                    #                         '/'.join((self.model.local2url(self.model.pubpath), zipname))))
+            
                 except:
-                    dbgexc()
+                    print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
+                    raise Exception
+            print "Script", label,"sucessful"
+            
         except:
-            dbgexc()
+            print "Impossible d'exécuter le script %(label)s"% {'label': label.encode('utf-8')}
+            import traceback
+            print traceback.format_exc()
+            raise Exception
+        return
 
 
 
@@ -511,30 +488,33 @@ class Publisher(kolektiBase):
             
 
 
-    def script_copy(self, value, dirname, pubdir, copyto, ext):
-        print "script copy",value, dirname, pubdir, copyto, ext
-        if self.version == "0.6":        
-            srcpath = u'design/publication/%s' %dirname
-        else:
-            srcpath = u'kolekti/stylesheets/%s' %dirname
-        destcd = unicode(pubdir+'/'+copyto)
+    def script_copy(self, filer, srcdir, targetroot, ext):
+        # copies file layouts/[srcdir][filer].[ext] for directory [targetroot]layouts/[] to
+        # [pubdir (which shall be the _c)]/[dirname]
+        # also copies recursively [value].parts
+        
+        # print "script copy",value, dirname, pubdir, copyto, ext
+        srcpath = self.get_base_layout(srcdir)
+        destpath = unicode(targetroot +'/layouts/' + srcdir)
 
-        print "script copy to",destcd
+        print "script copy", filer, "from",srcpath,"to",destpath
+        
         try:
-            self.makedirs(destcd)
+            self.makedirs(destpath)
         except OSError:
             pass
         try:
-            source= u"%s/%s.%s"%(srcpath,value,ext)
-            dest=   u"%s/%s.%s"%(destcd,value,ext)
+            source= u"%s/%s.%s"%(srcpath,filer,ext)
+            dest=   u"%s/%s.%s"%(destpath,filer,ext)
             self.copyFile(source,dest)
         except:
             import traceback
             print traceback.format_exc()
+            raise Exception
         try:
-            source=u"%s/%s.parts"%(srcpath,value)
+            source=u"%s/%s.parts"%(srcpath,filer)
             if self.exists(source):
-                target=u"%s/%s.parts"%(destcd,value)
+                target=u"%s/%s.parts"%(destpath,filer)
                 try:
                     self.rmdir(target)
                 except:
@@ -544,3 +524,4 @@ class Publisher(kolektiBase):
             import traceback
             print traceback.format_exc()
 
+            

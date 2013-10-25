@@ -102,7 +102,7 @@
 
 
 
-  <!-- si le titre est un exte : on le copie simplement -->
+  <!-- si le titre est un texte : on le copie simplement -->
   <xsl:template match="kt:section/kt:title/text()" mode="aggreg">
     <xsl:call-template name="titlecontent">
       <xsl:with-param name="titlestr" select="."/>

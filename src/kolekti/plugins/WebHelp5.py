@@ -48,7 +48,7 @@ class plugin(pluginBase.plugin):
             pass
         shutil.copytree(libsdir, libpdir)
 
-        libpdir = os.path.join(self.getOsPath('/'.join([self.pubprofiledir_c,'stylesheets',label])), 'lib')
+        libpdir = os.path.join(self.getOsPath('/'.join([self.pubprofiledir_c,'layouts',label])), 'lib')
         try:
             shutil.rmtree(libpdir)
         except:            
