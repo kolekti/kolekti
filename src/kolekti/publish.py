@@ -28,6 +28,7 @@ class PublisherMixin(object):
     def process_path(self, path):
         return self.substitute_criterias(path, ET.XML('<criterias/>'), {"LANG":self._publang})
 
+    
 
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
@@ -41,7 +42,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         
     def getmodule(self, _, *args):
         modid = args[0]
-        path = self.get_base_module(modid)
+        path = self.process_path(modid)
         return self.getUrlPath(path)
         
     def criterias(self, _, *args):
@@ -78,14 +79,12 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return self.substitute_variables(srcstr, self._profile)
 
     def replace_crit(self, _, args):
-        srcstr = args[0]
-        print "EXT replace crit in ",args
+        srcstr = args
         r = self.substitute_criterias(srcstr, self._profile)
-        print r
         return r
 
     def variable(self, _, *args):
-        sheet = args[0]
+        sheet = args[0]+".xml"
         variable = args[1]
         return unicode(self.variable_value(sheet, variable, self._profile))
 
@@ -99,6 +98,7 @@ class Publisher(PublisherMixin, kolektiBase):
             self._publang = self._config.get("sourcelang","en")
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
+        print "kolekti ",self._version
 
         
     def _variable(self, varfile, name):
@@ -117,17 +117,14 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def publish(self, jobs):        
         for job in jobs:
-            xjob = self.get_job(job)
+            path = self.get_base_job(job) + ".xml"
+            xjob = self.parse(path)
             self.publish_job(xjob)
     
-    def get_job(self, job):
-        job = self.get_base_job(job) + ".xml"
-        xjob = self.parse(job)
-        return xjob
-
     def publish_job(self, xjob):
         trame = xjob.xpath('string(/*/*[self::trame or self::toc]/@value)')
-        trame = self.get_base_trame(trame)
+        trame = self.process_path(trame)
+        
         xtrame = self.parse(trame)
         assembly = self.publish_assemble(xtrame)
         
@@ -203,24 +200,27 @@ class Publisher(PublisherMixin, kolektiBase):
         except ET.XSLTApplyError, e:
             print s.error_log
 
-        # write pivot
-        pivot = assembly
-        pivfile = pubdirprofile_c + "/document.xhtml"
-        print pivfile
-        self.write(str(pivot), pivfile)
 
-        # copy media to _c
+        # copy media to _c, update src attributes in pivot
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
+            base = med.xpath("string(ancestor::h:div[@class='module']/h:div[@class='moduleinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
-            print ref
-            ref = self.getPathFromUrl(self.substitute_criterias(ref, profile))
-            print ref
+            ref = self.getPathFromSourceUrl(self.substitute_criterias(ref, profile,{"LANG":self._publang}))
+            print "***media***",ref
+            med.set('src',self.substitute_criterias(ref, profile,{"LANG":self._publang})[1:])
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
                 pass
-            self.copyFile(ref, pubdirprofile_c + "/" + ref)
+            print pubdirprofile_c + ref
+            self.copyFile(ref, pubdirprofile_c + ref)
             
+        # write pivot
+        pivot = assembly
+        pivfile = pubdirprofile_c + "/document.xhtml"
+
+        self.write(str(pivot), pivfile)
+
         return pivot
 
     def copy_script_params(self, script, profile, pubdir):
@@ -292,11 +292,11 @@ class Publisher(PublisherMixin, kolektiBase):
         # shall we filter the pivot before applying the script
         if 'pivot_filter' in params :
             xfilter = params['pivot_filter']
-            xdir = scrdef.xpath("parameters/parameter[@name='pivot_filter']/@dir")
-            xf = self.xsl(fil, xsldir = xdir)
+            xdir = scrdef.xpath("string(parameters/parameter[@name='pivot_filter']/@dir)")
+            xf = self.get_xsl(xfilter, xsldir = self.get_base_layout(xdir))
             fpivot = xf(pivot)
             pivfile = pubdirprofile_c + "/filtered_" + pubname + ".xhtml"
-            self.xwrite(pivfile, fpivot, pretty_print = False)
+            self.xwrite(fpivot, pivfile, pretty_print = False)
         else:
             fpivot = pivot
             pivfile = pubdirprofile_c + "/document.xhtml"

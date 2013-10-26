@@ -44,33 +44,8 @@
     <xsl:variable name="crits" select="/html:html/html:head/html:meta[@scheme='condition']"/>
 
     <!-- on calcul la valeur de la variable -->
-    <xsl:variable name="res">
-      <!-- boucle sur les valeurs conditionnées pour cette variable dans le texte auto -->
-      <xsl:for-each select="kfp:variables($varfile)/html:variable[@code=$varname]/html:value">
-	<xsl:variable name="checkconds"><!-- chaine 0/1 des evaluations -->
-	  <!-- pour chaque critère exprimé dans la definition de valeur conditionnée de la variable--> 
-	  <xsl:for-each select="html:crit">
-	    <xsl:variable name="critval">
-	      <xsl:value-of select="$crits[@name=current()/@name]/@content"/>
-	    </xsl:variable>
-	    <xsl:choose>
-	      <!-- le critère n'est pas exprimé dans le doc : on accepte -->
-	      <xsl:when test="$critval=''">1</xsl:when>
-	      <!-- le critère est égale (contient) à la valeur de la condition : on accepte -->
-	      <xsl:when test="$critval=normalize-space(@value)">1</xsl:when>
-	      <xsl:when test="contains(concat(',',translate(@value,' ',''),','),concat(',',$critval,','))">1</xsl:when>
-	      <!-- sinon : on refuse -->
-	      <xsl:otherwise>0</xsl:otherwise>
-	    </xsl:choose>
-	  </xsl:for-each>
-	</xsl:variable>
+    <xsl:variable name="res" select="kfp:variable($varfile,$varname)"/>
 
-	<!-- on teste si un des critères rejete la condition -->
-	<xsl:if test="not(contains($checkconds,'0'))">
-	  <xsl:copy-of select="html:content/node()"/>
-	</xsl:if>
-      </xsl:for-each>
-    </xsl:variable>
 
   
     <xsl:choose>
@@ -78,7 +53,6 @@
         <xsl:copy-of select="$res"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message><xsl:value-of select="kfp:setmessage('[0358]Variable %(var)s non définie.', string($varcode))" /></xsl:message>
         <xsl:text>[??]</xsl:text>
       </xsl:otherwise>
     </xsl:choose>

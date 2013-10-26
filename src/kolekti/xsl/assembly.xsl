@@ -146,8 +146,11 @@
   <!-- trames 0.7 -->
 
   <xsl:template match="html:*" mode="aggreg">
+    <xsl:param name="section_depth"/>
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*" mode="aggreg"/>
+      <xsl:apply-templates select="node()|@*" mode="aggreg">
+        <xsl:with-param name="section_depth" select="$section_depth"/>
+      </xsl:apply-templates>
     </xsl:copy>
  </xsl:template>
 
@@ -182,6 +185,9 @@
   <xsl:template match="html:section|html:div[@class='section']" mode="aggreg">
     <xsl:param name="section_depth"/>
     <div class="section">
+      <xsl:comment>
+        section depth <xsl:value-of select="$section_depth"/>
+      </xsl:comment>
       <xsl:apply-templates mode="aggreg">
         <xsl:with-param name="section_depth" select="$section_depth+1"/>
       </xsl:apply-templates>
@@ -212,7 +218,7 @@
 
   <!-- traitement des modules -->
 
-  <xsl:template match="kt:module[@resid='kolekti://TDM']" mode="aggreg" >
+  <xsl:template match="kt:module[@resid='kolekti://TDM']|html:a[@role = 'kolekti:toc']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     <xsl:variable name="hx">
       <xsl:choose>
@@ -234,7 +240,7 @@
     </div>
   </xsl:template>
 
-  <xsl:template match="kt:module[@resid='kolekti://INDEX']" mode="aggreg" >
+  <xsl:template match="kt:module[@resid='kolekti://INDEX']|html:a[@role = 'kolekti:index']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     <xsl:variable name="hx">
       <xsl:choose>
@@ -257,7 +263,7 @@
   </xsl:template>
 
 
-  <xsl:template match="kt:module[@resid='kolekti://REVNOTES']" mode="aggreg" >
+  <xsl:template match="kt:module[@resid='kolekti://REVNOTES']|html:a[@role = 'kolekti:revnotes']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     <xsl:variable name="hx">
       <xsl:choose>

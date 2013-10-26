@@ -3,6 +3,7 @@ import os
 import re
 import urllib2
 import urllib
+import urlparse
 import shutil
 
 
@@ -10,6 +11,7 @@ objpathes = {
     "0.6":{
         "modules" : "modules",
         "trames"  : "trames",
+        "sources"  : "",
         "publications" : "publication",
         "variables" : "sheets/xml",
         "layouts" : "design/publication",
@@ -19,8 +21,9 @@ objpathes = {
     "0.7":{
         "modules" : "sources/${LANG}",
         "trames"  : "sources/${LANG}",
+        "sources"  : "sources/${LANG}",
         "publications" : "publications",
-        "variables" : "source/${LANG}/variable",
+        "variables" : "sources/${LANG}/variables",
         "layouts" : "kolekti/layouts",
         "jobs" : "kolekti/jobs",
         "profiles" : "kolekti/layouts/profiles",
@@ -49,7 +52,6 @@ class kolektiBase(object):
                 }
 
         except:
-            print "project configuration file settings.xml not found, using defaults" 
             self._config = {
                 "project":"Kolekti",
                 "sourcelang":'en',
@@ -59,7 +61,6 @@ class kolektiBase(object):
                 }
             
         self._version = self._config['version']
-        print "kolekti ",self._version
         
     def __getattribute__(self, name):
         try:
@@ -123,6 +124,8 @@ class kolektiBase(object):
 #        print "get xsl",stylesheet, extclass , xsldir , kwargs
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
+        else:
+            xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
         xsldoc  = ET.parse(path,self._xmlparser)
         if extclass is None:
@@ -147,7 +150,7 @@ class kolektiBase(object):
     def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True):
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
-            f.write(ET.tostring(content, encoding = encoding, pretty_print = pretty_print))
+            f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print))
             
     def makedirs(self, path):
         ospath = self.__makepath(path)
@@ -183,6 +186,15 @@ class kolektiBase(object):
     def getPathFromUrl(self, url):
         return os.path.join(url.split('/')[3:])
 
+    def getPathFromSourceUrl(self, url, base="/"):
+        pu = urlparse.urlparse(url)
+        if len(pu.scheme):
+            return None
+        else:
+            r = urllib.url2pathname(url)
+            aurl = urlparse.urljoin(base,r)
+            return aurl
+
 
     def substitute_criterias(self,string, profile, extra={}):
         crits = profile.xpath("criterias/criteria[@checked='1']")
@@ -212,7 +224,7 @@ class kolektiBase(object):
         fvar = self.get_base_variable(sheet)
         xvar = self.parse(fvar)
 #        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
-        values = xvar.xpath('//h:variable[@code="%s"]/h:value')
+        values = xvar.xpath('//variable[@code="%s"]/value')
         for value in values:
             accept = True
             for crit in values.findall('crit'):
