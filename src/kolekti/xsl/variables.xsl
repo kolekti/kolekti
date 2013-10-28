@@ -31,86 +31,44 @@
                doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
+ 
+  
+  <xsl:template name="getvariable">
+    <xsl:param name="varfile"/>
+    <xsl:param name="varname"/>
 
-  <xsl:param name="basepath"/>
-<!--
-  <xsl:param name="lang">fr</xsl:param>
--->
-
-  <xsl:include href="textes-auto.xsl"/>
-
-
-  <xsl:template match="html:head">
-    <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>    
+    <!-- on calcul la valeur de la variable -->
+    <xsl:variable name="res" select="kfp:variable($varfile,$varname)"/>
+  
+    <xsl:choose>
+      <xsl:when test="$res!=''">
+        <xsl:copy-of select="$res"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>[??]</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 <!-- substitution des éléments var par la valeur d'un texte automatique -->
+
   <xsl:template match="html:var">
     <xsl:choose>
       <xsl:when test="contains(@class,':')">
-	<!-- le texte est récupéré d'un fichier de textes auto l'attribut class est de la forme : 
-	     <src>:_<critère>_ ou <src>:<entrée> src peut contenir _critère_ (en fin)-->
-
-	<xsl:variable name="fileref">
-	  <xsl:choose>
-	    <xsl:when test="contains(substring-before(@class,':'),'_')">
-	      <xsl:value-of select="substring-before(@class,'_')"/>
-	      <xsl:variable name="critname">
-		<xsl:value-of select="substring-before(substring-after(@class,'_'),'_')"/>
-	      </xsl:variable>
-	      <xsl:value-of select="/html:html/html:head/html:meta[@scheme='condition'][@name=$critname]/@content"/>
-	    </xsl:when>
-
-	    <xsl:otherwise>
-	      <xsl:value-of select="substring-before(@class,':')"/>
-	    </xsl:otherwise>
-	  </xsl:choose>
-	</xsl:variable>
-
-	<xsl:variable name="varref">
-	  <xsl:variable name="varid">
-	    <xsl:value-of select="substring-after(@class,':')"/>
-	  </xsl:variable>
-	  <xsl:choose>
-	    <xsl:when test="starts-with($varid,'_') and substring($varid,string-length($varid))='_'">
-	      <!-- la class est de la forme : <src>:_<critère>_ on va chercher dans le fichier src, 
-		   la ligne correspondant à la valeur du critère pour cette publication-->
-	      <xsl:variable name="critname">
-		<xsl:value-of select="substring-before(substring-after($varid,'_'),'_')"/>
-	      </xsl:variable>
-	      <xsl:value-of select="/html:html/html:head/html:meta[@scheme='condition'][@name=$critname]/@content"/>
-	    </xsl:when>
-	    <xsl:otherwise>
-	      <!-- la class est de la forme : <src>:<entree> on va chercher dans le fichier src,
-	      la ligne &entree -->
-	      <xsl:value-of select="$varid"/>
-	    </xsl:otherwise>
-	  </xsl:choose>	    
-	</xsl:variable>	
-
 	<xsl:call-template name="getvariable">
-	  <xsl:with-param name="varcode" select="concat($fileref,':',$varref)"/>
+          <xsl:with-param name="varfile" select="substring-before(@class,':')"/>
+          <xsl:with-param name="varname" select="substring-after(@class,':')"/>
 	</xsl:call-template>
       </xsl:when>
 
       <xsl:otherwise>
-	<!-- l'attribut class est de la forme <critère> : on substitue avec la valeur du critère -->
-	<xsl:choose>
-	  <xsl:when test="/html:html/html:head/html:meta[@scheme='condition'][@name=current()/@class]">
-	    <xsl:value-of select="/html:html/html:head/html:meta[@scheme='condition'][@name=current()/@class]/@content"/>
-	  </xsl:when>
-	  <xsl:otherwise>
-	    <xsl:message><xsl:value-of select="kfp:setmessage('[0358]Variable %(var)s non définie.', string(@class))" /></xsl:message>
-	    <xsl:text>[variable </xsl:text>
-	    <xsl:value-of select="@class"/>
-	    <xsl:text> non définie]</xsl:text>
-	  </xsl:otherwise>
-	</xsl:choose>
+        <xsl:variable name="res" select="kfp:replace_crit(concat('{',@class,'}'))"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+
+
+
 
   <xsl:template match="node()|@*">
     <xsl:copy>

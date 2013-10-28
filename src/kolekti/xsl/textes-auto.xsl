@@ -28,34 +28,5 @@
   version="1.0">
 
   <!-- retourne la valeur de la variable 'varcode' -->
-  
-  <xsl:template name="getvariable">
-    <xsl:param name="varcode"/>
-
-    <!-- calcul du nom de ficher texte auto -->
-    <xsl:variable name="varfile" select="substring-before($varcode,':')"/>
-
-    <!-- récupère le nom local de la variable -->
-    <xsl:variable name="varname">
-      <xsl:value-of select="substring-after($varcode,':')"/>
-    </xsl:variable>
-
-    <!-- ensemble des valeurs de conditions pour le document publié -->
-    <xsl:variable name="crits" select="/html:html/html:head/html:meta[@scheme='condition']"/>
-
-    <!-- on calcul la valeur de la variable -->
-    <xsl:variable name="res" select="kfp:variable($varfile,$varname)"/>
-
-
-  
-    <xsl:choose>
-      <xsl:when test="$res!=''">
-        <xsl:copy-of select="$res"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>[??]</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
 
 </xsl:stylesheet>

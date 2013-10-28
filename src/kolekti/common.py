@@ -19,11 +19,11 @@ objpathes = {
         "profiles" : "configuration/profiles"
         },
     "0.7":{
-        "modules" : "sources/${LANG}",
-        "trames"  : "sources/${LANG}",
-        "sources"  : "sources/${LANG}",
+        "modules" : "sources/{LANG}",
+        "trames"  : "sources/{LANG}",
+        "sources"  : "sources/{LANG}",
         "publications" : "publications",
-        "variables" : "sources/${LANG}/variables",
+        "variables" : "sources/{LANG}/variables",
         "layouts" : "kolekti/layouts",
         "jobs" : "kolekti/jobs",
         "profiles" : "kolekti/layouts/profiles",
@@ -205,13 +205,13 @@ class kolektiBase(object):
         critdict.update(extra)
 
         for crit,val in critdict.iteritems():
-            string=string.replace('${%s}'%crit,val)
+            string=string.replace('{%s}'%crit,val)
 
         return string
 
         
     def substitute_variables(self, string, profile):
-        for variab in re.findall('\${[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+        for variab in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
             splitVar = variab[2:-1].split(':')
             sheet = splitVar[0].strip()
             v = splitVar[1].strip()
@@ -223,11 +223,10 @@ class kolektiBase(object):
     def variable_value(self, sheet, variable, profile):
         fvar = self.get_base_variable(sheet)
         xvar = self.parse(fvar)
-#        var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
-        values = xvar.xpath('//variable[@code="%s"]/value')
+        values = xvar.xpath('/variables/variable[@code="%s"]/value'%variable)
         for value in values:
             accept = True
-            for crit in values.findall('crit'):
+            for crit in value.findall('crit'):
                 critname = crit.get('name')
                 if critname in critdict:
                     if not critdict.get(critname) == crit.get('value'):
@@ -235,14 +234,8 @@ class kolektiBase(object):
                 else:
                     accept = False
             if accept:
-                return value.find('content').text()
-        
-                
-#        [crit[@name="lang"][@value="%s"]]/h:content)'%(name,self.publang),
-#                         namespaces=self.nsmap)
-#        return unicode(var)
-
-#        def critdict()
+                return value.find('content').text
+        return "[??]"
 
 class XSLExtensions(kolektiBase):
     """

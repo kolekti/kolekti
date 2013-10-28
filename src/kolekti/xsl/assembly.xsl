@@ -195,26 +195,6 @@
   </xsl:template>
 
 
-  <xsl:template match="html:a[@role = 'kolekti:include']" mode="aggreg" >
-    <xsl:param name="section_depth"/>
-    
-    <xsl:variable name="modurl" select="kfp:getmodule(string(@href))"/>
-    <xsl:variable name="module" select="document($modurl)"/>
-
-    <div class="module" id="{generate-id()}">
-      <div class="moduleinfo">
-         <xsl:comment>Do not translate</xsl:comment>
-         <p><span class="infolabel">source</span><span class="infovalue"><a href="{$modurl}"><xsl:value-of select="$modurl"/></a></span></p>
-         <xsl:apply-templates select="$module/html:html/html:head/html:meta" mode="module_info"/>
-      </div>
-
-      <xsl:apply-templates select="$module/html:html/html:body" mode="aggreg">
-	<xsl:with-param name="section_depth" select="$section_depth"/>
-      </xsl:apply-templates>
-    </div>
-  </xsl:template>
-
-
 
   <!-- traitement des modules -->
 
@@ -232,9 +212,9 @@
       </xsl:choose>
     </xsl:variable>
 
-    <div class='TDM'>
+    <div class='TOC'>
       <xsl:element name="p">
-        <xsl:attribute name="class">TDM_titre</xsl:attribute>
+        <xsl:attribute name="class">TOC_title</xsl:attribute>
         <var class="kolektitext:TOC"/>
       </xsl:element>
     </div>
@@ -306,6 +286,25 @@
 
 
 
+  <xsl:template match="html:a[@role = 'kolekti:include']" mode="aggreg" >
+    <xsl:param name="section_depth"/>
+    
+    <xsl:variable name="modurl" select="kfp:getmodule(string(@href))"/>
+    <xsl:variable name="module" select="document($modurl)"/>
+
+    <div class="module" id="{generate-id()}">
+      <div class="moduleinfo">
+         <xsl:comment>Do not translate</xsl:comment>
+         <p><span class="infolabel">source</span><span class="infovalue"><a href="{$modurl}"><xsl:value-of select="$modurl"/></a></span></p>
+         <xsl:apply-templates select="$module/html:html/html:head/html:meta" mode="module_info"/>
+      </div>
+
+      <xsl:apply-templates select="$module/html:html/html:body" mode="aggreg">
+	<xsl:with-param name="section_depth" select="$section_depth"/>
+      </xsl:apply-templates>
+    </div>
+  </xsl:template>
+
 
 
 
@@ -321,135 +320,43 @@
 
 
   <!-- traitement des titres des modules : dépendent du niveau de sections -->
-  <xsl:template match="html:h1" mode="aggreg">
-    <xsl:param name="section_depth"/>    
-    <xsl:choose>
-      <xsl:when test="$section_depth=0">
-        <xsl:copy>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </xsl:copy>
-      </xsl:when>
-      <xsl:when test="$section_depth=1">
-        <h2>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h2>
-      </xsl:when>
-      <xsl:when test="$section_depth=2">
-        <h3>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>
-        </h3>
-      </xsl:when>
-      <xsl:when test="$section_depth=3">
-        <h4>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>
-        </h4>
-      </xsl:when>
-      <xsl:when test="$section_depth=4">
-        <h5>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>
-        </h5>
-      </xsl:when>
-      <xsl:otherwise>
-        <h6>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h6>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+  <!--
+  <xsl:template match="html:h1|html:h2|html:h3|html:h4|html:h5|html:h6" mode="aggreg">
+    <xsl:param name="section_depth"/>
 
-  <xsl:template match="html:h2" mode="aggreg">
-    <xsl:param name="section_depth"/>    
-    <xsl:choose>
-      <xsl:when test="$section_depth=0">
-        <xsl:copy>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </xsl:copy>
-      </xsl:when>
-      <xsl:when test="$section_depth=1">
-        <h3>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h3>
-      </xsl:when>
-      <xsl:when test="$section_depth=2">
-        <h4>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h4>
-      </xsl:when>
-      <xsl:when test="$section_depth=3">
-        <h5>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h5>
-      </xsl:when>
-      <xsl:otherwise>
-        <h6>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h6>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+    <xsl:variable name="h">
+      <xsl:value-of select="substring-after(local-name(),'h')"/>
+    </xsl:variable>
 
-  <xsl:template match="html:h3" mode="aggreg">
-    <xsl:param name="section_depth"/>    
-    <xsl:choose>
-      <xsl:when test="$section_depth=0">
-        <xsl:copy>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </xsl:copy>
-      </xsl:when>
-      <xsl:when test="$section_depth=1">
-        <h4>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h4>
-      </xsl:when>
-      <xsl:when test="$section_depth=2">
-        <h5>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h5>
-      </xsl:when>
-      <xsl:otherwise>
-        <h6>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h6>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+    <xsl:variable name="title_level">
+      <xsl:value-of select="$h + $section_depth"/>
+    </xsl:variable>
 
-  <xsl:template match="html:h4" mode="aggreg">
-    <xsl:param name="section_depth"/>    
-    <xsl:choose>
-      <xsl:when test="$section_depth=0">
-        <xsl:copy>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </xsl:copy>
-      </xsl:when>
-      <xsl:when test="$section_depth=1">
-        <h5>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h5>
-      </xsl:when>
-      <xsl:otherwise>
-        <h6>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h6>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
 
-  <xsl:template match="html:h5" mode="aggreg">
-    <xsl:param name="section_depth"/>    
-    <xsl:choose>
-      <xsl:when test="$section_depth=0">
-        <xsl:copy>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </xsl:copy>
-      </xsl:when>
-      <xsl:otherwise>
-        <h6>
-          <xsl:apply-templates select="node()|@*" mode="aggreg"/>          
-        </h6>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:variable name="class">
+
+      <xsl:text>section_level</xsl:text>
+      <xsl:value-of select="$section_depth"/>
+
+      <xsl:text> title_level</xsl:text>
+      <xsl:value-of select="$title_level"/>
+
+      <xsl:if test="@class">
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="@class"/>
+      </xsl:if>
+    </xsl:variable>
+
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="aggreg"/>
+      <xsl:attribute name="class">
+        <xsl:value-of select="$class"/>
+      </xsl:attribute>
+      <xsl:apply-templates select="node()" mode="aggreg"/>          
+    </xsl:copy>
+
   </xsl:template>
+  -->
 
   <!-- traitement du corps du module -->
 

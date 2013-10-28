@@ -15,6 +15,7 @@ from common import kolektiBase, XSLExtensions
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
 class PublisherMixin(object):
+    nsmap={"h":"http://www.w3.org/1999/xhtml"}
     def __init__(self, *args, **kwargs):
         self._publang = None
         if kwargs.has_key('lang'):
@@ -32,7 +33,6 @@ class PublisherMixin(object):
 
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
-    nsmap={"h":"http://www.w3.org/1999/xhtml"}
 
     def __init__(self, *args, **kwargs):
         if kwargs.has_key('profile'):
@@ -84,14 +84,12 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return r
 
     def variable(self, _, *args):
-        sheet = args[0]+".xml"
-        variable = args[1]
+        sheet = self.substitute_criterias(args[0], self._profile)+".xml"
+        variable = self.substitute_criterias(args[1], self._profile)
         return unicode(self.variable_value(sheet, variable, self._profile))
 
 
 class Publisher(PublisherMixin, kolektiBase):
-    nsmap={"h":"http://www.w3.org/1999/xhtml"}
-
     def __init__(self, *args,**kwargs):
         super(Publisher, self).__init__(*args, **kwargs)
         if self._publang is None:
@@ -99,7 +97,6 @@ class Publisher(PublisherMixin, kolektiBase):
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         print "kolekti ",self._version
-
         
     def _variable(self, varfile, name):
         fvar = self.get_base_variable(varfile+'.xml')
@@ -108,7 +105,6 @@ class Publisher(PublisherMixin, kolektiBase):
         var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self._publang),
                          namespaces=self.nsmap)
         return unicode(var)
-
 
     def __substscript(self, s, subst, profile):
         for k,v in subst.iteritems():
@@ -144,7 +140,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     try:
                         self.copy_script_params(script, profile, pubdir)
                         self.start_script(script, profile, pubdir, pivot)
-                        print "--> Done script:",script.get('name')
+                        #print "--> Done script:",script.get('name')
                     except:
                         import traceback
                         print traceback.format_exc()
@@ -173,11 +169,14 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             # criterias
             s = self.get_xsl('criterias', PublisherExtensions, profile=profile, lang=self._publang)
-            assembly = s(assembly)
+            assembly = s(assembly,lang=self._publang)
             # filter
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
             s = self.get_xsl('filter-empty-sections')
+            assembly = s(assembly)
+            # process title levels
+            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
@@ -191,12 +190,18 @@ class Publisher(PublisherMixin, kolektiBase):
                 assembly = s(assembly)
             # make toc
             if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
-                s = self.get_xsl('tdm')
+                print "TOC"
+                s = self.get_xsl('toc')
                 assembly = s(assembly)
             
             # revision notes
             # s = self.get_xsl('csv-revnotes')
             # assembly = s(assembly)
+
+            # cleanup title levels
+            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            assembly = s(assembly)
+
         except ET.XSLTApplyError, e:
             print s.error_log
 
@@ -206,13 +211,11 @@ class Publisher(PublisherMixin, kolektiBase):
             base = med.xpath("string(ancestor::h:div[@class='module']/h:div[@class='moduleinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
             ref = self.getPathFromSourceUrl(self.substitute_criterias(ref, profile,{"LANG":self._publang}))
-            print "***media***",ref
             med.set('src',self.substitute_criterias(ref, profile,{"LANG":self._publang})[1:])
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
                 pass
-            print pubdirprofile_c + ref
             self.copyFile(ref, pubdirprofile_c + ref)
             
         # write pivot
@@ -243,7 +246,6 @@ class Publisher(PublisherMixin, kolektiBase):
                 pname = pdef.get('name')
                 pval =  params.get(pname)
                 if pdef.get('type')=='filelist':
-                    print "copying", pdef.get('name'), pname, pval
                     if pdef.get('ext') == "less":
                         # TODO less compil
                         self.script_lesscompile(pval,
@@ -266,7 +268,6 @@ class Publisher(PublisherMixin, kolektiBase):
         
 
     def start_script(self, script, profile, pubdir, pivot):
-        print ET.tostring(script)
         label = profile.xpath('string(label)') 
         pubdirprofile = pubdir 
         pubdirprofile_c = pubdir + "/" + label + '_c'
@@ -442,7 +443,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 except:
                     print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
                     raise Exception
-            print "Script", label,"sucessful"
+#            print "Script", label,"sucessful"
             
         except:
             print "Impossible d'exécuter le script %(label)s"% {'label': label.encode('utf-8')}
@@ -507,7 +508,6 @@ class Publisher(PublisherMixin, kolektiBase):
         srcpath = self.get_base_layout(srcdir)
         destpath = unicode(targetroot +'/layouts/' + srcdir)
 
-        print "script copy", filer, "from",srcpath,"to",destpath
         
         try:
             self.makedirs(destpath)
