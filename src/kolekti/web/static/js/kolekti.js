@@ -37,7 +37,7 @@ $(function() {
 
     $.getJSON('/xhr/tree/sources/'+kolekti.lang, function(data) {
 	console.log(data);
-	$('.index_base').append(displaynode("",data[0]));
+	$('.index_base').append(displaynode('/sources/'+kolekti.lang,data[0]));
 	$('.index_base [href=#]').click(function (e) {
 	    $(this).parent().toggleClass("active");
 	    e.preventDefault()
@@ -49,12 +49,15 @@ $(function() {
 	$('.index_lancements').append(displaynode(data[0]['configuration']['orders']));
 */
     });
-    if (kolekti.resource.length)
+    if (kolekti.resource.length && kolekti.resource.length > 1)
     $.get(kolekti.resource, function(data) {
 	$("#mainpanel").html(data);
 	$("#mainpanel").attr('data-mercury',"full");
 	$("#mainpanel>title").remove();
 	$("#mainpanel>meta").remove();
-	Mercury.trigger('reinitialize');
+
+	$(window).on('mercury.ready', function() {
+	    Mercury.trigger('reinitialize');
+	})
     })
 });
