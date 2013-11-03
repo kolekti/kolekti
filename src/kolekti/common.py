@@ -74,6 +74,10 @@ class kolektiBase(object):
             pass
         return super(kolektiBase, self).__getattribute__(name)
 
+    @property
+    def config(self):
+        return self._config
+
     def process_path(self,path):
         return path
     
@@ -152,6 +156,15 @@ class kolektiBase(object):
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print))
             
+    # for demo
+    def save(self, path, content):
+        content = ET.XML(content)
+        mod = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head><title>KolektiModule</title></head><body/></html>")
+        mod.find('{http://www.w3.org/1999/xhtml}body').append(content)
+        ospath = self.__makepath(path)
+        with open(ospath, "w") as f:
+            f.write(ET.tostring(mod, encoding = "utf-8", pretty_print = True))
+
     def makedirs(self, path):
         ospath = self.__makepath(path)
         os.makedirs(ospath)

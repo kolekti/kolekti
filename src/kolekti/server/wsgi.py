@@ -40,20 +40,46 @@ class wsgiclass:
                 yield c
 
         elif pathparts[0] =='ui':
-            
-            template ="mainpage"
-            headers = []            
-            headers.append(('Content-type', 'text/html'))
-            start_response("200 OK", headers)
-            
-            yield render(template, {'kolekti':self.kolekti})
+            if environ['REQUEST_METHOD'] == 'PUT':
+                payload = environ['wsgi.input'].read()
+                j = json.loads(payload)
+                b = j['content']['mainpanel']['value']
+                path =  "/".join(pathparts[1:])
+                self.kolekti.save(path, b)
+                start_response("200 OK", [])
+            else:
+                try:
+                    lang = pathparts[2]
+                except:
+                    lang = 'fr'
+                    
+                headers = []            
+                context = {'kolekti':self.kolekti, "lang":lang}
+                template ="mainpage"
+                if len(pathparts) > 1:
+                    context.update({'path': "/".join(pathparts[1:]),
+                                })
+                else:
+                    context.update({'path':""})
+                headers.append(('Content-type', 'text/html'))
+                start_response("200 OK", headers)
+                yield render(template, context)
 
         elif pathparts[0] == 'xhr':
-            headers = []            
+            headers = []
+            if pathparts[1] == 'languages':
+                pass
+
             if pathparts[1] == 'tree':
-                headers.append(('Content-type', 'application/javascript+json'))
-                start_response("200 OK", headers)
-                yield json.dumps(self.kolekti.get_tree())
+                try:
+                    root = "/".join(pathparts[2:])
+                except IndexError:
+                    root = ""
+                print "Tree",pathparts
+                json_obj = self.kolekti.get_tree(root)
+            headers.append(('Content-type', 'application/json'))
+            start_response("200 OK", headers)
+            yield json.dumps(json_obj)
         else:
             root = self.kolekti.getOsPath('/'.join(pathparts))        
             for c in self.servefile(root, environ, start_response):

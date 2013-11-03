@@ -83,8 +83,7 @@
 <div class="col-md-3" id="leftpanel">  
 
 <div class="bs-sidebar hidden-print affix" role="complementary">
-<div class="index_base">    
-</div>
+<div class="index_base"></div>
 </div>
     
     {#
@@ -141,12 +140,10 @@
 	</div>
 #}
 	</div>  
-    </div>
 
-    
-  </div>
-  <div class="col-md-8" id="mainpanel">
-    
+
+      <div class="col-md-8" id="mainpanel">
+    {{ obj }}
   </div>
   <div class="col-md-2" id="leftpanel">
   </div>
@@ -154,4 +151,14 @@
 
 {% endblock %}
 
-{% block footscripts %}{% endblock %}
+{% block footscripts %}
+<script>
+  var kolekti= {"resource": '/{{ path }}',
+  "lang":'{{ lang }}'
+  }
+  ;
+</script>
+<script src="/static/vendor/mercury/distro/javascripts/mercury_loader.js?src=/static/vendor/mercury/distro&pack=bundled">
+</script>
+
+{% endblock %}

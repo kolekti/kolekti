@@ -35,8 +35,8 @@ $(function() {
 		);
     }
 
-    $.getJSON('/xhr/tree', function(data) {
-	//console.log(data);
+    $.getJSON('/xhr/tree/sources/'+kolekti.lang, function(data) {
+	console.log(data);
 	$('.index_base').append(displaynode("",data[0]));
 	$('.index_base [href=#]').click(function (e) {
 	    $(this).parent().toggleClass("active");
@@ -49,6 +49,12 @@ $(function() {
 	$('.index_lancements').append(displaynode(data[0]['configuration']['orders']));
 */
     });
-
-
+    if (kolekti.resource.length)
+    $.get(kolekti.resource, function(data) {
+	$("#mainpanel").html(data);
+	$("#mainpanel").attr('data-mercury',"full");
+	$("#mainpanel>title").remove();
+	$("#mainpanel>meta").remove();
+	Mercury.trigger('reinitialize');
+    })
 });
