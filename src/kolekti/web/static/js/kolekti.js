@@ -59,5 +59,8 @@ $(function() {
 	$(window).on('mercury.ready', function() {
 	    Mercury.trigger('reinitialize');
 	})
+	try {
+	    Mercury.trigger('reinitialize');
+	} catch(e) {}
     })
 });

@@ -158,7 +158,7 @@ class kolektiBase(object):
             
     # for demo
     def save(self, path, content):
-        content = ET.XML(content)
+        content = ET.XML(content, parser=ET.HTMLParser())
         mod = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head><title>KolektiModule</title></head><body/></html>")
         mod.find('{http://www.w3.org/1999/xhtml}body').append(content)
         ospath = self.__makepath(path)
