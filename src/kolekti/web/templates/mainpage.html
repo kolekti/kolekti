@@ -1,5 +1,7 @@
 {% extends "ui_page.html" %}
-
+{% block css %}
+<link href="/kolekti/stylesheets/editor.css" rel="stylesheet">
+{% endblock %}
 {% macro node(node, path = "") -%}
    <li><a href="{{ path }}">{{ node.name }}</a>
    {% if len(node) %}
