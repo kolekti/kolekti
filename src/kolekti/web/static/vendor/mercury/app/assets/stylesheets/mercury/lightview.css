@@ -1,0 +1,101 @@
+/*
+ * Lightview
+ *----------------------------------------------------------------------------*/
+.mercury-lightview-overlay {
+  position: fixed;
+  z-index: 10030;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  display: none;
+  background: rgba(255, 255, 255, .8);
+}
+.mercury-lightview {
+  position: fixed;
+  z-index: 10040;
+  top: 20px;
+  background: rgba(239, 239, 239, .7);
+  opacity: 0;
+  overflow: hidden;
+  display: none;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  -moz-box-shadow: 0 0 40px rgba(0, 0, 0, .9);
+  box-shadow: 0 0 40px rgba(0, 0, 0, .9);
+  font: normal normal normal 12px/normal Helvetica, Tahoma, Arial, sans-serif;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #000;
+}
+.mercury-lightview.loading {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.mercury-lightview .mercury-lightview-content {
+  padding: 10px 20px 20px;
+}
+.mercury-lightview h1.mercury-lightview-title {
+  margin: 0;
+  padding: 10px 20px 8px;
+  border-bottom: 1px solid #CCC;
+  color: #000;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  font-size: 10pt;
+  white-space: nowrap;
+  text-shadow: 1px 1px 2px rgba(100, 100, 100, .5);
+}
+.mercury-lightview h1.mercury-lightview-title a.mercury-lightview-close {
+  float: right;
+  width: 32px;
+  height: 42px;
+  margin: -14px -20px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.mercury-lightview .mercury-display-pane-container {
+  overflow: auto;
+  margin: -10px -20px 0;
+  padding: 20px 20px 10px;
+}
+.mercury-lightview .mercury-display-pane-container .mercury-display-pane {
+  float: left;
+}
+.mercury-lightview .mercury-display-controls {
+  padding: 15px 0 0;
+  border-top: 1px solid #333;
+  text-align: right;
+}
+/*
+ * Specific Lightviews
+ *----------------------------------------------------------------------------*/
+/* about mercury */
+#mercury_about {
+  width: 300px;
+  min-height: 100px;
+  font-size: 1.1em;
+  background-repeat: no-repeat;
+}
+#mercury_about ul {
+  float: left;
+  list-style: none;
+  padding: 0;
+  margin: 118px 0 0 0;
+  width: 120px;
+  text-align: center;
+}
+#mercury_about p {
+  margin: 0;
+  float: right;
+  width: 175px;
+}
+#mercury_about a {
+  color: #09F;
+}
+#mercury_about a:hover {
+  color: #333;
+}

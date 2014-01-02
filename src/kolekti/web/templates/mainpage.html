@@ -1,5 +1,7 @@
 {% extends "ui_page.html" %}
-
+{% block css %}
+<link href="/kolekti/stylesheets/editor.css" rel="stylesheet">
+{% endblock %}
 {% macro node(node, path = "") -%}
    <li><a href="{{ path }}">{{ node.name }}</a>
    {% if len(node) %}
@@ -83,8 +85,7 @@
 <div class="col-md-3" id="leftpanel">  
 
 <div class="bs-sidebar hidden-print affix" role="complementary">
-<div class="index_base">    
-</div>
+<div class="index_base"></div>
 </div>
     
     {#
@@ -141,12 +142,10 @@
 	</div>
 #}
 	</div>  
-    </div>
 
-    
-  </div>
-  <div class="col-md-8" id="mainpanel">
-    
+
+      <div class="col-md-8" id="mainpanel">
+    {{ obj }}
   </div>
   <div class="col-md-2" id="leftpanel">
   </div>
@@ -154,4 +153,14 @@
 
 {% endblock %}
 
-{% block footscripts %}{% endblock %}
+{% block footscripts %}
+<script>
+  var kolekti= {"resource": '/{{ path }}',
+  "lang":'{{ lang }}'
+  }
+  ;
+</script>
+<script src="/static/vendor/mercury/distro/javascripts/mercury_loader.js?src=/static/vendor/mercury/distro&pack=bundled">
+</script>
+
+{% endblock %}

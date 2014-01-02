@@ -151,7 +151,7 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(trame)
         # assfile = pubdir + "_c/content.xhtml"
-        self.write(str(assembly), "/publications/ass.xml")
+        # self.write(str(assembly), "/publications/ass.xml")
         return assembly
     
     def publish_profile(self, profile, pubdir, assembly):

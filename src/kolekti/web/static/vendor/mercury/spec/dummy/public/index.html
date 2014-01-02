@@ -1,0 +1,279 @@
+<html>
+  <head>
+    <!-- add prototype and styles to ensure that libraries don't collide and css doesn't conflict -->
+    <title>Mercury Editor Regression Testing</title>
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, initial-scale=1.0">
+    <link href="/assets/application.css" media="all" rel="stylesheet" type="text/css" />
+
+    <!-- include prototype so we know we can use any other javascript framework -->
+    <script src="/assets/prototype.js" type="text/javascript"></script>
+
+    <!-- include the loader -->
+    <script src="/assets/prototype.js" type="text/javascript"></script>
+    <script src="/assets/mercury/support/history.js" type="text/javascript"></script>
+    <script src="/mercury/javascripts/mercury_loader.js" type="text/javascript"></script>
+
+    <!-- custom implementation examples -->
+    <script type="text/javascript">
+      History.Adapter.bind(window, 'statechange', function() {
+        var state = History.getState();
+        console.debug(state.data, state.title, state.url);
+      });
+
+      // preload snippets
+      Event.observe(window, "mercury:ready", function() {
+        Mercury.config.regions.dataAttributes = ['information'];
+
+        Mercury.saveURL = '/contents';
+        Mercury.Snippet.load({
+          snippet_0:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "00"}},
+          snippet_1:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "01"}},
+          snippet_2:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "02"}},
+          snippet_3:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "03"}},
+          snippet_4:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "04"}},
+          snippet_5:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "05"}},
+          snippet_6:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "06"}},
+          snippet_7:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "07"}},
+          snippet_8:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "08"}},
+          snippet_9:  {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "09"}},
+          snippet_10: {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "10"}},
+          snippet_11: {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "11"}},
+          snippet_12: {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "12"}},
+          snippet_13: {name: 'example', options: {'options[favorite_beer]': "Bells Hopslam", 'options[first_name]': "13"}}
+        });
+
+        Mercury.PageEditor.prototype.save = function() {
+          var data = this.serialize();
+          var lightview = Mercury.lightview(null, {title: 'Saving', closeButton: true});
+          setTimeout(function() {
+            var textarea = '<textarea style="width:100%;height:300px" wrap="off">' + top.JSON.stringify(data, null, '  ') + '</textarea>';
+            lightview.loadContent('<div style="width:500px">Saving in the demo is disabled, but you can see what would be sent to the server below.' + textarea + '</div>');
+          }, 500);
+        };
+      });
+
+      var newRegionIndex = 1;
+      var newRegionType = 0;
+      var regionTypes = ['full', 'simple', 'snippets', 'markdown'];
+      function addRegion() {
+        if (newRegionType >= regionTypes.length) newRegionType = 0;
+        var container = new Element('div', {style: 'position:relative;margin-bottom:20px;'});
+        container.update('<div class="remove" onclick="this.up().remove()">&times;</div><div data-mercury="' + regionTypes[newRegionType] + '" id="new_' + regionTypes[newRegionType] + '_' + newRegionIndex + '">new <b>' + regionTypes[newRegionType] + '</b> region ' + newRegionIndex + '</div>');
+        $('dynamic_regions').insert(container, {position: 'top'});
+        newRegionIndex += 1;
+        newRegionType += 1;
+        Mercury.trigger('reinitialize');
+      }
+    </script>
+  </head>
+  <body>
+
+    <ul id="controls">
+      <li><a href="javascript:Mercury.trigger('toggle:interface')">Toggle Interface</a></li>
+      <li><a href="javascript:var num = 1; History.pushState({state: num}, 'Mercury Editor -- With history.pushState!', '?pushstate=' + num);">history.pushState</a></li>
+      <li><a href="javascript:History.go(-1);">History.go(-1)</a></li>
+      <li><a href="javascript:History.back();">History.back()</a></li>
+      <li><a href="javascript:History.forward();">History.forward()</a></li>
+    </ul>
+
+    <!-- begin forms -->
+    <h1>Forms (with various methods and targets)</h1>
+    <div id="forms">
+      <form id="form1" action="/mercury/test_page" method="post" target="_top">
+        <input type="submit" name="commit" value="post _top">
+      </form>
+      <form id="form2" action="/mercury/test_page" method="get" target="_blank">
+        <input type="submit" name="commit" value="post _blank">
+      </form>
+      <form id="form3" action="/mercury/test_page" method="post" target="_self">
+        <input type="submit" name="commit" value="post _self">
+      </form>
+      <form id="form4" action="/mercury/test_page" method="get">
+        <input type="submit" name="commit" value="get [none]">
+      </form>
+      <form id="form5" action="/mercury/test_page" method="post" class="lightview" target="_self">
+        <input type="submit" name="commit" value="post _self .lightview">
+      </form>
+      <form id="form6" action="/mercury/test_page" method="get" target="foo">
+        <input type="submit" name="commit" value="get foo">
+      </form>
+    </div>
+    <!-- end forms -->
+
+    <!-- begin links -->
+    <h1>Links (With various targets)</h1>
+    <div id="links">
+      <a id="anchor1" href="/mercury/test_page" target="_top">_top</a>
+      <a id="anchor2" href="/mercury/test_page" target="_blank">_blank</a>
+      <a id="anchor3" href="/mercury/test_page" target="_self">_self</a>
+      <a id="anchor4" href="/mercury/test_page">[none]</a>
+      <a id="anchor5" href="/mercury/test_page" class="lightview" target="_self">_self .lightview</a>
+      <a id="anchor6" href="/mercury/test_page" target="foo">foo</a>
+    </div>
+    <!-- end links -->
+
+    <!-- begin dynamic regions -->
+    <h1>Dynamic Regions (<a href="javascript:addRegion()">Add a Region</a>)</h1>
+    <div id="dynamic_regions">
+    </div>
+    <!-- end dynamic -->
+
+    <!-- begin full region 1 -->
+    <h1>Full region</h1>
+    <div id="full_1" data-mercury="full" data-information="foo">
+      If the first line of content isn't wrapped in an element you can't set justification (mozilla only bug).
+
+      <h2>text with a meta tag (that will be removed)</h2>
+      123<meta>editable content
+
+      <h2>anchor with a div inside</h2>
+      <a href="/foo1">l<div>ink with a div in</div> it</a>
+
+      <h2>image wrapped in an anchor</h2>
+      <a href="/foo2"><img alt="logo" src="/assets/mercury/temp-logo.png"></a>123
+
+      <h2>table with header and definition cells</h2>
+      <table border="1">
+        <tbody>
+          <tr><th>R1C1</th><th colspan="5">R1C2</th></tr>
+          <tr><th colspan="2">R2C1</th><th rowspan="2">R2C2</th><th>R2C3</th><th rowspan="5">R2C4</th><th>R2C5</th></tr>
+          <tr><td colspan="2">R3C1</td><td>R3C2</td><td>R3C3</td></tr>
+          <tr><td>R4C1</td><td>R4C2</td><td rowspan="4">R4C3</td><td>R4C4</td><td>R4C5</td></tr>
+          <tr><td>R5C1</td><td>R5C2</td><td>R5C3</td><td>R5C4</td></tr>
+          <tr><th rowspan="2">R6C1</th><th rowspan="2">R6C2</th><th>R6C3</th><th>R6C4</th></tr>
+          <tr><td>R7C1</td><td>R7C2</td><td>R7C3</td></tr>
+          <tr><td colspan="2">R8C1</td><td colspan="4">R7C2</td></tr>
+        </tbody>
+      </table>
+
+      <h2>table without tbody or border</h2>
+      <table>
+        <tr><th>R1C1</th><th colspan="2">R1C2</th></tr>
+        <tr><td rowspan="2">R2C1</td><td>R2C2</td><td>R2C3</td></tr>
+        <tr><td>R3C1</td><td>R3C2</td></tr>
+      </table>
+
+      <h2>fixed width table (column where all colspans > 1, row where all rowspans > 1)</h2>
+      <table border="1" width="200">
+        <tbody>
+          <tr><td rowspan="2">R1C1</td><td colspan="2" rowspan="2">R1C2</td></tr>
+          <tr></tr>
+          <tr><td>R3C1</td><td colspan="2">R3C2</td></tr>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>paragraph with an overline wrapped in an underline</h2>
+      <p>123 <u>under <span style="text-decoration:overline">overline</span> line</u> 123</p>
+
+      <h2>paragraph with an underline wrapped in an overline</h2>
+      <p>123 <span style="text-decoration:overline">over <u>underline</u> line</span> 123</p>
+
+      <h2>style tag that styles images with a border</h2>
+      <style type="text/css">img { border: 2px solid red}</style>
+
+      <h2>image next to content wrapped in an anchor</h2>
+      <img alt="clippy" src="/assets/mercury/temp-logo.png"><a href="#bookmark1">link for #bookmark1</a>
+
+      <h2>snippet that's pre-loaded</h2>
+      <div data-snippet="snippet_0">snippet0</div>
+
+      <h2>bookmark links</h2>
+      <a name="bookmark1">Bookmark1</a><br/><a name="bookmark2">Bookmark2</a>
+
+      <br/><br/>
+      Additional content not wrapped in anything
+    </div>
+    <!-- end full region 1 -->
+
+    <!-- begin full region 2 -->
+    <h1>Full region (single snippet and no content)</h1>
+    <div id="full_2" data-mercury="full">
+      <div data-snippet="snippet_1">snippet1</div>
+    </div>
+    <!-- end full region 2 -->
+
+    <!-- begin full region 3 -->
+    <h1>Full region (fixed width/height and overflow)</h1>
+    <div id="full_3" data-mercury="full" style="width:200px;height:90px;">
+      wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+      <br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/><a href="#offset_test">8</a><br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15
+    </div>
+    <!-- end full region 3 -->
+
+    <!-- begin simple region 1 -->
+    <h1>Simple region (h1 tag)</h1>
+    <h1 id="simple_1" data-mercury="simple" data-information="foo">This is a simple region</h1>
+    <!-- end simple region 1 -->
+
+    <!-- begin simple region 2 -->
+    <h1>Simple region (h2 tag with fixed width)</h1>
+    <h2 id="simple_2" data-mercury="simple" style="width:200px">This is a simple region which is much longer. It should wrap when displaying, and when editing.</h2>
+    <!-- end simple region 2 -->
+
+    <!-- begin snippets region 1 -->
+    <h1>Snippets region</h1>
+    <div id="snippets_1" data-mercury="snippets">
+      <div class="example-snippet" data-snippet="snippet_2">snippet2</div>
+      <div class="example-snippet" data-snippet="snippet_3">snippet3</div>
+      <div class="example-snippet" data-snippet="snippet_4">snippet4</div>
+      <div class="example-snippet" data-snippet="snippet_5">snippet5</div>
+      <div class="example-snippet" data-snippet="snippet_6">snippet6</div>
+    </div>
+    <br clear="both"/>
+    <!-- end snippets region 1 -->
+
+    <!-- begin snippets region 2 -->
+    <h1>Snippets region (iframe snippet that contains flash)</h1>
+    <div id="snippets_2" data-mercury="snippets">
+      <div class="example-snippet" data-snippet="snippet_7">snippet7</div>
+      <div class="example-snippet" data-snippet="snippet_8">snippet8</div>
+      <iframe class="example-snippet" data-snippet="snippet_9" width="560" height="349" src="http://www.youtube.com/embed/0pXYp72dwl0?wmode=transparent" frameborder="0" allowfullscreen="true"></iframe>
+    </div>
+    <!-- end snippets region 2 -->
+
+    <!-- begin markdown region 1 -->
+    <h1>Markdown region</h1>
+    <div id="markdown_1" data-mercury="markdown">
+## notes ##
+**whitespace** in markdown regions is _important_.
+
+## ordered list ##
+1. list item 1
+2. list item 2
+
+## unordered list ##
+- list item 1
+- list item 2
+
+## horizontal rule ##
+- - -
+
+## anchor ##
+[this is a link](foo 'optional title')
+
+## image ##
+![add alt text](/assets/mercury/temp-logo.png)
+
+## snippet that's pre-loaded ##
+[--snippet_1--]
+
+## code ##
+    <a href="/foo">this html will not be escaped</a>
+                   and     whitespace     will be retained
+
+## blockquote ##
+> this is indented one level
+
+## paragraph with bold, italics, etc. ##
+Turkey corned beef ham, chuck ham hock **venison _drumstick_ ** tongue ribeye. Beef tongue pancetta, short ribs meatball headcheese jowl bacon swine t-bone shoulder venison. Hamburger short loin turkey flank short ribs tail. Chicken tri-tip sausage, bresaola sirloin turkey hamburger <sub>headcheese</sub> shank rump. Pork ground round t-bone, ham hock sirloin biltong chicken fatback pork belly pastrami pancetta jowl tail. Cow ribeye pork chop, flank sirloin tail short loin pork loin chicken boudin pastrami. Boudin chuck shankle, spare ribs pancetta <sup>fatback</sup> bresaola.
+    </div>
+    <!-- end markdown region 1 -->
+
+    <!-- begin image region 1 -->
+    <h1>Image region</h1>
+    <img id="image_1" data-mercury="image" src="/images/bunny.gif" alt=""/>
+    <!-- end image region 1 -->
+
+  </body>
+</html>
