@@ -245,7 +245,7 @@ class Publisher(PublisherMixin, kolektiBase):
             for pdef in scrdef.xpath('parameters/parameter'):
                 pname = pdef.get('name')
                 pval =  params.get(pname)
-                if pdef.get('type')=='filelist':
+                if pval is not None and pdef.get('type')=='filelist':
                     if pdef.get('ext') == "less":
                         # TODO less compil
                         self.script_lesscompile(pval,
