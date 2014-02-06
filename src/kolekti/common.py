@@ -208,13 +208,16 @@ class kolektiBase(object):
             aurl = urlparse.urljoin(base,r)
             return aurl
 
-
-    def substitute_criterias(self,string, profile, extra={}):
+    def _get_critdict(self, profile):
         crits = profile.xpath("criterias/criteria[@checked='1']")
         critdict={}
         for c in crits:
             critdict.update({c.get('code'):c.get('value')})
-            
+        return critdict
+
+
+    def substitute_criterias(self,string, profile, extra={}):
+        critdict = self._get_critdict(profile)
         critdict.update(extra)
 
         for crit,val in critdict.iteritems():
@@ -233,10 +236,16 @@ class kolektiBase(object):
         return string
 
 
-    def variable_value(self, sheet, variable, profile):
-        fvar = self.get_base_variable(sheet)
+    def variable_value(self, sheet, variable, profile, extra={}):
+        if sheet[0] != "/":
+            fvar = self.get_base_variable(sheet)
+        else:
+            fvar = sheet
         xvar = self.parse(fvar)
         values = xvar.xpath('/variables/variable[@code="%s"]/value'%variable)
+        # print [ET.tostring(v) for v in values]
+        critdict = self._get_critdict(profile)
+        critdict.update(extra)
         for value in values:
             accept = True
             for crit in value.findall('crit'):
@@ -248,6 +257,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content').text
+        print "Warning: Variable not matched",sheet, variable
         return "[??]"
 
 class XSLExtensions(kolektiBase):

@@ -27,9 +27,11 @@ class PublisherMixin(object):
             self._publang = self._config.get("sourcelang","en")
 
     def process_path(self, path):
-        return self.substitute_criterias(path, ET.XML('<criterias/>'), {"LANG":self._publang})
+        return self.substitute_criterias(path, ET.XML('<criterias/>'))
 
-    
+    def substitute_criterias(self,string, profile, extra={}):
+        extra.update({"LANG":self._publang})
+        return super(PublisherMixin, self).substitute_criterias(string, profile, extra=extra)
 
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
@@ -86,7 +88,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def variable(self, _, *args):
         sheet = self.substitute_criterias(args[0], self._profile)+".xml"
         variable = self.substitute_criterias(args[1], self._profile)
-        return unicode(self.variable_value(sheet, variable, self._profile))
+        return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
 
 
 class Publisher(PublisherMixin, kolektiBase):
@@ -156,8 +158,8 @@ class Publisher(PublisherMixin, kolektiBase):
     
     def publish_profile(self, profile, pubdir, assembly):
         print "-> Profile:",profile.xpath('string(label)')
-        pubdirprofile = pubdir 
-        pubdirprofile_c = pubdir + "/" + profile.xpath('string(label)') + '_c'
+        pubdirprofile = pubdir
+        pubdirprofile_c = pubdir + "/" + self.substitute_criterias(profile.xpath('string(label)'), profile) + '_c'
         try:
             self.makedirs(pubdirprofile)
         except OSError:
@@ -190,7 +192,6 @@ class Publisher(PublisherMixin, kolektiBase):
                 assembly = s(assembly)
             # make toc
             if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
-                print "TOC"
                 s = self.get_xsl('toc')
                 assembly = s(assembly)
             
@@ -210,8 +211,8 @@ class Publisher(PublisherMixin, kolektiBase):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             base = med.xpath("string(ancestor::h:div[@class='module']/h:div[@class='moduleinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
-            ref = self.getPathFromSourceUrl(self.substitute_criterias(ref, profile,{"LANG":self._publang}))
-            med.set('src',self.substitute_criterias(ref, profile,{"LANG":self._publang})[1:])
+            ref = self.getPathFromSourceUrl(self.substitute_criterias(ref, profile))
+            med.set('src',self.substitute_criterias(ref, profile)[1:])
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
@@ -228,7 +229,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def copy_script_params(self, script, profile, pubdir):
         
-        pubdirprofile_c = pubdir + "/" + profile.xpath('string(label)') + '_c'
+        pubdirprofile_c = pubdir + "/" + self.substitute_criterias(profile.xpath('string(label)'), profile) + '_c'
         name=script.get('name')
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
@@ -507,7 +508,6 @@ class Publisher(PublisherMixin, kolektiBase):
         # print "script copy",value, dirname, pubdir, copyto, ext
         srcpath = self.get_base_layout(srcdir)
         destpath = unicode(targetroot +'/layouts/' + srcdir)
-
         
         try:
             self.makedirs(destpath)
