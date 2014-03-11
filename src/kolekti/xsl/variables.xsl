@@ -45,7 +45,11 @@
         <xsl:copy-of select="$res"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>[??]</xsl:text>
+        <xsl:text>[?? Undefined </xsl:text>
+        <xsl:value-of select="$varfile"/>
+        <xsl:text>:</xsl:text>
+        <xsl:value-of select="$varname"/>
+        <xsl:text>]</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -63,11 +67,18 @@
 
       <xsl:otherwise>
         <xsl:variable name="res" select="kfp:replace_crit(concat('{',@class,'}'))"/>
+        <xsl:value-of select="$res"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
 
+  <xsl:template match="/html:html/html:head/html:title">
+    <xsl:copy>
+      <xsl:value-of select='kfp:replace_strvar(string(.))'/>
+    </xsl:copy>
+  </xsl:template>
+    
 
 
   <xsl:template match="node()|@*">

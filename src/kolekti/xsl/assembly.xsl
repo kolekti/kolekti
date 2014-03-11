@@ -159,7 +159,7 @@
     <html>
       <head>
         <title>
-          <xsl:copy-of select="html:head/html:title/text()"/>
+          <xsl:value-of select="html:head/html:title/text()"/>
          </title>
       </head>
       <body lang="{$lang}" xml:lang="{$lang}">
@@ -169,8 +169,6 @@
       </body>
     </html>
   </xsl:template>
-
-
 
 
   <xsl:template match="html:body" mode="aggreg">

@@ -77,7 +77,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return r
         
     def replace_strvar(self, _, args):
-        srcstr = args[0]
+        srcstr = self.substitute_criterias(args, self._profile)
         return self.substitute_variables(srcstr, self._profile)
 
     def replace_crit(self, _, args):
