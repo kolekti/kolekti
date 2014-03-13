@@ -109,7 +109,10 @@
 
         <!-- lien absolu (/projects/PNAME/modules/... -->
         <xsl:when test="starts-with($tmod, '/')">
+          <!--
           <xsl:variable name="ref" select="kfp:normpath(string($tmod))" />
+          -->
+          <xsl:variable name="ref" select="kfp:getmodule(string($tmod))" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -123,7 +126,10 @@
 
         <!-- lien relatif -->
         <xsl:otherwise>
-          <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
+          <!--
+               <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
+          -->
+          <xsl:variable name="ref" select="kfp:getmodule( string($tmod),string($modpath))" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
