@@ -13,6 +13,18 @@
     </parameters>
   </pubscript>
 
+  <pubscript id="fop" type="shell">
+    <name>Générer pdf avec Apache fop</name>
+    <cmd>fop -xml "_PIVOT_" -xsl "_SRCDIR_/layouts/fop/xsl/_XSL_.xsl" -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
+    <parameters>
+      <parameter name="XSL" label="Feuille de style" 
+		 type="filelist" dir="fop/xsl" ext="xsl"/>
+    </parameters>
+  </pubscript>
+
+
+
 <!--
   <pubscript id="xhtml" type="xslt">
     <name>Publication xhtml+css</name>
