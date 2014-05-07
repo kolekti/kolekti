@@ -48,7 +48,7 @@ class plugin(pluginBase.plugin):
             pass
         shutil.copytree(libsdir, libpdir)
 
-        libpdir = os.path.join(self.getOsPath('/'.join([self.pubprofiledir_c,'layouts',label])), 'lib')
+        libpdir = os.path.join(self.getOsPath('/'.join([self.pubprofiledir_c,'kolekti','layouts',label])), 'lib')
         try:
             shutil.rmtree(libpdir)
         except:            
@@ -63,7 +63,7 @@ class plugin(pluginBase.plugin):
         else:
             tfile="%s.xht"%self._plugin
             
-        template=self.parse('/'.join([self.pubprofiledir_c,'layouts',label,tfile]))
+        template=self.parse('/'.join([self.pubprofiledir_c,'kolekti','layouts',label,tfile]))
 
         # copier les illustration et css
         # copier le logo
