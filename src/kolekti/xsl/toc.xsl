@@ -103,9 +103,11 @@
     <xsl:variable name="lev">
       <xsl:value-of select="@h"/>
     </xsl:variable>
+    <!--
     <span class="title_num_level_1"><xsl:number level="any" count="html:h1[@h=1]|html:h2[@h=1]|html:h3[@h=1]|html:h4[@h=1]|html:h5[@h=1]|html:h6[@h=1]|"/></span>
+    -->
     <xsl:if test="$lev &gt; 1">
-      <span class="title_num_sep_2">.</span>
+      <!-- <span class="title_num_sep_2">.</span>-->
       <span class="title_num_level_2"><xsl:number level="any" from="html:h1[@h=1]|html:h2[@h=1]|html:h3[@h=1]|html:h4[@h=1]|html:h5[@h=1]|html:h6[@h=1]|" count="html:h1[@h=2]|html:h2[@h=2]|html:h3[@h=2]|html:h4[@h=2]|html:h5[@h=2]|html:h6[@h=2]|"/></span>
     </xsl:if>
     <xsl:if test="$lev &gt; 2">
