@@ -13,7 +13,7 @@
 
    <xsl:include href="alphaindex.xsl" />
 
-   <xsl:variable name="helpname">WebHelp</xsl:variable>
+   <xsl:variable name="helpname">WebHelp5xxx</xsl:variable>
 
    <xsl:param name="pubdir" />
    <xsl:param name="css" />
@@ -861,6 +861,7 @@
    <!-- get translations -->
    <xsl:template name="gettext">
       <xsl:param name="label" />
-      <xsl:value-of select="kfp:variable(string($translationfile),string($label))" />
+      <xsl:value-of select="kfp:variable('xxx',string($label))" />
+      <!--      <xsl:value-of select="kfp:variable(string($translationfile),string($label))" /> -->
    </xsl:template>
 </xsl:stylesheet>

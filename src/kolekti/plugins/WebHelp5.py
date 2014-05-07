@@ -38,7 +38,7 @@ class plugin(pluginBase.plugin):
         """
         label = self.scriptdef.get('name')
        
-        # copier le contenu la lib dans le répertoire kohelp
+        # copier le contenu la lib dans le répertoire _c/layouts/[label]
         libsdir = os.path.join(self._plugindir,'lib')
 
         libpdir = os.path.join(self.getOsPath(self.pubscriptdir), 'lib')
@@ -57,11 +57,13 @@ class plugin(pluginBase.plugin):
 
         # ouvrir le fichier template
         templatename = self.get_script_parameter('template')
+        print "WebHelp5 template",templatename
         if len(templatename):
             tfile="%s.xht"%templatename
         else:
             tfile="%s.xht"%self._plugin
-        template=self.parse('/'.join(['design','publication',self._plugin,'config',tfile]))
+            
+        template=self.parse('/'.join([self.pubprofiledir_c,'layouts',label,tfile]))
 
         # copier les illustration et css
         # copier le logo
@@ -98,7 +100,7 @@ class plugin(pluginBase.plugin):
         css=self.get_script_parameter('css')
 
         # générer les pages
-        xslt=self.get_xsl('generate', profile = self.profile, lang = self.lang)
+        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self.lang)
         templdir=self.getUrlPath('/'.join(['design','publication',self._plugin,'config']))+'/'
         templtrans=self.getUrlPath('sheets')+'/'
         puburl=self.getUrlPath(self.pubscriptdir)

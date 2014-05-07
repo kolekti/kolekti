@@ -21,7 +21,20 @@ import sys
 import shutil
 from lxml import etree as ET
 from kolekti.common import kolektiBase
-from kolekti.publish import PublishExtensions
+from kolekti.publish import PublisherExtensions
+
+class PluginsExtensions(PublisherExtensions):
+    def __init__(self, *args, **kwargs):
+        self._resdir = "."
+        if kwargs.has_key('resdir'):
+            self._resdir = kwargs.get('resdir')
+            kwargs.pop('resdir')
+        super(PluginsExtensions,self).__init__(*args, **kwargs)
+
+    def process_path(self, path):
+        return self._resdir + "/" +super(PluginsExtensions, self).process_path(path)
+    
+    
 
 class plugin(kolektiBase):
     _plugin="dummy"
@@ -30,11 +43,20 @@ class plugin(kolektiBase):
     def __init__(self, *args, **kwargs):
         super(plugin, self).__init__(*args, **kwargs)
         self._plugin = self.__module__.split('.')[-1]
-        self._plugindir = os.path.join(self.appdir,'plugins',"_%s"%self._plugin)
-        self.__ext = None
-
+        self._plugindir = os.path.join(self._appdir,'plugins',"_%s"%self._plugin)
+        self.__ext = PluginsExtensions
+        print "*********** init plugin",self.__ext
+        
     def get_xsl(self,xslfile, **kwargs):
-        return super(plugin,self).get_xsl(xslfile, extclass = self.__ext, xsldir = self._plugindir, **kwargs)
+        print "get xsl from plugin", self._plugindir, self.__ext
+
+        resdir = self.pubdir + "/" + self.substitute_criterias(self.profile.xpath('string(label)'), self.profile) + '_c'
+        
+        return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
+                                          xsldir = self._plugindir,
+                                          system_path = True,
+                                          resdir = resdir,
+                                          **kwargs)
 
     def __call__(self, scriptdef, profile, pubdir, pivot, lang ):
         self.scriptdef = scriptdef
@@ -42,7 +64,6 @@ class plugin(kolektiBase):
         self.pubdir = pubdir
         self.pivot = pivot
         self.lang = lang
-        self.__ext = PublishExtensions
         scriptlabel = scriptdef.get('name')
         profilelabel = profile.xpath('string(label)')
         self.pubscriptdir = pubdir + "/" + profilelabel + "/" +scriptlabel
@@ -60,10 +81,11 @@ class plugin(kolektiBase):
         return
 
     def copymedias(self):
-        for d in ['medias']:
+        for d in ['sources']:
             source = self.pubprofiledir_c + '/' + d
             target = self.pubscriptdir + '/' + d
-            self.copyDirs(source,target)
+            if self.exists(source):
+                self.copyDirs(source,target)
             
         
     def postpub(self):
@@ -75,6 +97,8 @@ class plugin(kolektiBase):
 
     def get_script_parameter(self, param):
         try:
-            return self.scriptdef.xpath('string(script/parameters[@name="%s"]/@value)')
+            return self.scriptdef.xpath('string(./parameters/parameter[@name="%s"]/@value)'%param)
         except:
+            import traceback
+            print traceback.format_exc()
             return None

@@ -33,6 +33,9 @@ class PublisherMixin(object):
         extra.update({"LANG":self._publang})
         return super(PublisherMixin, self).substitute_criterias(string, profile, extra=extra)
 
+
+
+
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
 
@@ -113,33 +116,44 @@ class Publisher(PublisherMixin, kolektiBase):
             s = s.replace('_%s_'%k,v)
         return self.substitute_variables(self.substitute_criterias(s,profile),profile)
 
+
+    # publishes a list of jobs
+    
     def publish(self, jobs):        
         for job in jobs:
             path = self.get_base_job(job) + ".xml"
             xjob = self.parse(path)
             self.publish_job(xjob)
-    
+
+    # publish a single job
     def publish_job(self, xjob):
+
         trame = xjob.xpath('string(/*/*[self::trame or self::toc]/@value)')
         trame = self.process_path(trame)
-        
+
+        # parses and assembly the trame
         xtrame = self.parse(trame)
         assembly = self.publish_assemble(xtrame)
         
         for profile in xjob.xpath('/*/profiles/profile'):
-            if profile.get('enabled',False):
+            if profile.get('enabled','0') == '1':
+                
+                # calculates and creates the publication directory 
                 pubdir = self.substitute_variables(xjob.xpath('string(/*/pubdir/@value)'),profile)
                 pubdir = self.get_base_publication(pubdir)
                 try:
                     self.makedirs(pubdir)
                 except:
                     print "Info: publication path", pubdir, "already exists"
-                
+
+                # creates the document (pivot) file
                 pivot = self.publish_profile(profile, pubdir, assembly)
+
+                # lunch scripts
                 
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
-                    print "--> Starting script:"
                     try:
+                        
                         self.copy_script_params(script, profile, pubdir)
                         self.start_script(script, profile, pubdir, pivot)
                         #print "--> Done script:",script.get('name')
@@ -208,6 +222,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
         # copy media to _c, update src attributes in pivot
+        
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             base = med.xpath("string(ancestor::h:div[@class='module']/h:div[@class='moduleinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
@@ -246,6 +261,7 @@ class Publisher(PublisherMixin, kolektiBase):
             for pdef in scrdef.xpath('parameters/parameter'):
                 pname = pdef.get('name')
                 pval =  params.get(pname)
+                print pname, pval
                 if pval is not None and pdef.get('type')=='filelist':
                     if pdef.get('ext') == "less":
                         # TODO less compil
@@ -259,13 +275,20 @@ class Publisher(PublisherMixin, kolektiBase):
                                          srcdir = unicode(pdef.get('dir')),
                                          targetroot = pubdirprofile_c,
                                          ext = pdef.get('ext'))
+                if pdef.get('type')=='resource':
+                    filer = unicode(pdef.get('file'))
+                    srcdir = unicode(self.substitute_criterias(pdef.get('dir'), profile))
+                    self.script_copy(filer = filer,
+                                     srcdir = srcdir,
+                                     targetroot = pubdirprofile_c,
+                                     ext = pdef.get('ext'))
 
         except:
             import traceback
             print traceback.format_exc()
             print "[Script %s] Erreur lors de la copie des ressources"%name
             raise Exception
-
+        print "End copy script params"
         
 
     def start_script(self, script, profile, pubdir, pivot):
@@ -377,6 +400,8 @@ class Publisher(PublisherMixin, kolektiBase):
                         outref=self.__substscript(xl.get('ref'), subst, profile)
                         print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
                 except:
+                    import traceback
+                    print traceback.format_exc()
                     print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
                     raise Exception
 
@@ -501,28 +526,31 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
     def script_copy(self, filer, srcdir, targetroot, ext):
-        # copies file layouts/[srcdir][filer].[ext] for directory [targetroot]layouts/[] to
-        # [pubdir (which shall be the _c)]/[dirname]
-        # also copies recursively [value].parts
+
+        # copies file [srcdir]/[filer].[ext] to
+        # [targetroot]/[srcdir]/[filer].[ext]
+        # also copies recursively [filer].parts directory
         
         # print "script copy",value, dirname, pubdir, copyto, ext
         srcpath = self.get_base_layout(srcdir)
-        destpath = unicode(targetroot +'/layouts/' + srcdir)
+        destpath = unicode(targetroot + "/" + srcdir)
         
         try:
             self.makedirs(destpath)
         except OSError:
             pass
         try:
-            source= u"%s/%s.%s"%(srcpath,filer,ext)
+            source= u"%s/%s.%s"%(srcdir,filer,ext)
             dest=   u"%s/%s.%s"%(destpath,filer,ext)
+            print source,'->', dest
             self.copyFile(source,dest)
         except:
             import traceback
             print traceback.format_exc()
             raise Exception
+        
         try:
-            source=u"%s/%s.parts"%(srcpath,filer)
+            source=u"%s/%s.parts"%(srcdir,filer)
             if self.exists(source):
                 target=u"%s/%s.parts"%(destpath,filer)
                 try:
@@ -530,6 +558,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 except:
                     pass
                 self.copyDirs(source,target)
+
         except:
             import traceback
             print traceback.format_exc()

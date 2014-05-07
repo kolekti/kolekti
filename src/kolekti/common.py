@@ -124,12 +124,15 @@ class kolektiBase(object):
         return extensions
         
 
-    def get_xsl(self, stylesheet, extclass = None, xsldir = None, **kwargs):
-#        print "get xsl",stylesheet, extclass , xsldir , kwargs
+    def get_xsl(self, stylesheet, extclass = None, xsldir = None, system_path = False, **kwargs):
+        print "get xsl",stylesheet, extclass , xsldir , kwargs
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
-            xsldir = self.__makepath(xsldir)
+            if system_path:
+                xsldir = os.path.join(self._appdir, xsldir)
+            else:
+                xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
         xsldoc  = ET.parse(path,self._xmlparser)
         if extclass is None:
@@ -241,6 +244,7 @@ class kolektiBase(object):
             fvar = self.get_base_variable(sheet)
         else:
             fvar = sheet
+        print sheet,fvar
         xvar = self.parse(fvar)
         values = xvar.xpath('/variables/variable[@code="%s"]/value'%variable)
         # print [ET.tostring(v) for v in values]

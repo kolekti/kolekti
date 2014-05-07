@@ -85,11 +85,19 @@ if __name__ == '__main__':
     parser_s.set_defaults(**defaults)
 
     # publication
-    parser_pub = subparsers.add_parser('publish', help="publish documents")
+    parser_pub = subparsers.add_parser('publish', help="assemble, filter and publish documents")
     parser_pub.add_argument('jobs', action='store', nargs="+")
     parser_pub.add_argument('-l', '--lang', action='store', nargs="+")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
+    parser_pub.set_defaults(**defaults)
+    
+
+    # re-publication 
+    parser_pub = subparsers.add_parser('republish', help="publish documents from assembly")
+    parser_pub.add_argument('document', action='store')
+    defaults=config.get("republish",{})
+    defaults.update({'cmd':'republish'})
     parser_pub.set_defaults(**defaults)
     
     args = parser.parse_args()
@@ -119,6 +127,17 @@ if __name__ == '__main__':
             import traceback
             print traceback.format_exc()
             print "Publication ended with errors"
+            
+    if args.cmd == 'republish':
+        from kolekti import publish
+        try:
+            p = publish.Publisher(args.base)
+            p.publish_document(args.document)
+            print "Republication sucessful"
+        except:
+            import traceback
+            print traceback.format_exc()
+            print "Republication ended with errors"
             
     if args.cmd == 'convert':
         from kolekti import convert
