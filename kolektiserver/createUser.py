@@ -86,6 +86,6 @@ if __name__ == '__main__':
     from kolekti.utils.backends.sqlalchemybackend import SQLAlchemyBackend
     from kolektiserver.kolekticonf import conf
     # here the import should be changed
-    from kolekti.mvc.models.sql.models import Users
+    from kolekti.mvc.models.sql.fmk_db_models import Users
 
     kUpdate = KolektiUpdate(user=options.user,is_admin=options.admin,is_translator=options.translator)
