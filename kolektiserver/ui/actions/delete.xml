@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="delete" i:name="[0095]Supprimer"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_del.png</kd:icon>
+  <kd:dialog i:title="[0095]Supprimer" type="confirm">
+    <p><i:text>[0247]Etes-vous sur de vouloir supprimer l'objet ?</i:text></p>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="DELETE" />
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:message><i:text>[0248]L'objet a été supprimé</i:text></kd:message>
+      <kd:notify event="resource-delete" />
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0249]Impossible de supprimer l'objet</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

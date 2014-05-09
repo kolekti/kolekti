@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="newtramedir" i:name="[0263]Créer un nouveau dossier"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_dir.png</kd:icon>
+  <kd:dialog i:title="[0263]Créer un nouveau dossier" type="confirm">
+    <p>
+      <label id="dirname"><i:text>[0264]Nom du dossier</i:text></label>
+      <input name="dirname" id="dirname" />
+    </p>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="MKCOL" urlext="/[[dirname]]">
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0265]Impossible de créer le dossier</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

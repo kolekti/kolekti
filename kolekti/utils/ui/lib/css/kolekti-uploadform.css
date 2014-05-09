@@ -1,0 +1,46 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Upload form stylesheet */
+
+span.label {
+   display:block;
+   width: 100px;
+   float:left;
+}
+
+label.fieldtitle {
+   font-weight: bold;
+   float: left;
+   text-align: right;
+   padding: 5px 5px 0 0;
+}
+
+label.fieldlisttitle {
+   font-weight: bold;
+   text-align: right;
+   vertical-align: top;
+   width: 175px; /*width of labels. Should be smaller than left column to create some right
+   margin*/
+}
+
+p.btn_submit {
+   float: left;
+   margin: 0 10px;
+}

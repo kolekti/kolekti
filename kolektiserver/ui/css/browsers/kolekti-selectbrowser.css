@@ -1,0 +1,49 @@
+
+/* Selector browser stylesheet */
+
+
+.selectdir, .uploadform {
+   float: left;
+}
+
+.selectbrowser,
+.upload-selectbrowser,
+.large_selectbrowser {
+   min-height: 150px;
+}
+
+.selectbrowser,
+.upload-selectbrowser {
+	float: right;
+	width: 290px;
+}
+
+.large_selectbrowser .browser-directories,
+.selectbrowser .browser-directories {
+   position: absolute;
+   top: 40px;
+   left: 10px;
+   right: 10px;
+   bottom: 0;
+}
+
+.selectbrowser .browser-directories {
+	left: auto;
+   width: 290px;  
+}
+
+.upload-selectbrowser {
+   position: absolute;
+   top: 0;
+   left: auto;
+   right: 0;
+   bottom: 0;
+   width: 285px;  
+}
+
+.upload-selectbrowser ul.subdirs,
+.large_selectbrowser ul.subdirs,
+.selectbrowser ul.subdirs {
+   top: 0;
+   margin: 0;		
+}

@@ -1,0 +1,133 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+/* Orders editor styles */
+.orderseditor,
+div.pubprofile {
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   right: 200px;
+   overflow: auto;
+   padding: 8px 4px;
+}
+
+.orderseditor a {
+   color: #0D401C !important;
+}
+
+.orderseditor a:hover {
+   color: #000 !important;
+}
+
+.orderseditor fieldset {
+   -moz-border-radius: 4px 4px 4px 4px;
+   background-color: #E0E0E0;
+   border: 1px solid #303030;
+   margin: 4px;
+   padding: 0 5px;
+   overflow: hidden;
+}
+
+.orderseditor fieldset fieldset {
+   background-color: #D0D0D0;
+}
+
+.orderseditor fieldset legend {
+   font-weight: bold;
+}
+
+.orderseditor div.trames span.wndfield input {
+   width: 100%;
+}
+
+.orderseditor div.trames .tramechoose span {
+   cursor: pointer;
+}
+
+.orderseditor div.trames iframe {
+   height: 200px;
+   margin: 0 0 10px 0;
+}
+
+.orderseditor fieldset div.actions {
+   float: right;
+   width: 150px;
+   text-align: center;
+}
+
+.orderseditor fieldset div.actions ul {
+   margin: 5px;
+   padding: 5px;
+}
+
+.orderseditor fieldset div.actions ul li {
+   padding: 5px;
+}
+
+.orderseditor fieldset div.profile,
+.orderseditor fieldset div.script {
+   margin-right: 155px;
+   border-right: 1px solid #C0C0C0;
+}
+
+.orderseditor span.delete {
+   cursor: pointer;
+}
+
+/* Forms */
+.orderseditor .profile .criteria {
+   margin: 5px 0;
+   min-height: 25px;
+}
+
+.orderseditor .pubdir label,
+.orderseditor .pubtitle label,
+.orderseditor .profile .formselect,
+.orderseditor .profile .profilelabel label {
+   float: left;
+   width: 200px;
+   border-bottom: 1px dashed #B0B0B0;
+   padding-top: 3px;
+}
+
+.orderseditor .pubdir label,
+.orderseditor .pubtitle label,
+.orderseditor .profile .profilelabel label {
+   padding-top: 8px;
+}
+
+.orderseditor .pubdir label,
+.orderseditor .pubtitle label {
+   width: 222px;
+}
+
+.orderseditor .script .suffix {
+   min-height: 25px;
+}
+
+.orderseditor .script .parameter label {
+   padding-right: 5px;
+}
+
+.orderseditor .profile .profilelabel {
+   padding-bottom: 10px;
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:upload-dialog id="uploadmedia"
+                  xmlns:i="kolekti:i18n"
+                  xmlns:kd="kolekti:dialogs"
+                  xmlns="http://www.w3.org/1999/xhtml">
+  <div class="uploadform">
+    <kd:upload-form id="uploadmedia" class="uploadform">
+     <kd:upload i:label="[0302]Média" multiple="yes"/>
+     <kd:input i:label="[0117]Dossier" name="uploaddir" id="selectdir"/>
+    </kd:upload-form>
+  </div>
+  <div class="upload-selectbrowser">
+    <p><i:text>[0258]Sélectionner le dossier destination</i:text></p>
+    <kd:ajaxbrowser id="uploadmedia" class="selectbrowser" keep_active_items="false">
+       <kd:behavior>
+          <kd:click id="selectdir" action="select" event="select-dir" />
+       </kd:behavior>
+       <kd:tab i:label="[0152]Explorateur" dir="@medias" id="uploadmedia" />
+    </kd:ajaxbrowser>
+  </div>
+</kd:upload-dialog>

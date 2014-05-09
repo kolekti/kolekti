@@ -1,0 +1,194 @@
+
+/* IMPORT D'AUTRES CSS COMPLEMENTAIRES  ***********************************/
+
+
+
+
+/* topic = le contenu central de la page ********************************/
+
+#topic 
+{
+  padding-right:100px;
+  padding-left:12px;
+  font-size: 11pt;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  color:#666666;
+  } 
+
+#topic h1 { 
+  font-size:24pt;
+  color:#666666;
+  border-bottom: 1px solid #202060;  
+ }
+
+#topic h2 { 
+  font-size:16pt;
+  color:#666666;
+  border-bottom: 1px solid #202060;  
+}
+
+#topic h3 { 
+  font-size:14pt;
+  color:#666666;
+  margin-bottom:10px;
+ }
+
+#topic h4 { 
+  font-size:13pt;
+  color:#666666;
+  margin-bottom:10px;
+ }
+
+#topic h5 { 
+  font-size:12pt;
+  color:#666666;
+  margin-bottom:10px;
+ }
+
+#topic h6 { 
+  font-size:10pt;
+  color:#666666;
+  margin-bottom:10px;
+ }
+
+#topic dt { 
+  font-weight:bold;
+ }
+
+#topic p.chemin { 
+  font-style: italic;
+ }
+
+#topic q::before { 
+  display:none;
+ }
+
+#topic .title_num 
+{ 
+  display:none;
+}
+
+#topic table 
+{ 
+  border-collapse:collapse;
+ }
+
+#topic table th
+{ 
+  background-color:#D0D0D0;
+ }
+
+#topic table th,
+#topic table td 
+{ 
+  font-size: 10pt;  
+ }
+
+
+#topic .important 
+{ 
+  background-color: #F0C0C0;
+  border : 1px solid #D08080;
+  padding: 5px 20px 5px 100px;
+  border-left-width:120px;
+}
+#topic div.important:before
+{
+display:block;
+float:left;
+content: url(default_chm.parts/g6.png);
+ }
+
+#topic a 
+{
+  color: #1d5ba2;
+  text-decoration:underline;
+ }
+
+#topic a:hover 
+{	
+  color: #f16600;
+ }
+
+#topic a:visited
+{
+    color: black;
+ }
+
+/* **************************************************** */
+
+/* --- */
+/* WebHelp specific */
+/* --- */
+
+/* body **********************/
+body { 
+  background-color:  #D6DDE5; 
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+
+#topic { 
+ background-color: white;
+
+}
+
+/* div#header ******************/
+
+body #main {
+ left:0px; 
+}
+
+
+
+/* footer */
+
+
+#context ,
+#breadcrumbs {
+    position:absolute;
+    top:29px;
+    right:122px;
+    height:18px;
+    font-size:10pt;
+    color: #4D5A63;
+    font-family: Verdana, Arial, Helvetica, sans-serif;; 
+    font-style: italic;
+    text-align:right;
+    background-color: #D6DDE5;
+}
+
+
+
+
+
+#context span:hover {
+   cursor:pointer;
+   text-decoration:underline;
+}
+
+#context .ctopic { 
+font-weight:bold;
+}
+
+
+
+
+#breadcrumbs .topic{
+    cursor:pointer;
+}
+#breadcrumbs .topic:hover{
+    text-decoration:underline;
+}
+#breadcrumbs .ctopic{
+    font-weight:bold;
+}
+
+
+
+
+
+
+
+
+

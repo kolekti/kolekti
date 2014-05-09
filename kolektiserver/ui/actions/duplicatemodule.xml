@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="duplicatemodule" i:name="[0255]Dupliquer" i:shortname="[0255]Dupliquer"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+   <kd:icon>/_lib/kolekti/icons/icon_copy.png</kd:icon>
+   <kd:dialog i:title="[0256]Dupliquer le module" type="confirm">
+    <div class="selectdir">
+      <input type="hidden" name="url" id="url" value="" />
+      <input type="hidden" name="moddir" id="selectdir" value="" />
+      <p>
+        <span class="wndlabel"><i:text>[0257]Nom du nouveau module</i:text></span>
+        <span class="wndfield">
+          <input type="text" name="modname" id="modname" value=""/>
+        </span>
+      </p>
+    </div>
+    <div class="selectbrowser">
+      <p><i:text>[0258]Sélectionner le dossier destination</i:text></p>
+      <kd:ajaxbrowser id="duplicatemodule" class="selectbrowser" keep_active_items="false">
+         <kd:behavior>
+            <kd:click id="selectdir" action="select" event="select-dir" />
+         </kd:behavior>
+         <kd:tab i:label="[0152]Explorateur" dir="@modules" id="module" />
+      </kd:ajaxbrowser>
+    </div>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="COPY">
+      <kd:header name="Destination" content="[[moddir]]/[[modname]].xht" />
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="resource-duplicate" context="true" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0259]Impossible de dupliquer le module</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

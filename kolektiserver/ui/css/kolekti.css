@@ -1,0 +1,76 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+
+#main {
+/*  top: 3em;*/
+  }
+
+.projecthome .projectlist {
+   margin: 8px 11px;
+   font-weight: bold;
+}
+
+.projecthome #splitcontentleft {
+	width: 430px;
+	top: 25px;
+}
+
+.projecthome #splitcontentright {
+   top: 25px;
+   left: 445px;
+}
+
+.projecthome .orders li:hover {
+   background-color: #F0F0F0;
+}
+.projecthome .itemsactions {
+   cursor: pointer;
+}
+
+.projecthome span.itemaction:hover {
+   color: #AAA;
+}
+
+.projecthome span.owner {
+   margin-right: 3px;
+}
+
+.projecthome .box {
+   position: absolute;
+   left: 0;
+   right: 0;
+   top: 38px;
+   bottom: 10px;
+   overflow: auto;	
+}
+
+.projecthome li.other_author {
+   color: #888;
+}
+
+/* Specify browser stylesheets */
+#browsertab_tramesbrowser_modules span {
+   font-style: italic;
+}
+
+#main-menu li.projectrev {
+   margin: 4px 0 0 10px;
+}

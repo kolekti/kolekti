@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="newtrame" i:name="[0277]Créer une nouvelle trame"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_file.png</kd:icon>
+  <kd:dialog i:title="[0277]Créer une nouvelle trame" type="confirm">
+    <div class="selectdir">
+      <input type="hidden" name="url" id="url" value=""/>
+      <input type="hidden" name="action" value="newtrame" />
+      <input type="hidden" name="trdir" id="selectdir" value="" />
+      <p>
+        <label id="trname"><i:text>[0278]Nom de la trame</i:text></label>
+        <input name="trname" id="trname" />
+      </p>
+      <p>
+        <label id="model"><i:text>[0271]Modèle</i:text></label>
+        <kd:listtemplates name="template" dir="@design/edition/trames_templates" />
+      </p>   
+    </div>
+    <div class="selectbrowser">
+      <p><i:text>[0258]Sélectionner le dossier destination</i:text></p>
+      <kd:ajaxbrowser id="newtrame" class="selectbrowser" keep_active_items="false">
+         <kd:behavior>
+            <kd:click id="selectdir" action="select" event="select-dir" />
+         </kd:behavior>
+         <kd:tab i:label="[0152]Explorateur" dir="@trames" id="trame" />
+      </kd:ajaxbrowser>
+    </div>     
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="COPY" url="design/edition/trames_templates/[[template]]">
+      <kd:header name="Destination" content="[[url]]/[[trdir]]/[[trname]].xml"/>
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0279]Impossible de créer la trame</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

@@ -1,0 +1,98 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Sidebar stylesheet for kolekti apps */
+
+.sidebar {
+  overflow: auto;
+}
+
+
+.sidebar p {
+    margin:0;
+    padding:0;
+}
+
+.sidebarbox {
+  padding:0 6px;
+}
+
+.sidebar .sidebar_section_hide {
+   display: none;
+}
+
+
+.sidebar .sidebar_section_holder {
+   float: left;
+}
+
+
+.sidebar h3 {
+    background-color:#7AAA50;
+    color:white;
+    cursor:pointer;
+    margin:0;
+    font-size:80%;
+    padding:2px;
+}
+
+.sidebar h4 {
+    margin:0;
+    padding:2px;
+}
+
+.sidebar .sidebar_section {
+    /*background-color:#7AAA50;
+    color:white;
+    */
+    padding: 5px 4px 8px 4px;
+}
+
+.sidebar .heading {
+    display:none;
+   font-size:8pt;
+   padding: 0 5px;
+}
+
+.sidebar .heading .case {
+   border-left: 1px solid black;
+   padding: 0 2px;
+}
+
+.sidebar select {
+    width: 170px;
+}
+
+
+.sidebar ul {
+    margin:0;
+    padding:0 0 0 15px;
+    list-style-type: square;
+}
+
+.sidebar li {
+
+}
+
+.sidebar a {
+    color:#303030;
+}
+.sidebar a:hover {
+    background-color:#7AAA50;
+}

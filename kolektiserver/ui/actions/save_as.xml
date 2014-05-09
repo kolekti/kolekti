@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="save_as" i:name="[0285]Enregistrer sous..."
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+   <kd:dialog i:title="[0285]Enregistrer sous..." type="confirm">
+      <div class="saveas">
+         <input type="hidden" name="dirname"/>
+         <input type="hidden" name="extension"/>
+         <p><i:text>[0286]Enregistrer sous</i:text> <input type="text" name="resname"/></p>
+      </div>
+   </kd:dialog>
+   <kd:process>
+      <kd:notify event="save-as" context='true'/>
+      <kd:notify event="svnrevision-change" />
+   </kd:process>
+   <kd:result/>
+</kd:action>

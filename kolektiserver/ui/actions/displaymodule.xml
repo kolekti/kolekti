@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="displaymodule" i:name="[0254]Visualiser" i:shortname="[0254]Visualiser"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+   <kd:icon>/_lib/kolekti/icons/icon_view.png</kd:icon>
+   <kd:process>
+      <kd:notify event="resource-change-view" context="true" />
+   </kd:process>
+</kd:action>

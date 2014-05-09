@@ -1,0 +1,226 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Default stylesheet for kolekti apps */
+
+body {
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+  color:#484848;
+  margin: 0;
+  padding: 0;
+  min-width: 900px;
+}
+
+/* top bar : for links to Home/Admin
+   should also contain login/unserinfo
+   */
+
+#top-menu {
+  background: #40562C;
+  color: #fff;
+  height:1.8em;
+  font-size: 0.8em;
+  padding: 4px 2px 0px 12px;
+}
+
+#top-menu ul {
+  margin: 0;
+  padding: 0;
+}
+
+#top-menu li {
+  float:left;
+  list-style-type:none;
+  margin: 0px 5px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  white-space:nowrap;
+}
+
+#top-menu #account {
+    float:right;
+ }
+
+#top-menu #loggedas {
+    margin-top:1px;
+    float: right;
+    padding-right: 10px;
+}
+
+#top-menu #loggedas em {
+    font-weight: bold;
+}
+
+#top-menu a {
+    color: #fff;
+    padding-right: 8px;
+    font-weight: bold;
+}
+
+#topheader {
+    float:left;
+    padding-left:120px;
+    font-weight:bold;
+    margin-top:1px;
+}
+
+/* headers of pages */
+#header {
+    height: 1.7em;
+    margin: 0;
+    background-color: #7AAA50;
+    color: #f8f8f8;
+    padding: 4px 8px 0px 6px;
+    position: relative;
+}
+#header h1{
+    display:none;
+}
+
+#header a{
+    color:inherit;
+    text-decoration:none;
+}
+
+/* main menu */
+#main-menu {
+  position: absolute;
+  bottom: 0px;
+  left:3px;
+  right: 0;
+}
+
+#main-menu ul {
+  margin: 0;
+  padding: 0;
+}
+
+#main-menu li {
+  float:left;
+  list-style-type:none;
+  margin: 0px 2px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  white-space:nowrap;
+}
+
+#main-menu li a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0;
+  padding: 4px 10px 4px 10px;
+}
+
+#main-menu li a:hover
+{
+  background:#759FCF;
+  color:#fff;
+}
+
+#main-menu li a.selected,
+#main-menu li a.selected:hover
+{
+  background:#fff;
+  color:#555;
+}
+
+/* footer */
+
+#footer {
+   position: absolute;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   text-align: center;
+}
+
+h1, h2, h3, h4
+{
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+  }
+
+h1
+{
+  margin:0;
+  padding:0;
+  font-size: 24px;
+}
+
+
+#main
+{
+  position: absolute;
+  top: 45px;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+}
+
+#main a,
+#content a {
+   color: #1D702D;
+   text-decoration: none;
+}
+
+#main a:hover,
+#content a:hover {
+   color: #B0CC99;
+}
+
+#maincontent {
+	margin: 15px;
+}
+
+#splitcontentleft{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 360px;
+  margin: 4px 10px 10px 10px;
+  }
+
+.translatecontent {
+  position: absolute;
+  left: 0px;
+  top: 45px;
+  right: 0px;
+  bottom: 10px;
+  }
+
+.translatecontent iframe{
+   border: 0pt none;
+   width: 100%;
+   height: 100%;
+  }
+
+
+#splitcontentright {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 375px;
+  right: 0;
+  margin: 4px 10px 10px 10px;
+  }
+
+ul {
+  list-style: none;
+}

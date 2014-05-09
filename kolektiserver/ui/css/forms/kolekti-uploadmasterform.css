@@ -1,0 +1,58 @@
+
+/* Upload master form stylesheet */
+
+.publication_result {
+   padding-left: 5px;
+}
+
+.publication_result a {
+   color: #0D401C;
+   text-decoration: none;
+}
+
+.publication_result a:hover {
+   color: #000;
+}
+
+.publication_result .infos span.label,
+.publication_result .masterlink span.label {
+   font-weight: bold;
+   float: left;
+   width: 200px;
+   border-bottom: 1px dashed #C0C0C0;
+}
+
+.publication_result .publication_log .links {
+   float: right;
+}
+
+.publication_result .publication_log .link {
+    padding: 0 5px;
+    margin: 0 5px;
+    border:1px solid black;
+    background-color:#C0C0C0;
+}
+
+.publication_result .publication_log .success {
+   color: green;
+}
+
+.publication_result .publication_log .error {
+   color: red;
+}
+
+.publication_result .publication_log .details {
+   clear: both;
+}
+
+.publication_result .publication_log  .profile .success,
+.publication_result .publication_log  .profile .error,
+.publication_result .publication_log  .profile .details {
+   margin: 0;
+   padding-left: 30px;
+}
+
+.publication_result .publication_log  .title .success,
+.publication_result .publication_log  .title .error {
+   padding-left: 0;
+}

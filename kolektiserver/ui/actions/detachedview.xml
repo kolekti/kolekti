@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="detachedview" i:name="[0253]Détacher" i:shortname="[0253]Détacher"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_window.png</kd:icon>
+  <kd:process>
+    <kd:notify event="resource-detached-view" context="true" />
+  </kd:process>
+</kd:action>

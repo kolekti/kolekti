@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="editmodule" i:name="[0246]Editer" i:shortname="[0246]Editer"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_edit.png</kd:icon>
+  <kd:process>
+      <kd:notify event="resource-change-view" context="true" >
+         <kd:param name="view" content="moduleeditor" />
+      </kd:notify>
+   </kd:process>
+</kd:action>

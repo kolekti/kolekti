@@ -1,0 +1,220 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Resourceview stylesheet */
+
+/* Resourceview tabs */
+ul.resourceview_tabs, ul.resourceview_actions {
+    margin: 0;
+    padding: 0;
+    z-index:1;
+}
+
+.resourceview_tabs li span.tab {
+    display: block;
+    background-color: #fff;
+    color: #aaa;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0;
+    padding: 4px;
+    padding-top: 0px;
+    border:1px solid #333;
+    -moz-border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    position:relative;
+    top:6px;
+    border-bottom-width:1px;
+    margin-bottom:1px;
+}
+
+.resourceview_tabs li span.resourceview-tab-label {
+    float:left;
+    margin-right:3px;
+}
+.resourceview_tabs li span.resourceview-tab-label img {
+    margin-left:3px;
+    position:relative;
+    top:3px;
+}
+.resourceview_tabs li span.resourceview-tab-close {
+    float:left;
+    border-left-width:0;
+    padding: 4px 2px 3px 0px;
+    margin-right:3px;
+}
+
+.resourceview_tabs li span.tab:hover {
+    background:#759FCF;
+    color:#fff;
+    cursor:pointer;
+}
+
+.resourceview_tabs li.selected span.tab {
+    background:#f8f8f8;
+    color: black;
+    border-color: black;
+    border-bottom-color:#f8f8f8;
+    border-bottom-width:2px;
+    z-index:1;
+}
+
+.resourceview_tabs li span.tab
+{
+  display:none;
+  }
+.resourceview_tabs li.selected span.tab
+{
+  display: block;
+  }
+
+/* Resourceview menu */
+.resourceview_menu
+{
+  display:none;
+  position:absolute;
+  top:30px;
+  left:1px;
+  padding:0;
+  margin:0;
+  z-index:299;
+  border: 1px solid black;
+}
+
+.resourceview_menu li
+{
+  display:block;
+  margin:0;
+  padding:2px 3px;
+  border-top: 1px solid #B0B0B0;
+  background-color:#F0F0F0;
+  cursor:pointer;
+}
+
+.resourceview_menu li:hover {
+  background-color:#FCFCFC;
+}
+
+/* Resourceview content */
+div.contentactions {
+   position: absolute;
+   width:200px;
+   right: 0;
+   top: 0;
+   bottom: 0;
+   background-color: #F0F0F0;
+   margin: 0 0 0 -1px;
+   overflow: auto;
+   border-left: 1px solid #ddd;
+}
+
+ul.resourceview_actions {
+    display: block;
+}
+
+ul.resourceview_actions li {
+    float:right;
+    margin-right: 3px;
+}
+
+.vieweractions {
+   /*height: 20px;*/
+   margin: 0;
+}
+
+span.clientactions {
+   margin: 5px;
+   padding-left: 5px;
+}
+
+span.vieweritemaction {
+   display: block;
+   padding: 1px 10px;
+   margin: 2px 20px 2px 4px;
+   cursor: pointer;
+
+/*
+   border:1px solid #303030;
+   -moz-border-radius:4px;
+   border-radius:4px;
+   background-color: #F8F8F8;
+*/
+
+   border: 1px solid #202020;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+   background-color: #E0E0E0;
+   margin: 5px 20px 0 10px;
+
+}
+
+span.vieweritemaction:hover {
+    background-color: #C0C0C0;
+}
+
+span.vieweritemaction span.progress {
+   background: url('/_lib/kolekti/icons/browser_loading.gif') no-repeat;
+   margin-left: 5px;
+   padding-left: 14px;
+   vertical-align: middle;
+}
+
+div.resourceview_view span.vieweritemaction img {
+}
+
+div.resourceview_view span.vieweritemaction .viewershortnameaction {
+   vertical-align: top;
+   padding: 0 2px;
+}
+
+div.resourceview_view {
+   position: absolute;
+   top: 30px;
+   bottom: 0;
+   right: 0;
+   left: 0;
+   border: 1px solid black;
+}
+
+.resourceview_view div.iframe_container{
+    margin-right:201px;
+}
+
+.resourceview_view iframe{
+    width:100%;
+
+    border-width:0;
+    height:100%;
+}
+
+div.resourceview_view .show_resource img {
+   /*margin-left: 50%;*/
+}
+
+.resourceview_content {
+   z-index: 1;
+}
+
+.disabled {
+   color: #B0B0B0;
+}
+
+.enabled {
+   color: #484848;
+}

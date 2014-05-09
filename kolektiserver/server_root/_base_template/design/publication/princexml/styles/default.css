@@ -1,0 +1,707 @@
+@font-face {
+  font-family: sans-serif;
+}
+
+
+@page {
+  size: a4 portrait;
+  margin: 35mm 18mm 18mm 18mm;
+  padding: 0 0 10mm 0;
+  border-bottom: thin solid black;
+  font: 10pt "DejaVu Sans", sans-serif;
+  
+  @top {
+    margin: 5mm 0 0 0;
+    content: url(default.parts/entete.svg);
+  }
+ }
+
+@page:left {
+ 
+  @bottom-right {
+    vertical-align: top;
+    margin: 1.3mm 0 0 0;
+    font: 8pt "DejaVu Sans", sans-serif;
+    content: string(piedgauche);   
+  }
+  
+  @bottom-left {
+    vertical-align: top;
+    margin: 1mm 0 0 0;
+    font: 9pt "DejaVu Sans", sans-serif;
+    font-weight: bold;
+    content: counter(page);    
+  }
+  
+
+ }
+
+@page:right {
+ 
+  @bottom-left {
+    vertical-align: top;
+    margin: 1.3mm 0 0 0;
+    font: 8pt "DejaVu Sans", sans-serif;
+    content: string(pieddroit);   
+  }
+  
+  @bottom-right {
+    vertical-align: top;
+    margin: 1mm 0 0 0;
+    font: 9pt "DejaVu Sans", sans-serif;
+    font-weight: bold;
+    content: counter(page);    
+  }
+  
+
+ }
+
+@page:first { 
+  border-top: none;
+  border-bottom: none;
+  margin: 0;
+  padding: 0;
+    @top { content: normal }
+    @bottom-right { content: normal }
+}
+
+html { 
+  margin: 0;
+}
+
+body { 
+  margin: 0 0 0 10%;
+  font: 9pt "DejaVu Sans", sans-serif;
+}
+
+.moduleinfo {
+  display: none;
+}
+
+
+h1 { 
+  padding: 0 25px 1.5em 0;
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 800;
+  text-align: center;
+  page-break-before: always;
+  page-break-after: avoid;
+  string-set: chaptertitle content();
+}
+
+.title_num {
+  position: absolute;
+  left: -2px;
+}
+
+h1 .title_num { 
+  position: relative;
+}
+
+p.DeclarationIncorporation { 
+  padding: 0 25px 1.5em 0;
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 800;
+  text-align: center;
+  page-break-before: always;
+}
+
+.TDM .title_num {
+  position: absolute;
+  left: 65px;
+}
+
+h2 {
+  padding: 1.25em 0 1.25em 0;
+  margin: 0;
+  font-size: 11pt;
+  font-weight: 800;
+  page-break-after: avoid;
+}
+
+h3 {
+  font-weight: bold;
+  font-size: 9.5pt;
+  padding: 0.75em 0 0.75em 0;
+  margin: 0;
+  clear: both;
+  page-break-after: avoid;
+}
+
+
+h4 {
+  font-weight: bold;
+  font-size: 8.5pt;
+  padding: 0.75em 0 0.75em 0;
+  margin: 0;
+  clear: both;
+  page-break-after: avoid;
+}
+
+
+h5 {
+  font-weight: normal;
+  font-size: 8.5pt;
+  padding: 0.5em 0 0.5em 0;
+  margin: 0;
+  clear: both;
+}
+
+
+
+p {
+  padding: 3pt 0 3pt 0;
+  margin: 0;
+  font-size: 9pt;
+  text-align: justify;
+}
+
+/* ajouts pour éviter les éléments esseulés en bas de page */
+
+h2 + p {
+  page-break-after: avoid;
+}
+
+
+ul > :first-child {
+  page-break-before: avoid;
+  page-break-after: avoid;
+}
+
+ol > :first-child {
+  page-break-before: avoid;
+  page-break-after: avoid;
+}
+
+
+
+
+p.SautDePageAvant {
+  page-break-before: always;
+}
+
+p.solidaire {
+  page-break-after: avoid;
+}
+
+div.attention {
+  page-break-before: avoid;
+}
+
+
+td p {
+  padding: 0 0 3pt 0;
+  margin: 0;
+  font-size: 9pt;
+  text-align: left;
+}
+
+p.PreventionRisquesADecouper img {
+  text-align: center;
+}
+
+p.logo_PCM {
+position:absolute;
+left:25mm;
+top:5mm;
+}
+
+ol.ListAlpha li { list-style-type: upper-alpha }
+
+
+.cadre_titre {
+  position:absolute;
+  padding: 1em 1em 1em 1em;
+  left:35mm;
+  top:50mm;
+  right:20mm;
+  border: thin solid black;
+  border-radius:10px;
+}
+
+.cadre_titre p.titre_doc {
+  font-size: 35pt;
+  text-align: center;  
+}
+
+.cadre_titre p.soustitre_doc {
+  font-size: 14pt;
+  text-align: center;  
+}
+
+.bloc_materiel {
+  position:absolute;
+  left:35mm;
+  top:125mm;
+  right:20mm;
+}
+
+.bloc_materiel p.nom_materiel {
+  font-size: 20pt;
+  text-align: center;
+  font-weight: bold;
+}
+
+.bloc_materiel p.type_materiel {
+  font-size: 16pt;
+  text-align: center;
+  font-weight: bold; 
+}
+
+.bloc_materiel p.type_materiel_small {
+  font-size: 10pt;
+  text-align: center;
+  font-weight: normal; 
+}
+
+.bloc_materiel p.type_montage {
+  font-size: 16pt;
+  text-align: center;
+  font-weight: normal; 
+}
+
+.bloc_illustration {
+  position:absolute;
+  left:50mm;
+  top:162mm;
+  right:50mm;
+  bottom:70mm;
+}
+
+.bloc_illustration  p{
+  text-align: center;
+}
+
+
+.Reference_notice {
+  position:absolute;
+  left:50mm;
+  top:245mm;
+  right:50mm;
+}
+
+.Reference_notice p {
+  text-align: center; 
+}
+
+
+.bloc_adresse {
+  position:absolute;
+  left:35mm;
+  top:265mm;
+  right:20mm;
+}
+
+.bloc_adresse p {
+  text-align: center; 
+}
+
+
+p.contenu_entete1 {
+    display:none;
+}
+
+
+p.contenu_piedgauche {
+    display:none;
+  string-set: piedgauche content();
+}
+
+p.contenu_pieddroit {
+    display:none;
+  string-set: pieddroit content();
+}
+
+
+p.TDM_titre { 
+  padding: 0 25px 1.5em 0;
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 800;
+  text-align: center;
+  page-break-before: always;
+}
+
+.TDM_niveau_1 {
+  margin: 6pt 0 0 50px;
+  padding: 0;
+  list-style: none;
+  font-weight: bold;
+  page-break-after: avoid;
+}
+
+.TDM_niveau_1 a::after {
+  content: leader('.') target-counter(attr(href), page);
+  font-style: normal;
+}
+
+.TDM_niveau_2 {
+  margin: 1pt 0 0 50px;
+  padding: 0;
+  list-style: none;
+  font-weight: normal;
+}
+
+.TDM_niveau_2 a::after {
+  content: leader('.') target-counter(attr(href), page);
+  font-style: normal;
+}
+
+.TDM_niveau_3 {
+  margin: 1pt 0 0 50px;
+  padding: 0;
+  list-style: none;
+  font-weight: normal;
+  font-style:italic;
+}
+
+.TDM_niveau_3 a::after {
+  content: leader('.') target-counter(attr(href), page);
+  font-style: italic;
+}
+
+.TDM_niveau_4 {
+  display: none;
+}
+
+.TDM_niveau_5 {
+  display: none;
+}
+
+p.legende {
+  font-style: italic;
+  page-break-before: avoid;
+}
+
+li + p 	{
+  padding-top: 4pt;
+}
+
+
+div.danger {
+  position: relative;
+  left: -62px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background:url(default.parts/danger.png) no-repeat;
+}
+
+div.danger p {
+  border : 2px solid black;
+  border-radius: 5px;
+  color: #e60000;
+  font-weight: bold;
+  margin-left: 62px;
+  padding: 10px;
+  margin-right: -62px;
+  orphans: 5;
+  widows: 5;
+}
+
+div.danger > :nth-child(2) {
+  page-break-before: avoid;
+}
+
+div.danger > :nth-child(3) {
+  page-break-before: avoid;
+}
+
+
+div.attention {
+  position: relative;
+  left: -62px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background:url(default.parts/attention.png) no-repeat;
+}
+
+div.attention p {
+  border: 1px solid grey;
+  border-radius: 5px;
+  color: #e60000;
+  margin-left: 62px;
+  padding: 12px;
+  margin-right: -62px;
+  orphans: 5;
+  widows: 5;
+}
+
+div.attention > :nth-child(2) {
+  page-break-before: avoid;
+}
+
+div.attention > :nth-child(3) {
+  page-break-before: avoid;
+}
+
+
+
+a { text-decoration: none; color: black }
+
+a.voirpage { 
+  text-decoration: none; 
+  color: black;
+  content: " " target-counter(attr(href), page);
+}
+
+div.attention a.voirpage { 
+  color: #e60000;
+}
+
+div.danger a.voirpage { 
+  color: #e60000;
+}
+
+
+div.module ul, div.module ol { 
+  margin: 0;
+  padding: 0;
+}
+
+div.module ul > :first-child { 
+  page-break-before: avoid;
+}
+
+div.module ul > :last-child { 
+  margin-left: 13pt;
+  page-break-before: avoid;
+}
+
+div.module ol > :first-child { 
+  page-break-before: avoid;
+}
+
+div.module ol > :last-child { 
+  margin-left: 17pt;
+  page-break-before: avoid;
+}
+
+div.module ul li { 
+  padding: 0 0 4pt 0;
+  margin-left: 13pt;
+  text-align: justify;
+}
+
+div.module ul li ul > :first-child{ 
+  padding: 4pt 0 4pt 0;
+}
+
+div.module ol li { 
+  padding: 2.5pt 0 2.5pt 0;
+  margin-left: 17pt;
+  text-align: justify;
+}
+
+
+
+div.toc ul, div.toc ul li {
+  margin: 2pt 0 0 0;
+  padding: 0;
+  list-style: none;
+  font-weight: bold;
+}
+
+
+div.toc ul li ul {
+  margin: 0;
+  padding: 0;
+}
+
+
+div.toc ul li ul li {
+  list-style: none;
+  font-weight: normal;
+  margin-bottom: 1pt;
+}
+
+
+dt {
+  margin: 5mm 0 0 0;
+}
+
+dd {
+  margin: 0 0 3pt 0;
+  text-align: justify;
+  page-break-before: avoid;
+}
+
+dd ul > li:first-of-type { 
+  margin-top: 1mm;
+}
+
+dd li { 
+  line-height: 3.2mm;
+  padding: 0;
+  margin: 0;
+  text-align: justify;
+  page-break-before: avoid;
+}
+  
+dl.CauseSolution { 
+  padding: 0;
+  margin: 0 0 1mm 0;
+  text-align: justify;
+}
+
+dl.CauseSolution dt  { 
+  padding: 0 0.6em 0 0;
+  margin: 0;
+  text-align: justify;
+  font-weight: bold;
+  font-size: 7pt;
+  float: left;
+}
+
+dl.CauseSolution dd  { 
+  padding: 0;
+  margin: 0 0 1mm 0;
+  text-align: justify;
+  font-size: 7pt;
+  font-weight: normal;
+}
+
+
+p.pleinelargeur { 
+width: 176mm;
+margin-left: -17mm;
+}
+
+p + img  { 
+text-align: center;
+}
+
+
+table {
+  margin: 2mm 0 2mm 0;
+  border-style: solid;
+  border-spacing:0px;
+  border-width:	0.2px;
+}
+
+table thead td {
+  border-style: solid;
+  border-spacing:0px;
+  border-width:	0.2px;
+  background-color : #dbe2e3;
+  font: 8pt "DejaVu Sans", sans-serif;
+  padding: 1.2mm 4mm 1.2mm 1.5mm;
+  margin: 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: bold;
+}
+
+table tbody td {
+  border-style: solid;
+  border-spacing:0px;
+  border-width:	0.2px;
+  font: 8pt "DejaVu Sans", sans-serif;
+  padding: 1.2mm 4mm 1.2mm 1.5mm;
+  margin: 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: normal;
+}
+
+
+
+table tbody td p {
+  font: 8pt "DejaVu Sans", sans-serif;
+  padding: 0 0 1.2mm 0;
+  margin: 0;
+}
+
+table tbody td > p:last-of-type {
+  padding: 0;
+}
+
+	.SansBordure {
+  border-style: none;
+
+}
+
+table.SansBordure {
+  margin: 2mm 0 2mm 0;
+  border-style: none;
+}
+
+table.SansBordure tbody td {
+  border-style: none;
+}
+
+
+table.CausesIncidentsRemedes {
+  position: relative;
+  left: -17mm;
+  border-style: solid;
+  border-spacing:0px;
+}
+
+table.CausesIncidentsRemedes thead td {
+  border-style: solid;
+  border-spacing:0px;
+  background-color : #dbe2e3;
+  font: 6pt "DejaVu Sans", sans-serif;
+  padding: 1mm 1mm 1mm 1mm;
+  margin: 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: bold;
+}
+
+table.CausesIncidentsRemedes tbody td {
+  border-style: solid;
+  border-spacing:0px;
+  font: 6pt "DejaVu Sans", sans-serif;
+  padding: 1mm 1mm 1mm 1mm;
+  margin: 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: normal;
+}
+
+table.CausesIncidentsRemedes tbody td.bullet {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table.CausesIncidentsRemedes tbody td p {
+  font: 6pt "DejaVu Sans", sans-serif;
+  padding: 0 0 1mm 0;
+  margin: 0;
+}
+
+table.CausesIncidentsRemedes tbody td > p:last-of-type {
+  padding: 0;
+}
+
+
+/* footnotes */
+
+.footnote {
+  display: none;                   
+
+  display: prince-footnote;        /* prince-specific rules */
+  position: footnote;
+  footnote-style-position: inside;
+
+  counter-increment: footnote;
+  margin-left: 1em;
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+.footnote::footnote-call {
+  vertical-align: super;
+  font-size: 80%;
+}
+
+.footnote::footnote-marker {
+  vertical-align: super;
+  padding-right: 0.4em;
+}
+
+
+

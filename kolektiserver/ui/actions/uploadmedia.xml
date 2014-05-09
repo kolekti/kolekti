@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="uploadmedia" i:name="[0297]Transférer un média"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_upload.png</kd:icon>
+  <kd:dialog i:title="[0297]Transférer un média" type="close">
+   <kd:upload-form id="uploadmedia">
+      <kd:param name="form" content="/_lib/app/forms/uploadmedia-form.xml" />
+   </kd:upload-form>
+  </kd:dialog>
+</kd:action>

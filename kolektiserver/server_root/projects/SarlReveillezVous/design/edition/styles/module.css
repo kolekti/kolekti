@@ -1,0 +1,17 @@
+body {
+  font-family: ArialNarrow, Arial, Helvetica; 
+  width: 13cm;
+  text-align: justify;
+}
+
+.attention {
+  background-color:#FFCC66;
+}
+
+var { 
+  border: 1px solid red;
+}
+
+*[class~="="] {border:1px solid blue}
+
+

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<properties>
+  <prop name="PageRange" value="" type="string"/>
+  <prop name="Selection" value="" type="any"/>
+  <prop name="UseLosslessCompression" value="false" type="boolean"/>
+  <!-- Quality possible values: 1-100 -->
+  <prop name="Quality" value="90" type="int"/>
+  <prop name="ReduceImageResolution" value="false" type="boolean"/>
+  <!-- MaxImageResolution possible values: 75, 150, 300, 600, 1200 -->
+  <prop name="MaxImageResolution" value="300" type="int"/>
+  <!-- SelectPdfVersion possible values: 0 = PDF 1.4 (default selection), 1 = PDF/A-1 (ISO 19005-1:2005) -->
+  <prop name="SelectPdfVersion" value="0" type="int"/>
+  <prop name="UseTaggedPDF" value="false" type="boolean"/>
+  <prop name="ExportFormFields" value="true" type="boolean"/>
+  <!-- FormsType possible values: 0= Specifies that forms type FDF is used, 1= Specifies that forms type PDF is used, 2= Specifies that forms type HTML is used, 3= Specifies that forms type XML is used -->
+  <prop name="FormsType" value="0" type="int"/>
+  <prop name="AllowDuplicateFieldNames" value="false" type="boolean"/>
+  <prop name="ExportBookmarks" value="true" type="boolean"/>
+  <prop name="ExportNotes" value="false" type="boolean"/>
+  <prop name="ExportNotesPages" value="false" type="boolean"/>
+  <prop name="IsSkipEmptyPages" value="false" type="boolean"/>
+  <prop name="EmbedStandardFonts" value="false" type="boolean"/>
+  <prop name="IsAddStream" value="false" type="boolean"/>
+  <prop name="Watermark" value="" type="any"/>
+  <!-- InitialView possible values: 0= Select the default viewer mode, neither outlines or thumbnails, 1= The document is opened with outline pane opened, 2= The document is opened with thumbnail pane opened -->
+  <prop name="InitialView" value="0" type="int"/>
+  <prop name="InitialPage" value="1" type="int"/>
+  <!-- Magnification possible values: 0= Opens with default zoom magnification, 1= Opens magnified to fit the entire page within the window, 2= Opens magnified to fit the entire page width within the window, 3= Open magnified to fit the entire width of its boundig box within the window (cuts out margins), 4= Opens with the zoom level specified in the Zoom property -->
+  <prop name="Magnification" value="0" type="int"/>
+  <prop name="Zoom" value="100" type="int"/>
+  <!-- PageLayout possible values: 0= Display the pages according to the reader configuration, 1= Display one page at a time, 2= Display the pages in one column, 3= Display the pages in two columns odd pages on the right, to have the odd pages on the left the FirstPageOnLeft property should be used as well -->
+  <prop name="PageLayout" value="0" type="int"/>
+  <prop name="FirstPageOnLeft" value="false" type="boolean"/>
+  <prop name="ResizeWindowToInitialPage" value="false" type="boolean"/>
+  <prop name="CenterWindow" value="false" type="boolean"/>
+  <prop name="OpenInFullScreenMode" value="false" type="boolean"/>
+  <prop name="DisplayPDFDocumentTitle" value="true" type="boolean"/>
+  <prop name="HideViewerMenubar" value="false" type="boolean"/>
+  <prop name="HideViewerToolbar" value="false" type="boolean"/>
+  <prop name="HideViewerWindowControls" value="false" type="boolean"/>
+  <prop name="UseTransitionEffects" value="true" type="boolean"/>
+  <!-- OpenBookmarkLevels possible values: -1: all bookmark levels are opened, 1 – 10: indicate a bookmark level (from 1 to 10) -->
+  <prop name="OpenBookmarkLevels" value="-1" type="int"/>
+  <prop name="ExportBookmarksToPDFDestination" value="false" type="boolean"/>
+  <prop name="ConvertOOoTargetToPDFTarget" value="false" type="boolean"/>
+  <prop name="ExportLinksRelativeFsys" value="false" type="boolean"/>
+  <!-- PDFViewSelection possible values: 0 = Specifies that the PDF will be exported with all the links external to the document treated as URI. This is the Default, 1 = Specifies that the PDF will be exported in order to be viewed through a PDF reader application only. Valid only if not exporting to PDF/A-1 (e.g. SelectPdfVersion not set to 1), 2 = Specifies that the PDF will be exported in order to be viewed through an Internet browser, using the PDF plug-in provided with it. The bookmark of the URI will be rendered compatible with the target bookmark generated with OOo PDF Export feature (see ExportBookmarksToPDFDestination, below) -->
+  <prop name="PDFViewSelection" value="0" type="int"/>
+  <prop name="EncryptFile" value="false" type="boolean"/>
+  <prop name="DocumentOpenPassword" value="" type="string"/>
+  <prop name="RestrictPermissions" value="false" type="boolean"/>
+  <!-- PermissionPassword possible values: 0 = The document cannot be printed, 1 = The document can be printed at low resolution only, 2 = The document can be printed at maximum resolution -->
+  <prop name="PermissionPassword" value="2" type="int"/>
+  <!-- Changes possible values: 0 = The document cannot be changed, 1 = Inserting deleting and rotating pages is allowed, 2 = Filling of form field is allowed, 3 = Both filling of form field and commenting is allowed, 4 = All the changes of the previous selections are permitted, with the only exclusion of page extraction (copy) -->
+  <prop name="Changes" value="4" type="int"/>
+  <prop name="EnableCopyingOfContent" value="true" type="boolean"/>
+  <prop name="EnableTextAccessForAccessibilityTools" value="true" type="boolean"/>
+</properties>
+

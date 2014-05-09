@@ -1,0 +1,144 @@
+ }
+
+html {
+  margin: 0;
+}
+
+body {
+  margin: 0 10% 0 10%;
+  font: 9pt "DejaVu Sans", sans-serif;
+}
+
+
+h1 {
+  padding: 2.5em 0 2em 0;
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 800;
+}
+
+h2 {
+  padding: 2em 0 2em 0;
+  margin: 0;
+  font-size: 11pt;
+  font-weight: 800;
+  page-break-after: avoid;
+}
+
+h3 {
+  font-weight: bold;
+  font-size: 9.5pt;
+  padding: 1em 0 1em 0;
+  margin: 0;
+  clear: both;
+}
+
+p {
+  padding: 3pt 0 3pt 0;
+  margin: 0;
+  font-size: 9pt;
+  text-align: justify;
+}
+
+li + p 	{
+  padding-top: 4pt;
+}
+
+
+
+
+a { text-decoration: none; color: black }
+
+a.voirpage {
+  text-decoration: none;
+  color: black;
+  content: " " target-counter(attr(href), page);
+}
+
+
+ul, ol {
+  margin: 0;
+  padding: 0;
+}
+
+ul > :first-child{
+  page-break-before: avoid;
+}
+
+ul > :last-child{
+  margin-left: 13pt;
+  page-break-before: avoid;
+}
+
+ol > :first-child{
+  page-break-before: avoid;
+}
+
+ol > :last-child{
+  margin-left: 17pt;
+  page-break-before: avoid;
+}
+
+ul li {
+  padding: 0 0 4pt 0;
+  margin-left: 13pt;
+  text-align: justify;
+}
+
+ol li {
+  padding: 2.5pt 0 2.5pt 0;
+  margin-left: 17pt;
+  text-align: justify;
+}
+
+
+
+dt {
+  margin: 5mm 0 0 0;
+}
+
+dd {
+  margin: 0 0 3pt 0;
+  text-align: justify;
+  page-break-before: avoid;
+}
+
+dd ul > li:first-of-type {
+  margin-top: 1mm;
+}
+
+dd li {
+  line-height: 3.2mm;
+  padding: 0;
+  margin: 0;
+  text-align: justify;
+  page-break-before: avoid;
+}
+
+
+/* footnotes */
+
+.footnote {
+  display: none;                   /* default rule */
+
+  position: footnote;
+  footnote-style-position: inside;
+
+  counter-increment: footnote;
+  margin-left: 1em;
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+.footnote::footnote-call {
+  vertical-align: super;
+  font-size: 80%;
+}
+
+.footnote::footnote-marker {
+  vertical-align: super;
+  padding-right: 0.4em;
+}
+
+
+

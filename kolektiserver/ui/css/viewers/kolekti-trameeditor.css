@@ -1,0 +1,135 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+/* Trame editor styles */
+.tramesview {
+    cursor:pointer;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 200px;
+    overflow: auto;
+}
+
+.tramesview .trame{
+	margin: 10px;
+	border: 1px solid #C0C0C0;
+}
+
+.tramesview .section {
+    margin:3px 0 3px 10px;
+    border-left:1px solid #7AAA50; 
+    border-bottom:1px solid #7AAA50; 
+}
+
+
+.tramesview .title {
+    font-weight:bold;
+    background-color: #7AAA50;
+    color:white;
+}
+
+.tramesview p {
+    margin: 0;
+    padding:2px 0;
+}
+.tramesview p.title {
+    padding-left:10px;
+}
+.tramesview .tplaceholder,
+.tramesview .module {
+    margin-left:10px;
+    height:Opx;
+    
+}
+
+p.title span.ui-icon {
+   float: left;
+}
+
+p.title span.label {
+   padding-left: 2px;
+}
+
+.hide_item {
+   display: none;
+}
+
+.tramesview .ui-droppable {
+    padding: 4px 0;
+}
+
+.tramesview .ui-droppable div {
+   height: 2px
+}
+
+.tramesview .droppable-hover {
+   background: url('/_lib/kolekti/icons/right-arrow.png') no-repeat left;
+}
+
+.tramesview .droppable-active div,
+.tramesview .droppable-hover div {
+   height: 2px
+}
+
+.tramesview .droppable-active div {
+   background-color: #A0FFA0;
+}
+
+.tramesview .droppable-hover div {
+   background-color: #40562C;
+}
+
+li.ui-draggable-dragging {
+    list-style: none;
+}
+
+.trames_add_module {
+    display:none;
+}
+
+.tramesview .module.ui-draggable-dragging,
+.tramesview .section p.title.ui-draggable-dragging {
+   margin-left: 22px;
+   padding-right: 10px;
+}
+
+.tramesview .module.ui-draggable-dragging {
+   background-color: #F0F0F0;
+}
+
+.tramesview .section p.title.ui-draggable-dragging {
+   background-color: #58882E;
+}
+
+.tramesview p.title.ui-draggable-dragging span.ui-icon {
+   visibility: hidden;
+}
+
+.tramesview .module .modactions {
+   float: right;
+   margin-right: 20px;
+}
+
+.tramesview .module .mod .modvalid {
+   padding-right: 2px;
+}
+

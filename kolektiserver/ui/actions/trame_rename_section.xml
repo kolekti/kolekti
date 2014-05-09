@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="trame_rename_section" i:name="[0293]Renommer la section"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+   <kd:dialog i:title="[0293]Renommer la section" type="confirm">
+      <label><i:text>[0294]Nouveau nom</i:text>:</label>
+      <input type="text" value="" name="newName"/>
+   </kd:dialog>
+   <kd:process>
+      <kd:notify event="trame-rename-section" context='true'/>
+   </kd:process>
+</kd:action>

@@ -1,0 +1,83 @@
+Publication avec kolekti 0.6 :
+
+POST sur le lancement
+parametres :
+  * trame
+  * [profile]
+  * pubscripts
+  * pub_directory
+  * do_pivot (TODO : supprimer)
+  * do_env
+  * filter_env : expression de filtrage àppliquer à l'enveloppe ( crit = val1,val2,val3 ou crit \= val1,val2,val3)
+  * langs_env (TODO : a ajouter)
+  * no_pub
+
+
+Processus de publication d'une trame
+
+dans PublishController > genPOST :
+
+* récupération des paramatres
+* instanciation d'un objet TramePublisher
+* pour chaque profil :
+  - appel de la méthode publisher.publish(profil)
+
+
+module PublishController 
+* Classe PublishController : genPOST 
+* Classe Publisher  : publication d'une Trame
+* Classe TramePublisher  : publication d'une Trame
+* Classe MasterPublisher : publication d'un Master Traduit
+
+* Classe PublisherPrefixResolver permet de résoudre les url en project:// utilisés dans les xslt
+* Classe PublisherError classe d'exception utilisée par les objets Publisher, ces exceptions ne doivent pas sortir de ce module
+* Classe PublisherExtensions : extensions xslt
+  namespace : kolekti:extensions:functions:publication
+  La classe est instanciée par un Publisher
+  - criterias : retourne le xml décrivant les critères dans le profil utilisé
+  - variable  : retourne une instance xml d'un fichier définition des variables
+  - solve_resid : retourne une url du type "project://" pour les resid kolekti
+
+
+Phase de la publication d'une trame (pour chaque profil):
+
+* assemblage
+
+-> si do_env -> generation de l'enveloppe
+  * filtrage de l'enveloppe
+  * substitutions : 
+     - pour les éléments <var class=""> -> intégrer le contenu de la variable dans l'élement var et conserver la balise et l'attribut.
+  * copie des élements de l'enveloppe :
+    * master_[lg].xml
+    pour chaque langue cible :
+      * master_[lgcible].xml (qui est une copie de master[lg], changer les attributs de langue sur le body)
+       - pour les reférences au média remplacer les repertoires [lg] par la langue de publication
+
+    * media : ne copier que les fichiers référencés dans le master, reproduire l'arborescence 
+      * répertoire [lg] : à dupliquer dans toutes les langues cibles, les images contenues doivent etre estampillés (To Be Translated) avec PIL
+      
+  * créer un zip 
+
+-> si no_pub=0 :
+
+  * filtrage des conditions
+  * substitution des variables
+  * copie des medias
+  * appel des scripts(plugins)
+
+
+
+
+
+Publication d'une enveloppe
+
+TODO
+
+Dossiers de publication :
+
+- tout est dans le répertoire "publications" de la base
+- les Onglets Trames, Pivots, Enveloppes ne sont que des vues différentes de ces dossiers
+- le dossier de publication peut etre précisé dans le lancement, sinon création d'un dossier avec date/heure
+  - chaque profil utilisé dans un lancement provoque la création d'un sous répertoire du nom du Profil
+    - a chaque publication est créé un répertoire (timestamp).
+    

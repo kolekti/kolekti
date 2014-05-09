@@ -1,0 +1,1182 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: FAUCHEUR <guillaume@exselt.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# ------------
+# python files
+# ------------
+# Account controller
+msgid "[0001]Erreur lors de l'enregistrement"
+msgstr "Error during the record process."
+
+msgid "[0002]Les mots de passe ne correspondent pas"
+msgstr "Passwords are not identical."
+
+msgid "[0003]Erreur lors du changement de mot de passe"
+msgstr "Error while changing password."
+
+# Admin controller
+msgid "[0004]Echec de la création du projet."
+msgstr "Failed creating project."
+
+msgid "[0005]Echec de la mise à jour du projet."
+msgstr "Failed updating project."
+
+msgid "[0006]Erreur lors de la création de l'archive."
+msgstr "Failed creating archive."
+
+msgid "[0007]Création de l'archive réussie."
+msgstr "Success creating archive."
+
+msgid "[0008]Régénération des cas d'usage réussi."
+msgstr "Success regenerating usecases."
+
+msgid "[0009]Erreur lors de la régénération des cas d'usage."
+msgstr "Error during usecase regeneration."
+
+msgid "[0010]Echec lors de la création de l'utilisateur"
+msgstr "Failed creating user."
+
+msgid "[0011]Login déjà utilisé"
+msgstr "Login already used."
+
+# Translate controller
+msgid "[0012]Echec lors de la lecture de l'enveloppe"
+msgstr "Failed reading envelope."
+
+msgid "[0013]Impossible de lire la trame %(trame)s"
+msgstr "Unable to read document map %(trame)s."
+
+# Upload controller
+msgid "[0014]Import du fichier %(filename)s réalisé avec succès."
+msgstr "Import of file %(filename)s successful."
+
+msgid "[0015]Echec lors de l'import du fichier %(filename)s."
+msgstr "Failed importing file %(filename)s."
+
+# Design model
+msgid "[0016]Erreur: le fichier %(filename)s n'est pas une archive zip."
+msgstr "Error: the file %(filename)s is not a zip archive."
+
+msgid "[0017]Erreur: l'archive %(filename)s n'est pas conforme."
+msgstr "Error: %(filename)s archive is malformed."
+
+msgid "[0018]Styles"
+msgstr "Styles"
+
+# Master model
+msgid "[0019]Le fichier %(filename)s n'est pas une enveloppe."
+msgstr "Error: File %(filename)s is not an envelope."
+
+msgid "[0020]Enveloppes"
+msgstr "Envelopes"
+
+# Media model
+msgid "[0021]Medias"
+msgstr "Medias"
+
+# Module model
+msgid "[0022]Modules"
+msgstr "Modules"
+
+msgid "[0023]Pas de note"
+msgstr "Empty note"
+
+msgid "[0024]Erreur!"
+msgstr "Error!"
+
+# Publication model
+msgid "[0025]Publications"
+msgstr "Publications"
+
+# Publish model
+msgid "[0026]Impossible de trouver le fichier tableur: %(sheet)s"
+msgstr "Unable to read sheet file %(sheet)s."
+
+# Sheet model
+msgid "[0027]Erreur: le fichier %(filename)s n'est pas un tableur OpenOffice."
+msgstr "Error: file %(filename)s is not an OpenOffice sheet."
+
+msgid "[0028]Tableurs"
+msgstr "Sheets"
+
+# Trame model
+msgid "[0029]Trames"
+msgstr "Document maps"
+
+# SVNProject IO
+msgid "[0030]Initialisation du projet Kolekti"
+msgstr "Initialising Kolekti project"
+
+# SVN IO
+msgid "[0031]Création du dossier"
+msgstr "Creating directory"
+
+# publication
+msgid "[0032]Impossible de trouver le module : %(resid)s"
+msgstr "Unable to read module : %(resid)s"
+
+msgid "[0033]Erreur lors de la lecture du module : %(resid)s %(error)s"
+msgstr "Error reading module : %(resid)s %(error)s"
+
+msgid "[0034]Une erreur est survenue au cours de l'assemblage"
+msgstr "An error occured during assembly."
+
+msgid "[0035]Dossier de publication créé"
+msgstr "Publication directory created."
+
+msgid "[0036]Une erreur est survenue au cours de l'ajout des critères"
+msgstr "An error occured while adding criterias."
+
+msgid "[0037]Assemblage terminé!"
+msgstr "Assembly finished!"
+
+msgid "[0038]Une erreur est survenue au cours du filtrage"
+msgstr "An error occured while filtering."
+
+msgid "[0039]Filtrage des conditions terminé!"
+msgstr "Filtering conditions done!"
+
+msgid "[0040]Une erreur est survenue au cours de la substitution des variables"
+msgstr "An error occured during variables substitution."
+
+msgid "[0041]Substitution des variables terminée!"
+msgstr "Variables substitution done!"
+
+msgid "[0042]Une erreur est survenue au cours du traitement des liens"
+msgstr "An error occured while processing links."
+
+msgid "[0043]Résolution des liens terminée!"
+msgstr "Links processing done!"
+
+msgid "[0044]Une erreur est survenue lors de la génération de la table des matière"
+msgstr "An error occured while generating table of contents."
+
+msgid "[0045]Génération de la table des matières terminée!"
+msgstr "Table of contents generation done!"
+
+msgid "[0046]Une erreur est survenue lors de la génération de l'index"
+msgstr "An error occured while generating index."
+
+msgid "[0047]Génération de l'index terminée!"
+msgstr "Index generation done!"
+
+msgid "[0048]Une erreur est survenue lors de la génération de la table des modifications"
+msgstr "An error occured while generating modifications table."
+
+msgid "[0049]Génération de la table des modifications terminée!"
+msgstr "Modifications table generation done!"
+
+msgid "[0050]Echec lors de la copie du média %(src)s"
+msgstr "Failed copying media %(src)s"
+
+msgid "[0051]Copie des médias terminée!"
+msgstr "Medias copy done!"
+
+msgid "[0052]Erreur lors de la copie des ressources"
+msgstr "Error copying resources."
+
+msgid "[0053]Attention %(warn)s"
+msgstr "Warning %(warn)s"
+
+msgid "[0054]Erreur lors de l'exécution de la commande : %(cmd)s (%(error)s)"
+msgstr "Error executing command : %(cmd)s (%(error)s)"
+
+msgid "[0055]Exécution du script %(label)s réussie"
+msgstr "Script %(label)s execution success."
+
+msgid "[0056]Impossible de charger le script %(label)s"
+msgstr "Unable to load script %(label)s."
+
+msgid "[0057]Exécution du script %(label)s réussie"
+msgstr "Script %(label)s execution success."
+
+msgid "[0058]Impossible d'exécuter le script %(label)s"
+msgstr "Unable to execute script %(label)s"
+
+msgid "[0059]Une erreur inconnue s'est produite pendant le processus de publication"
+msgstr "An unknown error occured during the publication process."
+
+msgid "[0060]Génération de l'enveloppe"
+msgstr "Generating envelope"
+
+msgid "[0061]Génération de l'enveloppe terminée"
+msgstr "Generating envelope done"
+
+msgid "[0062]Erreur lors de la génération de l'enveloppe"
+msgstr "Error while generating envelope"
+
+msgid "[0063]Une erreur est survenue lors de la récupération du document enveloppe"
+msgstr "An error occured fetching envelope document."
+
+# comesweb
+msgid "[0064]Problème lors de la création de l'archive zip"
+msgstr "Failed creating zip archive"
+
+# epub
+msgid "[0065]Problème lors de la création de l'epub"
+msgstr "Failed creating epub"
+
+msgid "[0066]Impossible de copier l'illustration %(media)s"
+msgstr "Unable to copy illustration %(media)s"
+
+# odt
+msgid "[0067][Odt][%(theme)s]Erreur lors de la génération de la page de couverture %(label)s"
+msgstr "[Odt][%(theme)s]Error while generating cover page %(label)s"
+
+msgid "[0068][Odt][%(theme)s]Erreur lors du filtrage de %(label)s"
+msgstr "[Odt][%(theme)s]Error while filtering %(label)s"
+
+msgid "[0069][Odt][%(theme)s]Erreur lors de la copie de l'illustration %(media)s dans le fichier odt %(label)s"
+msgstr "[Odt][%(theme)s]Error copying illustration %(media)s into the odt file %(label)s"
+
+msgid "[0070][Odt][%(theme)s]Erreur lors de la copie des illustrations dans le fichier odt %(label)s"
+msgstr "[Odt][%(theme)s]Error copying illustrations into the odt file %(label)s"
+
+msgid "[0071][Odt][%(theme)s]Erreur lors de la copie des métadonnées de %(label)s"
+msgstr "[Odt][%(theme)s]Error copying metadatas from %(label)s"
+
+msgid "[0072][Odt][%(theme)s]Erreur lors de la génération du contenu de l'odt %(label)s"
+msgstr "[Odt][%(theme)s]Error generating odt content %(label)s"
+
+msgid "[0073][Odt][%(theme)s]Erreur lors de la génération du fichier pdf %(label)s"
+msgstr "[Odt][%(theme)s]Error generating pdf %(label)s file"
+
+#princexmlcsv
+msgid "[0074]Erreur lors de l'exécution de la commande : %(cmd)s (%(error)s)"
+msgstr "Error while executing command : %(cmd)s (%(error)s)"
+
+msgid "[0075]Erreur lors de la génération du fichier csv : %(filename)s.csv"
+msgstr "Error while generating csv file : %(filename)s.csv"
+
+# WWWTramesEditor view
+msgid "[0076]Table des matières"
+msgstr "Table of contents"
+
+msgid "[0077]Index"
+msgstr "Index"
+
+# ---------
+# xsl files
+# ---------
+# Account view
+msgid "[0078]Mon Compte"
+msgstr "My account"
+
+msgid "[0079]Nom"
+msgstr "Name"
+
+msgid "[0080]Prénom"
+msgstr "Firstname"
+
+msgid "[0081]Courriel"
+msgstr "Email"
+
+msgid "[0082]Organisation"
+msgstr "Organization"
+
+msgid "[0083]Enregistrer"
+msgstr "Save"
+
+msgid "[0084]Identifiant"
+msgstr "Login"
+
+msgid "[0085]Mot de passe"
+msgstr "Password"
+
+msgid "[0086]Mot de passe (confirmation)"
+msgstr "Password (confirmation)"
+
+msgid "[0087]Mes wikis"
+msgstr "My wikis"
+
+msgid "[0088]Ajouter une source..."
+msgstr "Add a source..."
+
+msgid "[0089]Nouvelle source wiki"
+msgstr "New wiki source"
+
+msgid "[0090]Wiki source"
+msgstr "Source wiki"
+
+msgid "[0091]Nom de la source"
+msgstr "Source name"
+
+msgid "[0092]Connecteur"
+msgstr "Connector"
+
+msgid "[0093]Adresse du serveur"
+msgstr "Server address"
+
+msgid "[0094]Login"
+msgstr "Login"
+
+msgid "[0095]Supprimer"
+msgstr "Delete"
+
+msgid "[0096]Url"
+msgstr "Url"
+
+msgid "[0097]User"
+msgstr "User"
+
+msgid "[0098]Modifier"
+msgstr "Modify"
+
+msgid "[0099]Informations générales"
+msgstr "General informations"
+
+msgid "[0100]Identification"
+msgstr "Identification"
+
+msgid "[0101]Wikis"
+msgstr "Wikis"
+
+# Admin forms
+msgid "[0102]Modifications enregistrées"
+msgstr "Modifications saved"
+
+# Admin view
+msgid "[0103]Chargement..."
+msgstr "Loading..."
+
+msgid "[0104]Administration"
+msgstr "Administration"
+
+msgid "[0105]Projets"
+msgstr "Projects"
+
+msgid "[0106]Utilisateurs"
+msgstr "Users"
+
+msgid "[0107]Langue de travail"
+msgstr "Working language"
+
+msgid "[0108]Répertoire"
+msgstr "Directory"
+
+msgid "[0109]Description"
+msgstr "Description"
+
+msgid "[0110]Avec les projets sélectionnés"
+msgstr "Using selected project"
+
+msgid "[0111]Créer une archive"
+msgstr "Create archive"
+
+msgid "[0112]Nouveau projet"
+msgstr "New project"
+
+msgid "[0113]Projet"
+msgstr "Project"
+
+msgid "[0114]Paramètres"
+msgstr "Parameters"
+
+msgid "[0115]Scripts de publication"
+msgstr "Publication scripts"
+
+msgid "[0116]Maintenance"
+msgstr "Routine maintenance"
+
+msgid "[0117]Dossier"
+msgstr "Directory"
+
+msgid "[0118]Retirer"
+msgstr "Remove"
+
+msgid "[0119]Ajouter un utilisateur"
+msgstr "Add a user"
+
+msgid "[0120]Ajouter"
+msgstr "Add"
+
+msgid "[0121]Archiver le projet"
+msgstr "Archive project"
+
+msgid "[0122]Exécuter"
+msgstr "Execute"
+
+msgid "[0123]Télécharger l'archive"
+msgstr "Download archive"
+
+msgid "[0124]Régénérer les cas d'usage"
+msgstr "Regenerate usecases"
+
+msgid "[0125]Nouvel utilisateur"
+msgstr "New user"
+
+msgid "[0126]Utilisateur"
+msgstr "User"
+
+msgid "[0127]Administrateur"
+msgstr "Administrator"
+
+msgid "[0128]Traducteur"
+msgstr "Translator"
+
+msgid "[0129]Accès aux projets"
+msgstr "Access to projects"
+
+msgid "[0130]Oui"
+msgstr "Yes"
+
+msgid "[0131]Avec les utilisateurs sélectionnés"
+msgstr "With selected users"
+
+msgid "[0132]ok"
+msgstr "ok"
+
+# DAVBrowser view
+msgid "[0133]Propulsé par"
+msgstr "Powered by"
+
+msgid "[0134]Date de modification"
+msgstr "Modification date"
+
+msgid "[0135]Date de création"
+msgstr "Creation date"
+
+msgid "[0136]Taille"
+msgstr "Size"
+
+msgid "[0137]Verrou"
+msgstr "Lock"
+
+msgid "[0138]dir"
+msgstr "dir"
+
+msgid "[0139]Répertoire parent"
+msgstr "Parent directory"
+
+msgid "[0140]file"
+msgstr "file"
+
+msgid "[0141]Transférer"
+msgstr "Upload"
+
+# WWWConfiguration view properties
+msgid "[0142]Pivot"
+msgstr "Pivot"
+
+msgid "[0143]Nom du pivot"
+msgstr "Pivot name"
+
+msgid "[0144]Répertoire de publication"
+msgstr "Publication directory"
+
+msgid "[0145]Critères"
+msgstr "Criterias"
+
+msgid "[0146]Scripts"
+msgstr "Scripts"
+
+msgid "[0147]Sélectionnez le script à ajouter"
+msgstr "Select the script to add"
+
+msgid "[0148]Supprimer ce script"
+msgstr "delete this script"
+
+msgid "[0149][Suppr]"
+msgstr "[Del]"
+
+msgid "[0150]Label"
+msgstr "Label"
+
+msgid "[0151]Tout décocher"
+msgstr "Uncheck all"
+
+# WWWConfiguration view
+msgid "[0152]Explorateur"
+msgstr "Explorer"
+
+# WWWCriteriasEditor view
+msgid "[0153]Ajouter un critère"
+msgstr "Add a criteria"
+
+msgid "[0154]Code"
+msgstr "Code"
+
+msgid "[0155]Type"
+msgstr "Type"
+
+msgid "[0156]Texte"
+msgstr "Text"
+
+msgid "[0157]Enumération"
+msgstr "Enumeration"
+
+msgid "[0158]Entier"
+msgstr "Integer"
+
+msgid "[0159]Supprimer le critère"
+msgstr "Remove criteria"
+
+msgid "[0160]Valeur"
+msgstr "Value"
+
+msgid "[0161]Supprimer la valeur"
+msgstr "Delete value"
+
+msgid "[0162]Ajouter une valeur"
+msgstr "Add value"
+
+msgid "[0163]Min"
+msgstr "Min"
+
+msgid "[0164]Max"
+msgstr "Max"
+
+# WWWDesign view
+msgid "[0165]Recherche"
+msgstr "Search"
+
+# WWWDesignViewer view
+msgid "[0166]Cliquez ici pour ouvrir la ressource"
+msgstr "Clic here to open the resource"
+
+msgid "[0167]Ouvrir la ressource"
+msgstr "Open the resource"
+
+msgid "[0168]Modèle de trame"
+msgstr "Document map model"
+
+# WWWMasterViewer view
+msgid "[0169]Détails de l'enveloppe"
+msgstr "Envelope details"
+
+msgid "[0170]Langue"
+msgstr "Language"
+
+msgid "[0171]Trame"
+msgstr "Document map"
+
+msgid "[0172]Auteur"
+msgstr "Autor"
+
+msgid "[0173]Liste des profiles"
+msgstr "Profile list"
+
+# WWWMediasSelector view
+msgid "[0174]Sélectionner"
+msgstr "Select"
+
+# WWWMedia view properties
+msgid "[0175]Cas d'emploi"
+msgstr "Usecase"
+
+msgid "[0176]Versions"
+msgstr "Versions"
+
+msgid "[0177]Aucun module"
+msgstr "no module"
+
+msgid "[0178]Actuelle"
+msgstr "Actuelle"
+
+# WWWModules view properties
+msgid "[0179]Vue filtrée"
+msgstr "Filtered view"
+
+msgid "[0180]Diagnostic"
+msgstr "Diagnosis"
+
+msgid "[0181]Notes de modification"
+msgstr "Modifications notes"
+
+msgid "[0182]Aucune trame"
+msgstr "No document map"
+
+msgid "[0183]Réinitialiser"
+msgstr "Reset"
+
+msgid "[0184]Réinitialiser le filtrage"
+msgstr "Reset filters"
+
+msgid "[0185]Sans filtrage"
+msgstr "No filters"
+
+msgid "[0186]Aucune erreur trouvée"
+msgstr "No error found"
+
+msgid "[0187]Lien vers le module %(modname)s inexistant"
+msgstr "Module link %(modname)s non-existant"
+
+msgid "[0188]Module inexistant"
+msgstr "Module non-existant"
+
+msgid "[0189]Image %(imgname)s manquante"
+msgstr "Image %(imgname)s missing"
+
+msgid "[0191]Animation %(medname)s manquante"
+msgstr "Animation %(medname)s missing"
+
+msgid "[0192]Le critère %(code)s n'est pas défini."
+msgstr "criteria %(code)s not defined."
+
+msgid "[0193]La valeur %(value)s du critère %(code)s n'est pas défini ou valide."
+msgstr "Criteria's %(code)s value %(value)s not defined or invalid."
+
+msgid "[0194]Note précédente"
+msgstr "Preceding note"
+
+msgid "[0195]Copier"
+msgstr "Copy"
+
+# WWWOrdersDetachedEditor view
+msgid "[0196]Lancement"
+msgstr "Launcher"
+
+# WWWOrdersEditor view properties
+msgid "[0197]Aucune critère de sélectionné"
+msgstr "No criteria selected"
+
+msgid "[0198]Aucune script de sélectionné"
+msgstr "No criteria selected"
+
+# WWWOrdersEditor view
+msgid "[0199]Afficher l'explorateur"
+msgstr "Show explorer"
+
+msgid "[0200]Profils de publication"
+msgstr "Publication profile"
+
+msgid "[0201]Options avancées"
+msgstr "Advanced options"
+
+msgid "[0202]Suffixe du répertoire de publication"
+msgstr "Publication's directory suffix"
+
+msgid "[0203]Générer l'enveloppe"
+msgstr "Generate envelope"
+
+msgid "[0204]Condition de filtrage incorrecte."
+msgstr "Incorrect filtering conditions."
+
+msgid "[0205]Sans publication"
+msgstr "No publication"
+
+# WWWProject view
+msgid "[0206]Déconnexion"
+msgstr "Disconnect"
+
+msgid "[0207]Se connecter"
+msgstr "Connect"
+
+msgid "[0208]Accueil"
+msgstr "Home"
+
+msgid "[0209]Aide (wiki)"
+msgstr "Help (wiki)"
+
+msgid "[0210]Entraide (chat)"
+msgstr "Mutual help (chat)"
+
+msgid "[0211]Connecté en tant que"
+msgstr "Connected as"
+
+msgid "[0212]Accéder au projet"
+msgstr "Go to project"
+
+msgid "[0213]Créer un lancement"
+msgstr "Create launcher"
+
+msgid "[0214]Publier"
+msgstr "Publish"
+
+msgid "[0215]Publier le lancement"
+msgstr "Launch Publication"
+
+msgid "[0216]Actions récentes"
+msgstr "Recent modifications"
+
+msgid "[0217]Lancements"
+msgstr "Launchers"
+
+msgid "[0218]Aucune activité"
+msgstr "No activity"
+
+msgid "[0219]perso"
+msgstr "perso"
+
+msgid "[0220]Mon activité"
+msgstr "My activity"
+
+msgid "[0221]autre"
+msgstr "other"
+
+msgid "[0222]Activité du projet"
+msgstr "Project activity"
+
+msgid "[0223]par"
+msgstr "by"
+
+msgid "[0224]Pivot"
+msgstr "Pivot"
+
+msgid "[0225]Configuration"
+msgstr "Configuration"
+
+msgid "[0226]Cacher le panneau gauche"
+msgstr "Hide left panel"
+
+msgid "[0227]Afficher le panneau gauche"
+msgstr "Show left panel"
+
+msgid "[0228]Cacher le panneau droite"
+msgstr "Hide right panel"
+
+msgid "[0229]Afficher le panneau droite"
+msgstr "Show right panel"
+
+# WWWPublicationsProfile view
+msgid "[0230]Télécharger"
+msgstr "Download"
+
+msgid "[0231]Date de publication"
+msgstr "Publication date"
+
+msgid "[0232]Détails de la publication"
+msgstr "Publication details"
+
+# WWWPublications view properties
+msgid "[0234]Langues"
+msgstr "Languages"
+
+msgid "[0235]Publications antérieures"
+msgstr "Previous publications"
+
+# WWWScriptsEditor view
+msgid "[0236]Ajouter un script"
+msgstr "Add a script"
+
+# WWWSheetViewer view
+msgid "[0237]Cliquez ici pour télécharger la ressource"
+msgstr "Clic here to download resource"
+
+msgid "[0238]Télécharger la ressource"
+msgstr "Download resource"
+
+# WWWTrameEditor view
+msgid "[0239]Module Automatique"
+msgstr "Automatic module"
+
+# WWWTrame view properties
+msgid "[0240]Aucun lancement"
+msgstr "No launcher"
+
+msgid "[0241]Module"
+msgstr "Module"
+
+# WWWTranslate view
+msgid "[0242]Historique"
+msgstr "History"
+
+msgid "[0243]Nom de l'enveloppe"
+msgstr "Envelope name"
+
+msgid "[0244]Date de l'ajout"
+msgstr "date added"
+
+# WWW view
+msgid "[0245]Vous n'avez accès à aucun projet"
+msgstr "You don't have rights to access any project"
+
+# -------------
+# actions files
+# -------------
+# BrowserEditModule
+msgid "[0246]Editer"
+msgstr "Edit"
+
+# Delete
+msgid "[0247]Etes-vous sur de vouloir supprimer l'objet ?"
+msgstr "Are you sure to delete the object ?"
+
+msgid "[0248]L'objet a été supprimé"
+msgstr "Object deleted"
+
+msgid "[0249]Impossible de supprimer l'objet"
+msgstr "Unable to delete object"
+
+# Deleteresource
+msgid "[0250]Etes-vous sur de vouloir supprimer cette ressource ?"
+msgstr "Are you sure to delete this resource ?"
+
+msgid "[0251]La ressource a été supprimé"
+msgstr "Resource deleted"
+
+msgid "[0252]Impossible de supprimer la ressource"
+msgstr "Unable to delete resource"
+
+# Detachedview
+msgid "[0253]Détacher"
+msgstr "Detach"
+
+# DisplayModule
+msgid "[0254]Visualiser"
+msgstr "View"
+
+# DuplicateModule
+msgid "[0255]Dupliquer"
+msgstr "Duplicate"
+
+msgid "[0256]Dupliquer le module"
+msgstr "Duplicate module"
+
+msgid "[0257]Nom du nouveau module"
+msgstr "New module's name"
+
+msgid "[0258]Sélectionner le dossier destination"
+msgstr "Select destination directory"
+
+msgid "[0259]Impossible de dupliquer le module"
+msgstr "Unable to duplicate module"
+
+# MoveModule
+msgid "[0260]Déplacer"
+msgstr "Move"
+
+msgid "[0261]Déplacer le module"
+msgstr "Move module"
+
+msgid "[0262]Impossible de déplacer le module"
+msgstr "Unable to move module"
+
+# Newdir
+msgid "[0263]Créer un nouveau dossier"
+msgstr "Create a new directory"
+
+msgid "[0264]Nom du dossier"
+msgstr "Directory's name"
+
+msgid "[0265]Impossible de créer le dossier"
+msgstr "Unable to create directory"
+
+# Newfile
+msgid "[0266]Nouveau fichier"
+msgstr "New file"
+
+msgid "[0267]Nom du fichier"
+msgstr "File's name"
+
+msgid "[0268]Impossible de créer le fichier"
+msgstr "Unable to create file"
+
+# Newmodule
+msgid "[0269]Créer un nouveau texte"
+msgstr "Create a new module"
+
+msgid "[0270]Nom du texte"
+msgstr "Module's name"
+
+msgid "[0271]Modèle"
+msgstr "Template"
+
+msgid "[0272]Impossible de créer le texte"
+msgstr "Unable to create Module"
+
+# Neworder
+msgid "[0273]Créer un nouveau lancement"
+msgstr "Create a new launcher"
+
+msgid "[0274]Impossible de créer le lancement"
+msgstr "Unable to create a new launcher"
+
+# Newpublishprofile
+msgid "[0275]Créer un nouveau profil de publication"
+msgstr "Create a new publication profile"
+
+msgid "[0276]Impossible de créer le profil de publication"
+msgstr "Unable to create publication profile"
+
+# Newtrame
+msgid "[0277]Créer une nouvelle trame"
+msgstr "Create a new document map"
+
+msgid "[0278]Nom de la trame"
+msgstr "Document map's name"
+
+msgid "[0279]Impossible de créer la trame"
+msgstr "Unable to create document map"
+
+# Refreshsheets
+msgid "[0280]Actualiser le fichier xml"
+msgstr "Update xml"
+
+msgid "[0281]Actualiser le xml"
+msgstr "Update xml"
+
+# Renamemodule
+msgid "[0282]Renommer"
+msgstr "Rename"
+
+msgid "[0283]Renommer le module"
+msgstr "Rename module"
+
+msgid "[0284]Nouveau nom du module"
+msgstr "Module's new name"
+
+# Saveas
+msgid "[0285]Enregistrer sous..."
+msgstr "Save as..."
+
+# Enregistrer sous
+msgid "[0286]Enregistrer sous"
+msgstr "Save as"
+
+# Trameaddindex
+msgid "[0287]Nouvel index"
+msgstr "New index"
+
+# Trameaddrevnotes
+msgid "[0288]Nouvelle table des modifications"
+msgstr "New table of contents"
+
+# Trameaddsection
+msgid "[0289]Nouvelle section"
+msgstr "New section"
+
+msgid "[0290]Ajouter une nouvelle section"
+msgstr "Add a new section"
+
+msgid "[0291]Titre de la section"
+msgstr "Section's title"
+
+# Trameaddtdm
+msgid "[0292]Nouvelle table des matières"
+msgstr "New table of contents"
+
+# Tramerenamesection
+msgid "[0293]Renommer la section"
+msgstr "rename section"
+
+msgid "[0294]Nouveau nom"
+msgstr "New name"
+
+# Uploaddesign
+msgid "[0295]Transférer une archive de styles"
+msgstr "Upload a stylesheet package"
+
+# Uploadmaster
+msgid "[0296]Transférer une enveloppe"
+msgstr "Upload an enveloppe"
+
+# Uploadmedia
+msgid "[0297]Transférer un média"
+msgstr "Upload media"
+
+# Uploadsheet
+msgid "[0298]Transférer un tableur OpenOffice"
+msgstr "Upload a OpenOffice sheet"
+
+# View
+msgid "[0299]Visualiser la ressource"
+msgstr "View resource"
+
+# Uploaddesignform
+msgid "[0300]Archive de style"
+msgstr "Stylesheet package"
+
+# Uploadmasterform
+msgid "[0301]Enveloppe"
+msgstr "Envelope"
+
+# Uploadmediaform
+msgid "[0302]Média"
+msgstr "Media"
+
+# Uploadsheetform
+msgid "[0303]Tableur OpenOffice (ods)"
+msgstr "OpenOffice sheet (ods)"
+
+# JS files
+# kolekti actions
+msgid "[0304]Valider"
+msgstr "Validate"
+
+msgid "[0305]Annuler"
+msgstr "Cancel"
+
+msgid "[0306]Fermer"
+msgstr "Close"
+
+# kolekti resourceview
+msgid "[0307]%(title)s a été modifié, voulez-vous réellement fermer sans enregistrer ?"
+msgstr "%(title)s has been modified, are you sure to close without saving ?"
+
+msgid "[0308]Echec lors de la sauvegarde"
+msgstr "Save failed"
+
+msgid "[0309]La ressource a été modifiée sur le serveur, voulez-vous continuer ?"
+msgstr "Resource has been modified on the server, are you sure to continue ?"
+
+# kolekti uploadform
+msgid "[0310]Ajouter un fichier"
+msgstr "Add a file"
+
+# kolekti configurationresview
+msgid "[0311]Profil de publication"
+msgstr "Publication profile"
+
+# kolekti masterviewer
+msgid "[0312]Publier l'enveloppe"
+msgstr "Publish envelope"
+
+# kolekti moduleviewer
+msgid "[0313]Attention : Ce module est potientiellement utilisé dans des trames, cette action peut provoquer des erreurs lors de la publication des trames. Souhaitez-vous continuer?"
+msgstr "Warning : This module may be used by document maps, this action can lead to errors while publishing. Are you sure to continue ?"
+
+msgid "[0314]Erreur lors du changement de nom du module"
+msgstr "Failed changing module name"
+
+# kolekti orderseditor
+msgid "[0315]Cacher l'explorateur"
+msgstr "Hide explorer"
+
+msgid "[0316]Afficher l'explorateur"
+msgstr "Show explorer"
+
+msgid "[0317]Détails du profil"
+msgstr "Profile details"
+
+msgid "[0318]%(title)s a été modifié, voulez-vous sauvegarder avant ?"
+msgstr "%(title)s has been modified, do you want to save it ?"
+
+msgid "[0319]Echec lors de la sauvegarde. Veuillez vérifier la valeurs des critères et que tous les labels des scripts sont remplis."
+msgstr "Save failed. Please verify criterias values and scripts labels."
+
+# kolekti sheet viewer
+msgid "[0320]Erreur lors de la génération du fichier xml."
+msgstr "Error while generating xml file."
+
+# kolekti trame editor
+msgid "[0321]Glissez un objet ici pour le supprimer de la trame"
+msgstr "Drag an item here to remove it from the document map"
+
+msgid "[0322]Poubelle"
+msgstr "Trash"
+
+# Account view
+msgid "[0323]Fuseau horaire"
+msgstr "Timezone"
+
+# OrdersEditorView properties
+msgid "[0324]ouvrir"
+msgstr "Open"
+
+# publication
+msgid "[0325]Une erreur est survenue au cours du filtrage des sections vides"
+msgstr "An error occured while filtering empty sections"
+
+# kolekti ordersidebar
+msgid "[0326]Tout cocher"
+msgstr "Check all"
+
+# order editor view
+msgid "[0327]Enveloppe filtrée"
+msgstr "filtered envelope"
+
+# project view
+msgid "[0328]Liste des lancements"
+msgstr "Launchers"
+
+# order editor view
+msgid "[0329]Nouveau profil vierge"
+msgstr "New profile"
+
+msgid "[0330]Actif"
+msgstr "Enabled"
+
+msgid "[0331]Sorties"
+msgstr "Outputs"
+
+msgid "[0332]Suffixe"
+msgstr "Suffix"
+
+# publish with master action
+msgid "[0333]Publier avec enveloppe"
+msgstr "Publish with master"
+
+msgid "[0334]Filtre"
+msgstr "Filter"
+
+msgid "[0335]Publier et créer l'enveloppe"
+msgstr "Publish and create master"
+
+# master viewer view
+msgid "[0336]Liste des sorties"
+msgstr "List of outputs"
+
+# order editor view
+msgid "[0337]Erreur! Lancement non conforme. Veuillez vérifier la présence et le nom unique de vos profils et sorties."
+msgstr "Error! Order not conform. Please verify the presence and the unique name of your profile and outputs."
+
+# project view
+msgid "[0338]publié le"
+msgstr "published"
+
+# publication
+msgid "[0339]Une erreur est survenue au cours de la génération de l'historique des versions"
+msgstr "An error has occurred during the generation of the version history"
+
+# WebHelp
+msgid "[0340]Problème lors de l'exécution du script WebHelp"
+msgstr "Problem during execute the WebHelp script"
+
+# publication viewer
+msgid "[0341]CSV des révisions"
+msgstr "CSV of revisions"
+
+# project view
+msgid "[0342]Révision actuelle"
+msgstr "Current revision"
+
+# Trame revnotes
+msgid "[0343]Table des modifications"
+msgstr "Table of content"
+
+# Admin controller
+msgid "[0344]Echec de l'exécution de l'action."
+msgstr "Failed to execute action."
+
+# Orders editor view
+msgid "[0345]Titre du document"
+msgstr "Title of document"
+
+# Module view properties
+msgid "[0346]Module mal formé"
+msgstr "Module not well-formed"
+
+msgid "[0347]Déclaration de la feuille de style des critères manquante"
+msgstr "Declaration of the style sheet criteria missing"
+
+msgid "[0348]Le module contient des erreurs réparables"
+msgstr "The module contains errors can be fixed"
+
+msgid "[0349]Souhaitez-vous les corriger automatiquement?"
+msgstr "Would you fix them automatically?"
+
+msgid "[0350]Corriger"
+msgstr "Fix"
+
+msgid "[0351]Le module contient des erreurs non réparables"
+msgstr "The module contains errors cannot be fixed"
+
+msgid "[0352]Veuillez les corriger manuellement"
+msgstr "Please correct them manually"
+
+msgid "[0353]Echec lors de la correction des erreurs du module"
+msgstr "Failed fix errors in module"
+
+# Publish order view
+msgid "[0354]Publication en cours"
+msgstr "Publication in progress"
+

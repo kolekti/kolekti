@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="publishtrame" i:shortname="[0213]Créer un lancement" i:name="[0213]Créer un lancement"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/app/icons/publish.png</kd:icon>
+  <kd:process>
+    <kd:notify event="publish" context="true" />
+  </kd:process>
+</kd:action>

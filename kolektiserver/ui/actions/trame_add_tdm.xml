@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="trame_add_tdm" i:name="[0292]Nouvelle table des matières" i:shortname="[0292]Nouvelle table des matières"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_tdm.png</kd:icon>
+  <kd:process>
+      <kd:notify event="trame-new-tdm" context='true'/>
+  </kd:process>
+  <kd:result />
+</kd:action>

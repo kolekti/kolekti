@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="view" i:name="[0299]Visualiser la ressource"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/file.png</kd:icon>
+  <kd:process>
+    <kd:notify event="resource-display-view" context="true" />
+  </kd:process>
+</kd:action>

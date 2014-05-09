@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:upload-dialog id="uploadsheet"
+                  xmlns:i="kolekti:i18n"
+                  xmlns:kd="kolekti:dialogs"
+                  xmlns="http://www.w3.org/1999/xhtml">
+  <div class="uploadform">
+    <kd:upload-form id="uploadsheet" class="uploadform">
+     <kd:upload i:label="[0303]Tableur OpenOffice (ods)" multiple="yes"/>
+    </kd:upload-form>
+  </div>
+</kd:upload-dialog>

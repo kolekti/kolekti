@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="newmodule" i:name="[0269]Créer un nouveau texte"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_file.png</kd:icon>
+  <kd:dialog i:title="[0269]Créer un nouveau texte" type="confirm">
+    <div class="selectdir">
+      <input type="hidden" name="url" id="url" value=""/>
+      <input type="hidden" name="action" value="newmodule" />
+      <input type="hidden" name="moddir" id="selectdir" value="" />
+      <p>
+        <label id="modname"><i:text>[0270]Nom du texte</i:text></label>
+        <input name="modname" id="modname" />
+      </p>
+      <p>
+        <label id="model"><i:text>[0271]Modèle</i:text></label>
+        <kd:listtemplates name="template" dir="@design/edition/templates" />
+      </p>
+    </div>
+    <div class="selectbrowser">
+      <p><i:text>[0258]Sélectionner le dossier destination</i:text></p>
+      <kd:ajaxbrowser id="newmodule" class="selectbrowser" keep_active_items="false">
+         <kd:behavior>
+            <kd:click id="selectdir" action="select" event="select-dir" />
+         </kd:behavior>
+         <kd:tab i:label="[0152]Explorateur" dir="@modules" id="module" />
+      </kd:ajaxbrowser>
+    </div>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="COPY" url="design/edition/templates/[[template]]">
+      <kd:header name="Destination" content="[[url]]/[[moddir]]/[[modname]].xht"/>
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0272]Impossible de créer le texte</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

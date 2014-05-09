@@ -1,0 +1,10 @@
+
+/* Selector browser stylesheet */
+
+.uploadbrowser {
+	position: absolute;
+	top: -30px;
+	bottom: 0;
+	right: 10px;
+	width: 275px;
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="refreshsheets" i:name="[0280]Actualiser le fichier xml" i:shortname="[0281]Actualiser le xml"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_refresh.png</kd:icon>
+  <kd:process>
+      <kd:notify event="resource-refresh-sheets" context="true"/>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+  </kd:result>
+</kd:action>

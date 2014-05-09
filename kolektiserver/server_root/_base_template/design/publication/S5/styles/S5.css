@@ -1,0 +1,51 @@
+/*
+    kOLEKTi : a structural documentation generator
+    Copyright (C) 2007 Stéphane Bonhomme (stephane@exselt.com)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/* Cette feuille de style surcharge les styles définis par défaut dans S5 pour personaliser les présentations */
+
+/* Personalisation de l'image de fond */
+/* Personalisation des couleurs d'en-tête et pied */
+body {background: #FFF; font-family:sans-serif}
+div#header {background: SaddleBrown url('S5.parts/bodybg.gif') 10px 20px no-repeat;}
+div#footer {background-color: SaddleBrown}
+#controls #navLinks a {background-color: SaddleBrown}
+/* titres des transparents */
+.slide h1 {background-color: SaddleBrown; color: Wheat; top:0.3em}
+/* contenu des transparents */
+.slide    { font-size:90%; }
+.slide h2 {color: SaddleBrown; font-size:130%; }
+.slide h3 {color: SaddleBrown; font-size:110%; margin-top:0.5em;}
+.slide ul { margin-bottom:0.2em; }
+.slide li { margin-top:1em;}
+.slide img {height:100%;}
+/* tables des matières */
+div.presentation-toc { background-color: Wheat ; margin:1em 0; padding: 2em 0; height:15em}
+div.presentation-toc li{ color: SaddleBrown }
+div.presentation-toc li.current-section{ color: Maroon }
+div.presentation-toc li.light-section{ color: Peru }
+
+/* premier transparent */
+#slide0 h1 { text-align:center }
+div#presentation-info { background-color:Wheat; color:SaddleBrown;text-align:center; padding: 0.3em 0 1em 0;margin-top:1em}
+div#presentation-info p { margin:0.2em }
+#presentation-subtitle { font-size : 150%; }
+#presentation-author { font-weight: bold ;font-size : 110% ; padding-top:0.75em;}
+#presentation-company  { font-size : 80% ; font-style:italic}
+#presentation-place { font-weight: bold ; padding-top:2em;}
+#presentation-date  { font-size : 80% ; font-style:italic }

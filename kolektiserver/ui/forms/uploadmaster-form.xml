@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:upload-form id="uploadmaster" class="uploadform"
+                xmlns:i="kolekti:i18n"
+                xmlns:kd="kolekti:dialogs"
+                xmlns="http://www.w3.org/1999/xhtml">
+   <kd:upload i:label="[0301]Enveloppe"/>
+</kd:upload-form>

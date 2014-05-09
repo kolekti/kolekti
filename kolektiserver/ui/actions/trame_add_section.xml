@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="trame_add_section" i:name="[0289]Nouvelle section" i:shortname="[0289]Nouvelle section"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_file.png</kd:icon>
+  <kd:dialog i:title="[0290]Ajouter une nouvelle section" type="confirm">
+     <div class="trame_add_section">
+        <p><i:text>[0291]Titre de la section</i:text> <input type="text" name="newsectiontitle"/></p>
+     </div>
+  </kd:dialog>
+  <kd:process>
+      <kd:notify event="trame-new-section" context='true'/>
+  </kd:process>
+  <kd:result />
+</kd:action>

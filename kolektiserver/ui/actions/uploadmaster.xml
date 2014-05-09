@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="uploadmaster" i:name="[0296]Transférer une enveloppe"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/icon_upload.png</kd:icon>
+  <kd:dialog i:title="[0296]Transférer une enveloppe" type="close">
+   <kd:upload-form id="uploadmaster">
+      <kd:param name="form" content="/_lib/app/forms/uploadmaster-form.xml" />
+   </kd:upload-form>
+  </kd:dialog>
+</kd:action>

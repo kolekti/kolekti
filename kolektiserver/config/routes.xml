@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8"?>
+<routes>
+  <io module="svnProjectsIO" />
+
+  <controller module="HTTPPreconditionController" />
+
+  <!-- Lib components (scripts, css, icons) -->
+  <route name="lib">
+    <match>
+      <hook type="qs" match="^/_lib/" />
+      <hook type="method" match="GET" />
+    </match>
+    <io module="FsIO" />
+    <controller module="HTTPController" />
+    <model />
+    <view />
+  </route>
+
+  <!-- Test request route -->
+  <route name="test">
+     <match>
+        <hook type="qs" match="^/test.html"/>
+     </match>
+     <controller module="HTTPController" />
+     <model />
+     <view />
+    <break />
+  </route>
+
+  <!-- List projects -->
+  <route name="rootprojects">
+    <match>
+      <hook type="qs" match="^/$" />
+    </match>
+    <controller module="IdentityController" />
+    <controller module="WWWController" />
+    <model module="ProjectModel" />
+    <view module="WWWView" />
+    <break />
+  </route>
+
+  <!-- Routes for logged users -->
+  <route name="users">
+    <match />
+    <controller module="AuthController" />
+    <controller module="SessionController" />
+    <controller module="ProfileController" />
+
+    <!-- Login/Logout -->
+    <route name="login">
+      <match>
+        <hook type="method" match="GET|HEAD" />
+        <hook type="qs" match="^/login$|^/logout$" />
+      </match>
+      <controller module="LoginController" />
+      <model module="AuthModel" />
+      <view module="LoginView" />
+      <break />
+    </route>
+
+
+    <!-- routes for sessions -->
+    <route name="sessions">
+      <match>
+        <hook type="qs" match="^/_session/[^/]" />
+      </match>
+      <controller module="SessionController" />
+      <model module="SessionModel" />
+      <view module="DAVView" />
+      <break />
+    </route>
+
+    <!-- Admin route -->
+    <route name="WebAdmin">
+      <match>
+        <hook type="group" clearance="admin" />
+        <hook type='qs' match="^/admin" />
+      </match>
+      <controller module="AdminController" />
+      <view module="AdminView" />
+      <model module="AdminModel" />
+      <break />
+    </route>
+
+    <!-- User account route -->
+    <route name="UserAccount">
+      <match>
+        <hook type='qs' match="^/user/" />
+      </match>
+      <controller module="AccountController" />
+      <view module="AccountView" />
+      <model module="DAVModel" />
+      <route name="AccountInfos">
+        <match>
+          <hook type='qs' match="^/user/account|^/user/ident" />
+        </match>
+        <model module="UserAccountModel" />
+      </route>
+    </route>
+
+    <!-- DAV browser -->
+    <route name="DAVBrowserFsIO">
+      <match>
+        <hook type='header' name="User-Agent" match="^gnome-vfs|^gvfs|^amaya|^UCI DAV Explorer|^cadaver" />
+        <hook type="qs" match="^/projects/[^/]|^/projects/.+/publications/[^/]|^/projects/.+/masters/[^/]" />
+        <hook type="method" match="GET|PROPFIND|PROPATCH" />
+      </match>
+      <io module="FsProjectsIO" />
+      <controller module="DAVController" />
+      <model module="DAVModel" />
+      <view module="DAVBrowserView" />
+      <break />
+    </route>
+    
+    <route name="DAVBrowser">
+      <match>
+        <hook type='header' name="User-Agent" match="^gnome-vfs|^gvfs|^amaya|^UCI DAV Explorer|^cadaver" />
+        <hook type="method" match="GET|PROPFIND|PROPATCH" />
+      </match>
+      <controller module="DAVController" />
+      <model module="DAVModel" />
+      <view module="DAVBrowserView" />
+      <break />
+    </route>
+
+    <route name="projectuploadform">
+      <match>
+        <hook type="qs" match="^/projects/[^/]" />
+        <hook type="param" name="uploadform" match="1" />
+        <hook type="method" match="GET" />
+      </match>
+      <io module="FsProjectsIO" />
+      <controller module="ProjectsController" />
+      <controller module="UploadController" />
+      <model module="UploadModel" />
+      <view module="UploadView" />
+    </route>
+
+    <!-- Projects content -->
+    <route name="project">
+      <match>
+        <hook type="qs" match="^/projects/[^/]" />
+      </match>
+
+      <controller module="ProjectsController" />
+      <controller module="DAVPropertiesController" />
+      <model module="ProjectModel" />
+      <view module="WWWProjectView" />
+
+      <route name="projectModules">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="resid" match="^@modules" />
+        </match>
+        <route name="projectModulesViewer">
+          <match>
+            <hook type="param" name="viewer" match="moduleviewer" />
+          </match>
+          <view module="WWWModulesViewerView" />
+        </route>
+        <route name="modulesSelector">
+          <match>
+            <hook type="param" name="CKEditor" match="^" />
+          </match>
+          <view module="WWWModulesSelectorView" />
+        </route>
+        <model module="ModulesModel" />
+        <view module="WWWModulesView" />
+<!--         <break /> -->
+      </route>
+
+      <route name="projectMedias">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="resid" match="^@medias" />
+        </match>
+        <route name="mediasSelector">
+          <match>
+            <hook type="param" name="CKEditor" match="^" />
+          </match>
+          <view module="WWWMediasSelectorView" />
+        </route>
+        <route name="UploadForm">
+          <match>
+            <hook type="method" match="POST" />
+          </match>
+          <controller module="UploadController" />
+        </route>
+        <model module="MediasModel" />
+        <view module="WWWMediasView" />
+<!--        <break />-->
+      </route>
+
+      <route name="projectSheets">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="resid" match="^@sheets" />
+        </match>
+        <route name="projectSheetsViewer">
+          <match>
+            <hook type="param" name="viewer" match="sheetsviewer" />
+          </match>
+          <view module="WWWSheetsViewerView" />
+        </route>
+        <route name="ProjectSheetsUploadForm">
+          <match>
+            <hook type="param" name="uploadform" match="1" />
+            <hook type="method" match="POST" />
+          </match>
+          <controller module="UploadController" />
+        </route>
+        <model module="SheetsModel" />
+        <view module="WWWSheetsView" />
+      </route>
+
+      <route name="projectDesign">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="resid" match="^@design" />
+        </match>
+        <route name="projectDesignUploadForm">
+          <match>
+            <hook type="method" match="POST" />
+          </match>
+          <controller module="UploadController" />
+        </route>
+        <route name="projectDesignViewer">
+          <match>
+            <hook type="param" name="viewer" match="designviewer" />
+          </match>
+          <view module="WWWDesignViewerView" />
+        </route>
+        <model module="DesignModel" />
+        <view module="WWWDesignView" />
+<!--        <break />-->
+      </route>
+
+      <route name="projectTrames">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="resid" match="^@trames" />
+        </match>
+        <route name="tramesSelector">
+          <match>
+            <hook type="param" name="trames_select" match="1" />
+          </match>
+          <view module="WWWTramesSelectorView" />
+        </route>
+        <route name="trameEditor">
+          <match>
+            <hook type="param" name="viewer" match="trameeditor" />
+          </match>
+          <view module="WWWTramesEditorView" />
+        </route>
+        <model module="TramesModel" />
+        <view module="WWWTramesView" />
+      </route>
+
+      <route name="projectMasters">
+        <match>
+          <hook type="resid" match="^@masters" />
+        </match>
+        <route name="projectMastersView">
+          <match>
+            <hook type="param" name="viewer" match="masterview" />
+          </match>
+          <view module="WWWMastersViewerView" />
+        </route>
+        <route name="projectMasterPublish">
+          <match>
+            <hook type="param" name="publish" match="1" />
+          </match>
+          <controller module="TranslateController" />
+          <model module="TranslateModel" />
+          <view module="PublishMasterView" />
+        </route>
+        <route name="ProjectMastersUploadForm">
+          <match>
+            <hook type="param" name="uploadform" match="1" />
+            <hook type="method" match="POST" />
+          </match>
+          <controller module="UploadController" />
+        </route>
+        <io module="FsProjectsIO" />
+        <model module="MastersModel" />
+        <view module="WWWMastersView" />
+      </route>
+
+      <route name="projectPublication">
+        <match>
+          <hook type="resid" match="^@publications" />
+        </match>
+        <route name="projectPublicationProfile">
+          <match>
+            <hook type="param" name="type" match="profile" />
+          </match>
+          <view module="WWWPublicationsViewerView" />
+        </route>
+        <route name="projectPublicationPivotViewer">
+           <match>
+            <hook type="param" name="viewer" match="publicationspivotviewer" />
+           </match>
+           <view module="WWWPublicationsPivotViewerView" />
+        </route>
+        <io module="FsProjectsIO" />
+        <model module="PublicationsModel" />
+        <view module="WWWPublicationsView" />
+      </route>
+
+      <route name="projectConfiguration">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type='resid' match="^@configuration" />
+        </match>
+
+        <model module="ConfigurationModel" />
+        <view module="WWWConfigurationView" />
+
+        <route name="criteriasEditor">
+          <match>
+            <hook type="param" name="viewer" match="criteriaseditor" />
+          </match>
+          <view module="WWWCriteriasEditorView" />
+        </route>
+
+        <route name="publicationprofile">
+          <match>
+            <hook type="param" name="viewer" match="publicationprofileseditor" />
+          </match>
+          <view module="WWWPublicationProfileEditorView" />
+        </route>
+
+        <route name="ordersEditor">
+          <match>
+            <hook type="param" name="viewer" match="orderseditor" />
+          </match>
+          <route name="ordersDetachedEditor">
+            <match>
+              <hook type="param" name="mode" match="detached" />
+            </match>
+            <view module="WWWOrdersDetachedEditorView" />
+          </route>
+          <route name="publishOrder">
+            <match>
+              <hook type="param" name="mode" match="publishorder" />
+            </match>
+            <view module="PublishOrderViewer" />
+          </route>
+          <view module="WWWOrdersEditorView" />
+        </route>
+
+        <route name="Publication">
+          <match>
+            <hook type="resid" match="^@configuration/orders" />
+            <hook type="method" match="POST" />
+          </match>
+          <io module="FsProjectsIO" />
+          <controller module="PublishController" />
+          <model module="PublishModel" />
+          <view module="PublishView" />
+        </route>
+      </route>
+
+      <route name="projectUpload">
+        <match>
+          <hook type="group" clearance="user" />
+          <hook type="method" match="GET" />
+          <hook type="param" name="uploadform" match="1" />
+        </match>
+        <model module="UploadModel" />
+        <view module="UploadView" />
+      </route>
+
+      <route name="TranslateMaster">
+        <match>
+          <hook type="group" clearance="translator" />
+          <hook type="resid" match="^@translate" />
+        </match>
+        <route name="UploadMaster">
+          <match>
+            <hook type="param" name="upload" match="1" />
+          </match>
+          <view module="UploadTranslateView" />
+        </route>
+        <io module="FsProjectsIO" />
+        <controller module="TranslateController" />
+        <model module="TranslateModel" />
+        <view module="WWWTranslateView" />
+      </route>
+    </route>
+  </route>
+</routes>

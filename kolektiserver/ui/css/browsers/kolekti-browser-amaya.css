@@ -1,0 +1,40 @@
+#main-browser 
+{
+  width: 1000px;
+}
+	
+table 
+{ 
+  width:100%;
+  border:0;
+}
+
+table tbody tr td,
+table tbody tr th 
+{ 
+  text-align:left;
+  border:0;
+  border-style-left: none;
+  border-style-right: none;
+  color:red;
+  width:150px;
+  }
+
+table tbody tr td.name,
+table tbody tr th.name 
+{ 
+    width:250px;
+
+}
+table tbody tr th.name 
+{ 
+ padding-left:27px;
+}
+table tbody tr th { 
+  border-bottom:1px solid black;
+                    }
+img {
+    margin:0 5px;
+    height:12px;
+    width:12px;
+}

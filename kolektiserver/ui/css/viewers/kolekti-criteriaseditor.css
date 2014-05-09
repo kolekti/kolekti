@@ -1,0 +1,71 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   */
+
+/* Criterias editor styles */
+#criterias {	
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 8px;
+	right: 200px;
+	overflow: auto;
+}
+
+#criterias #btn_addcriterias span,
+#criterias .btn_addvalue span {
+    -moz-border-radius:4px;
+    border-radius:4px;
+    border:1px solid #303030;
+    background-color:#F8F8F8;
+    padding:0 5px;
+}
+#criterias .criteria {
+    background-color:#E0E0E0;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    border:1px solid #303030;
+    margin:4px;
+    padding:0 5px;
+    
+}
+
+#criterias #btn_addcriterias span:hover,
+#criterias .btn_addvalue span:hover {
+    background-color:#C8C8C8;
+}
+
+#criterias .criteriasvalues {
+   padding-left: 20px;
+
+}
+
+#criterias .criteriasvalues p{
+    margin:0;
+    padding:0;
+}
+
+#criterias .criteriasvalues p.btn_addvalue {
+    margin:5px 0;
+}
+
+#criterias img,
+#criterias .btn_addvalue span,
+#criterias #btn_addcriterias span {
+   cursor: pointer;
+}

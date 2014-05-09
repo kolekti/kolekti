@@ -1,0 +1,144 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+/* Master viewer styles */
+#content {	
+	margin: 5px;
+}
+
+.getfile {
+	font-size: 13px;
+}
+
+.details {
+	margin-left: 20px;
+}
+
+p.label,
+span.label {
+	font-weight: bold;
+	padding-right: 5px;
+}
+
+.listprofiles p,
+.listscripts p {
+   margin: 5px;
+}
+
+.listprofiles ul,
+.listscripts ul {
+	list-style: circle;
+}
+
+.listprofiles ul ul,
+.listscripts ul ul {
+   list-style: square;
+}
+
+.listprofiles ul,
+.listscripts ul {
+   margin: 0 40px;
+   padding: 0;
+}
+
+.listprofiles ul ul ,
+.listscripts ul ul {
+   margin: 0 20px;
+}
+
+div.publication_result a {
+   color: #0D401C;
+   text-decoration: none;
+}
+
+div.publication_result a:hover {
+   color: #000;
+}
+
+div.publication_log,
+div.publication_result {
+   margin-left: 20px;
+}
+
+div.publication_log .links,
+div.publication_result .links {
+   float: right;
+}
+
+div.publication_log .link,
+div.publication_result .link {
+   padding-right: 5px;
+}
+
+div.publication_result .link {
+    padding: 0 5px;
+    margin: 0 5px;
+    border:1px solid black;
+    background-color:#C0C0C0;
+}
+
+div.publication_log .error,
+div.publication_result .error {
+   color: red;
+}
+
+div.publication_log .success,
+div.publication_result .success {
+   color: green;
+}
+
+div.publication_log .title,
+div.publication_log .ui-icon,
+div.publication_result .title,
+div.publication_result .ui-icon
+ {
+   float: left;
+   cursor: pointer;
+}
+
+div.publication_log .profile,
+div.publication_result .profile,
+div.publication_log .result,
+div.publication_result .result {
+   clear: both;
+}
+
+div.publication_log .result .success,
+div.publication_log .result .error,
+div.publication_log .result .details,
+div.publication_result .result .success,
+div.publication_result .result .error,
+div.publication_result .result .details {
+   margin: 0;
+   padding-left: 30px;
+}
+
+.publish_waiting {
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   text-align: center;
+   background-color: #EFEFEF;
+   opacity: 0.6;
+   padding-top: 15%;
+   font-weight: bold;
+}

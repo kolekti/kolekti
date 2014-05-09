@@ -1,0 +1,37 @@
+<VirtualHost *:80>
+	ServerName kolekti
+        <Directory />
+                Options FollowSymLinks
+                AllowOverride None
+                Order deny,allow
+                Deny from all
+        </Directory>
+
+	ServerRoot /var/lib/kolekti/server_root
+
+        ErrorLog /var/log/apache2/kolekti.log
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel debug
+
+        CustomLog /var/log/apache2/kolekti-access.log combined
+
+
+        WSGIScriptAlias / /etc/kolekti/kolektiserver/kolekti.wsgi
+        #WSGIScriptAlias / /home/waloo/Projets/kolekti/applications/trunk/kolektiserver/apache/kolekti-profiling.wsgi
+	WSGIPassAuthorization On
+
+#        RedirectMatch ^/trac/.*/login$ /account/login
+#        RedirectMatch ^/trac/.*/logout$ /account/logout
+#	RedirectMatch ^/trac/$ /
+
+        <Directory /etc/kolekti/kolektiserver/kolekti.wsgi>
+                WSGIApplicationGroup %{GLOBAL}
+                Order deny,allow
+                Allow from all
+        </Directory>
+
+
+</VirtualHost>
+

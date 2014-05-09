@@ -1,0 +1,114 @@
+
+/* INTRODUCTION
+ * interface.css  = ce fichier est appelé par un @import dans webhelp.css
+ * Sont rassemblés ici les actions css permettant de rendre les icones visibles ou non  
+ * Pour rendre chaque bouton visible dans la toolbar, il suffit de décommenter son code ci-dessous.
+ * Ce code agit sur le span specifique de chaque bouton
+ * ... et non pas sur #toolbar button img  ni sur le #toolbar button id  
+*/
+
+/* SUPPRIMER TOUS LES BOUTONS !!!
+#toolbar{ 
+display:none;
+}
+*/
+
+/* DESACTIVER LES FONCTIONS DE RECHERCHE  **************************** */ 
+.recherche {
+ display:none;
+}
+
+#toolbar form{
+ display:none;
+}
+
+
+/* DESACTIVER LA NAVIGATION PAR LA STRUCTURE  ****************************  
+.navigation_structure{
+ display:none;
+}
+*/
+
+
+/* DESACTIVER BOUTONS FIRST ET LAST **************************** */
+  
+#tool_nav_f { 
+ display:none;
+}
+
+/* désactive le span englobant pour ne plus voir les roll-over */
+#tool_nav_first {
+ display:none;
+}
+
+
+#tool_nav_l { 
+ display:none;
+}
+
+/* désactive le span englobant pour ne plus voir les roll-over */
+#tool_nav_last {
+ display:none;
+}
+
+
+/* DESACTIVER BOUTON NEXT DISABLE **************************** */
+  
+#tool_nav_n_dis { 
+ display:none;
+}
+
+/* DESACTIVER LA NAVIGATION PAR L'HISTORIQUE  ****************************  */
+.navigation_historique{
+ display:none;
+}
+
+
+/* DESACTIVER LE BOUTON HOME  **************************** */ 
+#tool_home{
+ display:none;
+}
+
+
+/* DESACTIVER LE BOUTON IMPRIMER ****************************       
+#tool_print{
+ display:none;
+}
+*/
+
+
+/* DESACTIVER LE BOUTON BOOKMARK  **************************** */ 
+#tool_bookmark{
+ display:none;
+}
+ 
+
+/* DESACTIVER LA CROIX ROUGE SEARCH, LE TITRE SEARCH, LES OPTIONS SEARCH, LE TEXTE NO-RESULT, LE TITRE TOC */
+
+#searchoptions, #nores, #search_close, #searchtitle, #toctitle {
+ display:none;
+}
+
+
+/* DESACTIVER LA GOMME  **************************** */ 
+#tool_span_uhlight{
+ display:none;
+}
+ 
+
+
+/* RENDRE LE FOOTER IN (IN)VISIBLE  ***************************         */ 
+
+/* la suppression fonctionne pour Firefox mais pour IE il faut modifier le javascript */
+#footer {
+ display:none;
+}     
+  
+          
+/* Redimensionner le contenu */
+#main,
+#sidepanel { 
+  bottom:0px;   
+}
+
+

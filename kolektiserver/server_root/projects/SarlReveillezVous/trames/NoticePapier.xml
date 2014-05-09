@@ -1,0 +1,1 @@
+<trame xmlns="kolekti:trames"><head><title>NoticePapier.xml</title></head><body><module resid='@modules/FamilleDring/mod_001_CouvertureNotice.xht' version='' type='mod'/><module resid='@modules/FamilleDring/mod_002_CorpsNotice.xht' version='' type='mod'/></body></trame>

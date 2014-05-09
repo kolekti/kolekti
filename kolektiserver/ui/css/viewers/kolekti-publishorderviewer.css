@@ -1,0 +1,148 @@
+/*
+
+   kOLEKTi : a structural documentation generator
+   Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+/* Orders editor styles */
+.publishorderviewer,
+div.pubprofile {
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   overflow: auto;
+   padding: 8px 4px;
+}
+
+.publishorderviewer a {
+   color: #0D401C !important;
+}
+
+.publishorderviewer a:hover {
+   color: #000 !important;
+}
+
+.publishorderviewer .infos span.label,
+.publishorderviewer .masterlink span.label {
+   font-weight: bold;
+   float: left;
+   width: 200px;
+   border-bottom: 1px dashed #C0C0C0;
+}
+
+/* publication results */
+
+.publishorderviewer div.publication_log {
+    /*display:none;*/
+}
+
+.publishorderviewer div.publication_result div.publication_log {
+   display: block;
+}
+
+.publishorderviewer div.publication_result .result {
+    /*display:none;*/
+    clear: both;
+}
+
+.publishorderviewer div.publication_log .profile,
+.publishorderviewer div.publication_result .profile {
+   clear: both;
+}
+
+.publishorderviewer div.publication_result .master {
+    margin-top: 20px;
+}
+
+.publishorderviewer div.publication_log .title,
+.publishorderviewer div.publication_result .title,
+.publishorderviewer div.publication_log .ui-icon,
+.publishorderviewer div.publication_result .ui-icon {
+   float: left;
+   cursor: pointer;
+}
+
+.publishorderviewer div.publication_result div.publication_log .links {
+   float: right;
+}
+
+.publishorderviewer div.publication_result .link a{
+   text-decoration:none;
+   color:black;
+}
+
+.publishorderviewer div.publication_log .link {
+   /*display: none;*/
+}
+
+.publishorderviewer div.publication_result div.publication_log .link {
+   display: block;
+}
+
+.publishorderviewer div.publication_result div.publication_log .link {
+    padding: 0 5px;
+    margin: 0 5px;
+    border:1px solid black;
+    background-color:#C0C0C0;
+}
+
+.publishorderviewer div.publication_log .success,
+.publishorderviewer div.publication_result .success {
+	color: green;
+}
+
+.publishorderviewer div.publication_log .error,
+.publishorderviewer div.publication_result .error {
+   color: red;
+}
+
+.publishorderviewer div.publication_log .details,
+.publishorderviewer div.publication_result .details {
+   clear: both;
+}
+
+.publishorderviewer div.publication_log  .profile .success,
+.publishorderviewer div.publication_log  .profile .error,
+.publishorderviewer div.publication_log  .profile .details,
+.publishorderviewer div.publication_result .profile .success,
+.publishorderviewer div.publication_result .profile .error,
+.publishorderviewer div.publication_result .profile .details {
+   margin: 0;
+   padding-left: 30px;
+}
+
+.publishorderviewer div.publication_log  .title .success,
+.publishorderviewer div.publication_log  .title .error,
+.publishorderviewer div.publication_result .title .success,
+.publishorderviewer div.publication_result .title .error {
+   padding-left: 0;
+}
+
+.publish_waiting {
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   text-align: center;
+   background-color: #EFEFEF;
+   opacity: 0.6;
+   padding-top: 15%;
+   font-weight: bold;
+}

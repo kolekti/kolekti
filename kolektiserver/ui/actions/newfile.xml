@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="newfile" i:name="[0266]Nouveau fichier"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_file.png</kd:icon>
+  <kd:dialog i:title="[0266]Nouveau fichier" type="confirm">
+    <p>
+      <label id="filename"><i:text>[0267]Nom du fichier</i:text></label>
+      <input name="filename" id="filename" />
+    </p>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="PUT" urlext="/[[filename]].xml">
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="browser-refresh" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0268]Impossible de créer le fichier</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

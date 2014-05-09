@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="trame_add_index" i:name="[0287]Nouvel index" i:shortname="[0287]Nouvel index"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+  <kd:icon>/_lib/kolekti/icons/new_index.png</kd:icon>
+  <kd:process>
+      <kd:notify event="trame-new-index" context='true'/>
+  </kd:process>
+  <kd:result />
+</kd:action>

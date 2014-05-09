@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="movemodule" i:name="[0260]Déplacer" i:shortname="[0260]Déplacer"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">>
+   <kd:icon>/_lib/kolekti/icons/icon_move.png</kd:icon>
+   <kd:dialog i:title="[0261]Déplacer le module" type="confirm">
+    <div class="selectdir">
+      <input type="hidden" name="moddir" id="selectdir" />
+    </div>
+    <div class="large_selectbrowser">
+      <p><i:text>[0258]Sélectionner le dossier destination</i:text></p>
+      <kd:ajaxbrowser id="movemodule" class="selectbrowser" keep_active_items="false">
+         <kd:behavior>
+            <kd:click id="selectdir" action="select" event="select-dir" />
+         </kd:behavior>
+         <kd:tab i:label="[0152]Explorateur" dir="@modules" id="module" />
+      </kd:ajaxbrowser>
+    </div>
+  </kd:dialog>
+  <kd:process>
+    <kd:dav method="MOVE">
+      <kd:header name="Destination" content="/projects/{{project}}/modules/[[moddir]]/{{resource}}" />
+    </kd:dav>
+  </kd:process>
+  <kd:result>
+    <kd:success>
+      <kd:notify event="resource-move" context="true" />
+      <kd:notify event="resource-browser-refresh" context="true" />
+      <kd:notify event="svnrevision-change" />
+    </kd:success>
+    <kd:error>
+      <kd:message><i:text>[0262]Impossible de déplacer le module</i:text></kd:message>
+    </kd:error>
+  </kd:result>
+</kd:action>

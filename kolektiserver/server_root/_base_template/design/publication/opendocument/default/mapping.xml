@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mappings>
+
+
+<imgprop zoomfactor="0.0051"/>
+
+<!-- style du titre de la table des matières -->
+<toc>
+  <title style="toc-title"/>
+</toc>
+
+<!-- style du titre de la table des index -->
+<index>
+  <title style="index-title"/>
+</index>
+
+<map element="div" class="c2i-attention">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-remarque">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-explication">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-exemple">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-fondamentaux">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-outils_methodologiques">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-complement">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-citation">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-texte_legal">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-rappel">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-etude_de_cas">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-savoirplus">
+  <frame anchor="paragraph"/>
+</map>
+	
+<map element="div" class="c2i-objectifs">
+  <frame anchor="paragraph"/>
+</map>
+
+<map element="div" class="c2i-synthese">
+  <frame anchor="paragraph"/>
+</map>
+	
+		
+</mappings>
+

@@ -1,0 +1,169 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Browser stylesheet */
+
+/* Styles of tabs */
+
+ul.browser_menu {
+    margin: 0;
+    padding: 0;
+    z-index:1;
+}
+
+.browser_menu li {
+    float:left;
+    list-style-type:none;
+    margin: 0px 5px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    white-space:nowrap;
+}
+
+.browser-directories ul{
+    padding-left:12px;
+}
+
+.browser_menu li span.tab {
+    display: block;
+    background-color: #fff;
+    color: #aaa;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0;
+    padding: 4px;
+    border:1px solid #333;
+    -moz-border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    position:relative;
+    top:5px;
+    border-bottom-width:1px;
+}
+
+.browser_menu li span.tab:hover {
+    background:#759FCF;
+    color:#fff;
+    cursor:pointer;
+}
+
+.browser_menu li.selected span.tab:hover {
+    cursor:inherit;
+ }
+
+.browser_menu li.selected span.tab {
+    background:#f8f8f8;
+    color: black;
+    border-color: black;
+    border-bottom-color:#f8f8f8;
+    border-bottom-width:2px;
+    z-index: 1;
+}
+
+/* Styles of mainactions */
+.browseractions {
+   background-color: #C0C0C0;
+   height: 20px;
+}
+
+.mainbrowseractions span.browseritemaction {
+   display:block;
+   margin-top: 2px;
+}
+
+/* Styles of list dirs */
+.browser-directories {
+   border: 1px solid black;
+   position: absolute;
+   top: 30px;
+   bottom: 0;
+   left: 0;
+   right: 0;
+}
+
+ul.subdirs {
+   padding: 0;
+   position: absolute;
+   top: 17px;
+   bottom: 0;
+   left: 2px;
+   right: 0;
+   overflow-y: auto;
+   margin: 15px 0 0 0;
+}
+
+ul.subdirs ul{
+   margin-left: 10px;
+   padding-left: 2px;
+   border-left: 1px solid #C0C0C0;
+}
+
+
+.selected_browserdirectoryline,
+.browserdirectoryline {
+   margin: 2px 0;
+}
+
+span.browseritemaction {
+   display:none;
+/*   float: right;*/
+   position:absolute;
+   right:0;
+/*   padding-right: 2px;*/
+}
+
+p.browserdirectoryline span.action2 {
+   right:18px;
+}
+
+p.browserdirectoryline span.action3 {
+   right:36px;
+}
+
+p.browserdirectoryline:hover, li.fileitem:hover {
+   background-color:#E0E0E0;
+}
+
+p.selected_browserdirectoryline,
+li.selected_fileitem {
+   background-color: #C0C0C0;
+}
+
+p.browserdirectoryline img {
+   cursor: pointer;
+}
+
+p:hover span.browseritemaction, li.fileitem:hover span.browseritemaction {
+   display:block;
+}
+
+span.dirname {
+   padding-left: 3px;
+}
+
+span.filename { 
+   display:block;
+   padding-left:24px;
+   padding-bottom:4px;  
+ }
+
+img.fileicon
+{
+  position: absolute;
+  padding-right: 0px;
+  padding-left: 6px;
+}

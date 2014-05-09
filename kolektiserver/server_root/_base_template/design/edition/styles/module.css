@@ -1,0 +1,37 @@
+body {
+  font-family: ArialNarrow, Arial, Helvetica; 
+  width: 13cm;
+  text-align: justify;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: ArialNarrow, Arial, Helvetica; 
+  width: 13cm;
+  text-align: left;
+}
+
+var[class] { 
+  border: 1px solid green;
+}
+
+*[class~="="] {
+border: 1px solid blue;
+margin: 2px 2px 2px 2px;
+padding: 2px 2px 2px 2px;
+}
+
+*[class~="="]:before {
+		content : attr(class);
+		color: blue;
+		display:block;
+		font-size: 11px;
+		border-bottom: 1px solid #D0D0D0;
+	    	padding: 2px;
+		margin:0;
+}
+
+tr[class~="="] td{
+border: 2px solid purple;
+}
+
+

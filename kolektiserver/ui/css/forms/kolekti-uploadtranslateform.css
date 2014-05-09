@@ -1,0 +1,11 @@
+
+/* Upload translate form stylesheet */
+
+.publication_result .title span {
+   float: left;
+}
+
+.publication_result .profile {
+    clear: both;
+    padding-bottom: 30px;
+}

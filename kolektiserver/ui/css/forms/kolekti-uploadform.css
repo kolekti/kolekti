@@ -1,0 +1,7 @@
+
+/* Upload form stylesheet */
+
+.uploadform button.btn_addfile {
+	float: left;
+	margin: 12px;
+}

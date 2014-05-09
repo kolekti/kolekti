@@ -1,0 +1,143 @@
+/*
+ *    kOLEKTi : a structural documentation generator
+ *    Copyright (C) 2007-2010 Stéphane Bonhomme (stephane@exselt.com)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Admin stylesheet */
+
+#admincontent {
+   position: absolute;
+   top: 60px;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   overflow: auto;
+   padding: 10px 10px;
+}
+
+table { 
+  border-collapse:collapse;
+  width:100%;
+}
+
+td,th { 
+  border:1px solid black;
+}
+
+tr.rowuser td { 
+ border-top-width:2px;
+}
+
+tr.bckg1 { 
+background-color:#E0E0E0;
+}
+
+td {
+  vertical-align:top;
+}
+
+span.label { 
+  display:block;
+  width: 100px;
+  float:left;
+}
+
+/* Subtabs */
+
+ul#admintabs { 
+  display:block;
+  margin:0;
+  padding:0;
+}
+
+ul#admintabs li { 
+  display:inline;
+  margin-right:2px;
+}
+
+ul#admintabs li a { 
+  text-decoration:none;
+  border: 1px solid #D0D0D0;
+  border-bottom-width:0;
+  color:black;
+  padding:0 5px;
+  background-color:white;
+}
+
+ul#admintabs li a:hover { 
+  background-color:#C0C0C0;
+  text-decoration:none;
+}
+
+ul#admintabs li.active a,
+ul#admintabs li.active a:hover,
+ul#admintabs li a.selected,
+ul#admintabs li a.selected:hover { 
+  background-color:#D0D0D0;
+}
+
+/***** Tabular forms ******/
+.tabular p{
+    margin: 0;
+    padding: 5px 0 8px 180px;
+/*    height: 1%;*/
+    clear:left;
+}
+
+.tabular label.fieldtitle{
+    font-weight: bold;
+    float: left;
+    text-align: right;
+    margin-left: -180px; /*width of left column*/
+    width: 175px; /*width of labels. Should be smaller than left column to create some right
+    margin*/
+}
+
+.tabular label.fieldlisttitle{
+    font-weight: bold;
+    text-align: right;
+    vertical-align: top;
+    width: 175px; /*width of labels. Should be smaller than left column to create some right
+    margin*/
+}
+
+/* forms status */
+
+p.formstatus { 
+  font-weight:bold;  
+  border:1px solid black;
+  padding: 5px 35px;
+  background-repeat:no-repeat;
+  background-position: 10px 5px;
+}
+
+p.formstatus.ok {  
+  border-color:#008000;
+  background-color:#80FF80;
+  background-image: url('/_lib/kolekti/icons/dialog-ok.png');
+}
+
+p.formstatus.error {  
+  border-color:#800000;
+  background-color:#FF8080;
+  background-image: url('/_lib/kolekti/icons/dialog-error.png');
+}
+
+p.formstatus.warning {  
+  border-color:#df6f00;
+  background-color:#f3dfb7;
+  background-image: url('/_lib/kolekti/icons/dialog-warning.png');
+}

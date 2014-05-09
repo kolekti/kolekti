@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kd:action id="renamemodule" i:name="[0282]Renommer" i:shortname="[0282]Renommer"
+           xmlns:i="kolekti:i18n"
+           xmlns:kd="kolekti:dialogs"
+           xmlns="http://www.w3.org/1999/xhtml">
+   <kd:icon>/_lib/kolekti/icons/icon_rename.png</kd:icon>
+   <kd:dialog i:title="[0283]Renommer le module" type="confirm">
+    <input type="hidden" name="url" id="url" value="" />
+    <p>
+      <span class="wndlabel"><i:text>[0284]Nouveau nom du module</i:text> </span>
+      <span class="wndfield">
+        <input name="modname" id="modname" />
+      </span>
+    </p>
+  </kd:dialog>
+  <kd:process>
+    <kd:notify event="resource-rename" context="true" />
+    <kd:notify event="svnrevision-change" />
+  </kd:process>
+  <kd:result />
+</kd:action>

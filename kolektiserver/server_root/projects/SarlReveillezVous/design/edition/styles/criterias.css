@@ -1,0 +1,16 @@
+*[class~="="]  {border-left: 2px dashed #FF4040;padding-left:5px;clear:both;}
+*[class~="NoticePapier"]:before,*[class~="NoticeWeb"]:before,*[class~="WestEurope"]:before,*[class~="EastEurope"]:before,*[class~="MiddeEast"]:before,*[class~="USA_Canada"]:before,*[class~="JAN"]:before,*[class~="FEV"]:before,*[class~="MAR"]:before,*[class~="AVR"]:before,*[class~="MAI"]:before,*[class~="JUN"]:before,*[class~="JUL"]:before,*[class~="AOU"]:before,*[class~="SEP"]:before,*[class~="OCT"]:before,*[class~="NOV"]:before,*[class~="DEC"]:before,*[class~="2008"]:before,*[class~="2009"]:before,*[class~="2010"]:before,*[class~="2011"]:before,*[class~="2012"]:before,*[class~="Redaction"]:before,*[class~="Validation"]:before,*[class~="Définitive"]:before,*[class~="A"]:before,*[class~="B"]:before,*[class~="C"]:before,*[class~="D"]:before,*[class~="E"]:before,*[class~="F"]:before,*[class~="G"]:before,*[class~="H"]:before,*[class~="SlimDring"]:before,*[class~="Dring"]:before,*[class~="fr"]:before,*[class~="de"]:before,*[class~="en"]:before {
+                    background-color: white;
+                    border: 1px dashed #FF4040;
+                    bottom: 0;
+                    color: #FF4040;
+                    content: attr(class);
+                    display: block;
+                    float: left;
+                    font-family: sans-serif;
+                    font-size: 60%;
+                    font-weight: bold;
+                    margin: 0 10px 10px 0;
+                    padding: 2px 15px;
+                    top: -10px;
+                    width: 250px; }
