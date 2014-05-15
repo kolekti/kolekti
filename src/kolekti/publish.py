@@ -162,12 +162,11 @@ class Publisher(PublisherMixin, kolektiBase):
                         print traceback.format_exc()
                         print "Error with",script.get('name')
                         raise Exception
-                
+
     def publish_assemble(self, trame):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
-        assembly = xsassembly(trame)
-        # assfile = pubdir + "_c/content.xhtml"
-        # self.write(str(assembly), "/publications/ass.xml")
+        assembly = xsassembly(trame, lang="'%s'"%self._publang)
+#        self.write(str(assembly), "/publications/ass.xml")
         return assembly
     
     def publish_profile(self, profile, pubdir, assembly):
@@ -185,15 +184,15 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             # criterias
             s = self.get_xsl('criterias', PublisherExtensions, profile=profile, lang=self._publang)
-            assembly = s(assembly,lang=self._publang)
+            assembly = s(assembly)
             # filter
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
-            # process title levels
-            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
-            assembly = s(assembly)
+#            # process title levels
+#            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+#            assembly = s(assembly)
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
