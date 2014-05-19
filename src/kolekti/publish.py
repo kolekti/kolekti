@@ -190,9 +190,9 @@ class Publisher(PublisherMixin, kolektiBase):
             assembly = s(assembly)
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
-#            # process title levels
-#            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
-#            assembly = s(assembly)
+            # process title levels
+            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            assembly = s(assembly)
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
