@@ -69,6 +69,7 @@ class SQLAlchemyBackend(object):
 
     def get_model(self,modelname):
         for m in self.__models:
+            # print m, modelname
             try:
                 model=getattr(m,modelname)
                 return model
@@ -97,6 +98,7 @@ class SQLAlchemyBackend(object):
         self.__models=[]
         for dbmodel in (conf.get('db_fmk_model'), conf.get('db_app_model')): 
             # try load module
+#            print dbmodel, conf.sqlpathlist
             try:
                 module=sys.modules[dbmodel]
                 self.__models.append(module)
@@ -104,15 +106,19 @@ class SQLAlchemyBackend(object):
                 # import module name
                 fp = None
                 try:
+#                    print "loading model", dbmodel
                     fp, pathname, description = imp.find_module(dbmodel,conf.sqlpathlist)
                     module = imp.load_module(dbmodel, fp, pathname, description)
                     self.__models.append(module)
                 except:
+                    import traceback
+                    print traceback.format_exc()
                     pass
                 finally:
                     # Since we may exit via an exception, close fp explicitly.
                     if fp:
                         fp.close()
+#        print self.__models
 
     def __create_tables(self, metadata):
         createtable = False
