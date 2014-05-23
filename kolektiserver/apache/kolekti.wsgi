@@ -1,4 +1,5 @@
-#     -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
+
 #     kOLEKTi : a structural documentation generator
 #     Copyright (C) 2007-2011 Stephane Bonhomme (stephane@exselt.com)
 #
@@ -38,15 +39,17 @@ sys.stderr = NullStream('/tmp/kolektierr')
 
 
 # magic python path
-from os.path import abspath, dirname
+# from os.path import abspath, dirname
 
-dir = dirname(dirname(abspath(__file__)))
-sys.path.append(dir)
-sys.path.append(dirname(dir))
-#sys.path.append('/home/waloo/Projets/kolekti')
-os.environ['KOLEKTI_APPDIR']='/usr/share/pyshared/kolektiserver'
+# dir = dirname(dirname(abspath(__file__)))
+# sys.path.append(dir)
+# sys.path.append(dirname(dir))
+
+sys.path.append('/opt/kolekti')
+
+os.environ['KOLEKTI_APPDIR']='/opt/kolekti/kolektiserver'
 os.environ['KOLEKTI_APP']='kolektiserver'
-#os.environ['appdir']='/home/waloo/Projets/kolekti/applications/trunk/kolektiserver'
+# os.environ['appdir']='/home/waloo/Projets/kolekti/applications/trunk/kolektiserver'
 
 from kolekti.http.wsgirequesthandler import KolektiHandler
 
