@@ -122,14 +122,15 @@ class FakeRequest(object):
         raise MatchRejected
 
 
-class WebObRequest(Request):
+
+class WebObRequest(object):
     viewFact  = VF()
     modelFact  = MF()
     #default_charset='utf-8'
 
     def __init__(self, *args, **kargs):
         kargs.update({'charset': 'utf-8'})
-        super(Request,self).__init__(*args, **kargs)
+        #super(Request,self).__init__(*args, **kargs)
         #self._uid=0
         #self._isadmin=False
         environ=kargs.get('environ',None)
@@ -174,9 +175,10 @@ class WebObRequest(Request):
 
     @property
     def translation(self):
-        locale=self.getdata('user','locale')
+        locale = self.getdata('user','locale')
         if locale is None:
             locale = conf.get('locale_default')
+#        locale = u'fr'
         return gettext.translation(conf.get('locale_domain'),conf.get('localedir'),languages=[locale])
 
     @property
@@ -220,6 +222,10 @@ class WebObRequest(Request):
             self._ctrs.append(ctr)
 
     def setdata(self, namespace, key, value):
+        # if key == "locale":
+        #    print "setdata", value
+        #    import traceback
+        #    traceback.print_stack()
         if not self._private_data.has_key(namespace):
             self._private_data.update({namespace:{}})
         self._private_data.get(namespace).update({key:value})
