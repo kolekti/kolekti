@@ -27,12 +27,16 @@ import locale
 import sys
 import traceback
 import os
+import copy
 from kolekti.kolekticonf import conf
 from kolekti.logger import dbgexc,debug
 from kolekti.mvc.controllerfactory import ControllerFactory as CF
 from kolekti.mvc.viewfactory import ViewFactory as VF
 from kolekti.mvc.modelfactory import ModelFactory as MF
-from kolekti.http.httprequest import WebObRequest
+from kolekti.http.httprequest import WebObRequest as Context
+
+from webob import Request,Response
+
 import kolekti.http.statuscodes as HS
 from kolekti.exceptions import exceptions as EXC
 from webob.exc import *
@@ -56,14 +60,54 @@ class  KolektiHandler_test_environ(object):
 
         return r(environ, start_response)
 
+
 class  KolektiHandler(object):
     ctrFact   = CF()
 
     def __call__(self, environ, start_response):
         #debug("------------------------------------------------")
         robj = None
-        http=WebObRequest(environ=environ)
+#        http = Request(environ=environ)
+        http = context = Context(environ = environ)
 
+#        print http.headers
+#        context = Context()
+#        context.headers = {}
+#        context.cookies = {}
+#        context.params = {}
+#        context.environ = {}
+
+
+#        print "---------------------------------"
+#        for k,v in http.headers.iteritems():
+#            print k,":",v
+#            context.headers.update({k:v})
+
+#        for k,v in http.cookies.iteritems():
+#            print k,":",v
+#            context.cookies.update({k:v})
+
+#        context.params = http.params
+#        for k in http.params:
+#            v = http.params.getall(k)
+#            print k,":",v
+#            context.params.update({k:v})
+        
+#        for k,v in http.environ.iteritems():
+#            print k,":",v
+#            context.environ.update({k:v})
+        
+#        context.method = http.method
+#        context.upath_info = http.upath_info
+#        context.path_info = http.path_info
+#        context.host = http.host
+        #context.port = http.port
+        #context.server = http.server
+#        context.url = http.url
+        
+#        context.body = http.body
+
+#        print "---------------------------------"
         debug("%s %s"%(http.method, http.path))
 
         command=http.method
@@ -73,7 +117,7 @@ class  KolektiHandler(object):
             mname = 'ctr' + command
 
         try:
-            ctrs=self.ctrFact.getControllers(http)
+            ctrs=self.ctrFact.getControllers(context)
             for ctr in ctrs:
                 if not hasattr(ctr, mname) and not hasattr(ctr,'ctrALL'):
                     raise EXC.UnsupportedMethod, "Unsupported method (%r)" % command
@@ -81,13 +125,13 @@ class  KolektiHandler(object):
                     method = getattr(ctr, mname)
                 except AttributeError:
                     method = getattr(ctr, 'ctrALL')
-                #debug((http.method,http.path,"calling  %s.%s"%(ctr.__class__.__name__,method.__name__)))
+#                print http.method,http.path,"calling  %s.%s"%(ctr.__class__.__name__,method.__name__)
 
                 #self.http.ctrmark(str(ctr))
                 method()
                 #debug((http.method,http.path,"done  %s.%s"%(ctr.__class__.__name__,method.__name__)))
 
-                #debug("headers %s"%http.response.headers)
+                #debug("headers %s"%context.response.headers)
 
 
         # exceptions handling
@@ -99,13 +143,13 @@ class  KolektiHandler(object):
 
         except EXC.Status, (ec,dd):
             #debug(("Status",ec,dd))
-            http.response.status=ec
+            context.response.status=ec
 
         except EXC.Multistatus, (body,):
             if not http is None:
-                http.response.status=207
-                http.response.content_type='application/xml'
-                http.response.body=body
+                context.response.status=207
+                context.response.content_type='application/xml'
+                context.response.body=body
 
 
         except EXC.Forbidden, (ec,dd):
@@ -121,6 +165,8 @@ class  KolektiHandler(object):
                     #http.view.error(ec,dd)
 
         except EXC.AuthError, (ec,dd):
+            import traceback
+            print traceback.format_exc()
             debug("Auth Error")
             r= HTTPUnauthorized("Authorization Requested",[('WWW-Authenticate', 'Basic realm="kolekti"')])
             robj = r(environ, start_response)
@@ -133,7 +179,7 @@ class  KolektiHandler(object):
         except EXC.Error, (ec,dd):
             debug("HTTP ERROR %s %s"%(ec,dd))
             if not http is None:
-                http.view.error(ec,dd)
+                context.view.error(ec,dd)
 
         except HTTPException:
             debug("webob exception")
@@ -141,16 +187,23 @@ class  KolektiHandler(object):
 
         except Exception:
             debug("Exception")
-            debug(traceback.format_exc())
-            t=http.view.error(500,"Internal Error", traceback.format_exc())
+            import traceback
+            print traceback.format_exc()
+            t=context.view.error(500,"Internal Error", traceback.format_exc())
             r=HTTPInternalServerError(t)
             robj = r(environ, start_response)
 
         # if not response object
         if not robj:
-            robj = http.response(environ, start_response)
+#            print "result"
+            robj = context.response(environ, start_response)
+
+        # print robj
+        
         # if request has sql object, delete it
-        if http._sql:
-            http._sql.close()
+        if context._sql:
+            context._sql.close()
+        
         # Send response
+#        print "-----------------------------------"
         return robj

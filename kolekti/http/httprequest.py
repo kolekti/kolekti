@@ -123,14 +123,14 @@ class FakeRequest(object):
 
 
 
-class WebObRequest(object):
+class WebObRequest(Request):
     viewFact  = VF()
     modelFact  = MF()
     #default_charset='utf-8'
 
     def __init__(self, *args, **kargs):
         kargs.update({'charset': 'utf-8'})
-        #super(Request,self).__init__(*args, **kargs)
+        super(WebObRequest,self).__init__(*args, **kargs)
         #self._uid=0
         #self._isadmin=False
         environ=kargs.get('environ',None)
