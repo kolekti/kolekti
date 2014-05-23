@@ -65,8 +65,11 @@ class ViewXSLExtensions(XSLExtensions.KFunctions):
             elif userlogin is not None:
                 user = sql.select(Users, "login='%s'" %userlogin)
             u = user[0]
+            
             return "%s %s" %(u.firstname,u.lastname)
         except:
+            import traceback
+            print traceback.format_exc()
             return 'Kolekti'
 
     def userid(self, _, *args):
@@ -79,6 +82,8 @@ class ViewXSLExtensions(XSLExtensions.KFunctions):
             try:
                 return self.http.userId
             except:
+                import traceback
+                print traceback.format_exc()
                 return ''
         else:
             try:
@@ -88,6 +93,8 @@ class ViewXSLExtensions(XSLExtensions.KFunctions):
                 u = user[0]
                 return str(u.id)
             except:
+                import traceback
+                print traceback.format_exc()
                 return ''
 
     def userprojects(self, _):
