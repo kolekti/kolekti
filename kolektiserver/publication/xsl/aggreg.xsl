@@ -211,12 +211,13 @@
     <xsl:variable name="modurl" select="kfp:resid2url(string(@resid))"/>
 
     <div class="module" id="{generate-id()}">
+      <xsl:variable name="module" select="kfp:get_module(string(@resid))"/>
       <div class="moduleinfo">
          <p><span class="infolabel">source</span><span class="infovalue"><a href="{$modurl}"><xsl:value-of select="$path"/></a></span></p>
-         <xsl:apply-templates select="kfp:get_module(string(@resid))/html:head/html:meta" mode="module_info"/>
+         <xsl:apply-templates  select="$module/html:head/html:meta" mode="module_info"/>
       </div>
       
-      <xsl:apply-templates select="kfp:get_module(string(@resid))/html:body" mode="aggreg">
+      <xsl:apply-templates select="$module/html:body" mode="aggreg">
 	<xsl:with-param name="section_depth" select="$section_depth"/>
       </xsl:apply-templates>
     </div>

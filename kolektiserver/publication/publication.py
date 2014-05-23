@@ -23,6 +23,7 @@ import sys
 import imp
 import urllib2
 import copy
+import gc
 
 from datetime import datetime
 from babel.dates import format_date, format_datetime
@@ -46,6 +47,15 @@ class PublisherExtensions(object):
         super(PublisherExtensions,self).__init__()
         self.publisher=publisher
         self.__cache={}
+        self._xmldocs = []
+
+    def cleanup(self):
+        print "ext cleanup"
+        self.publisher=None
+        self._cache={}
+        print "cleaning %d documents"%len(self._xmldocs)
+        for d in self._xmldocs:
+            del(d)
 
     def criterias(self,_,*args):
         """Get the list of criterias node as defined in the project configuration"""
@@ -121,6 +131,7 @@ class PublisherExtensions(object):
             dbgexc()
             raise PublisherError(self.publisher.setmessage(u"[0033]Erreur lors de la lecture du module : %(resid)s %(error)s", {'resid': resid, 'error': e.error_log.filter_from_level(ET.ErrorLevels.FATAL)}))
 
+        self._xmldocs.append(mod)
         return mod
 
     def get_revnotes(self,_,*args):
@@ -244,8 +255,9 @@ class Publisher(object):
         self.view=view
         self.model=model
         self.extensions = {}
-        self.__loadextensions()
         self.cachevarfile = {}
+        self.extf_obj = None
+        self.__loadextensions()
 
     def setmessage(self, msg, params={}):
         """Returns formated message, according to linguistic settings"""
@@ -254,9 +266,9 @@ class Publisher(object):
 
     def __loadextensions(self):
         """Loads xslt Extension Class """
-        extf_obj = PublisherExtensions(self)
+        self.extf_obj = PublisherExtensions(self)
         exts = (n for n in dir(PublisherExtensions) if not(n.startswith('_')))
-        self.extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
+        self.extensions.update(ET.Extension(self.extf_obj, exts, ns=self.extf_obj.ens))
 
     def get_xsl(self,xslfile):
         """
@@ -268,6 +280,15 @@ class Publisher(object):
         xsldoc  = ET.parse(xslfile,parser)
         xsl = ET.XSLT(xsldoc, extensions=self.extensions)
         return xsl
+
+    def cleanup(self):
+        self.extf_obj.cleanup()
+        print gc.get_referrers(self.extf_obj)
+        self.extf_obj = None
+        self.view = None
+        self.model = None
+        self.extensions = None
+        self.cachevarfile = None
 
 class TramePublisher(Publisher):
     """

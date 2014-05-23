@@ -21,6 +21,10 @@ import time
 from kolekti.mvc.controllers.IterController import IterController
 from kolektiserver.publication.publication import TramePublisher
 
+import gc
+#gc.set_debug(gc.DEBUG_LEAK)
+
+
 from kolekti.logger import dbgexc,debug
 from kolekti.utils.i18n.i18n import tr
 
@@ -67,8 +71,8 @@ class PublishController(IterController):
             yield self.view.finalize()
             return
 
+        # instanciate a publisher object
         try:
-            # instanciate a publisher object
             publisher = TramePublisher(self.view, self.model)
 
             # sets the trame and aggregate modules into a single xhtml structure
@@ -88,8 +92,22 @@ class PublishController(IterController):
                         yield msg
 
                 # register publication parameters in a manifest document
+        
                 self.model.add_orders_history()
+                
         except:
             dbgexc()
             # tell the user it is done
+
         yield self.view.finalize()
+
+        try:
+            publisher.cleanup()
+            pass
+        except:
+            import traceback
+            print traceback.format_exc()
+
+        gc.collect()
+        print gc.get_referrers(publisher)
+        print "publisher done"
