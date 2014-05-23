@@ -1,0 +1,46 @@
+<VirtualHost *:80>
+	ServerName kolekti
+        <Directory />
+                Options FollowSymLinks
+                AllowOverride None
+                Order deny,allow
+                Deny from all
+        </Directory>
+
+	ServerRoot /opt/kolekti/server_root
+
+        ErrorLog /var/log/apache2/kolekti.log
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel debug
+
+        CustomLog /var/log/apache2/kolekti-access.log combined
+
+	SetEnv KOLEKTI_APPDIR /opt/kolekti/kolektiserver
+	SetEnv KOLEKTI_APP kolektiserver
+#	SetEnv PYTHONPATH /opt/kolekti
+	Alias /_lib/ /opt/kolekti/server_root/_lib/
+	<Location /_lib>
+                Order deny,allow
+                Allow from all
+	</Location>
+	
+
+        WSGIScriptAlias / /opt/kolekti/kolektiserver/apache/kolekti.wsgi
+        #WSGIScriptAlias /login /opt/kolekti/kolektiserver/apache/kolekti.wsgi
+        #WSGIScriptAlias /logout /opt/kolekti/kolektiserver/apache/kolekti.wsgi
+        #WSGIScriptAlias /projects /opt/kolekti/kolektiserver/apache/kolekti.wsgi
+        #WSGIScriptAlias /_session /opt/kolekti/kolektiserver/apache/kolekti.wsgi
+	WSGIPassAuthorization On
+
+
+        <Directory /opt/kolekti/kolektiserver/apache>
+                WSGIApplicationGroup %{GLOBAL}
+                Order deny,allow
+                Allow from all
+        </Directory>
+
+
+</VirtualHost>
+

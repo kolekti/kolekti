@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config version="0.6">
+  <!-- framework configuration -->
+  <server host="0.0.0.0"
+	  port="8000"
+	  routes="_CONFDIR_/routes.xml"/>
+
+  <localedir path="_CONFDIR_/locale" />
+  <basedir path="/opt/kolekti/server_root" />
+  <tmpdir path="/tmp"/>
+
+  <database type="mysql" 
+	    host="127.0.0.1" 
+	    login="kolekti" 
+	    password="kolekti" 
+	    db="kolekti" />
+
+  <svn passwdfile="_CONFDIR_/passwdfile"
+       groupfile="_CONFDIR_/groupfile"/>
+
+  <mail host="localhost"
+	port="25"
+	sender_address="noreply@yourdomain"/>
+
+  <locale default="fr" domain="kolekti">
+   <lang value="fr">French</lang>
+   <lang value="en">English</lang>
+  </locale>
+
+  <auth model="AuthModel"/>
+  <debug>True</debug>
+<!--
+  <debug>True</debug>
+  <debug_locale>True</debug_locale>
+
+  <sessionservice/>
+  <profileservice namespace="kolekti:profile"/>
+  <lockservice locksfile="/tmp/kolekti.locks"/>
+-->
+
+  <!-- kolektiserver configuration -->
+  <kolektiserver>
+    <publication scripts="_CONFDIR_/pubscripts.xml"/>
+    <modules file_extension="xht"/>
+    <oooserver host="192.168.122.11" port="8888" />
+    <directories>
+      <collections path="collections"/>
+      <trames path="trames"/>
+      <publications path="publications"/>
+      <sheets path="sheets"/>
+      <modules path="modules"/>
+      <masters path="masters"/>
+      <medias path="medias"/>
+      <styles path="design"/>
+      <projects path="projects"/>
+    </directories>
+  </kolektiserver>
+  <debug active="1"/>
+  <lessc>/home/waloo/less.js/bin/lessc</lessc>
+</config>
+
