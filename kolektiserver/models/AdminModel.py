@@ -158,6 +158,8 @@ class AdminModel(UserAccountModel):
             sql.commit()
             return prj.id
         except:
+            import traceback
+            print traceback.format_exc()
             sql.rollback()
             return 0
 
