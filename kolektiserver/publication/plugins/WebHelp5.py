@@ -36,6 +36,7 @@ class plugin(pluginBase.plugin):
         """
         main publication function
         """
+        debug("WebHelp5 postpub")
 
         pubpath = self.publisher.model.pubpath
         label=self.label.encode(self.LOCAL_ENCODING)
@@ -80,14 +81,19 @@ class plugin(pluginBase.plugin):
         except:
             debug("Filter file not found")
 
+        debug("WebHelp5 search index")
+
         # generer l'index pour recherche
         iff=file(os.path.join(pubpath,label,'js','index.js'),'w')
         idxx=self.index(pivot)
         iff.write(idxx)
         iff.close()
 
+        debug("WebHelp5 search index done")
 
         css=self.params.get('css','')
+
+        debug("WebHelp5 generate")
 
         # générer les pages
         try:
@@ -97,6 +103,8 @@ class plugin(pluginBase.plugin):
             yield (self.publisher.view.error(self.publisher.setmessage(u"[0340]Problème lors de l'exécution du script WebHelp5")))
             raise Exception
         
+        debug("WebHelp5 generate done")
+
         linkurl = self.publisher.model.local2url(self.publisher.model.pubpath)
         yield(self.publisher.view.publink('index.html', self.label, '/'.join((linkurl, self.label, 'index.html'))))
 
@@ -117,6 +125,7 @@ class plugin(pluginBase.plugin):
         except:
             dbgexc()
             yield(self.publisher.view.error(self.publisher.setmessage(u"[0064]Problème lors de la création de l'archive zip")))
+        debug("WebHelp5 postpub done")
 
     def index(self,pivot):
         self.__firstmod = ""
@@ -152,20 +161,13 @@ class plugin(pluginBase.plugin):
         xslt=self.get_xsl('generate.xsl')
         templdir=os.path.join(self.publisher.model.projectpath,'design','publication',self._plugin,'config')+os.path.sep
         templtrans=os.path.join(self.publisher.model.projectpath,'sheets')+os.path.sep
+
         try:
-            doc=xslt(pivot,
-                     pubdir=u"'%s'"%pubpath.decode(self.LOCAL_ENCODING),
-                     css=u"'%s'"%css.decode(self.LOCAL_ENCODING),
-                     templatedir=u"'%s'"%templdir.decode(self.LOCAL_ENCODING),
-                     templatetrans=u"'%s'"%templtrans.decode(self.LOCAL_ENCODING),
-                     template=u"'%s'"%template.decode(self.LOCAL_ENCODING),
-                     label=u"'%s'"%self.label)
-        except:
-            debug("ERROR FROM XSL")
-            debug(xslt.error_log)
-            raise Exception
-        try:
-            xslt=self.publisher.get_xsl(os.path.join(templdir,'generate.xsl'))
+            if os.path.exists(os.path.join(templdir,'generate.xsl')):
+                xslt=self.publisher.get_xsl(os.path.join(templdir,'generate.xsl'))
+            else:
+                xslt=self.get_xsl('generate.xsl')
+
             try:
                 doc=xslt(pivot,
                          pubdir=u"'%s'"%pubpath.decode(self.LOCAL_ENCODING),
@@ -182,7 +184,8 @@ class plugin(pluginBase.plugin):
             debug("could not load xsl " + os.path.join(templdir,'generate.xsl'))
             import traceback
             debug(traceback.format_exc())
-            pass
+                
+        
             
         #iff=file(os.path.join(pubpath,self.label.encode(self.LOCAL_ENCODING),'index.html'),'w')
         #iff.write(str(doc))
