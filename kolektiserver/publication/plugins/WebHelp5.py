@@ -158,7 +158,6 @@ class plugin(pluginBase.plugin):
         return res
 
     def generate(self,pivot,css,pubpath,template):
-        xslt=self.get_xsl('generate.xsl')
         templdir=os.path.join(self.publisher.model.projectpath,'design','publication',self._plugin,'config')+os.path.sep
         templtrans=os.path.join(self.publisher.model.projectpath,'sheets')+os.path.sep
 
