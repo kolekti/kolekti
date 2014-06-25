@@ -8,6 +8,7 @@ import re
 import sys
 import os
 import copy
+import logging
 
 from lxml import etree as ET
 
@@ -27,11 +28,11 @@ class PublisherMixin(object):
             self._publang = self._config.get("sourcelang","en")
 
     def process_path(self, path):
-        return self.substitute_criterias(path, ET.XML('<criterias/>'))
+        return self.substitute_criteria(path, ET.XML('<criteria/>'))
 
-    def substitute_criterias(self,string, profile, extra={}):
+    def substitute_criteria(self,string, profile, extra={}):
         extra.update({"LANG":self._publang})
-        return super(PublisherMixin, self).substitute_criterias(string, profile, extra=extra)
+        return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
 
 
 
@@ -45,13 +46,14 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
             kwargs.pop('profile')
         super(PublisherExtensions,self).__init__(*args, **kwargs)
         
-    def getmodule(self, _, *args):
+    def gettopic(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
+        logging.debug("get topic %s"%self.getUrlPath(path))
         return self.getUrlPath(path)
         
-    def criterias(self, _, *args):
-        return self._profile.xpath("criterias/criteria[@checked='1']")
+    def criteria(self, _, *args):
+        return self._profile.xpath("criteria/criterion[@checked='1']")
 
     def lang(self, _, *args):
         return self._publang
@@ -80,17 +82,17 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return r
         
     def replace_strvar(self, _, args):
-        srcstr = self.substitute_criterias(args, self._profile)
+        srcstr = self.substitute_criteria(args, self._profile)
         return self.substitute_variables(srcstr, self._profile)
 
-    def replace_crit(self, _, args):
+    def replace_criteria(self, _, args):
         srcstr = args
-        r = self.substitute_criterias(srcstr, self._profile)
+        r = self.substitute_criteria(srcstr, self._profile)
         return r
 
     def variable(self, _, *args):
-        sheet = self.substitute_criterias(args[0], self._profile)+".xml"
-        variable = self.substitute_criterias(args[1], self._profile)
+        sheet = self.substitute_criteria(args[0], self._profile)+".xml"
+        variable = self.substitute_criteria(args[1], self._profile)
         return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
 
 
@@ -101,7 +103,7 @@ class Publisher(PublisherMixin, kolektiBase):
             self._publang = self._config.get("sourcelang","en")
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
-        print "kolekti ",self._version
+        logging.debug("kolekti %s"%self._version)
         
     def _variable(self, varfile, name):
         fvar = self.get_base_variable(varfile+'.xml')
@@ -114,30 +116,31 @@ class Publisher(PublisherMixin, kolektiBase):
     def __substscript(self, s, subst, profile):
         for k,v in subst.iteritems():
             s = s.replace('_%s_'%k,v)
-        return self.substitute_variables(self.substitute_criterias(s,profile),profile)
+        return self.substitute_variables(self.substitute_criteria(s,profile),profile)
 
 
     # publishes a list of jobs
     
-    def publish(self, jobs):        
+    def publish(self, jobs):
         for job in jobs:
             path = self.get_base_job(job) + ".xml"
             xjob = self.parse(path)
             self.publish_job(xjob)
-
+            
     # publish a single job
     def publish_job(self, xjob):
 
-        trame = xjob.xpath('string(/*/*[self::trame or self::toc]/@value)')
-        trame = self.process_path(trame)
-
+        toc = xjob.xpath('string(/*/*[self::toc]/@value)')
+        toc = self.process_path(toc)
+        print toc
         # parses and assembly the trame
-        xtrame = self.parse(trame)
-        assembly = self.publish_assemble(xtrame)
-        
-        for profile in xjob.xpath('/*/profiles/profile'):
+        xtoc = self.parse(toc)
+        assembly = self.publish_assemble(xtoc)
+        print ET.tostring(xtoc)
+        for profile in xjob.xpath('/job/profiles/profile'):
+            print profile
             if profile.get('enabled','0') == '1':
-                
+                logging.info('publishing profile %s'%profile.find('label').text)
                 # calculates and creates the publication directory 
                 pubdir = self.substitute_variables(xjob.xpath('string(/*/pubdir/@value)'),profile)
                 pubdir = self.get_base_publication(pubdir)
@@ -172,7 +175,7 @@ class Publisher(PublisherMixin, kolektiBase):
     def publish_profile(self, profile, pubdir, assembly):
         print "-> Profile:",profile.xpath('string(label)')
         pubdirprofile = pubdir
-        pubdirprofile_c = pubdir + "/" + self.substitute_criterias(profile.xpath('string(label)'), profile) + '_c'
+        pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
         try:
             self.makedirs(pubdirprofile)
         except OSError:
@@ -182,8 +185,8 @@ class Publisher(PublisherMixin, kolektiBase):
         except OSError:
             pass
         try:
-            # criterias
-            s = self.get_xsl('criterias', PublisherExtensions, profile=profile, lang=self._publang)
+            # criteria
+            s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
             # filter
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
@@ -223,10 +226,10 @@ class Publisher(PublisherMixin, kolektiBase):
         # copy media to _c, update src attributes in pivot
         
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
-            base = med.xpath("string(ancestor::h:div[@class='module']/h:div[@class='moduleinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
+            base = med.xpath("string(ancestor::h:div[@class='topic']/h:div[@class='topicinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
-            ref = self.getPathFromSourceUrl(self.substitute_criterias(ref, profile))
-            med.set('src',self.substitute_criterias(ref, profile)[1:])
+            ref = self.getPathFromSourceUrl(self.substitute_criteria(ref, profile))
+            med.set('src',self.substitute_criteria(ref, profile)[1:])
             try:
                 self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
             except OSError:
@@ -243,7 +246,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def copy_script_params(self, script, profile, pubdir):
         
-        pubdirprofile_c = pubdir + "/" + self.substitute_criterias(profile.xpath('string(label)'), profile) + '_c'
+        pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
         name=script.get('name')
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
@@ -276,7 +279,7 @@ class Publisher(PublisherMixin, kolektiBase):
                                          ext = pdef.get('ext'))
                 if pdef.get('type')=='resource':
                     filer = unicode(pdef.get('file'))
-                    srcdir = unicode(self.substitute_criterias(pdef.get('dir'), profile))
+                    srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
                     self.script_copy(filer = filer,
                                      srcdir = srcdir,
                                      targetroot = pubdirprofile_c,
@@ -294,7 +297,7 @@ class Publisher(PublisherMixin, kolektiBase):
         label = profile.xpath('string(label)') 
         pubdirprofile = pubdir 
         pubdirprofile_c = pubdir + "/" + label + '_c'
-        suffix = self.substitute_variables(self.substitute_criterias(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
+        suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
         if len(suffix):
             pubname = "%s_%s"%(label, suffix)
         else:

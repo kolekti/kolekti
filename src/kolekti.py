@@ -6,12 +6,15 @@ import argparse
 import ConfigParser
 import settings
 import pysvn
+
+import logging
+
+
 import mimetypes
 mimetypes.init()
 
+
 from kolekti.server.wsgi import wsgiclass
-
-
 
 def readConfig(cmds = None, alternatefile = None):
     """Read the kolekti config file.
@@ -36,7 +39,7 @@ def readConfig(cmds = None, alternatefile = None):
         else:
             config.read(os.path.expanduser('~/.kolekti'))
     except:
-        print "Info : No config file, using default parameters"
+        logging.info("No config file, using default parameters")
 
     try:
         res.update({'kolekti':dict(config.items("kolekti"))})
@@ -57,6 +60,7 @@ if __name__ == '__main__':
     
     metaparser = argparse.ArgumentParser(add_help=False)
     metaparser.add_argument('-C','--config', help="alternative config file", metavar="FILE")
+    metaparser.add_argument('-v','--verbose', help="display verbose ouput", action = 'store_true' )
     args, remaining_argv = metaparser.parse_known_args()
     
     config_sections=['server',
@@ -67,6 +71,12 @@ if __name__ == '__main__':
         config = readConfig(config_sections,args.config)
     else:
         config = readConfig(config_sections)
+
+    if args.verbose:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(message)s', level=logging.INFO)
+        
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
     defaults=config.get("kolekti",{})
@@ -116,28 +126,27 @@ if __name__ == '__main__':
         try:
             if langs is None:
                 p = publish.Publisher(args.base)
-                print p
                 p.publish(args.jobs)
             else:
                 for lang in langs:
                     p = publish.Publisher(args.base, lang=lang)
                     p.publish(args.jobs)
-            print "Publication sucessful"
+            logging.info("Publication sucessful")
         except:
             import traceback
-            print traceback.format_exc()
-            print "Publication ended with errors"
+            logging.debug(traceback.format_exc())
+            logging.error("Publication ended with errors")
             
     if args.cmd == 'republish':
         from kolekti import publish
         try:
             p = publish.Publisher(args.base)
             p.publish_document(args.document)
-            print "Republication sucessful"
+            logging.info("Republication sucessful")
         except:
             import traceback
-            print traceback.format_exc()
-            print "Republication ended with errors"
+            logging.debug(traceback.format_exc())
+            logging.error("Republication ended with errors")
             
     if args.cmd == 'convert':
         from kolekti import convert

@@ -66,7 +66,7 @@
       </xsl:when>
 
       <xsl:otherwise>
-        <xsl:variable name="res" select="kfp:replace_crit(concat('{',@class,'}'))"/>
+        <xsl:variable name="res" select="kfp:replace_criteria(concat('{',@class,'}'))"/>
         <xsl:value-of select="$res"/>
       </xsl:otherwise>
     </xsl:choose>

@@ -31,9 +31,9 @@
     doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
-  <xsl:key name="modref" match="//html:div[@class='module']" use="string(html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]/html:span[@class='infovalue']/html:a/@href)"/>
+  <xsl:key name="modref" match="//html:div[@class='topic']" use="string(html:div[@class='topicinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]/html:span[@class='infovalue']/html:a/@href)"/>
 
-  <xsl:key name="id" match="//html:div[@class='module']//*[@id]" use="@id"/>
+  <xsl:key name="id" match="//html:div[@class='topic']//*[@id]" use="@id"/>
 
   <xsl:template match="node()|@*">
     <xsl:copy>
@@ -41,12 +41,12 @@
     </xsl:copy>
   </xsl:template>
 
-  <!-- transforme tous les id internes (id) aux module (m)  en m_id -->
-  <xsl:template match="html:div[@class='module']//*[@id]">
+  <!-- transforme tous les id internes (id) aux topic (m)  en m_id -->
+  <xsl:template match="html:div[@class='topic']//*[@id]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="id">
-        <xsl:value-of select="generate-id(ancestor::html:div[@class='module'][1])"/>
+        <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'][1])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@id"/>
       </xsl:attribute>
@@ -55,7 +55,7 @@
   </xsl:template>
 
 
-  <xsl:template match="html:div[@class='module']">
+  <xsl:template match="html:div[@class='topic']">
     <xsl:copy>
       <xsl:attribute name="id">
         <xsl:value-of select="generate-id()"/>
@@ -64,21 +64,21 @@
     </xsl:copy>
   </xsl:template>
   
-  <!-- supprime tous les modules portant un id ?!? -->
-  <xsl:template match="html:div[@class='module']/@id"/>
+  <!-- supprime tous les topics portant un id ?!? -->
+  <xsl:template match="html:div[@class='topic']/@id"/>
 
-  <xsl:template match="html:div[@class='moduleinfo']">
+  <xsl:template match="html:div[@class='topicinfo']">
     <xsl:copy-of select="."/>
   </xsl:template>
 
   <!--traitement des liens -->
   <xsl:template match="html:a[@href]">
 
-    <!-- path du module source -->
-    <xsl:variable name="modpath" select="ancestor::html:div[@class='module']/html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]/html:span[@class='infovalue']/html:a/@href" />
+    <!-- path du topic source -->
+    <xsl:variable name="modpath" select="ancestor::html:div[@class='topic']/html:div[@class='topicinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]/html:span[@class='infovalue']/html:a/@href" />
     <xsl:variable name="lhref" select="@href"/>
 
-    <!-- url du module cible -->
+    <!-- url du topic cible -->
     <xsl:variable name="tmod">
       <xsl:choose>
         <xsl:when test="contains($lhref,'#')">
@@ -99,20 +99,20 @@
           <xsl:value-of select="@href" />
         </xsl:when>
         
-        <!-- lien interne au module -->
+        <!-- lien interne au topic -->
         <xsl:when test="starts-with(@href, '#')">
           <xsl:text>#</xsl:text>
-          <xsl:value-of select="generate-id(ancestor::html:div[@class='module'])"/>
+          <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
           <xsl:text>_</xsl:text>
           <xsl:value-of select="substring-after(@href,'#')"/>
         </xsl:when>
 
-        <!-- lien absolu (/projects/PNAME/modules/... -->
+        <!-- lien absolu (/projects/PNAME/topics/... -->
         <xsl:when test="starts-with($tmod, '/')">
           <!--
           <xsl:variable name="ref" select="kfp:normpath(string($tmod))" />
           -->
-          <xsl:variable name="ref" select="kfp:getmodule(string($tmod))" />
+          <xsl:variable name="ref" select="kfp:gettopic(string($tmod))" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -129,7 +129,7 @@
           <!--
                <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
           -->
-          <xsl:variable name="ref" select="kfp:getmodule( string($tmod),string($modpath))" />
+          <xsl:variable name="ref" select="kfp:gettopic( string($tmod),string($modpath))" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -168,7 +168,7 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="name">
-        <xsl:value-of select="generate-id(ancestor::html:div[@class='module'])"/>
+        <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@name"/>
       </xsl:attribute>

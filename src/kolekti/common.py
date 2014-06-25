@@ -5,12 +5,12 @@ import urllib2
 import urllib
 import urlparse
 import shutil
-
+import logging
 
 objpathes = {
     "0.6":{
-        "modules" : "modules",
-        "trames"  : "trames",
+        "topics" : "modules",
+        "tocs"  : "trames",
         "sources"  : "",
         "publications" : "publication",
         "variables" : "sheets/xml",
@@ -19,8 +19,8 @@ objpathes = {
         "profiles" : "configuration/profiles"
         },
     "0.7":{
-        "modules" : "sources/{LANG}",
-        "trames"  : "sources/{LANG}",
+        "topics" : "sources/{LANG}",
+        "tocs"  : "sources/{LANG}",
         "sources"  : "sources/{LANG}",
         "publications" : "publications",
         "variables" : "sources/{LANG}/variables",
@@ -87,8 +87,8 @@ class kolektiBase(object):
         #        print self.__path, pathparts
         return os.path.join(self._path, *pathparts)
 
-
     def get_script(self, plugin):
+        # imports a script python module
         import plugins
         return plugins.getPlugin(plugin,self._path)
         
@@ -116,8 +116,9 @@ class kolektiBase(object):
         return dir
 
     def get_extensions(self, extclass, **kwargs):
+        # loads xslt extension classes
+
         extensions = {}
-#        print "get_extensions",extclass,self.__path,kwargs
         extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
@@ -125,7 +126,9 @@ class kolektiBase(object):
         
 
     def get_xsl(self, stylesheet, extclass = None, xsldir = None, system_path = False, **kwargs):
-        print "get xsl",stylesheet, extclass , xsldir , kwargs
+        # loads an xsl stylesheet
+        # 
+        logging.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
@@ -162,7 +165,7 @@ class kolektiBase(object):
     # for demo
     def save(self, path, content):
         content = ET.XML(content, parser=ET.HTMLParser())
-        mod = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head><title>KolektiModule</title></head><body/></html>")
+        mod = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Kolekti topic</title></head><body/></html>")
         mod.find('{http://www.w3.org/1999/xhtml}body').append(content)
         ospath = self.__makepath(path)
         with open(ospath, "w") as f:
@@ -211,51 +214,51 @@ class kolektiBase(object):
             aurl = urlparse.urljoin(base,r)
             return aurl
 
-    def _get_critdict(self, profile):
-        crits = profile.xpath("criterias/criteria[@checked='1']")
-        critdict={}
-        for c in crits:
-            critdict.update({c.get('code'):c.get('value')})
-        return critdict
+    def _get_criteria_dict(self, profile):
+        criteria = profile.xpath("criteria/criterion[@checked='1']")
+        criteria_dict={}
+        for c in criteria:
+            criteria_dict.update({c.get('code'):c.get('value')})
+        return criteria_dict
 
 
-    def substitute_criterias(self,string, profile, extra={}):
-        critdict = self._get_critdict(profile)
-        critdict.update(extra)
+    def substitute_criteria(self,string, profile, extra={}):
+        criteria_dict = self._get_criteria_dict(profile)
+        criteria_dict.update(extra)
 
-        for crit,val in critdict.iteritems():
-            string=string.replace('{%s}'%crit,val)
+        for criterion, val in criteria_dict.iteritems():
+            string=string.replace('{%s}'%criterion, val)
 
         return string
 
         
     def substitute_variables(self, string, profile):
-        for variab in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
-            splitVar = variab[2:-1].split(':')
+        for variable in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+            splitVar = variable[2:-1].split(':')
             sheet = splitVar[0].strip()
-            v = splitVar[1].strip()
-            val = self.variable_value(sheet, v, profile)
-            string = string.replace(variab, val)
+            sheet_variable = splitVar[1].strip()
+            value = self.variable_value(sheet, sheet_variable, profile)
+            string = string.replace(variable, val)
         return string
 
 
     def variable_value(self, sheet, variable, profile, extra={}):
         if sheet[0] != "/":
-            fvar = self.get_base_variable(sheet)
+            variables_file = self.get_base_variable(sheet)
         else:
-            fvar = sheet
-        print sheet,fvar
-        xvar = self.parse(fvar)
-        values = xvar.xpath('/variables/variable[@code="%s"]/value'%variable)
-        # print [ET.tostring(v) for v in values]
-        critdict = self._get_critdict(profile)
-        critdict.update(extra)
+            variables_file = sheet
+
+        xvariables = self.parse(variables_file)
+        values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
+
+        criteria_dict = self._get_criteria_dict(profile)
+        criteria_dict.update(extra)
         for value in values:
             accept = True
-            for crit in value.findall('crit'):
-                critname = crit.get('name')
-                if critname in critdict:
-                    if not critdict.get(critname) == crit.get('value'):
+            for criterion in value.findall('criterion'):
+                criterion_name = criterion.get('name')
+                if criterion_name in criterion_dict:
+                    if not criteria_dict.get(criterion_name) == criterion.get('value'):
                         accept = False
                 else:
                     accept = False

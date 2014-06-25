@@ -37,6 +37,6 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='section'][not(.//html:div[@class='module'])]"/>
+  <xsl:template match="html:div[@class='section'][not(.//html:div[@class='topic'])]"/>
 
 </xsl:stylesheet>

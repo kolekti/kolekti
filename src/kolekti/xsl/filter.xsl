@@ -45,7 +45,7 @@
 
   <xsl:template match="html:img/@src|html:embed/@src">
     <xsl:attribute name="src">
-      <xsl:value-of select="kfp:replace_crit(string(.))" />
+      <xsl:value-of select="kfp:replace_criteria(string(.))" />
     </xsl:attribute>
   </xsl:template>
 
@@ -53,14 +53,14 @@
 
   <xsl:template match="@class[contains(.,'=')]"/>
 
-  <xsl:template match="html:div[@class='module']">
+  <xsl:template match="html:div[@class='topic']">
     <xsl:variable name="children">
-      <xsl:apply-templates select="node()[not(self::html:div[@class='moduleinfo'])]"/>
+      <xsl:apply-templates select="node()[not(self::html:div[@class='topicinfo'])]"/>
     </xsl:variable>
     <xsl:if test="normalize-space(string($children))">
       <xsl:copy>
         <xsl:apply-templates select="@*"/>
-        <xsl:copy-of select="html:div[@class='moduleinfo']"/>
+        <xsl:copy-of select="html:div[@class='topicinfo']"/>
         <xsl:copy-of select="$children"/>
       </xsl:copy>
     </xsl:if>
@@ -239,7 +239,7 @@
 	  <xsl:apply-templates/>
   	</xsl:template>
   
-<!-- template de suppression de la div moduleinfo -->	
-<!--  	<xsl:template match="html:div[@class='moduleinfo']"/>-->
+<!-- template de suppression de la div topicinfo -->	
+<!--  	<xsl:template match="html:div[@class='topicinfo']"/>-->
 
 </xsl:stylesheet>

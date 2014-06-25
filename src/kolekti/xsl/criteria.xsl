@@ -33,7 +33,7 @@
                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
   <!-- parametres d'entrée : langue et basepath -->
-  <xsl:variable name="criterias" select="kfp:criterias()"/>
+  <xsl:variable name="criteria" select="kfp:criteria()"/>
   
   <xsl:template match="node()|@*">
     <xsl:copy>
@@ -45,12 +45,12 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
       <xsl:call-template name="lang" />
-      <xsl:apply-templates select="$criterias"/>
+      <xsl:apply-templates select="$criteria"/>
     </xsl:copy>
   </xsl:template>
 
   <!-- copie les conditions dans les meta du pivot -->
-  <xsl:template match="criteria[@code='__EXCL__']">
+  <xsl:template match="criterion[@code='__EXCL__']">
     <meta scheme="xcondition">
       <xsl:attribute name="name">__EXCL__</xsl:attribute>
       <xsl:attribute name="content">
@@ -59,7 +59,7 @@
     </meta>
   </xsl:template>
 
-  <xsl:template match="criteria">
+  <xsl:template match="criteriion">
     <meta scheme="condition">
       <xsl:attribute name="name">
         <xsl:value-of select="@code"/>

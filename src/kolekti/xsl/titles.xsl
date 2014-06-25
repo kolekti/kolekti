@@ -44,14 +44,14 @@
         </xsl:variable>
         
         <xsl:attribute name="h">
-          <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='module']) + $h"/>
+          <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='topic']) + $h"/>
         </xsl:attribute>
         
         <xsl:attribute name="class">
           <xsl:text>level</xsl:text>
           <xsl:value-of select="count(ancestor::html:div[@class='section'])"/>
           <xsl:text> title</xsl:text>
-          <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='module']) + $h"/>
+          <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='topic']) + $h"/>
           <xsl:if test="@class">
             <xsl:text> </xsl:text>
             <xsl:value-of select="@class"/>
