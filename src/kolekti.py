@@ -5,7 +5,7 @@ import os
 import argparse
 import ConfigParser
 import settings
-import pysvn
+#import pysvn
 
 import logging
 
