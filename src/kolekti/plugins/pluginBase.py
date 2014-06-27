@@ -50,7 +50,7 @@ class plugin(kolektiBase):
     def get_xsl(self,xslfile, **kwargs):
         print "get xsl from plugin", self._plugindir, self.__ext
 
-        resdir = self.pubdir + "/" + self.substitute_criterias(self.profile.xpath('string(label)'), self.profile) + '_c'
+        resdir = self.pubdir + "/" + self.substitute_criteria(self.profile.xpath('string(label)'), self.profile) + '_c'
         
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
