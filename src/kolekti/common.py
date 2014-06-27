@@ -271,10 +271,12 @@ class XSLExtensions(kolektiBase):
     """
     Extensions functions for xslt that are applied during publishing process
     """
-    ens = "kolekti:extension"
+    ens = "kolekti:extension:functions"
     def __init__(self, path):
         super(XSLExtensions, self).__init__(path)
-            
+
+
+    
 class PrefixResolver(ET.Resolver):
     """
     lxml url resolver for kolekti:// url
