@@ -38,6 +38,9 @@ class PublisherMixin(object):
 
 
 class PublisherExtensions(PublisherMixin, XSLExtensions):
+    """
+    Extensions functions for xslt that are applied during publishing process
+    """
     ens = "kolekti:extensions:functions:publication"
 
     def __init__(self, *args, **kwargs):
@@ -132,13 +135,13 @@ class Publisher(PublisherMixin, kolektiBase):
 
         toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         toc = self.process_path(toc)
-        print toc
+        
         # parses and assembly the trame
         xtoc = self.parse(toc)
         assembly = self.publish_assemble(xtoc)
-        print ET.tostring(xtoc)
+
         for profile in xjob.xpath('/job/profiles/profile'):
-            print profile
+
             if profile.get('enabled','0') == '1':
                 logging.info('publishing profile %s'%profile.find('label').text)
                 # calculates and creates the publication directory 
@@ -147,7 +150,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     self.makedirs(pubdir)
                 except:
-                    print "Info: publication path", pubdir, "already exists"
+                    logging.info("publication path %s already exists"%pubdir)
 
                 # creates the document (pivot) file
                 pivot = self.publish_profile(profile, pubdir, assembly)
@@ -162,8 +165,8 @@ class Publisher(PublisherMixin, kolektiBase):
                         #print "--> Done script:",script.get('name')
                     except:
                         import traceback
-                        print traceback.format_exc()
-                        print "Error with",script.get('name')
+                        logging.error("Script %s finished with errors"%script.get('name'))
+                        logging.debug(traceback.format_exc())
                         raise Exception
 
     def publish_assemble(self, trame):
@@ -173,7 +176,9 @@ class Publisher(PublisherMixin, kolektiBase):
         return assembly
     
     def publish_profile(self, profile, pubdir, assembly):
-        print "-> Profile:",profile.xpath('string(label)')
+
+        logging.info("* Publishing profile %s",profile.xpath('string(label)'))
+        
         pubdirprofile = pubdir
         pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
         try:
@@ -216,13 +221,15 @@ class Publisher(PublisherMixin, kolektiBase):
             # assembly = s(assembly)
 
             # cleanup title levels
+            
             s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
 
         except ET.XSLTApplyError, e:
-            print s.error_log
-
-
+            logging.debug(s.error_log)
+            logging.error("Error in publication prcess")
+            raise Exception
+        
         # copy media to _c, update src attributes in pivot
         
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
@@ -240,7 +247,7 @@ class Publisher(PublisherMixin, kolektiBase):
         pivot = assembly
         pivfile = pubdirprofile_c + "/document.xhtml"
 
-        self.write(str(pivot), pivfile)
+        self.xwrite(pivot, pivfile)
 
         return pivot
 
@@ -251,7 +258,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
-            print "Impossible de trouver le script: %s" %name
+            logging.error("Script %s not found" %name)
             raise Exception
 
         params = {}
@@ -287,10 +294,11 @@ class Publisher(PublisherMixin, kolektiBase):
 
         except:
             import traceback
-            print traceback.format_exc()
-            print "[Script %s] Erreur lors de la copie des ressources"%name
+            logging.debug(traceback.format_exc())
+            logging.error("[Script %s] could not copy resources"%name)
             raise Exception
-        print "End copy script params"
+        
+        
         
 
     def start_script(self, script, profile, pubdir, pivot):
@@ -345,9 +353,9 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     plugin = self.get_script(plugname)
                 except:
+                    logging.error("Impossible de charger le script %(label)s"%{'label': plugname.encode('utf-8')})
                     import traceback
-                    print traceback.format_exc()
-                    print "Impossible de charger le script %(label)s", {'label': label.encode('utf-8')}
+                    logging.debug(traceback.format_exc())
                     raise Exception
 
                 for msg in plugin(script, profile, pubdir, fpivot, self._publang):
