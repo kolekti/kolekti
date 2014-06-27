@@ -14,8 +14,6 @@ import mimetypes
 mimetypes.init()
 
 
-from kolekti.server.wsgi import wsgiclass
-
 def readConfig(cmds = None, alternatefile = None):
     """Read the kolekti config file.
     
@@ -116,6 +114,7 @@ if __name__ == '__main__':
 
     if args.cmd == 'server':
         host,port = args.host.split(':')
+        from kolekti.server.wsgi import wsgiclass
         from paste import httpserver
         wsgi = wsgiclass(args.base)
         httpserver.serve(wsgi, host, port)
