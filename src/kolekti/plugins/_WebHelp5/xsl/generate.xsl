@@ -21,7 +21,7 @@
 
   <xsl:variable name="helpname">WebHelp5</xsl:variable>
   <xsl:variable name="index" select="//html:ins[@class='index']|//html:span[@rel='index']" />
-  <xsl:variable name="modules" select="//html:div[@class='module']" />
+  <xsl:variable name="topics" select="//html:div[@class='topic']" />
 
 
   <xsl:variable name="lang">
@@ -51,8 +51,8 @@
 
   <xsl:variable name="starttopic">
     <xsl:choose>
-      <xsl:when test="$modules/html:div[@class='moduleinfo']//html:span[@class='infolabel']='hlpstart'">
-        <xsl:for-each select="$modules[html:div[@class='moduleinfo']//html:span[@class='infolabel']='hlpstart'][1]">
+      <xsl:when test="$topics/html:div[@class='topicinfo']//html:span[@class='infolabel']='hlpstart'">
+        <xsl:for-each select="$topics[html:div[@class='topicinfo']//html:span[@class='infolabel']='hlpstart'][1]">
           <xsl:call-template name="modfile" />
         </xsl:for-each>
       </xsl:when>
@@ -61,7 +61,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="modfile">
-          <xsl:with-param name="modid" select="$modules[1]/@id" />
+          <xsl:with-param name="modid" select="$topics[1]/@id" />
         </xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
@@ -71,13 +71,13 @@
   <xsl:template match="/">
     <exsl:document href="{$pubdir}/js/modcodes.js" method='text'>
       var modcodes = new Object();
-      <xsl:apply-templates select="html:html/html:body//html:div[@class='module']" mode="modcodes" />
+      <xsl:apply-templates select="html:html/html:body//html:div[@class='topic']" mode="modcodes" />
     </exsl:document>
     <exsl:document href="{$pubdir}/js/modtexts.js" method='text'>
       var modtexts = new Object();
-      <xsl:apply-templates select="$modules" mode="textcontent" />
+      <xsl:apply-templates select="$topics" mode="textcontent" />
     </exsl:document>
-    <xsl:apply-templates select="$modules" />
+    <xsl:apply-templates select="$topics" />
     <!-- alphebtical index -->
     <xsl:if test="$index">
       <exsl:document href="{$pubdir}/alphaindex.html"
@@ -114,7 +114,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='module']" mode="modcodes">
+  <xsl:template match="html:div[@class='topic']" mode="modcodes">
     <xsl:variable name="modcode">
       <xsl:call-template name="modfile" />
     </xsl:variable>
@@ -142,14 +142,14 @@
     <xsl:text>';&#x0A;</xsl:text>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='module']" mode="textcontent">
+  <xsl:template match="html:div[@class='topic']" mode="textcontent">
     <xsl:variable name="filename">
       <xsl:call-template name="modfile" />
     </xsl:variable>
     <xsl:text>modtexts['</xsl:text>
     <xsl:value-of select="$filename" />
     <xsl:text>'] = '</xsl:text>
-    <xsl:apply-templates mode="textcontent" select="node()[not(@class='moduleinfo')]" />
+    <xsl:apply-templates mode="textcontent" select="node()[not(@class='topicinfo')]" />
     <xsl:text>';&#x0A;</xsl:text>
   </xsl:template>
 
@@ -161,9 +161,9 @@
   </xsl:template>
 
   <xsl:template match="html:span[@class='title_num']" mode="textcontent"/>
-  <xsl:template match="html:div[@class='moduleinfo']" mode="textcontent"/>
+  <xsl:template match="html:div[@class='topicinfo']" mode="textcontent"/>
 
-  <xsl:template match="html:div[@class='module']">
+  <xsl:template match="html:div[@class='topic']">
     <xsl:variable name="filename">
       <xsl:call-template name="modfile" />
     </xsl:variable>
@@ -190,7 +190,7 @@
                 </xsl:call-template>
               </div>
               <div class="span9" id="k-main">
-                <xsl:if test="not(html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel']='kolekti:module-template']/html:span[@class='infovalue'][text()='frontcover'])">
+                <xsl:if test="not(html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='kolekti:topic-template']/html:span[@class='infovalue'][text()='frontcover'])">
                   <div class="row-fluid">
                     <div class="span9" id="k-breadcrumbs">
                       <xsl:if test="count(ancestor::html:div[@class='section']) &gt; 1">
@@ -218,7 +218,7 @@
                       </div>
                     </xsl:if>
                     <div id="k-topiccontent">
-                      <xsl:apply-templates select="*[not(@class='moduleinfo')]" mode="modcontent" />
+                      <xsl:apply-templates select="*[not(@class='topicinfo')]" mode="modcontent" />
                     </div>
                   </div>
                   <div class="span3" id="k-topictools">
@@ -249,7 +249,7 @@
   <xsl:template match="html:div[@class='section']" mode="gennavbar">
     <xsl:variable name="modref">
       <xsl:call-template name="modfile">
-        <xsl:with-param name="modid" select=".//html:div[@class='module'][1]/@id" />
+        <xsl:with-param name="modid" select=".//html:div[@class='topic'][1]/@id" />
       </xsl:call-template>
     </xsl:variable>
     <li class="dropdown">
@@ -257,11 +257,11 @@
         <xsl:copy-of select="html:*[1]/node()" />
         <b class="caret"></b>
       </a>
-      <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='module']" mode="gennavbar" /></ul>
+      <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gennavbar" /></ul>
     </li>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='module']" mode="gennavbar">
+  <xsl:template match="html:div[@class='topic']" mode="gennavbar">
     <xsl:variable name="modref">
       <xsl:call-template name="modfile" />
     </xsl:variable>
@@ -278,7 +278,7 @@
 
     <xsl:variable name="modref">
       <xsl:call-template name="modfile">
-        <xsl:with-param name="modid" select="(.//html:div[@class='module'])[1]/@id" />
+        <xsl:with-param name="modid" select="(.//html:div[@class='topic'])[1]/@id" />
       </xsl:call-template>
     </xsl:variable>
     <xsl:variable name="cursection" select="boolean(.//html:div[@id = $modid])" />
@@ -302,7 +302,7 @@
     </li>
     <xsl:if test="$cursection">
       <ul class="nav nav-list">
-        <xsl:apply-templates select="html:div[@class='section' or @class='module']" mode="navlist">
+        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="navlist">
           <xsl:with-param name="modid" select="$modid" />
           <xsl:with-param name="modtitle" select="$modtitle" />
         </xsl:apply-templates>
@@ -311,7 +311,7 @@
   </xsl:template>
 
 
-  <xsl:template match="html:div[@class='module']" mode="navlist">
+  <xsl:template match="html:div[@class='topic']" mode="navlist">
     <xsl:param name="modid" />
     <xsl:param name="modtitle" />
     <xsl:variable name="modref">
@@ -336,7 +336,7 @@
     <xsl:param name="modtitle" />
     <xsl:variable name="modref">
       <xsl:call-template name="modfile">
-        <xsl:with-param name="modid" select="html:div[@class='module'][1]/@id" />
+        <xsl:with-param name="modid" select="html:div[@class='topic'][1]/@id" />
       </xsl:call-template>
     </xsl:variable>
     <xsl:choose>
@@ -487,13 +487,13 @@
     <a title="{kfp:variable(string($translationfile),'premier')}">
       <xsl:attribute name="class">
         <xsl:text>btn</xsl:text>
-        <xsl:if test="not(preceding::html:div[@class='module'])">
+        <xsl:if test="not(preceding::html:div[@class='topic'])">
           <xsl:text> disabled</xsl:text>
         </xsl:if>
       </xsl:attribute>
       <xsl:attribute name="href">
         <xsl:call-template name="modfile">
-          <xsl:with-param name="modid" select="//html:div[@class='module'][1]/@id"/>
+          <xsl:with-param name="modid" select="//html:div[@class='topic'][1]/@id"/>
         </xsl:call-template>
       </xsl:attribute>
       <i class="icon-home"></i>
@@ -501,13 +501,13 @@
     <a title="{kfp:variable(string($translationfile),'precedent')}">
       <xsl:attribute name="class">
         <xsl:text>btn</xsl:text>
-        <xsl:if test="not(preceding::html:div[@class='module'])">
+        <xsl:if test="not(preceding::html:div[@class='topic'])">
           <xsl:text> disabled</xsl:text>
         </xsl:if>
       </xsl:attribute>
       <xsl:attribute name="href">
         <xsl:call-template name="modfile">
-          <xsl:with-param name="modid" select="preceding::html:div[@class='module'][1]/@id" />
+          <xsl:with-param name="modid" select="preceding::html:div[@class='topic'][1]/@id" />
         </xsl:call-template>
       </xsl:attribute>
       <i class="icon-chevron-left"></i>
@@ -516,13 +516,13 @@
     <a title="{kfp:variable(string($translationfile),'suivant')}">
       <xsl:attribute name="class">
         <xsl:text>btn</xsl:text>
-        <xsl:if test="not(following::html:div[@class='module'])">
+        <xsl:if test="not(following::html:div[@class='topic'])">
           <xsl:text> disabled</xsl:text>
         </xsl:if>
       </xsl:attribute>
       <xsl:attribute name="href">
         <xsl:call-template name="modfile">
-          <xsl:with-param name="modid" select="following::html:div[@class='module'][1]/@id" />
+          <xsl:with-param name="modid" select="following::html:div[@class='topic'][1]/@id" />
         </xsl:call-template>
       </xsl:attribute>
       <i class="icon-chevron-right"></i>
@@ -530,7 +530,7 @@
     <!-- <a class="btn" title="{kfp:variable(string($translationfile),'dernier')}">
          <xsl:attribute name="href">
            <xsl:call-template name="modfile">
-             <xsl:with-param name="modid" select="current()[not(following::html:div[@class='module'])]/@id|following::html:div[@class='module'][last()]/@id" />
+             <xsl:with-param name="modid" select="current()[not(following::html:div[@class='topic'])]/@id|following::html:div[@class='topic'][last()]/@id" />
            </xsl:call-template>
          </xsl:attribute>
          <i class="icon-step-forward"></i>
@@ -611,7 +611,7 @@
              <xsl:for-each select="/html:html/html:body/html:div[@class='section'][position() &gt; 1]">
                <xsl:variable name="modref">
                  <xsl:call-template name="modfile">
-                   <xsl:with-param name="modid" select="html:div[@class='module'][1]/@id" />
+                   <xsl:with-param name="modid" select="html:div[@class='topic'][1]/@id" />
                  </xsl:call-template>
                </xsl:variable>
                <li class="dropdown">
@@ -619,7 +619,7 @@
                    <xsl:copy-of select="html:*[1]/node()" />
                    <b class="caret"></b>
                  </a>
-                 <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='module']" mode="gennavbar" /></ul>
+                 <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gennavbar" /></ul>
                </li>
              </xsl:for-each>
              <xsl:if test="$index">
@@ -653,7 +653,7 @@
    <xsl:param name="modtitle" select="''" />
    <div id="menu" class="well sidebar-nav">
      <ul class="nav nav-list">
-       <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='module']  " mode="navlist">
+       <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']  " mode="navlist">
          <xsl:with-param name="modid" select="$modid" />
          <xsl:with-param name="modtitle" select="$modtitle" />
        </xsl:apply-templates>
@@ -661,23 +661,23 @@
    </div>
  </xsl:template>
 
- <!-- module title -->
+ <!-- topic title -->
  <xsl:template name="modtitle">
    <xsl:apply-templates select="(.//html:h1|.//html:h2|.//html:h3|.//html:h4|.//html:h5|.//html:h6|.//html:dt)[1]" mode="TOCtitle" />
  </xsl:template>
 
- <!-- module filename -->
+ <!-- topic filename -->
  <xsl:template name="modfile">
    <xsl:param name="modid">
      <xsl:value-of select="@id" />
    </xsl:param>
    <xsl:variable name="mod" select="//html:div[@id = $modid]" />
    <xsl:choose>
-     <xsl:when test="not($mod/preceding::html:div[@class='module'][1])">
+     <xsl:when test="not($mod/preceding::html:div[@class='topic'][1])">
        <xsl:text>index</xsl:text>
      </xsl:when>
-     <xsl:when test="$mod/html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel']='topic_file']">
-       <xsl:value-of select="$mod/html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel']='topic_file']/html:span[@class='infovalue']" />
+     <xsl:when test="$mod/html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='topic_file']">
+       <xsl:value-of select="$mod/html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='topic_file']/html:span[@class='infovalue']" />
      </xsl:when>
      <xsl:otherwise>
        <xsl:value-of select="$modid" />
@@ -686,7 +686,7 @@
    <xsl:text>.html</xsl:text>
  </xsl:template>
 
- <!--  module link -->
+ <!--  topic link -->
  <xsl:template name="modhref">
    <xsl:param name="modid" />
    <xsl:variable name="topid">
@@ -701,11 +701,11 @@
    </xsl:variable>
    <xsl:variable name="mod" select="//html:div[@id = $topid]" />
    <xsl:choose>
-     <xsl:when test="not($mod/preceding::html:div[@class='module'][1])">
+     <xsl:when test="not($mod/preceding::html:div[@class='topic'][1])">
        <xsl:text>index</xsl:text>
      </xsl:when>
-     <xsl:when test="$mod/html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel']='topic_file']">
-       <xsl:value-of select="$mod/html:div[@class='moduleinfo']/html:p[html:span[@class='infolabel']='topic_file']/html:span[@class='infovalue']" />
+     <xsl:when test="$mod/html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='topic_file']">
+       <xsl:value-of select="$mod/html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='topic_file']/html:span[@class='infovalue']" />
      </xsl:when>
      <xsl:otherwise>
        <xsl:value-of select="$topid" />

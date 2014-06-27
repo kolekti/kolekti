@@ -23,7 +23,7 @@ import shutil
 
 from lxml import etree as ET
 
-import pluginBase
+from kolekti.plugins import pluginBase
 from _WebHelp5 import ac_index
 
 htmlns="http://www.w3.org/1999/xhtml"
