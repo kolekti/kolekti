@@ -32,12 +32,27 @@
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
 
-  <xsl:param name="action"/>
+  <!-- copy everything not pprocessed by this stylesheet -->
 
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+
+
+
+  <!-- calculate numbering for titles -->
+
+
+
+
+  <!-- calculate numbering, set temporary attributes / class attributes -->
 
   <xsl:template match="html:h1|html:h2|html:h3|html:h4|html:h5|html:h6">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
+
       <xsl:if test="not(@h)">
         <xsl:variable name="h">
           <xsl:value-of select="substring(local-name(),2,1)"/>
@@ -46,6 +61,8 @@
         <xsl:attribute name="h">
           <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='topic']) + $h"/>
         </xsl:attribute>
+
+        
         
         <xsl:attribute name="class">
           <xsl:text>level</xsl:text>
@@ -58,17 +75,16 @@
           </xsl:if>
         </xsl:attribute>
       </xsl:if>
+
       <xsl:apply-templates select="node()"/>
     </xsl:copy>
   </xsl:template>
 
+
+
+
+  <!-- cleanup -->
+
   <xsl:template match="html:h1/@h|html:h2/@h|html:h3/@h|html:h4/@h|html:h5/@h|html:h6/@h"/>
-
-
-  <xsl:template match="node()|@*">
-    <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
-  </xsl:template>
 
 </xsl:stylesheet>

@@ -22,9 +22,10 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
   xmlns:html="http://www.w3.org/1999/xhtml" 
   xmlns:xt="http://ns.inria.org/xtiger"
+  xmlns:kf="kolekti:extensions:functions"
   xmlns:kfp="kolekti:extensions:functions:publication"
-  extension-element-prefixes="kfp"
-  exclude-result-prefixes="html kfp"
+  extension-element-prefixes="kfp kf"
+  exclude-result-prefixes="html kfp kf"
   version="1.0">
 
   <xsl:output  method="xml" 

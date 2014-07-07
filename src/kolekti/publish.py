@@ -199,8 +199,8 @@ class Publisher(PublisherMixin, kolektiBase):
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
             # process title levels
-            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
-            assembly = s(assembly)
+            # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            # assembly = s(assembly)
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
@@ -212,9 +212,9 @@ class Publisher(PublisherMixin, kolektiBase):
                 s = self.get_xsl('index')
                 assembly = s(assembly)
             # make toc
-            if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
-                s = self.get_xsl('toc')
-                assembly = s(assembly)
+            # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
+            s = self.get_xsl('toc')
+            assembly = s(assembly)
             
             # revision notes
             # s = self.get_xsl('csv-revnotes')
@@ -222,8 +222,8 @@ class Publisher(PublisherMixin, kolektiBase):
 
             # cleanup title levels
             
-            s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
-            assembly = s(assembly)
+            # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            # assembly = s(assembly)
 
         except ET.XSLTApplyError, e:
             logging.debug(s.error_log)
@@ -338,6 +338,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
         subst = copy.copy(params)
         subst.update({
+            "APPDIR":self._appdir,
             "PUBDIR":self.getOsPath(pubdirprofile),
             "SRCDIR":self.getOsPath(pubdirprofile_c),
             "PUBNAME": pubname,
@@ -398,8 +399,12 @@ class Publisher(PublisherMixin, kolektiBase):
                         if re.search('warning', line):
                             print "Attention %(warn)s"% {'warn': line}
                         elif re.search('error', line) or re.search('not found', line):
+                            print line
                             print "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(LOCAL_ENCODING).encode('utf-8'),
-                                                                                                       'error': line.encode('utf-8')}
+                                                                                                                  'error': line.encode('utf-8')}
+
+                                                                                                                  
+                        
                             has_error = True
 
                     # if no error display link

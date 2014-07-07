@@ -96,23 +96,11 @@
 
   <xsl:template match="html:a[@rel = 'kolekti:toc']" mode="aggreg" >
     <xsl:param name="section_depth"/>
-    <xsl:variable name="hx">
-      <xsl:choose>
-        <xsl:when test="$section_depth &lt; 5">
-          <xsl:text>h</xsl:text>
-          <xsl:value-of select="$section_depth + 1"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>h6</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
 
-    <div class='TOC'>
-      <xsl:element name="p">
-        <xsl:attribute name="class">TOC_title</xsl:attribute>
+    <div class='TOC {@class}'>
+      <p class="TOC_title">
         <var class="kolektitext:TOC"/>
-      </xsl:element>
+      </p>
     </div>
   </xsl:template>
 
@@ -131,11 +119,14 @@
       </xsl:choose>
     </xsl:variable>
 
-    <div class='INDEX'>
-      <xsl:element name="{$hx}">
-        <xsl:attribute name="class">INDEX_titre</xsl:attribute>
+    <div>
+      <xsl:attribute name="class">
+        <xsl:text>INDEX</xsl:text>
+        <xsl:if test="@class"> <xsl:value-of select="@class"/></xsl:if>
+      </xsl:attribute>
+      <h1 class="INDEX_titre">
         <var class="kolektitext:INDEX"/>
-      </xsl:element>
+      </h1>
     </div>
   </xsl:template>
 
@@ -154,7 +145,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <div class='REVNOTES'>
+    <div class='REVNOTES {@class}'>
       <xsl:element name="{$hx}">
         <xsl:attribute name="class">REVNOTES_titre</xsl:attribute>
         <var class="kolektitext:REVNOTES"/>
