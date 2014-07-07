@@ -146,7 +146,10 @@ class Publisher(PublisherMixin, kolektiBase):
                 logging.info('publishing profile %s'%profile.find('label').text)
                 # calculates and creates the publication directory 
                 pubdir = self.substitute_variables(xjob.xpath('string(/*/pubdir/@value)'),profile)
+                pubdir = self.substitute_criteria(pubdir, profile)
                 pubdir = self.get_base_publication(pubdir)
+                logging.debug('pubdir : %s'%pubdir)
+                
                 try:
                     self.makedirs(pubdir)
                 except:
