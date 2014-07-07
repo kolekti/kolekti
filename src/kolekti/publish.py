@@ -94,7 +94,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return r
 
     def variable(self, _, *args):
-        sheet = self.substitute_criteria(args[0], self._profile)+".xml"
+        sheet = self.substitute_criteria(args[0], self._profile)
         variable = self.substitute_criteria(args[1], self._profile)
         return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
 
@@ -109,7 +109,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.debug("kolekti %s"%self._version)
         
     def _variable(self, varfile, name):
-        fvar = self.get_base_variable(varfile+'.xml')
+        fvar = self.get_base_variable(varfile)
         xvar = self.parse(fvar)
         
         var = xvar.xpath('string(//h:variable[@code="%s"]/h:value[crit[@name="lang"][@value="%s"]]/h:content)'%(name,self._publang),

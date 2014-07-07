@@ -234,11 +234,13 @@ class kolektiBase(object):
         
     def substitute_variables(self, string, profile):
         for variable in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
-            splitVar = variable[2:-1].split(':')
+            logging.debug(variable)
+            splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
+            logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
             value = self.variable_value(sheet, sheet_variable, profile)
-            string = string.replace(variable, val)
+            string = string.replace(variable, value)
         return string
 
 
@@ -248,7 +250,7 @@ class kolektiBase(object):
         else:
             variables_file = sheet
 
-        xvariables = self.parse(variables_file)
+        xvariables = self.parse(variables_file + '.xml')
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
 
         criteria_dict = self._get_criteria_dict(profile)
