@@ -19,6 +19,7 @@
 import os
 import sys
 import shutil
+import logging
 from lxml import etree as ET
 from kolekti.common import kolektiBase
 from kolekti.publish import PublisherExtensions
@@ -45,10 +46,10 @@ class plugin(kolektiBase):
         self._plugin = self.__module__.split('.')[-1]
         self._plugindir = os.path.join(self._appdir,'plugins',"_%s"%self._plugin)
         self.__ext = PluginsExtensions
-        print "*********** init plugin",self.__ext
+        logging.debug("*********** init plugin with extension %s"%self.__ext)
         
     def get_xsl(self,xslfile, **kwargs):
-        print "get xsl from plugin", self._plugindir, self.__ext
+        logging.debug("get xsl from plugin %s"%self._plugindir)
 
         resdir = self.pubdir + "/" + self.substitute_criteria(self.profile.xpath('string(label)'), self.profile) + '_c'
         
