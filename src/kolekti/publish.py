@@ -56,7 +56,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return self.getUrlPath(path)
         
     def criteria(self, _, *args):
-        return self._profile.xpath("criteria/criterion[@checked='1']")
+        return self._profile.xpath("criteria/criterion[@checked='1' or @user='1']")
 
     def lang(self, _, *args):
         return self._publang
@@ -98,6 +98,17 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         variable = self.substitute_criteria(args[1], self._profile)
         return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
 
+    def evaluate_condition(self, _, args):
+        conditions = args.replace(' ','')
+        list_conditions = conditions.split(";")
+        
+def test():
+    testprofile = """
+    <profile>
+    </profile>"""
+    profile = ET.XML(testprofile)
+    pe = PublisherExtensions(profile)
+    
 
 class Publisher(PublisherMixin, kolektiBase):
     def __init__(self, *args,**kwargs):
@@ -419,8 +430,8 @@ class Publisher(PublisherMixin, kolektiBase):
                         print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
                 except:
                     import traceback
-                    print traceback.format_exc()
-                    print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
+                    logging.debug(traceback.format_exc())
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
                     raise Exception
 
             elif stype=="xslt":
@@ -490,9 +501,9 @@ class Publisher(PublisherMixin, kolektiBase):
 #            print "Script", label,"sucessful"
             
         except:
-            print "Impossible d'exécuter le script %(label)s"% {'label': label.encode('utf-8')}
             import traceback
-            print traceback.format_exc()
+            logging.debug(traceback.format_exc())
+            logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
             raise Exception
         return
 
