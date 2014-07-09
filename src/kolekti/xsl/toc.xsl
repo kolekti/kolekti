@@ -71,7 +71,7 @@
       <xsl:call-template name="titleclass"/>
     </xsl:variable>
 
-    <p class="TOC_level_{$lev - 1}">
+    <p class="TOC_level_{$lev}">
       <span class="title_num">
 	<xsl:call-template name="number"/>
       </span>
@@ -125,7 +125,7 @@
       <xsl:value-of select="substring(local-name(),2,1)"/>
     </xsl:variable>
     
-    <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='topic']|ancestor::html:div[starts-with(@class,'INDEX')]) + $h"/>
+    <xsl:value-of select="count(ancestor::html:div[@class='section']|ancestor::html:div[@class='topic']|ancestor::html:div[starts-with(@class,'INDEX')]) + $h - 1"/>
   </xsl:template>
 
 
@@ -136,23 +136,23 @@
     <!--
     <span class="title_num_level_1"><xsl:number level="any" count="html:h1[&tl;=1]|html:h2[&tl;=1]|html:h3[&tl;=1]|html:h4[&tl;=1]|html:h5[&tl;=1]|html:h6[&tl;=1]|"/></span>
     -->
-    <xsl:if test="$lev &gt; 1">
+    <xsl:if test="$lev &gt; 0">
       <!-- <span class="title_num_sep_2">.</span>-->
       <span class="title_num_level_2"><xsl:number level="any" from="html:h1[&tl;=1]|html:h2[&tl;=1]|html:h3[&tl;=1]|html:h4[&tl;=1]|html:h5[&tl;=1]|html:h6[&tl;=1]|" count="html:h1[&tl;=2]|html:h2[&tl;=2]|html:h3[&tl;=2]|html:h4[&tl;=2]|html:h5[&tl;=2]|html:h6[&tl;=2]|"/></span>
     </xsl:if>
-    <xsl:if test="$lev &gt; 2">
+    <xsl:if test="$lev &gt; 1">
       <span class="title_num_sep_3">.</span>
       <span class="title_num_level_3"><xsl:number level="any" from="html:h1[&tl;=2]|html:h2[&tl;=2]|html:h3[&tl;=2]|html:h4[&tl;=2]|html:h5[&tl;=2]|html:h6[&tl;=2]|" count="html:h1[&tl;=3]|html:h2[&tl;=3]|html:h3[&tl;=3]|html:h4[&tl;=3]|html:h5[&tl;=3]|html:h6[&tl;=3]|"/></span>
     </xsl:if>
-    <xsl:if test="$lev &gt; 3">
+    <xsl:if test="$lev &gt; 2">
       <span class="title_num_sep_4">.</span>
       <span class="title_num_level_4"><xsl:number level="any" from="html:h1[&tl;=3]|html:h2[&tl;=3]|html:h3[&tl;=3]|html:h4[&tl;=3]|html:h5[&tl;=3]|html:h6[&tl;=3]|" count="html:h1[&tl;=4]|html:h2[&tl;=4]|html:h3[&tl;=4]|html:h4[&tl;=4]|html:h5[&tl;=4]|html:h6[&tl;=4]|"/></span>
     </xsl:if>
-    <xsl:if test="$lev &gt; 4">
+    <xsl:if test="$lev &gt; 3">
       <span class="title_num_sep_5">.</span>
       <span class="title_num_level_5"><xsl:number level="any" from="html:h1[&tl;=4]|html:h2[&tl;=4]|html:h3[&tl;=4]|html:h4[&tl;=4]|html:h5[&tl;=4]|html:h6[&tl;=4]|" count="html:h1[&tl;=5]|html:h2[&tl;=5]|html:h3[&tl;=5]|html:h4[&tl;=5]|html:h5[&tl;=5]|html:h6[&tl;=5]|"/></span>
     </xsl:if>
-    <xsl:if test="$lev &gt; 5">
+    <xsl:if test="$lev &gt; 4">
       <span class="title_num_sep_6">.</span>
       <span class="title_num_level_6"><xsl:number level="any" from="html:h1[&tl;=5]|html:h2[&tl;=5]|html:h3[&tl;=5]|html:h4[&tl;=5]|html:h5[&tl;=5]|html:h6[&tl;=5]|" count="html:h1[&tl;=6]|html:h2[&tl;=6]|html:h3[&tl;=6]|html:h4[&tl;=6]|html:h5[&tl;=6]|html:h6[&tl;=6]|"/></span>
     </xsl:if>
