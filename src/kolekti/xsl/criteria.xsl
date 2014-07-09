@@ -59,15 +59,16 @@
     </meta>
   </xsl:template>
 
-  <xsl:template match="criteriion">
-    <meta scheme="condition">
-      <xsl:attribute name="name">
-        <xsl:value-of select="@code"/>
-      </xsl:attribute>
-      <xsl:attribute name="content">
-        <xsl:value-of select="@value"/>
-      </xsl:attribute>
-    </meta>
+  <xsl:template match="criterion[@user='1']/v">
+    <meta scheme="user_condition" name="{parent::criterion/@code}" content="{@value}"/>
+  </xsl:template>
+
+  <xsl:template match="criterion[@user='1']">
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="criterion[@checked='1']">
+    <meta scheme="condition" name="{@code}" content="{@value}"/>
   </xsl:template>
 
   <xsl:template name="lang">

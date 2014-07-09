@@ -117,7 +117,7 @@
       <xsl:value-of select="substring(local-name(),2,1)"/>
     </xsl:variable>
         
-    <xsl:value-of select="count(ancestor::html:div[@class='section']) + 1"/>
+    <xsl:value-of select="count(ancestor::html:div[@class='section']) "/>
   </xsl:template>
 
   <xsl:template name="titleclass">
