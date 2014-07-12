@@ -1,17 +1,10 @@
 
-function init_help() {
-    $('#ksearchinput').keyup(function(ev) { 
-	if(this.value.length > 2) {
-	    a_search(this.value); 
-	    // $('.dropdown-toggle').dropdown();
-	}
-    });
-}
-
 var charsin ='àâäéèêëïîôöùûç';
 var charsout='aaaeeeeiioouuc';
 var charexcl='!#%&\',-/:;=>@_`{}~';
 var charescxcl='()*+.?[\\]$^|';
+var stopwords=[]
+
 var nbsnippets=1;
 var maxres = 8;
 var hllimit=50;
@@ -21,7 +14,6 @@ if(navigator.userAgent.indexOf("MSIE") != -1)
     IE=true;
 
 var do_highlight=true;
-var lastsearchedwords=[];
 
 var options={
     mot_entier:false,
@@ -79,7 +71,8 @@ function chchr2(str) {
 }
 
 function lemmatise(words){
-    var res=[]
+    var res=[];
+    var word;
     var lc=words.toLowerCase()
     lc=lc.replace(/ +/g," ");
     lc=lc.replace(/^ /,"");
@@ -100,11 +93,16 @@ function lemmatise(words){
 	    if (nb==-1) return [];
 	    nb+=2;
 	}
-        res.push(lc.substr(0,nb));
+	word = lc.substr(0,nb);
+	if (stopwords.indexOf(word)==-1) {
+            res.push(word);
+	}
         lc=lc.substr(nb+1);
         nb=lc.search(' ');
     }
-    res.push(lc);
+    if (stopwords.indexOf(lc)==-1) {
+	res.push(lc);
+    }
     return res
         
 }
@@ -141,15 +139,19 @@ function a_search(words) {
   	rescore[res]=Math.floor((restot[res]/wordcount[res])*1000);
     }
     var ressort=sort_score(rescore);
-
-    var count = 1;
+    
+    
+    
+    var count = 0;
     var htmlbuf = '';
     var searchl = $("ul#ksearchmenu");
-    searchl.html("");
+    searchl.html("<li>Aucun résultat</li>");
+    var searchdata=[ lastsearchedwords, words];
+    var str_words = encodeURIComponent(JSON.stringify(searchdata));
     for (r in ressort) {
         res=ressort[r];
 	if (res) {
-            htmlbuf += '<li><a href="'+res+'.html"><strong>'+modcodes[res+".html"]+'</strong><br /><em>'+show_search_words(res,false)+'</em></a></li><li class="divider"></li>';
+            htmlbuf += '<li><a href="'+res+'.html?s='+str_words+'"><strong>'+modcodes[res+".html"]+'</strong><br /><em>'+show_search_words(res,false)+'</em></a></li>';
             if(count > maxres)
 		break;
             count++;
@@ -343,4 +345,101 @@ function extraits(text) {
 
 function sortIndices(a,b) {
   return a[0] - b[0];
+}
+
+function loadfromurl() {
+    var u = window.location.href.split('?');
+    if (u.length > 1) {
+	search_data =  JSON.parse( decodeURIComponent(u[1].substr(2)));
+	lastsearchedwords = search_data[0]
+	$("#ksearchinput").val(search_data[1]);
+	return true;
+    }
+    return false;
+}
+
+function highlight() {
+	var elt = document.getElementById('k-topiccontent');
+    first_in_topic=true;
+    parcours(elt,highlight_text);
+}
+
+function unhighlight() {
+   var elt = document.getElementById('k-topiccontent');
+   var splist=elt.getElementsByTagName('SPAN');
+   var i,span;
+   for (i=0; i< splist.length;i++) {
+     span=splist[i];
+     if (span.getAttribute('class')=='hl' || span.className=="hl") {
+	 
+       txt=span.firstChild;
+       span.parentNode.replaceChild(txt,span);
+     }
+   }
+}
+
+function parcours (elt,func) {
+    var c=elt.firstChild;
+    var next;
+    while (c) {
+	next=c.nextSibling;
+	if (c.nodeType==3) {
+	    func(c);
+	}
+	if (c.nodeType==1) {
+	    parcours(c,func);
+	}
+	c=next;
+    }	
+}
+
+function highlight_text(elt) {
+    var textl=chchr2(elt.nodeValue.toLowerCase());
+    var texto=elt.nodeValue;
+    var re= new RegExp('');
+    var delend='';
+    var segs;
+    var len;
+    var indices=[];
+    var re= new RegExp();
+    if (options.mot_entier) {
+	delend='\\b';
+    }
+    if (lastsearchedwords) {
+	for (wsi in lastsearchedwords) {
+	    re.compile('\\b'+lastsearchedwords[wsi]+delend);
+	    segs=textl.split(re);
+	    len=0;
+	    for (s=0; s<segs.length-1; s++) {
+		len+=segs[s].length
+		indices[indices.length]=[len,lastsearchedwords[wsi].length];
+		len+=lastsearchedwords[wsi].length;
+	    }
+	}
+	if (indices.length==0)
+	    return;
+
+	indices.sort(sortIndices);
+	var cc=0;
+	var ext='';
+	for (i in indices) {
+	    ext+=texto.substring(cc,indices[i][0]);
+	    if (first_in_topic) {
+		ext+="<a id='firstsearchresult' name='firstsearchresult'></a>";
+	    }
+	    ext+="<span class='hl'>";
+	    ext+=texto.substr(indices[i][0],indices[i][1]);
+	    ext+="</span>";
+	    if (first_in_topic) {
+		first_in_topic=false;
+		ext+="</a>";
+	    }
+	    cc=indices[i][0]+indices[i][1];
+	}
+	ext+=texto.substr(cc);
+	
+	span=elt.ownerDocument.createElement('SPAN');
+	span.innerHTML=ext;
+	elt.parentNode.replaceChild(span,elt);
+    }
 }

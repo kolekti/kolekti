@@ -78,6 +78,7 @@
       <xsl:apply-templates select="$topics" mode="textcontent" />
     </exsl:document>
     <xsl:apply-templates select="$topics" />
+
     <!-- alphebtical index -->
     <xsl:if test="$index">
       <exsl:document href="{$pubdir}/alphaindex.html"
@@ -92,11 +93,12 @@
           <body onload="init_help();">
             <xsl:call-template name="gennavbar" />
             <div class="container-fluid">
-              <div class="row-fluid">
-                <div class="span3">
+              <div class="row">
+                <div class="col-md-3 col-sm-12 col-xs-12">
                   <xsl:call-template name="gentoc" />
                 </div>
-                <div class="span9 offset2">
+
+                <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
                   <div id="alphaindex">
                     <h2 id="alphaindextitle" class="page-header alphaindextitle">
                       <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
@@ -108,6 +110,7 @@
                 </div>
               </div>
             </div>
+            <xsl:call-template name="genhtmlfooter" />
           </body>
         </html>
       </exsl:document>
@@ -183,96 +186,63 @@
           <xsl:call-template name="gennavbar" />
           <div class="container-fluid">
 
-            <div class="row-fluid">
-              <div class="span3" id="k-menu">
+            <div class="row">
+              <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
                 <xsl:call-template name="gentoc">
                   <xsl:with-param name="modtitle" select="$modtitle"/>
                 </xsl:call-template>
               </div>
-              <div class="span9" id="k-main">
-                <xsl:if test="not(html:div[@class='topicinfo']/html:p[html:span[@class='infolabel']='kolekti:topic-template']/html:span[@class='infovalue'][text()='frontcover'])">
-                  <div class="row-fluid">
-                    <div class="span9" id="k-breadcrumbs">
-                      <xsl:if test="count(ancestor::html:div[@class='section']) &gt; 1">
-                        <ul class="breadcrumb">
-                          <xsl:apply-templates select="ancestor::html:div[@class='section']" mode="breadcrumb">
-                            <xsl:sort order="descending" />
-                            <xsl:with-param name="modtitle" select="$modtitle"/>
-                          </xsl:apply-templates>
-                          <li class="active"><xsl:value-of select="$modtitle" /></li>
-                        </ul>
-                      </xsl:if>
-                      <xsl:text>&#xA0;</xsl:text>
-                    </div>
-                    <div class="span3"  id="k-navhead">
-                      <xsl:call-template name="topicnavbar"/>
-                    </div>
-                  </div><!--row-->
-                </xsl:if>
+
+              <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
                 <div class="row-fluid" id="k-topic">
-                  <div class="span9">
-                    <xsl:variable name="topicheader" select="document($templatefile)//html:div[@id='tete_topic']" />
-                    <xsl:if test="normalize-space($topicheader) != ''">
-                      <div class="page-header">
-                        <xsl:copy-of select="$topicheader" />
-                      </div>
-                    </xsl:if>
+                  <div class="col-md-11">
                     <div id="k-topiccontent">
                       <xsl:apply-templates select="*[not(@class='topicinfo')]" mode="modcontent" />
                     </div>
                   </div>
-                  <div class="span3" id="k-topictools">
-                    <!--tools-->
-                    <p>&#xA0;</p>
-                  </div>
                 </div>
 
                 <!-- topic bottom -->
-                <div class="row-fluid" style="margin-top: 2em;">
-                  <div class="span9" id="k-topicfooter">
-                    <div class="breadcrumb">
-                      <xsl:copy-of select="document($templatefile)//html:div[@id='pied_topic']/*" />
-                    </div>
-                  </div>
-                  <div class="span3"  id="k-navfoot">
-                    <xsl:call-template name="topicnavbar" />
-                  </div>
-                </div>
+                <a href="#" class="back-to-top">
+                  <i class="glyphicon glyphicon-chevron-up"></i>
+                </a>
+
               </div>
             </div>
           </div>
+          <xsl:call-template name="genhtmlfooter" />
         </body>
       </html>
     </exsl:document>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='section']" mode="gennavbar">
-    <xsl:variable name="modref">
-      <xsl:call-template name="modfile">
-        <xsl:with-param name="modid" select=".//html:div[@class='topic'][1]/@id" />
-      </xsl:call-template>
-    </xsl:variable>
-    <li class="dropdown">
-      <a href="{$modref}" class="dropdown-toggle" data-toggle="dropdown">
-        <xsl:copy-of select="html:*[1]/node()" />
-        <b class="caret"></b>
-      </a>
-      <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gennavbar" /></ul>
-    </li>
-  </xsl:template>
 
-  <xsl:template match="html:div[@class='topic']" mode="gennavbar">
+
+  <xsl:template match="html:div[@class='topic']" mode="gentoc">
+    <xsl:param name="modid" />
+
     <xsl:variable name="modref">
       <xsl:call-template name="modfile" />
     </xsl:variable>
-    <li>
+
+    <xsl:variable name="curtopic" select="boolean(@id = $modid)" />
+
+    <li class="list-group-item">
+      <xsl:attribute name="class">
+        <xsl:text>list-group-item</xsl:text>
+        <xsl:if test="$curtopic"> active</xsl:if>
+      </xsl:attribute>
+
       <a href="{$modref}">
+        <i class="glyphicon glyphicon-file"></i>
         <xsl:call-template name="modtitle" />
       </a>
     </li>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='section']" mode="navlist">
+  <xsl:template match="html:div[@class='topic'][not(.//html:h1) and not(.//html:h2)]" mode="gentoc"/>
+
+  <xsl:template match="html:div[@class='section']" mode="gentoc">
     <xsl:param name="modid" />
     <xsl:param name="modtitle" />
 
@@ -281,97 +251,42 @@
         <xsl:with-param name="modid" select="(.//html:div[@class='topic'])[1]/@id" />
       </xsl:call-template>
     </xsl:variable>
+
     <xsl:variable name="cursection" select="boolean(.//html:div[@id = $modid])" />
-    <li>
-      <xsl:if test="./html:div[@id = $modid] and $modtitle=''">
-        <xsl:attribute name="class">
-          <xsl:text>active</xsl:text>
-        </xsl:attribute>
-      </xsl:if>
-      <a href="{$modref}">
+
+    <li class="list-group-item">
+      <a href="{$modref}" data-section="{generate-id()}">
         <i>
           <xsl:attribute name="class">
             <xsl:choose>
-              <xsl:when test="$cursection"><xsl:text>icon-folder-open</xsl:text></xsl:when>
-              <xsl:otherwise><xsl:text>icon-folder-close</xsl:text></xsl:otherwise>
+              <xsl:when test="$cursection"><xsl:text>glyphicon glyphicon-folder-open</xsl:text></xsl:when>
+              <xsl:otherwise><xsl:text>glyphicon glyphicon-folder-close</xsl:text></xsl:otherwise>
             </xsl:choose>
           </xsl:attribute>
         </i>
-        <strong><xsl:copy-of select="html:*[1]/node()"/></strong>
       </a>
-    </li>
-    <xsl:if test="$cursection">
-      <ul class="nav nav-list">
-        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="navlist">
+
+      <a href="{$modref}">
+        <xsl:apply-templates select="html:*[1]/node()" mode="gentoc"/>
+      </a>
+
+      <ul data-section-content="{generate-id()}">
+        <xsl:attribute name="class">
+          <xsl:text>list-group</xsl:text>
+          <xsl:if test="not($cursection)"> hidden</xsl:if>
+        </xsl:attribute>
+        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gentoc">
           <xsl:with-param name="modid" select="$modid" />
           <xsl:with-param name="modtitle" select="$modtitle" />
         </xsl:apply-templates>
       </ul>
-    </xsl:if>
+    </li>
   </xsl:template>
+  
+  <xsl:template match="html:a[@class='indexmq']" mode="gentoc" />
+  <xsl:template match="html:span[@class='title_num']" mode="gentoc" />
 
 
-  <xsl:template match="html:div[@class='topic']" mode="navlist">
-    <xsl:param name="modid" />
-    <xsl:param name="modtitle" />
-    <xsl:variable name="modref">
-      <xsl:call-template name="modfile" />
-    </xsl:variable>
-    <xsl:variable name="thismodtitle">
-      <xsl:call-template name="modtitle" />
-    </xsl:variable>
-    <xsl:if test="not($thismodtitle='')">
-      <li>
-        <xsl:if test="@id = $modid">
-          <xsl:attribute name="class">
-            <xsl:text>active</xsl:text>
-          </xsl:attribute>
-        </xsl:if>
-        <a href="{$modref}"><i class="icon-file"></i><xsl:value-of select="$thismodtitle" /></a>
-      </li>
-    </xsl:if>
-  </xsl:template>
-
-  <xsl:template match="html:div[@class='section']" mode="breadcrumb">
-    <xsl:param name="modtitle" />
-    <xsl:variable name="modref">
-      <xsl:call-template name="modfile">
-        <xsl:with-param name="modid" select="html:div[@class='topic'][1]/@id" />
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="position()=last() and $modtitle=''">
-        <li>
-          <xsl:copy-of select="html:*[1]/node()" />
-        </li>
-      </xsl:when>
-      <xsl:otherwise>
-        <li>
-          <a href="{$modref}"><xsl:copy-of select="html:*[1]/node()" /></a><span class="divider">/</span>
-        </li>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
-  <xsl:template match="html:h1|html:h2|html:h3|html:h4|html:h5|html:h6" mode="modcontent">
-    <xsl:variable name="currentlvl" select="substring-after(local-name(),'h')" />
-    <xsl:variable name="sectionlvl" select="count(ancestor::html:div[@class='section'])" />
-    <xsl:variable name="newlvl" select="$currentlvl - ($sectionlvl -1)" />
-    <xsl:choose>
-      <xsl:when test="$newlvl = 2">
-        <div class="page-header">
-          <xsl:element name="h{$newlvl}" namespace="http://www.w3.org/1999/xhtml">
-            <xsl:apply-templates select="node()|@*" mode="modcontent" />
-          </xsl:element>
-        </div>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:element name="h{$newlvl}" namespace="http://www.w3.org/1999/xhtml">
-          <xsl:apply-templates select="node()|@*" mode="modcontent" />
-        </xsl:element>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
 
   <xsl:template match="html:a[@href='#']" mode="modcontent">
     <xsl:apply-templates select="node()" mode="modcontent" />
@@ -397,6 +312,7 @@
     </xsl:copy>
   </xsl:template>
 
+  <!--
   <xsl:template match="html:img" mode="modcontent">
     <xsl:variable name="src">
       <xsl:choose>
@@ -404,12 +320,12 @@
           <xsl:value-of select="@src" />
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>medias/</xsl:text>
+          <xsl:text>sources</xsl:text>
           <xsl:value-of select="substring-after(@src, 'medias/')" />
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <img src="{$src}" alt="{@alt}" title="{@title}">
+    <img src="{@src}" alt="{@alt}" title="{@title}">
       <xsl:if test="@style">
         <xsl:attribute name="style"><xsl:value-of select="@style" /></xsl:attribute>
       </xsl:if>
@@ -430,6 +346,7 @@
     </xsl:variable>
     <embed width="{@width}" height="{@height}" type="{@type}" pluginspage="{@pluginspage}" src="{$src}" />
   </xsl:template>
+-->
 
   <xsl:template match="node()|@*" mode="modcontent">
     <xsl:copy>
@@ -439,68 +356,25 @@
 
   <xsl:template match="html:a[@class='indexmq']" mode="modcontent" />
 
-  <xsl:template match="html:div[@class='cover-titles']" mode="modcontent" >
-    <div class="hero-unit">
-      <div class="row-fluid">
-        <div class="span8">
-          <xsl:apply-templates select="html:*[@class='cover-title']" mode="modcontent"/>
-          <xsl:apply-templates select="html:*[@class='cover-subtitle']" mode="modcontent"/>
-        </div>
-        <div class="span4">
-          <xsl:apply-templates select="html:*[@class='cover-author']" mode="modcontent"/>
-        </div>
-      </div>
-      <hr class="soften"/>
-      <xsl:apply-templates select="html:*[not(@class='cover-title' or @class='cover-subtitle' or @class='cover-author')]" mode="covercontent"/>
-      
-    </div>
-  </xsl:template>
-
-  <xsl:template match="html:*[@class='cover-title']" mode="modcontent">   
-  <h1><xsl:apply-templates mode="modcontent"/></h1>
-</xsl:template>
-
-<xsl:template match="html:*[@class='cover-subtitle']" mode="modcontent">
-  <p><xsl:apply-templates  mode="modcontent"/></p>
-</xsl:template>
-
-<xsl:template match="html:*[@class='cover-author']" mode="modcontent">
-  <p>By <xsl:apply-templates mode="modcontent"/></p>
-</xsl:template>
-
-<xsl:template match="html:*[@class='cover-editor']" mode="modcontent">
-  <p><em><xsl:apply-templates mode="modcontent"/></em></p>
-</xsl:template>
-
-<xsl:template match="html:div[@class='cover-info']" mode="modcontent" >
-  <div class="alert">
-    <xsl:apply-templates mode="modcontent" />
-  </div>
-</xsl:template>
+  <xsl:template match="html:span[@class='title_num']" mode="modcontent" />
 
 <xsl:template match="html:span[@class='title_num']" mode="TOCtitle" />
 <xsl:template match="html:ins[@class='index']|html:span[@rel='index']" mode="TOCtitle" />
 
+
+
+
+
 <!-- generate topic navbar -->
 <xsl:template name="topicnavbar">
-  <div class="btn-group pull-right">
-    <a title="{kfp:variable(string($translationfile),'premier')}">
-      <xsl:attribute name="class">
-        <xsl:text>btn</xsl:text>
-        <xsl:if test="not(preceding::html:div[@class='topic'])">
-          <xsl:text> disabled</xsl:text>
-        </xsl:if>
-      </xsl:attribute>
-      <xsl:attribute name="href">
-        <xsl:call-template name="modfile">
-          <xsl:with-param name="modid" select="//html:div[@class='topic'][1]/@id"/>
-        </xsl:call-template>
-      </xsl:attribute>
-      <i class="icon-home"></i>
-    </a>
+  <div id="xs-button" class="visible-xs">
+    <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="glyphicon glyphicon-list btn btn-default">
+    </button>
+  </div>
+  <div class="btn-group pull-right hidden-xs">
     <a title="{kfp:variable(string($translationfile),'precedent')}">
       <xsl:attribute name="class">
-        <xsl:text>btn</xsl:text>
+        <xsl:text>btn btn-default</xsl:text>
         <xsl:if test="not(preceding::html:div[@class='topic'])">
           <xsl:text> disabled</xsl:text>
         </xsl:if>
@@ -510,12 +384,12 @@
           <xsl:with-param name="modid" select="preceding::html:div[@class='topic'][1]/@id" />
         </xsl:call-template>
       </xsl:attribute>
-      <i class="icon-chevron-left"></i>
+      <i class="glyphicon glyphicon-chevron-left"></i>
     </a>
 
     <a title="{kfp:variable(string($translationfile),'suivant')}">
       <xsl:attribute name="class">
-        <xsl:text>btn</xsl:text>
+        <xsl:text>btn btn-default</xsl:text>
         <xsl:if test="not(following::html:div[@class='topic'])">
           <xsl:text> disabled</xsl:text>
         </xsl:if>
@@ -525,20 +399,16 @@
           <xsl:with-param name="modid" select="following::html:div[@class='topic'][1]/@id" />
         </xsl:call-template>
       </xsl:attribute>
-      <i class="icon-chevron-right"></i>
+      <i class="glyphicon glyphicon-chevron-right"></i>
     </a>
-    <!-- <a class="btn" title="{kfp:variable(string($translationfile),'dernier')}">
-         <xsl:attribute name="href">
-           <xsl:call-template name="modfile">
-             <xsl:with-param name="modid" select="current()[not(following::html:div[@class='topic'])]/@id|following::html:div[@class='topic'][last()]/@id" />
-           </xsl:call-template>
-         </xsl:attribute>
-         <i class="icon-step-forward"></i>
-       </a>-->
-       <span class="btn" title="{kfp:variable(string($translationfile),'imprimer')}" onclick="window.print();"><i class="icon-print"></i></span>
-       <!-- <span class="btn" title="{kfp:variable(string($translationfile),'signet')}" onclick="addbookmark();"><i class="icon-star-empty"></i></span> -->
-     </div>
-   </xsl:template>
+
+    <span class="btn btn-default" title="{kfp:variable(string($translationfile),'imprimer')}" onclick="window.print();"><i class="glyphicon glyphicon-print"></i></span>
+  </div>
+</xsl:template>
+
+
+
+
 
    <!--  generate html header -->
    <xsl:template name="genhtmlheader">
@@ -546,12 +416,31 @@
      <meta charset="utf-8" />
      <meta content="width=device-width, initial-scale=1.0" name="viewport" />
      <link rel="stylesheet" href="lib/css/bootstrap.min.css" type="text/css"/>
-     <link rel="stylesheet" href="lib/css/bootstrap-responsive.min.css" type="text/css"/>
+     <link rel="stylesheet" href="lib/css/bootstrap-theme.min.css" type="text/css"/>
      <link rel="stylesheet" href="lib/css/WebHelp5.css" type="text/css"/>
      <xsl:if test="$css">
        <link rel="stylesheet" href="usercss/{$css}.css" type="text/css" />
      </xsl:if>
-     <script src="lib/js/jquery-1.7.1.min.js" type="text/javascript">
+
+   <xsl:text disable-output-escaping='yes'>&lt;!--[if lt IE 9]&gt;</xsl:text>
+   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript">
+     <xsl:text>&#x0D;</xsl:text>
+   </script>
+   <xsl:text disable-output-escaping='yes'>&lt;![endif]--&gt;</xsl:text>
+   <style type="text/css">
+     body {
+     padding-top: 60px;
+     padding-bottom: 40px;
+     }
+     .sidebar-nav {
+     padding: 9px 0;
+     }
+   </style>
+ </xsl:template>
+
+
+ <xsl:template name="genhtmlfooter">
+     <script src="lib/js/jquery-2.1.1.min.js" type="text/javascript">
        <xsl:text>&#x0D;</xsl:text>
      </script>
      <script src="lib/js/bootstrap.min.js" type="text/javascript">
@@ -571,41 +460,55 @@
        <xsl:text>&#x0D;</xsl:text>
      </script>
 
+
      <script type="text/javascript">
        var label_score="<xsl:call-template name="gettext"><xsl:with-param name="label" select="'score'" /></xsl:call-template>";
-     var label_moreres="<xsl:call-template name="gettext"><xsl:with-param name="label" select="'plus10res'" /></xsl:call-template>";
+       var label_moreres="<xsl:call-template name="gettext"><xsl:with-param name="label" select="'plus10res'" /></xsl:call-template>";
    </script>
-   <xsl:text disable-output-escaping='yes'>&lt;!--[if lt IE 9]&gt;</xsl:text>
-   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript">
-     <xsl:text>&#x0D;</xsl:text>
+
+     <script src="lib/js/events.js" type="text/javascript">
+       <xsl:text>&#x0D;</xsl:text>
+     </script>
+
+   <script type="text/javascript">
+     var label_score="";
+     var label_moreres="";
+     
+     jQuery(document).ready(function() {
+       var offset = 220;
+       var duration = 500;
+       jQuery(window).scroll(function() {
+         if (jQuery(this).scrollTop() > offset) {
+           jQuery('.back-to-top').fadeIn(duration);
+         } else {
+           jQuery('.back-to-top').fadeOut(duration);
+         }
+       });
+     
+       jQuery('.back-to-top').click(function(event) {
+         event.preventDefault();
+         jQuery('html, body').animate({scrollTop: 0}, duration);
+         return false;
+       })
+     });
    </script>
-   <xsl:text disable-output-escaping='yes'>&lt;![endif]--&gt;</xsl:text>
-   <style type="text/css">
-     body {
-     padding-top: 60px;
-     padding-bottom: 40px;
-     }
-     .sidebar-nav {
-     padding: 9px 0;
-     }
-   </style>
  </xsl:template>
+
 
  <!-- generate navbar -->
  <xsl:template name="gennavbar">
-   <div id="header" class="navbar navbar-fixed-top">
+   <div id="header" class="navbar-nav navbar-fixed-top">
      <div class="navbar-inner">
        <div class="container-fluid">
-         <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-         </a>
-         <a href="index.html" class="brand">
-           <xsl:copy-of select="/html:html/html:body/html:div[@class='section'][1]/html:*[1]/node()" />
+         <a href="index.html" class="navbar-brand">
+           <xsl:copy-of select="/html:html/html:head/html:title/text()" />
          </a>
 
+         <div class="pull-right">
+           <xsl:call-template name="topicnavbar"/>
+
+
+           <!--
          <div class="nav-collapse">
            <ul class="nav">
              <xsl:for-each select="/html:html/html:body/html:div[@class='section'][position() &gt; 1]">
@@ -614,6 +517,7 @@
                    <xsl:with-param name="modid" select="html:div[@class='topic'][1]/@id" />
                  </xsl:call-template>
                </xsl:variable>
+
                <li class="dropdown">
                  <a href="{$modref}" class="dropdown-toggle" data-toggle="dropdown">
                    <xsl:copy-of select="html:*[1]/node()" />
@@ -641,6 +545,7 @@
                </ul>
              </div>
            </div>
+         -->
          </div>
        </div>
      </div>
@@ -651,15 +556,137 @@
  <xsl:template name="gentoc">
    <xsl:param name="modid" select="@id" />
    <xsl:param name="modtitle" select="''" />
-   <div id="menu" class="well sidebar-nav">
-     <ul class="nav nav-list">
-       <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']  " mode="navlist">
-         <xsl:with-param name="modid" select="$modid" />
-         <xsl:with-param name="modtitle" select="$modtitle" />
-       </xsl:apply-templates>
-     </ul>
+   <!--
+   <div class="btn-list col-xs-12">
+     <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="glyphicon glyphicon-list visible-xs btn-lg col-xs-12">
+     </button>
    </div>
+   -->
+   
+   <div id="navbarCollapse" class="collapse navbar-collapse sidebar">
+     <div id="navbarCollapse-in" class="col-xs-12">
+     <div id="search" class="input-append well navbar-nav list-group list-unstyled col-sm-12">
+       <input type="text" id="ksearchinput" placeholder=" {kfp:variable(string($translationfile),'TitreRecherche')}" class="col-sm-11 col-xs-11 col-md-9">
+       </input>
+       <button class="btn btn-info col-sm-1 col-xs-1 col-md-3" id="search_btn" type="button" title="Rechercher">
+         <i class="glyphicon glyphicon-search icon-white"></i>
+       </button>
+     </div>
+     
+        
+     <div id="search_results" class="well navbar-nav list-group list-unstyled col-sm-12" style="display:none">
+          
+       <h5>
+         <i class="glyphicon glyphicon-search icon-white"></i>
+         <xsl:value-of select="kfp:variable(string($translationfile),'ResRecherche')"/>
+         <span class="pull-right">
+           <a href="#" id="searchclose">
+             <i class="glyphicon glyphicon-remove white"></i>
+           </a>
+         </span>
+       </h5>
+            
+       <ul id="ksearchmenu" class="col-sm-12"></ul>
+          
+     </div>
+        
+     <div id="menu" class="well navbar-nav col-sm-12">
+       <h5><xsl:value-of select="kfp:variable(string($translationfile),'TdmTitre')"/></h5>
+       <ul id="menu-list" class="list-group list-unstyled">
+         <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
+           <xsl:with-param name="modid" select="$modid" />
+           <xsl:with-param name="modtitle" select="$modtitle" />
+         </xsl:apply-templates>
+       </ul>
+     </div>
+   </div>
+   </div>
+
  </xsl:template>
+
+
+
+
+ <!-- TODO template menu selection criteres -->
+
+ <xsl:template name="critsel">
+             <!-- Dans le cas où il y a trois a-->
+          <div id="os" class="well navbar-nav col-md-12 col-sm-12">
+            <h5 class="col-md-12 col-sm-3">Système d'exploitation</h5>
+              <ul class="col-md-12 col-sm-9 list-group list-unstyled">
+                
+                  <li class="list-group-item text-center col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                    <a href="index.html">
+                      Windows
+                    </a>
+                  </li>
+                  <li class="list-group-item text-center col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                    <a href="index.html">
+                      Windows
+                    </a>
+                  </li>
+                  <li class="list-group-item text-center col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                    <a href="index.html">
+                      Windows
+                    </a>
+                  </li>                
+              </ul>
+
+              
+            </div>
+
+            <!-- Dans le cas où il y a deux a-->
+            <div id="format" class="well navbar-nav col-md-12 col-sm-12">
+            <h5 class="col-md-12 col-sm-3">Format</h5>
+              <ul class="col-md-12 col-sm-9 list-group list-unstyled">
+                
+                  <li class="list-group-item text-center col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                    <a href="index.html">
+                      .odt
+                    </a>
+                  </li>
+                  <li class="list-group-item text-center col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                    <a href="index.html">
+                      .doc
+                    </a>
+                  </li>
+              </ul>
+              
+              
+            </div>
+
+            <!-- Dans le cas où il y a un seul a-->
+            <div id="langue" class="well navbar-nav col-md-12 col-sm-12">
+            <h5 class="col-md-12 col-sm-3">Langue</h5>
+              <ul class="col-md-12 col-sm-9 list-group list-unstyled">
+                
+                  <li class="list-group-item  text-center col-md-12 col-sm-12 col-lg-12 col-xs-12">
+                    <a href="index.html">
+                      Français
+                    </a>
+                  </li>
+                                 
+              </ul>
+              
+              
+            </div>
+
+
+ </xsl:template>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  <!-- topic title -->
  <xsl:template name="modtitle">

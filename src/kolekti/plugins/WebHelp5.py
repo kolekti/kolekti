@@ -20,6 +20,7 @@
 import os
 import time
 import shutil
+import logging
 
 from lxml import etree as ET
 
@@ -144,6 +145,7 @@ class plugin(pluginBase.plugin):
         return
     
     def index(self,pivot):
+        logging.debug("**** Search index")
         self.__firstmod = ""
         idx=ac_index.indexer()
         b=pivot.xpath("/h:html/h:body",namespaces={'h':htmlns})[0]
@@ -155,16 +157,18 @@ class plugin(pluginBase.plugin):
             if modid and e.tail:
                 for word in ac_index.lexer(e.tail):
                     idx.addword(word,modid)
+        
+        logging.debug("**** Search index DONE")
         return idx.writewords()
 
     def getmodid(self,elt):
         res=None
         for d in elt.iterancestors():
-            if d.tag=="{%s}div"%htmlns and d.get('class')=="moduleinfo":
+            if d.tag=="{%s}div"%htmlns and d.get('class')=="topicinfo":
                 return False
-            if d.tag=="{%s}div"%htmlns and d.get('class')=="module":
-                if d.xpath("h:div[@class='moduleinfo']/h:p[h:span[@class='infolabel']='topic_file']",namespaces={'h':htmlns}):
-                    res=d.xpath("h:div[@class='moduleinfo']/h:p[h:span[@class='infolabel']='topic_file']/h:span[@class='infovalue']",namespaces={'h':htmlns})[0].text
+            if d.tag=="{%s}div"%htmlns and d.get('class')=="topic":
+                if d.xpath("h:div[@class='topicinfo']/h:p[h:span[@class='infolabel']='topic_file']",namespaces={'h':htmlns}):
+                    res=d.xpath("h:div[@class='topicinfo']/h:p[h:span[@class='infolabel']='topic_file']/h:span[@class='infovalue']",namespaces={'h':htmlns})[0].text
                 else:
                     res=d.get('id')
                 if self.__firstmod == "" or self.__firstmod == res:
