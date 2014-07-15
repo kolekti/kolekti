@@ -10,7 +10,6 @@
   exclude-result-prefixes="html exsl kfp">
   <xsl:output method="html" indent="yes" />
 
-  <xsl:include href="alphaindex.xsl" />
 
   <xsl:param name="pubdir" />
   <xsl:param name="templatedir" />
@@ -20,7 +19,7 @@
   <xsl:param name="css" />
 
   <xsl:variable name="helpname">WebHelp5</xsl:variable>
-  <xsl:variable name="index" select="//html:ins[@class='index']|//html:span[@rel='index']" />
+  <xsl:variable name="index" select="//html:div[starts-with(@class,'INDEX')]"/>
   <xsl:variable name="topics" select="//html:div[@class='topic']" />
 
 
@@ -66,6 +65,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
+
   <!-- main template -->
 
   <xsl:template match="/">
@@ -78,44 +78,11 @@
       <xsl:apply-templates select="$topics" mode="textcontent" />
     </exsl:document>
     <xsl:apply-templates select="$topics" />
+    <xsl:apply-templates select="//html:div[starts-with(@class,'INDEX')]" />
 
-    <!-- alphebtical index -->
-    <xsl:if test="$index">
-      <exsl:document href="{$pubdir}/alphaindex.html"
-        method="html"
-        indent="yes"
-        encoding="utf-8">
-        <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
-        <html>
-          <head>
-            <xsl:call-template name="genhtmlheader" />
-          </head>
-          <body onload="init_help();">
-            <xsl:call-template name="gennavbar" />
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-md-3 col-sm-12 col-xs-12">
-                  <xsl:call-template name="gentoc" />
-                </div>
-
-                <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
-                  <div id="alphaindex">
-                    <h2 id="alphaindextitle" class="page-header alphaindextitle">
-                      <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
-                    </h2>
-                    <div id="alphaindexcontent" class="alphaindexcontent">
-                      <xsl:call-template name="alphabetical-index" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <xsl:call-template name="genhtmlfooter" />
-          </body>
-        </html>
-      </exsl:document>
-    </xsl:if>
   </xsl:template>
+
+
 
   <xsl:template match="html:div[@class='topic']" mode="modcodes">
     <xsl:variable name="modcode">
@@ -216,6 +183,55 @@
     </exsl:document>
   </xsl:template>
 
+  <xsl:template match="html:div[starts-with(@class,'INDEX')]">
+    <xsl:variable name="filename" select="'alphaindex.html'"/>
+    <exsl:document href="{$pubdir}/{$filename}"
+      method="html"
+      indent="yes"
+      encoding="utf-8">
+      <xsl:variable name="modtitle">
+        <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
+      </xsl:variable>
+      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+      <html>
+        <head>
+          <xsl:call-template name="genhtmlheader" />
+        </head>
+        <body onload="init_help();">
+          <xsl:call-template name="gennavbar" />
+          <div class="container-fluid">
+
+            <div class="row">
+              <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
+                <xsl:call-template name="gentoc">
+                  <xsl:with-param name="modtitle" select="$modtitle"/>
+                  <xsl:with-param name="modid" select="'alphaindex'"/>
+                </xsl:call-template>
+              </div>
+
+              <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
+                <div class="row-fluid" id="k-topic">
+                  <div class="col-md-11">
+                    <div id="k-topiccontent">
+                      <xsl:apply-templates select="*[not(@class='topicinfo')]" mode="modcontent" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- topic bottom -->
+                <a href="#" class="back-to-top">
+                  <i class="glyphicon glyphicon-chevron-up"></i>
+                </a>
+
+              </div>
+            </div>
+          </div>
+          <xsl:call-template name="genhtmlfooter" />
+        </body>
+      </html>
+    </exsl:document>
+  </xsl:template>
+
 
 
   <xsl:template match="html:div[@class='topic']" mode="gentoc">
@@ -227,7 +243,7 @@
 
     <xsl:variable name="curtopic" select="boolean(@id = $modid)" />
 
-    <li class="list-group-item">
+    <li>
       <xsl:attribute name="class">
         <xsl:text>list-group-item</xsl:text>
         <xsl:if test="$curtopic"> active</xsl:if>
@@ -287,10 +303,12 @@
   <xsl:template match="html:span[@class='title_num']" mode="gentoc" />
 
 
+  <!-- traitement du contenu du topic -->
 
   <xsl:template match="html:a[@href='#']" mode="modcontent">
     <xsl:apply-templates select="node()" mode="modcontent" />
   </xsl:template>
+
 
   <xsl:template match="html:a[@href!='#'][starts-with(@href,'#')]" mode="modcontent">
     <xsl:copy>
@@ -300,7 +318,28 @@
           <xsl:with-param name="modid" select="substring-after(@href,'#')" />
         </xsl:call-template>
       </xsl:attribute>
+      
       <xsl:apply-templates select="node()" mode="modcontent" />
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:a[@href!='#'][starts-with(@href,'#idx_')]" mode="modcontent">
+    <xsl:variable name="modid">
+      <xsl:for-each select="//html:*[@id=substring-after(current()/@href,'#')]/ancestor::html:div[@class='topic']">
+        <xsl:call-template name="modfile"/>
+      </xsl:for-each>
+    </xsl:variable>
+
+    <xsl:variable name="libel">
+      <xsl:for-each select="//html:*[@id=substring-after(current()/@href,'#')]/ancestor::html:div[@class='topic']">
+        <xsl:call-template name="modtitle"/>
+      </xsl:for-each>
+    </xsl:variable>
+
+    <xsl:copy>
+      <a href="{$modid}{@href}">
+        <xsl:value-of select="$libel"/>
+      </a>
     </xsl:copy>
   </xsl:template>
 
@@ -354,9 +393,11 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:a[@class='indexmq']" mode="modcontent" />
+  <!--
+       <xsl:template match="html:a[@class='indexmq']" mode="modcontent" />
+-->
+  <xsl:template match="html:ins[@class='index']" mode="modcontent" />
 
-  <xsl:template match="html:span[@class='title_num']" mode="modcontent" />
 
 <xsl:template match="html:span[@class='title_num']" mode="TOCtitle" />
 <xsl:template match="html:ins[@class='index']|html:span[@rel='index']" mode="TOCtitle" />
@@ -506,46 +547,6 @@
 
          <div class="pull-right">
            <xsl:call-template name="topicnavbar"/>
-
-
-           <!--
-         <div class="nav-collapse">
-           <ul class="nav">
-             <xsl:for-each select="/html:html/html:body/html:div[@class='section'][position() &gt; 1]">
-               <xsl:variable name="modref">
-                 <xsl:call-template name="modfile">
-                   <xsl:with-param name="modid" select="html:div[@class='topic'][1]/@id" />
-                 </xsl:call-template>
-               </xsl:variable>
-
-               <li class="dropdown">
-                 <a href="{$modref}" class="dropdown-toggle" data-toggle="dropdown">
-                   <xsl:copy-of select="html:*[1]/node()" />
-                   <b class="caret"></b>
-                 </a>
-                 <ul class="dropdown-menu"><xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gennavbar" /></ul>
-               </li>
-             </xsl:for-each>
-             <xsl:if test="$index">
-               <li>
-                 <a href="alphaindex.html"><xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" /></a>
-               </li>
-             </xsl:if>
-           </ul>
-           <div class="navbar-search pull-right">
-             <div class="dropdown" id="ksearcharea">
-               <input type="text" 
-                 class="dropdown-toggle search-query"
-                 id="ksearchinput"
-                 placeholder="{kfp:variable(string($translationfile),'SearchTitre')}"  
-                 data-toggle="dropdown"/>
-               <ul class="dropdown-menu"
-                 id="ksearchmenu">
-                 <li><a><em>Search Results</em></a></li>
-               </ul>
-             </div>
-           </div>
-         -->
          </div>
        </div>
      </div>
@@ -592,12 +593,26 @@
         
      <div id="menu" class="well navbar-nav col-sm-12">
        <h5><xsl:value-of select="kfp:variable(string($translationfile),'TdmTitre')"/></h5>
-       <ul id="menu-list" class="list-group list-unstyled">
+       <ul class="menu-list list-group list-unstyled">
          <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
            <xsl:with-param name="modid" select="$modid" />
            <xsl:with-param name="modtitle" select="$modtitle" />
          </xsl:apply-templates>
        </ul>
+       <xsl:if test="//html:div[starts-with(@class,'INDEX')]">
+         <ul class="menu-list list-group list-unstyled">
+           <li>
+             <xsl:attribute name="class">
+               <xsl:text>list-group-item</xsl:text>
+               <xsl:if test="$modid = 'alphaindex'"> active</xsl:if>
+             </xsl:attribute>
+             <a href="alphaindex.html">
+               <i class="glyphicon glyphicon-list-alt"></i>
+               <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
+             </a>
+           </li>
+         </ul>
+       </xsl:if>
      </div>
    </div>
    </div>
