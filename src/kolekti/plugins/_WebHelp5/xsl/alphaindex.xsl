@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE xsl:stylesheet [
-   <!ENTITY mark "normalize-space(translate(string(.),'abcdefghijklmnopqrstuvwxyzÉÀÇÈÙËÊÎÏÔÖÛÜÂÄéàçèùëêïîöôüûäâ','ABCDEFGHIJKLMNOPQRSTUVWXYZEACEUEEIIOOUUAAACEUEEIIOOUUAA'))">
-   <!ENTITY key "normalize-space(string(.))">
-  ]>
-
 <xsl:stylesheet version="1.0"
         xmlns:html="http://www.w3.org/1999/xhtml"
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
