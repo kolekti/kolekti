@@ -10,6 +10,15 @@ margin-right: 8px;
  } 
 
 
+#menu .list-group
+{ 
+  margin-bottom:0;
+ }
+
+#menu #menu-list { 
+  margin-bottom:20px;
+ }
+
 #menu .list-group-item
 { 
   padding: 0px 15px;
@@ -133,29 +142,10 @@ div[data-section-content].active
 #menu .list-group-item.active:hover,
 #menu .list-group-item.active:focus {
 background-color: #428bca;
+border-top-left-radius: 0px;
+border-top-right-radius: 0px;
 }
 
-/*
-.list-group > li > a
-{
-    padding-left: 12px;
-}
-
-.list-group > li > a
-{
-    margin-left: 0;
-  }
-
-.list-group > li > a:first 
-{
-    padding-left:  15px;
-}
-
-.list-group > li > a:first
-{
-    margin-left: -15px;
-  }
-*/
 
 .sidebar .well a {
     color: #315585;
@@ -180,14 +170,6 @@ background-color: #428bca;
 {
   background-color: #3e6da5;
   background-image:  none;
-/*
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#8EADBF), to(#024363));
-  background-image: -webkit-linear-gradient(top, #8EADBF, #024363);
-  background-image: -moz-linear-gradient(top , #8EADBF, #024363);
-  background-image:      -o-linear-gradient(top, #8EADBF, #024363);
-  background-image:         linear-gradient(to bottom, #8EADBF, #024363);
-  background-repeat: repeat-x;
-*/
   min-height: 40px;
 }
 .nav > li > a {
@@ -266,33 +248,29 @@ background-color: #428bca;
 
 /* contenu du topic */
 
-h1
+#k-topiccontent
+ {  
+   text-align:justify;
+}
+
+h1, h2, h3, h4, h5, h6
 { 
-  margin-top:0;
-  border-bottom: 2px solid #3e6da5;
-  color: #3e6da5;
+  border-bottom: 1px solid black;
   padding-bottom:0;
-  margin-bottom:6px;
-    
- }
-
-
-h2
-{ 
-  margin-top:0;
-  margin-bottom:0;
-  color: #3e6da5;
-  line-height:30px;
-  font-size:28px;
+  margin-bottom:.6em;
+  margin-top:.8em;
   
  }
 
-h3 { 
-     font-size:20px;
-     line-height: 25px;
-     margin-top: 25px;
-     border-bottom: 1px solid #3e6da5;
+h1 { 
+  margin-top:0;
+     }
+
+h1,h2 { 
+     color: #3e6da5;
+     border-bottom:2px solid #3e6da5;
  }
+
 .chemin { 
     margin-bottom:15px;
     color: #3e6da5;
@@ -302,11 +280,6 @@ h3 {
     font-weight:bold;
  }
 
-h3 {
-    font-size: 20px;
-    line-height: 25px;
-    margin-top: 25px;
-}
 
 .exemple { 
     font-style:italic;
