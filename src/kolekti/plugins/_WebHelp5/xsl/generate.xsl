@@ -343,13 +343,64 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:a[@href!='#'][not(starts-with(@href,'#'))]">
+  <xsl:template match="html:a[@href!='#'][not(starts-with(@href,'#'))]" mode="modcontent">
     <xsl:copy>
       <xsl:apply-templates select="@*" mode="modcontent" />
       <xsl:attribute name="target">_blank</xsl:attribute>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </xsl:copy>
   </xsl:template>
+
+
+  <xsl:template match="html:div[@class='attention']" mode="modcontent">
+    <div class="alert alert-warning" role="alert">
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </div>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='danger']" mode="modcontent">
+    <div class="alert alert-danger" role="alert">
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </div>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='remarque']" mode="modcontent">
+    <div class="alert alert-info" role="alert">
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </div>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='exemple']" mode="modcontent">
+    <div class="alert alert-success" role="alert">
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </div>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='voiraussi']" mode="modcontent">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <xsl:apply-templates select="*[1]" mode="modcontent" />
+      </div>
+      <div class="panel-body">
+        <xsl:apply-templates select="*[position() &gt; 1]" mode="modcontent" />
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='voiraussi']//html:ul" mode="modcontent">
+    <ul class="list-unstyled">
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </ul>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='voiraussi']//html:li" mode="modcontent">
+    <li>
+      <span class="glyphicon glyphicon-circle-arrow-right"></span>
+      <xsl:apply-templates select="node()" mode="modcontent" />
+    </li>
+  </xsl:template>
+
+
 
   <!--
   <xsl:template match="html:img" mode="modcontent">

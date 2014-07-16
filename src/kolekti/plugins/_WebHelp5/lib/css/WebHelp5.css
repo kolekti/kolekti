@@ -70,6 +70,9 @@ margin: 0 -15px 7.5px -15px;
 
 }
 
+a.navbar-brand:hover{
+            color:white
+}
 .navbar #ksearchinput {
     min-height: 2em;
 }
@@ -300,8 +303,26 @@ h1,h2 {
     font-style:italic;
  }
 
-.attention { 
+caption { 
+    font-style:italic;
+ }
 
+table { 
+    font-size:80%;
+    margin-bottom:.8em;
+ }
+
+td, th { 
+         padding:.1em .8em;
+} 
+
+thead th, thead td { 
+        text-align:center;
+
+}
+
+.attention { 
+         
  }
 
 .libelle
