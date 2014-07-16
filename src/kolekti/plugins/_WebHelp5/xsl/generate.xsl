@@ -149,7 +149,7 @@
         <head>
           <xsl:call-template name="genhtmlheader" />
         </head>
-        <body onload="init_help();">
+        <body>
           <xsl:call-template name="gennavbar" />
           <div class="container-fluid">
 
@@ -197,7 +197,7 @@
         <head>
           <xsl:call-template name="genhtmlheader" />
         </head>
-        <body onload="init_help();">
+        <body>
           <xsl:call-template name="gennavbar" />
           <div class="container-fluid">
 
