@@ -17,12 +17,12 @@
 
   <pubscript id="fop" type="shell">
     <name>Générer pdf avec Apache fop</name>
+
+    <cmd>fop -c _APPDIR_/plugins/_fop/fop.xconf -xml "_PIVOT_" -xsl "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" -param baseuri "_BASEURI_" -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+
 <!--
-    <cmd>fop -c _APPDIR_/plugins/_fop/fop.xconf -xml "_PIVOT_" -xsl "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+ <cmd>xsltproc - -stringparam baseuri "file://_SRCDIR_/" "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" "_PIVOT_" |fop -c _APPDIR_/plugins/_fop/fop.xconf -fo - -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
 -->
-
- <cmd>xsltproc --stringparam baseuri "file://_SRCDIR_/" "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" "_PIVOT_" |fop -c _APPDIR_/plugins/_fop/fop.xconf -fo - -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
-
     <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
     <parameters>
       <parameter name="XSL" label="Feuille de style" 

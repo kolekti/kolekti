@@ -35,6 +35,7 @@ objpathes = {
 class kolektiBase(object):
     def __init__(self,path):
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+        logging.debug('project path : %s'%path)
         self._path = path
         self._xmlparser = ET.XMLParser()
         self._xmlparser.resolvers.add(PrefixResolver())
@@ -83,8 +84,9 @@ class kolektiBase(object):
     
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = urllib2.url2pathname(path).split('/')
-        #        print self.__path, pathparts
+        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
+        #logging.debug(urllib2.url2pathname(path))
         return os.path.join(self._path, *pathparts)
 
     def get_script(self, plugin):
@@ -181,12 +183,15 @@ class kolektiBase(object):
 
     def copyFile(self, source, path):
         ossource = self.__makepath(source)
-        ospath = self.__makepath(path)
+        ospath = self.__makepath(path) 
+        logging.debug("copyFile %s -> %s"%(ossource, ospath))
+               
         return shutil.copy(ossource, ospath)
 
     def copyDirs(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
+
         try:
             shutil.rmtree(ospath)
         except:            
@@ -198,14 +203,18 @@ class kolektiBase(object):
 
     def getUrlPath(self, source):
         path = self.__makepath(source)
-        
-        return 'file://' + urllib.pathname2url(path.encode('utf-8'))
+        logging.debug(path)
+        upath = urllib.pathname2url(path.encode('utf-8'))
+        if upath[:3]=='///':
+            return 'file:' + upath
+        else:
+            return 'file://' + upath
 
 
     def getPathFromUrl(self, url):
         return os.path.join(url.split('/')[3:])
 
-    def getPathFromSourceUrl(self, url, base="/"):
+    def getPathFromSourceUrl(self, url, base=""):
         pu = urlparse.urlparse(url)
         if len(pu.scheme):
             return None

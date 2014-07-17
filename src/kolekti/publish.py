@@ -36,7 +36,6 @@ class PublisherMixin(object):
 
 
 
-
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
@@ -52,8 +51,10 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def gettopic(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
-        logging.debug("get topic %s"%self.getUrlPath(path))
-        return self.getUrlPath(path)
+        upath = self.getUrlPath(path)
+        logging.debug("get topic %s -> %s"%(modid,upath))
+        logging.debug("--")
+        return upath
         
     def criteria(self, _, *args):
         return self._profile.xpath("criteria/criterion[@checked='1' or @user='1']")
@@ -191,18 +192,24 @@ class Publisher(PublisherMixin, kolektiBase):
     
     def publish_profile(self, profile, pubdir, assembly):
 
-        logging.info("* Publishing profile %s",profile.xpath('string(label)'))
+        logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
         
         pubdirprofile = pubdir
         pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
+        logging.debug("pubdir %s"%pubdirprofile)
+        logging.debug("pubdir_c %s",pubdirprofile_c)
         try:
             self.makedirs(pubdirprofile)
         except OSError:
-            pass
+            import traceback
+            logging.debug(traceback.format_exception)
+
         try:
             self.makedirs(pubdirprofile_c)
         except OSError:
-            pass
+            import traceback
+            logging.debug(traceback.format_exception)
+
         try:
             # criteria
             s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
@@ -247,14 +254,20 @@ class Publisher(PublisherMixin, kolektiBase):
         # copy media to _c, update src attributes in pivot
         
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
-            base = med.xpath("string(ancestor::h:div[@class='topic']/h:div[@class='topicinfo']/h:p[h:span/@class='infolabel' = 'source']/h:span[@class='infovalue'])", namespaces=self.nsmap)
             ref = med.get('src')
-            ref = self.getPathFromSourceUrl(self.substitute_criteria(ref, profile))
+            logging.debug('image src : %s'%ref)
+            ref = self.substitute_criteria(ref, profile)
             med.set('src',self.substitute_criteria(ref, profile)[1:])
+            logging.debug('image src : %s'%ref)
             try:
-                self.makedirs(pubdirprofile_c +'/'+'/'.join(ref.split('/')[:-1]))
+                refdir = os.path.join(pubdirprofile_c + '/' + os.path.dirname(ref))
+
+                self.makedirs(refdir)
             except OSError:
-                pass
+                logging.debug('makedir failed')
+                import traceback
+                logging.debug(traceback.format_exc())
+
             self.copyFile(ref, pubdirprofile_c + ref)
             
         # write pivot
@@ -355,6 +368,7 @@ class Publisher(PublisherMixin, kolektiBase):
             "APPDIR":self._appdir,
             "PUBDIR":self.getOsPath(pubdirprofile),
             "SRCDIR":self.getOsPath(pubdirprofile_c),
+            "BASEURI":self.getUrlPath(pubdirprofile_c) + '/',
             "PUBNAME": pubname,
             "PIVOT": self.getOsPath(pivfile)
             })
@@ -380,7 +394,12 @@ class Publisher(PublisherMixin, kolektiBase):
 
                 
             elif stype=="shell":
-                cmd=scrdef.find("cmd").text
+                import platform
+                system = platform.system()
+                try:
+                    cmd=scrdef.find("cmd[@os='%s']"%system).text
+                except:
+                    cmd=scrdef.xpath("cmd[not(@os)]")[0].text
 
                 # if get file with local url                
                 if cmd.find("_PIVLOCAL_") >= 0:
@@ -399,9 +418,10 @@ class Publisher(PublisherMixin, kolektiBase):
                                               stdin=subprocess.PIPE,
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE,
-                                              close_fds=True)
+                                              close_fds=False)
                     err=exccmd.stderr.read()
                     out=exccmd.stdout.read()
+                    exccmd.communicate()
                     err=err.decode(LOCAL_ENCODING)
                     out=out.decode(LOCAL_ENCODING)
                     has_error = False
@@ -434,6 +454,10 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
                     raise Exception
 
+                finally:
+                    exccmd.stderr.close()
+                    exccmd.stdout.close()
+                    
             elif stype=="xslt":
                 try:
                     sxsl=scrdef.find("stylesheet").text
