@@ -87,6 +87,12 @@ a.navbar-brand:hover{
     left: auto;
 }
 
+.list-group-item:last-child 
+{
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
 @media print {
     html { margin: 1em; font: 11pt "Gill Sans", sans-serif; }
     body {padding-top:0;}
