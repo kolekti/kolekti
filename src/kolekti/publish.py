@@ -15,15 +15,23 @@ from lxml import etree as ET
 from common import kolektiBase, XSLExtensions
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
+
 class PublisherMixin(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
     def __init__(self, *args, **kwargs):
+        # intercept lang & draft parameters
         self._publang = None
         if kwargs.has_key('lang'):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
+
+        self._draft = False
+        if kwargs.has_key('draft'):
+            self._draft = kwargs.get('draft')
+            kwargs.pop('draft')
     
         super(PublisherMixin, self).__init__(*args, **kwargs)
+
         if self._publang is None:
             self._publang = self._config.get("sourcelang","en")
 
@@ -34,8 +42,28 @@ class PublisherMixin(object):
         extra.update({"LANG":self._publang})
         return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
 
+    def assembly_dir(self, xjob):
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        if self._draft:
+            assembly_dir = "/drafts/" + assembly_dir
+        else:
+            assembly_dir = "/releases/" + assembly_dir
+        return assembly_dir
+    
+    def pubdir(self, assembly_dir, profile):
+        # calculates and creates the publication directory
+        pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
+        pubdir = self.substitute_criteria(pubdir, profile)
+        pubdir = assembly_dir + "/publications/" + pubdir
+        logging.debug('pubdir : %s'%pubdir)
 
-
+        try:
+            self.makedirs(pubdir)
+        except:
+            logging.debug("publication path %s already exists"%pubdir)
+        return pubdir
+    
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
@@ -57,7 +85,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return upath
         
     def criteria(self, _, *args):
-        return self._profile.xpath("criteria/criterion[@checked='1' or @user='1']")
+        return self._profile.xpath("criteria/criterion")
 
     def lang(self, _, *args):
         return self._publang
@@ -112,6 +140,9 @@ def test():
     
 
 class Publisher(PublisherMixin, kolektiBase):
+    """Manage all publication process functions, assembly tocs, filters assemblies, invoke scripts
+       instaciation parameters : lang + superclass parameters
+    """
     def __init__(self, *args,**kwargs):
         super(Publisher, self).__init__(*args, **kwargs)
         if self._publang is None:
@@ -121,6 +152,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.debug("kolekti %s"%self._version)
         
     def _variable(self, varfile, name):
+        """returns the actual value for a variable in a given xml variable file"""
         fvar = self.get_base_variable(varfile)
         xvar = self.parse(fvar)
         
@@ -129,6 +161,7 @@ class Publisher(PublisherMixin, kolektiBase):
         return unicode(var)
 
     def __substscript(self, s, subst, profile):
+        """substitues all _NAME_ by its profile value in string s""" 
         for k,v in subst.iteritems():
             s = s.replace('_%s_'%k,v)
         return self.substitute_variables(self.substitute_criteria(s,profile),profile)
@@ -136,47 +169,97 @@ class Publisher(PublisherMixin, kolektiBase):
 
     # publishes a list of jobs
     
-    def publish(self, jobs):
+    def publish_toc(self, toc, jobs):
+        """ publishes a kolekti toc, using the profiles sets present in jobs list"""
+        
+        # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
+        toc = self.get_base_toc(toc) + ".html"
+        logging.debug("publish toc %s",toc)
+        xtoc = self.parse(toc)
         for job in jobs:
             path = self.get_base_job(job) + ".xml"
             xjob = self.parse(path)
-            self.publish_job(xjob)
-            
-    # publish a single job
-    def publish_job(self, xjob):
+            # assembly
+            logging.debug('********************************** CREATE ASSEMBLY')
+            assembly = self.publish_assemble(xtoc, xjob.getroot())
+            logging.debug('********************************** PUBLISH ASSEMBLY')
+            self.publish_job(assembly, xjob.getroot())
+		
 
-        toc = xjob.xpath('string(/*/*[self::toc]/@value)')
-        toc = self.process_path(toc)
-        
-        # parses and assembly the trame
-        xtoc = self.parse(toc)
-        assembly = self.publish_assemble(xtoc)
+    def publish_assemble(self, toc, xjob):
+        """create and return an assembly from the toc using the xjob critria for filtering"""
+        assembly_dir = self.assembly_dir(xjob)
 
+        logging.debug('********************************** process toc')
+
+        xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
+        assembly = xsassembly(toc, lang="'%s'"%self._publang)
+
+        logging.debug('********************************** filter assembly')
+                
+        s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
+        assembly = s(assembly)
+
+        pubname = xjob.get('id','')
+        pubname = self.substitute_criteria(pubname, xjob)
+        try:
+            self.makedirs(assembly_dir + "/assembly")
+        except:
+            import traceback
+            logging.debug(traceback.format_exc())
+
+        self.xwrite(assembly, assembly_dir + "/assembly/content_" + pubname + ".html")
+
+        logging.debug('********************************** copy media')
+        self.copy_media(assembly, xjob, assembly_dir)
+
+        logging.debug('********************************** create settings')
+        self.create_settings(xjob, assembly_dir)
+
+        logging.debug('********************************** copy scripts resources')
+        for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
+            logging.debug(profile)
+            # copy scripts resources
+            for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
+                try:
+                    self.copy_script_params(script, profile, assembly_dir)
+                except:
+                    import traceback
+                    logging.error("resources for script %s not found"%script.get('name'))
+                    logging.debug(traceback.format_exc())
+                    raise Exception
+
+        return assembly
+                        
+    def publish_assembly(self, assembly):
+        """ publish an assembly""" 
+        jobs = self.parse(os.path.join(assembly, '../settings.xml'))
+        for job in jobs:
+            path = self.get_base_job(job) + ".xml"
+            xjob = self.parse(path)
+            xassembly = self.parse(assembly)
+            self.publish_job(xassembly,xjob.getroot())
+
+
+    def publish_job(self, assembly, xjob):
+        """publishes a an assembly for every profile in xjob
+           invoke publication scripts for every publication """ 
+        assembly_dir = self.assembly_dir(xjob)
+
+        logging.debug(ET.tostring(xjob))
         for profile in xjob.xpath('/job/profiles/profile'):
-
+            logging.debug(profile)
             if profile.get('enabled','0') == '1':
                 logging.info('publishing profile %s'%profile.find('label').text)
-                # calculates and creates the publication directory 
-                pubdir = self.substitute_variables(xjob.xpath('string(/*/pubdir/@value)'),profile)
-                pubdir = self.substitute_criteria(pubdir, profile)
-                pubdir = self.get_base_publication(pubdir)
-                logging.debug('pubdir : %s'%pubdir)
-                
-                try:
-                    self.makedirs(pubdir)
-                except:
-                    logging.info("publication path %s already exists"%pubdir)
+
 
                 # creates the document (pivot) file
-                pivot = self.publish_profile(profile, pubdir, assembly)
+                pivot = self.publish_profile(assembly, profile, assembly_dir)
 
-                # lunch scripts
-                
+                # invoke scripts
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
-                        
-                        self.copy_script_params(script, profile, pubdir)
-                        self.start_script(script, profile, pubdir, pivot)
+                        self.start_script(script, profile, assembly_dir, pivot)
                         #print "--> Done script:",script.get('name')
                     except:
                         import traceback
@@ -184,32 +267,18 @@ class Publisher(PublisherMixin, kolektiBase):
                         logging.debug(traceback.format_exc())
                         raise Exception
 
-    def publish_assemble(self, trame):
-        xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
-        assembly = xsassembly(trame, lang="'%s'"%self._publang)
-#        self.write(str(assembly), "/publications/ass.xml")
-        return assembly
+
     
-    def publish_profile(self, profile, pubdir, assembly):
-
-        logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
+    def publish_profile(self, assembly, profile, assembly_dir):
+        """produces the pivot file from the assembly:
+        apply profile filters,
+        generate toc & index
+        substitutes variables in content"""
         
-        pubdirprofile = pubdir
-        pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
-        logging.debug("pubdir %s"%pubdirprofile)
-        logging.debug("pubdir_c %s",pubdirprofile_c)
-        try:
-            self.makedirs(pubdirprofile)
-        except OSError:
-            import traceback
-            logging.debug(traceback.format_exception)
+        logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
-        try:
-            self.makedirs(pubdirprofile_c)
-        except OSError:
-            import traceback
-            logging.debug(traceback.format_exception)
-
+        pubdir = self.pubdir(assembly_dir, profile)
+        
         try:
             # criteria
             s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
@@ -245,14 +314,28 @@ class Publisher(PublisherMixin, kolektiBase):
             
             # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
             # assembly = s(assembly)
-
+            
         except ET.XSLTApplyError, e:
             logging.debug(s.error_log)
-            logging.error("Error in publication prcess")
+            logging.error("Error in publication process")
             raise Exception
         
-        # copy media to _c, update src attributes in pivot
-        
+        # write pivot
+        pivot = assembly
+        pivfile = pubdir + "/document.xhtml"
+
+        self.xwrite(pivot, pivfile)
+        return pivot
+
+    # create settings.xml file in assembly directory
+    def create_settings(self, profile, assembly_dir):
+        pass
+
+
+ 
+            
+    # copy media to _c, update src attributes in assembly
+    def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
             logging.debug('image src : %s'%ref)
@@ -260,27 +343,17 @@ class Publisher(PublisherMixin, kolektiBase):
             med.set('src',self.substitute_criteria(ref, profile)[1:])
             logging.debug('image src : %s'%ref)
             try:
-                refdir = os.path.join(pubdirprofile_c + '/' + os.path.dirname(ref))
-
+                refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
                 self.makedirs(refdir)
             except OSError:
                 logging.debug('makedir failed')
                 import traceback
                 logging.debug(traceback.format_exc())
 
-            self.copyFile(ref, pubdirprofile_c + ref)
-            
-        # write pivot
-        pivot = assembly
-        pivfile = pubdirprofile_c + "/document.xhtml"
+            self.copyFile(ref, assembly_dir + ref)
 
-        self.xwrite(pivot, pivfile)
-
-        return pivot
-
-    def copy_script_params(self, script, profile, pubdir):
-        
-        pubdirprofile_c = pubdir + "/" + self.substitute_criteria(profile.xpath('string(label)'), profile) + '_c'
+    def copy_script_params(self, script, profile, assembly_dir):
+        pubdir = self.pubdir(assembly_dir, profile)
         name=script.get('name')
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
@@ -288,6 +361,20 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.error("Script %s not found" %name)
             raise Exception
 
+        # copy libs
+        try:
+            stype = scrdef.get('type')
+            if stype=="plugin":
+                label = scrdef.get('id')
+                plugname=scrdef.find("plugin").text
+                plugin = self.get_script(plugname)
+                plugin.copylibs(assembly_dir, label)
+        except:
+            logging.error('Unable to copy script libs')
+            import traceback
+            logging.debug(traceback.format_exc())
+            raise Exception
+        
         params = {}
         try:
             params = {}
@@ -299,24 +386,25 @@ class Publisher(PublisherMixin, kolektiBase):
                 pval =  params.get(pname)
                 print pname, pval
                 if pval is not None and pdef.get('type')=='filelist':
+                    srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
                     if pdef.get('ext') == "less":
                         # TODO less compil
                         self.script_lesscompile(pval,
-                                                unicode(pdef.get('dir')),
-                                                pubdirprofile_c,
+                                                srcdir,
+                                                assembly_dir,
                                                 '%s/%s'%(label,copyto))
                             
                     else:
                         self.script_copy(filer = pval,
-                                         srcdir = unicode(pdef.get('dir')),
-                                         targetroot = pubdirprofile_c,
+                                         srcdir = srcdir,
+                                         targetroot = assembly_dir,
                                          ext = pdef.get('ext'))
                 if pdef.get('type')=='resource':
                     filer = unicode(pdef.get('file'))
                     srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
                     self.script_copy(filer = filer,
                                      srcdir = srcdir,
-                                     targetroot = pubdirprofile_c,
+                                     targetroot = assembly_dir,
                                      ext = pdef.get('ext'))
 
         except:
@@ -326,12 +414,12 @@ class Publisher(PublisherMixin, kolektiBase):
             raise Exception
         
         
-        
+    
 
-    def start_script(self, script, profile, pubdir, pivot):
+
+    def start_script(self, script, profile, assembly_dir, pivot):
+        pubdir = self.pubdir(assembly_dir, profile)
         label = profile.xpath('string(label)') 
-        pubdirprofile = pubdir 
-        pubdirprofile_c = pubdir + "/" + label + '_c'
         suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
         if len(suffix):
             pubname = "%s_%s"%(label, suffix)
@@ -355,20 +443,20 @@ class Publisher(PublisherMixin, kolektiBase):
         if 'pivot_filter' in params :
             xfilter = params['pivot_filter']
             xdir = scrdef.xpath("string(parameters/parameter[@name='pivot_filter']/@dir)")
-            xf = self.get_xsl(xfilter, xsldir = self.get_base_layout(xdir))
+            xf = self.get_xsl(xfilter, xsldir = self.get_base_template(xdir))
             fpivot = xf(pivot)
-            pivfile = pubdirprofile_c + "/filtered_" + pubname + ".xhtml"
+            pivfile = pubdir + "/filtered_" + pubname + ".xhtml"
             self.xwrite(fpivot, pivfile, pretty_print = False)
         else:
             fpivot = pivot
-            pivfile = pubdirprofile_c + "/document.xhtml"
+            pivfile = pubdir + "/document.xhtml"
 
         subst = copy.copy(params)
         subst.update({
             "APPDIR":self._appdir,
-            "PUBDIR":self.getOsPath(pubdirprofile),
-            "SRCDIR":self.getOsPath(pubdirprofile_c),
-            "BASEURI":self.getUrlPath(pubdirprofile_c) + '/',
+            "PUBDIR":self.getOsPath(pubdir),
+            "SRCDIR":self.getOsPath(assembly_dir),
+            "BASEURI":self.getUrlPath(assembly_dir) + '/',
             "PUBNAME": pubname,
             "PIVOT": self.getOsPath(pivfile)
             })
@@ -387,7 +475,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise Exception
 
-                for msg in plugin(script, profile, pubdir, fpivot, self._publang):
+                for msg in plugin(script, profile, assembly_dir, fpivot, self._publang):
                     print msg
 
                 print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
@@ -476,7 +564,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     xparams['LANG']="'%s'"%self._publang
                     xparams['ZONE']="'%s'"%self.critdict.get('zone','')
                     xparams['DOCNAME']="'%s'"%self.docname
-                    xparams['PUBDIR']="'%s'"%self.model.pubpath.decode(LOCAL_ENCODING)
+                    xparams['PUBDIR']="'%s'"%pubdir
 
                     docf=xslt(self.pivdocument,**xparams)
                     try:
@@ -569,9 +657,12 @@ class Publisher(PublisherMixin, kolektiBase):
                                       stderr=subprocess.PIPE,                                      
                                       )
             exccmd.wait()
+            out=exccmd.stdout.read()
+            logging.info(out)
+
             if not exccmd.returncode == 0:
                 err=exccmd.stderr.read()
-                debug(err)
+                logging.debug(err)
                 raise Exception
         except:
             dbgexc()
@@ -584,8 +675,8 @@ class Publisher(PublisherMixin, kolektiBase):
         # [targetroot]/[srcdir]/[filer].[ext]
         # also copies recursively [filer].parts directory
         
-        # print "script copy",value, dirname, pubdir, copyto, ext
-        srcpath = self.get_base_layout(srcdir)
+        logging.debug("script copy %s %s %s %s", filer, srcdir, targetroot, ext)
+        srcpath = self.get_base_template(srcdir)
         destpath = unicode(targetroot + "/" + srcdir)
         
         try:

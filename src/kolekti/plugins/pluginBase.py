@@ -22,7 +22,7 @@ import shutil
 import logging
 from lxml import etree as ET
 from kolekti.common import kolektiBase
-from kolekti.publish import PublisherExtensions
+from kolekti.publish import PublisherMixin, PublisherExtensions
 
 class PluginsExtensions(PublisherExtensions):
     def __init__(self, *args, **kwargs):
@@ -37,7 +37,7 @@ class PluginsExtensions(PublisherExtensions):
     
     
 
-class plugin(kolektiBase):
+class plugin(PublisherMixin,kolektiBase):
     _plugin="dummy"
     LOCAL_ENCODING=sys.getfilesystemencoding()
     
@@ -51,28 +51,32 @@ class plugin(kolektiBase):
     def get_xsl(self,xslfile, **kwargs):
         logging.debug("get xsl from plugin %s"%self._plugindir)
 
-        resdir = self.pubdir + "/" + self.substitute_criteria(self.profile.xpath('string(label)'), self.profile) + '_c'
+    
+        
+        # resdir = self.pubdir + "/" + self.substitute_criteria(self.profile.xpath('string(label)'), self.profile) + '_c'
         
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
-                                          resdir = resdir,
+                                          resdir = self.assembly_dir,
                                           **kwargs)
 
-    def __call__(self, scriptdef, profile, pubdir, pivot, lang ):
+    def __call__(self, scriptdef, profile, assembly_dir, pivot, lang ):
         self.scriptdef = scriptdef
         self.profile = profile
-        self.pubdir = pubdir
+        self.assembly_dir = assembly_dir
         self.pivot = pivot
         self.lang = lang
+        
         scriptlabel = scriptdef.get('name')
         profilelabel = profile.xpath('string(label)')
-        self.pubscriptdir = pubdir + "/" + profilelabel + "/" +scriptlabel
-        self.pubprofiledir_c = pubdir + "/" + profilelabel + "_c"
+        
+        self.publication_dir = self.pubdir(assembly_dir, profile) + "/" + scriptlabel
+
         try:
-            self.makedirs(self.pubscriptdir)
+            self.makedirs(self.publication_dir)
         except:
-            pass
+            logging.debug("publication path %s already exists"%self.publication_dir)            
         
         print "Script ", scriptlabel
 
@@ -81,10 +85,22 @@ class plugin(kolektiBase):
             
         return
 
+    def copylibs(self, assembly_dir, label):
+        # copy libs from plugin directory to assembly space
+        libsdir = os.path.join(self._plugindir,'lib')
+        if os.path.exists(libsdir):
+            libpdir = os.path.join(self.getOsPath('/'.join([assembly_dir,'kolekti','publication-templates',label])), 'lib')
+            try:
+                shutil.rmtree(libpdir)
+            except:           
+                pass
+            shutil.copytree(libsdir, libpdir)
+
+
     def copymedias(self):
         for d in ['sources']:
-            source = self.pubprofiledir_c + '/' + d
-            target = self.pubscriptdir + '/' + d
+            source = self.assembly_dir + '/' + d
+            target = self.publication_dir + '/' + d
             if self.exists(source):
                 self.copyDirs(source,target)
             

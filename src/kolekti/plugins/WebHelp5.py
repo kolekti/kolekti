@@ -33,44 +33,40 @@ helpname="WebHelp5"
 
 class plugin(pluginBase.plugin):
 
+
     def postpub(self):
         """
         main publication function
         """
         label = self.scriptdef.get('name')
-       
-        # copier le contenu la lib dans le répertoire _c/layouts/[label]
-        libsdir = os.path.join(self._plugindir,'lib')
+        logging.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
 
-        libpdir = os.path.join(self.getOsPath(self.pubscriptdir), 'lib')
+        # copy libs from assembly space to publication directory
+        
+        libsdir = os.path.join(self.getOsPath('/'.join([self.assembly_dir,self.get_base_template(label)])), 'lib')
+        libpdir = os.path.join(self.getOsPath(self.publication_dir), 'lib')
         try:
             shutil.rmtree(libpdir)
         except:            
             pass
         shutil.copytree(libsdir, libpdir)
 
-        libpdir = os.path.join(self.getOsPath('/'.join([self.pubprofiledir_c,'kolekti','layouts',label])), 'lib')
-        try:
-            shutil.rmtree(libpdir)
-        except:            
-            pass
-        shutil.copytree(libsdir, libpdir)
 
         # ouvrir le fichier template
         templatename = self.get_script_parameter('template')
-        print "WebHelp5 template",templatename
+        logging.debug( "WebHelp5 template : %s"%templatename)
         if len(templatename):
             tfile="%s.xht"%templatename
         else:
             tfile="%s.xht"%self._plugin
             
-        template=self.parse('/'.join([self.pubprofiledir_c,'kolekti','layouts',label,tfile]))
+        template=self.parse('/'.join([self.assembly_dir,self.get_base_template(label),tfile]))
 
         # copier les illustration et css
         # copier le logo
         try:
             logo=template.xpath("//html:span[@id='logo_visuel']",namespaces={'html':htmlns})[0].text
-            self.copy_file('/'.join(['medias',logo]),self.pubscriptdir)
+            self.copy_file('/'.join(['medias',logo]),self.publication_dir)
         except:
             pass
 
@@ -86,15 +82,15 @@ class plugin(pluginBase.plugin):
             f=ET.XSLT(filter)
             pivot=f(pivot)
         except:
-            print "Warning : Filter file not found", filterfile
+            logging.info("Filter file not found: %s", filterfile)
 
         # generer l'index pour recherche
         try:
-            self.makedirs('/'.join([self.pubscriptdir,'js']))
+            self.makedirs('/'.join([self.publication_dir,'js']))
         except:
             pass
         idxx=self.index(pivot)
-        with open(self.getOsPath('/'.join([self.pubscriptdir,'js','index.js'])),'w') as iff:
+        with open(self.getOsPath('/'.join([self.publication_dir,'js','index.js'])),'w') as iff:
             iff.write(idxx)
 
 
@@ -104,7 +100,7 @@ class plugin(pluginBase.plugin):
         xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self.lang)
         templdir=self.getUrlPath('/'.join(['design','publication',self._plugin,'config']))+'/'
         templtrans=self.getUrlPath('sheets')+'/'
-        puburl=self.getUrlPath(self.pubscriptdir)
+        puburl=self.getUrlPath(self.publication_dir)
         try:
             doc=xslt(pivot,
                      pubdir=u"'%s'"%puburl,
@@ -131,7 +127,7 @@ class plugin(pluginBase.plugin):
                 zf=os.path.join(pubpath,zipname)
                 zippy = self.publisher.model.get_zip_object()
                 zippy.open(zf,"w")
-                for root, dirs, files in os.walk(self.pubscriptdir):
+                for root, dirs, files in os.walk(self.publication_dir):
                     for name in files:
                         rt=root[len(top) + 1:]
                         zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))

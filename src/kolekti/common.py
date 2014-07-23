@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
+
 from lxml import etree as ET
 import os
 import re
@@ -14,28 +19,27 @@ objpathes = {
         "sources"  : "",
         "publications" : "publication",
         "variables" : "sheets/xml",
-        "layouts" : "design/publication",
+        "templates" : "design/publication",
         "jobs" : "configuration/orders",
         "profiles" : "configuration/profiles"
         },
     "0.7":{
         "topics" : "sources/{LANG}",
-        "tocs"  : "sources/{LANG}",
+        "tocs"  : "sources/{LANG}/tocs",
         "sources"  : "sources/{LANG}",
         "publications" : "publications",
         "variables" : "sources/{LANG}/variables",
-        "layouts" : "kolekti/layouts",
-        "jobs" : "kolekti/jobs",
-        "profiles" : "kolekti/layouts/profiles",
+        "templates" : "kolekti/publication-templates",
+        "jobs" : "kolekti/publication-parameters",
+        "profiles" : "kolekti/profiles",
         }
     }
-
 
  
 class kolektiBase(object):
     def __init__(self,path):
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
-        logging.debug('project path : %s'%path)
+        # logging.debug('project path : %s'%path)
         self._path = path
         self._xmlparser = ET.XMLParser()
         self._xmlparser.resolvers.add(PrefixResolver())
@@ -44,15 +48,18 @@ class kolektiBase(object):
 
         try:
             conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
+            # logging.debug("project config")
+            # logging.debug(ET.tostring(conf))
             self._config = {
                 "project":conf.get('project',projectdir),
                 "sourcelang":conf.get('sourcelang'),
                 "version":conf.get('version'),
-                "languages":[l.text() for l in conf.xpath('/config/languages/lang')],
+                "languages":[l.text() for l in conf.xpath('/settings/languages/lang')],
                 "projectdir":projectdir,
                 }
 
         except:
+            # logging.debug("default config")
             self._config = {
                 "project":"Kolekti",
                 "sourcelang":'en',
@@ -60,12 +67,13 @@ class kolektiBase(object):
                 "languages":["en","fr"],
                 "projectdir":projectdir,
                 }
-            
+        # logging.debug(self._config)
         self._version = self._config['version']
+        # logging.debug("kolekti v%s"%self._version)
         
     def __getattribute__(self, name):
         try:
-            if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._config['version']]:
+            if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
                     return self.process_path(objpathes[self._config['version']][name[9:]+"s"] + "/" + objpath)
                 return f
@@ -81,6 +89,9 @@ class kolektiBase(object):
 
     def process_path(self,path):
         return path
+
+    def syspath(self, path):
+        return self.__makepath(path)
     
     def __makepath(self, path):
         # returns os absolute path from relative path
@@ -224,30 +235,31 @@ class kolektiBase(object):
             return aurl
 
     def _get_criteria_dict(self, profile):
-        criteria = profile.xpath("criteria/criterion[@checked='1']")
+        criteria = profile.xpath("criteria/criterion")
         criteria_dict={}
         for c in criteria:
-            criteria_dict.update({c.get('code'):c.get('value')})
+            criteria_dict.update({c.get('code'):c.get('value',None)})
         return criteria_dict
 
 
     def substitute_criteria(self,string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
-
+        # logging.debug(criteria_dict)
         for criterion, val in criteria_dict.iteritems():
-            string=string.replace('{%s}'%criterion, val)
+            if val is not None:
+                string=string.replace('{%s}'%criterion, val)
 
         return string
 
         
     def substitute_variables(self, string, profile):
         for variable in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
-            logging.debug(variable)
+            # logging.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
-            logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
+            # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
             value = self.variable_value(sheet, sheet_variable, profile)
             string = string.replace(variable, value)
         return string

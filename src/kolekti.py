@@ -1,4 +1,9 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2014 Stéphane Bonhomme (stephane@exselt.com)
+
 import sys
 import os
 
@@ -94,7 +99,8 @@ if __name__ == '__main__':
 
     # publication
     parser_pub = subparsers.add_parser('publish', help="assemble, filter and publish documents")
-    parser_pub.add_argument('jobs', action='store', nargs="+")
+    parser_pub.add_argument('toc', action='store')
+    parser_pub.add_argument('job', action='store')
     parser_pub.add_argument('-l', '--lang', action='store', nargs="+")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
@@ -103,7 +109,7 @@ if __name__ == '__main__':
 
     # re-publication 
     parser_pub = subparsers.add_parser('republish', help="publish documents from assembly")
-    parser_pub.add_argument('document', action='store')
+    parser_pub.add_argument('assembly', action='store')
     defaults=config.get("republish",{})
     defaults.update({'cmd':'republish'})
     parser_pub.set_defaults(**defaults)
@@ -125,11 +131,11 @@ if __name__ == '__main__':
         try:
             if langs is None:
                 p = publish.Publisher(args.base)
-                p.publish(args.jobs)
+                p.publish_toc(args.toc, [args.job])
             else:
                 for lang in langs:
                     p = publish.Publisher(args.base, lang=lang)
-                    p.publish(args.jobs)
+                    p.publish_toc(args.toc, [args.job])
             logging.info("Publication sucessful")
         except:
             import traceback
@@ -140,7 +146,7 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.Publisher(args.base)
-            p.publish_document(args.document)
+            p.publish_assembly(args.assembly)
             logging.info("Republication sucessful")
         except:
             import traceback

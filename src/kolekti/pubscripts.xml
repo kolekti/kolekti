@@ -3,13 +3,13 @@
 
   <pubscript id="princexml" type="shell">
     <name>Générer pdf avec PrinceXML</name>
-    <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/layouts/princexml/css/_CSS_.css" -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
     <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
     <parameters>
       <parameter name="CSS" label="Feuille de style" 
-		 type="filelist" dir="kolekti/layouts/princexml/css" ext="css"/>
+		 type="filelist" dir="kolekti/publication-templates/princexml/css" ext="css"/>
       <parameter name="pivot_filter" label="Filtre de pivot" 
-		 type="filelist" dir="kolekti/layouts/princexml/filters" ext="xsl"/>
+		 type="filelist" dir="kolekti/publication-templates/princexml/filters" ext="xsl"/>
     </parameters>
   </pubscript>
 
@@ -18,15 +18,15 @@
   <pubscript id="fop" type="shell">
     <name>Générer pdf avec Apache fop</name>
 
-    <cmd>fop -c _APPDIR_/plugins/_fop/fop.xconf -xml "_PIVOT_" -xsl "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" -param baseuri "_BASEURI_" -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <cmd>fop -c _APPDIR_/plugins/_fop/fop.xconf -xml "_PIVOT_" -xsl "_SRCDIR_/kolekti/publication-templates/fop/_XSL_.xsl" -param baseuri "_BASEURI_" -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
 
 <!--
- <cmd>xsltproc - -stringparam baseuri "file://_SRCDIR_/" "_SRCDIR_/kolekti/layouts/fop/_XSL_.xsl" "_PIVOT_" |fop -c _APPDIR_/plugins/_fop/fop.xconf -fo - -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+ <cmd>xsltproc - -stringparam baseuri "file://_SRCDIR_/" "_SRCDIR_/kolekti/publication-templates/fop/_XSL_.xsl" "_PIVOT_" |fop -c _APPDIR_/plugins/_fop/fop.xconf -fo - -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
 -->
     <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
     <parameters>
       <parameter name="XSL" label="Feuille de style" 
-		 type="filelist" dir="kolekti/layouts/fop" ext="xsl"/>
+		 type="filelist" dir="kolekti/publication-templates/fop" ext="xsl"/>
     </parameters>
   </pubscript>
 
@@ -36,7 +36,7 @@
     <parameters>
       <parameter name="template" label="Directives" 
          type="filelist" 
-         dir="kolekti/layouts/WebHelp5"
+         dir="kolekti/publication-templates/WebHelp5"
          ext="xht"/>
 
       <parameter name="css" label="Feuille de style" 
