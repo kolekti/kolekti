@@ -183,7 +183,7 @@
     </exsl:document>
   </xsl:template>
 
-  <xsl:template match="html:div[starts-with(@class,'INDEX')]">
+  <xsl:template match="html:div[@class='INDEX' or starts-with(@class,'INDEX ')]">
     <xsl:variable name="filename" select="'alphaindex.html'"/>
     <exsl:document href="{$pubdir}/{$filename}"
       method="html"
@@ -213,7 +213,7 @@
                 <div class="row-fluid" id="k-topic">
                   <div class="col-md-11">
                     <div id="k-topiccontent">
-                      <xsl:apply-templates select="*[not(@class='topicinfo')]" mode="modcontent" />
+                      <xsl:apply-templates mode="modcontent" />
                     </div>
                   </div>
                 </div>
