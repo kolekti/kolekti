@@ -32,8 +32,6 @@
                doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
-  <!-- parametres d'entrée : langue et basepath -->
-  <xsl:variable name="criteria" select="kfp:criteria()"/>
   
   <xsl:template match="node()|@*">
     <xsl:copy>
@@ -44,8 +42,10 @@
   <xsl:template match="html:head">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
+      <xsl:comment>filter</xsl:comment>
+      <xsl:copy-of select="kfp:criteria()"/>
       <xsl:call-template name="lang" />
-      <xsl:apply-templates select="$criteria"/>
+      <xsl:apply-templates select="kfp:criteria()"/>
     </xsl:copy>
   </xsl:template>
 
@@ -59,17 +59,31 @@
     </meta>
   </xsl:template>
 
-  <xsl:template match="criterion[@user='1']/v">
-    <meta scheme="user_condition" name="{parent::criterion/@code}" content="{@value}"/>
+  <xsl:template match="criterion[ancestor::profile][not(@value)]">
+    <xsl:variable name="code">
+      <xsl:value-of select="@code"/>
+    </xsl:variable>
+
+    <xsl:for-each select="kfp:criteria_definitions()/value">
+      <xsl:if test="parent::*/@code = $code">
+	<meta scheme="user_condition" name="{$code}" content="{.}"/>
+
+      </xsl:if>
+    </xsl:for-each>
   </xsl:template>
 
-  <xsl:template match="criterion[@user='1']">
-    <xsl:apply-templates/>
+  <xsl:template match="value" mode="def">
+    <xsl:param name="criterion"/>
+    <xsl:if test="../criterion/@code = $criterion">
+
+    </xsl:if>
   </xsl:template>
 
-  <xsl:template match="criterion[@checked='1']">
+  <xsl:template match="criterion[@value]">
     <meta scheme="condition" name="{@code}" content="{@value}"/>
   </xsl:template>
+
+
 
   <xsl:template name="lang">
     <meta scheme="condition" name="LANG">

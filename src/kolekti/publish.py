@@ -85,9 +85,15 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return upath
         
     def criteria(self, _, *args):
-        return self._profile.xpath("criteria/criterion")
+        logging.debug('xslt ext criteria')
+        return self._profile.xpath("criteria/criterion|/job/criteria/criterion")
+
+    def criteria_definitions(self, _, *args):
+        logging.debug('xslt ext criteria_definitions')
+        return self._project_settings.xpath("/settings/criteria/criterion")
 
     def lang(self, _, *args):
+        logging.debug('lang criteria_definitions')
         return self._publang
     
     def normpath(self, _, *args):
@@ -194,21 +200,33 @@ class Publisher(PublisherMixin, kolektiBase):
 
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(toc, lang="'%s'"%self._publang)
+        self.log_xsl(xsassembly.error_log)
 
         logging.debug('********************************** filter assembly')
-                
-        s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
+        # criteria
+        s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
+        self.log_xsl(s.error_log)
+                        
+        s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
+        assembly = s(assembly,action="'assemble'")
+        self.log_xsl(s.error_log)
+
+        # logging.debug("after cond! %s"%str([ET.tostring(c) for c in assembly.xpath('//*[local-name() = "cond"]')]))
+            
 
         pubname = xjob.get('id','')
         pubname = self.substitute_criteria(pubname, xjob)
+        
+        if self._draft:
+            pubname += "_draft"
         try:
-            self.makedirs(assembly_dir + "/assembly")
+            self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
             import traceback
             logging.debug(traceback.format_exc())
 
-        self.xwrite(assembly, assembly_dir + "/assembly/content_" + pubname + ".html")
+        self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/content_" + pubname + ".html")
 
         logging.debug('********************************** copy media')
         self.copy_media(assembly, xjob, assembly_dir)
@@ -218,7 +236,8 @@ class Publisher(PublisherMixin, kolektiBase):
 
         logging.debug('********************************** copy scripts resources')
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
-            logging.debug(profile)
+            # logging.debug(profile)
+
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
                 try:
@@ -246,17 +265,16 @@ class Publisher(PublisherMixin, kolektiBase):
            invoke publication scripts for every publication """ 
         assembly_dir = self.assembly_dir(xjob)
 
-        logging.debug(ET.tostring(xjob))
+    #        logging.debug(ET.tostring(xjob))
         for profile in xjob.xpath('/job/profiles/profile'):
-            logging.debug(profile)
+#            logging.debug(profile)
             if profile.get('enabled','0') == '1':
                 logging.info('publishing profile %s'%profile.find('label').text)
 
 
                 # creates the document (pivot) file
                 pivot = self.publish_profile(assembly, profile, assembly_dir)
-
-                # invoke scripts
+                 # invoke scripts
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
                         self.start_script(script, profile, assembly_dir, pivot)
@@ -268,7 +286,8 @@ class Publisher(PublisherMixin, kolektiBase):
                         raise Exception
 
 
-    
+
+
     def publish_profile(self, assembly, profile, assembly_dir):
         """produces the pivot file from the assembly:
         apply profile filters,
@@ -280,31 +299,42 @@ class Publisher(PublisherMixin, kolektiBase):
         pubdir = self.pubdir(assembly_dir, profile)
         
         try:
+            # logging.debug(assembly)
             # criteria
             s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
+            self.log_xsl(s.error_log)
+            
             # filter
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             assembly = s(assembly)
+            self.log_xsl(s.error_log)
+            
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
-            # process title levels
-            # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
-            # assembly = s(assembly)
+            self.log_xsl(s.error_log)
+
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
+            self.log_xsl(s.error_log)
+
             # process links
             s = self.get_xsl('links', PublisherExtensions, profile = profile, lang=self._publang)
             assembly = s(assembly)
+            self.log_xsl(s.error_log)
+
             # make index
             if assembly.xpath("//h:div[@class='INDEX']", namespaces=self.nsmap):
                 s = self.get_xsl('index')
                 assembly = s(assembly)
+                self.log_xsl(s.error_log)
+
             # make toc
             # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
             s = self.get_xsl('toc')
             assembly = s(assembly)
+            self.log_xsl(s.error_log)
             
             # revision notes
             # s = self.get_xsl('csv-revnotes')
@@ -317,6 +347,13 @@ class Publisher(PublisherMixin, kolektiBase):
             
         except ET.XSLTApplyError, e:
             logging.debug(s.error_log)
+            logging.error("Error in publication process")
+            raise Exception
+
+        except:
+            logging.debug(s.error_log)
+            import traceback
+            logging.debug(traceback.format_exc())
             logging.error("Error in publication process")
             raise Exception
         
@@ -445,6 +482,8 @@ class Publisher(PublisherMixin, kolektiBase):
             xdir = scrdef.xpath("string(parameters/parameter[@name='pivot_filter']/@dir)")
             xf = self.get_xsl(xfilter, xsldir = self.get_base_template(xdir))
             fpivot = xf(pivot)
+            self.log_xsl(xf.error_log)
+
             pivfile = pubdir + "/filtered_" + pubname + ".xhtml"
             self.xwrite(fpivot, pivfile, pretty_print = False)
         else:

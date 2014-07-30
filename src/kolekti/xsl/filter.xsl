@@ -34,13 +34,15 @@
                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
 
+  <xsl:param name="action">publish</xsl:param>
+
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
 
-
+  <xsl:variable name="criteria" select="kfp:criteria()"/>
 
 <!-- templates de remplacement des prédicats dans les chemins d'images -->
 
@@ -67,8 +69,9 @@
     </xsl:if>
   </xsl:template>
 
-
   <xsl:template match="html:div[contains(@class,'=')]|html:span[contains(@class,'=')]">
+
+
     <xsl:variable name="classcond">
       <xsl:choose>
 	<xsl:when test="starts-with(@class,'cond:')">
@@ -85,9 +88,36 @@
         <xsl:with-param name="listcond" select="$classcond"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:if test="$cond='true'">
-      <xsl:apply-templates select="node()"/>        
-    </xsl:if>
+
+    <xsl:message>condition : <xsl:value-of select="@class"/> [<xsl:value-of select="$cond"/>]</xsl:message>
+    <xsl:choose>
+
+      <xsl:when test="$cond='true'">
+	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+	<xsl:apply-templates select="node()"/>        
+      </xsl:when>
+
+      <xsl:when test="$action = 'assemble' and $cond='none'">
+	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+	<xsl:copy>
+	  <xsl:copy-of select="@class"/>
+	  <xsl:apply-templates select="node()|@*"/>
+	</xsl:copy>
+      </xsl:when>
+
+      <xsl:when test="$cond='user'">
+	<xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
+	<xsl:copy>
+	  <xsl:copy-of select="@class"/>
+	  <xsl:apply-templates select="node()|@*"/>
+	</xsl:copy>        
+      </xsl:when>
+
+      <xsl:when test="$cond='none'">
+	<xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
+	<xsl:apply-templates select="node()"/>        
+      </xsl:when>
+    </xsl:choose>
   </xsl:template>
 
 
@@ -108,6 +138,7 @@
         <xsl:with-param name="listcond" select="$classcond"/>
       </xsl:call-template>
     </xsl:variable>
+    
     <xsl:if test="$cond='true'">
       <xsl:copy>
         <xsl:apply-templates select="node()|@*"/>        
@@ -145,8 +176,12 @@
     </xsl:choose>
   </xsl:template>
 
-  <!-- ce template produit un booleen 
-       vrai si la condition cond est verfiee -->
+  <!-- ce template produit une chaine true/false/none/user 
+       vrai si la condition cond  est verfiee
+       false si elle est spécifiée dans le profil et non vérifiée
+       user si elle est spécifiée dans le profil sans valeur
+       non si elle n'est pas spécifiée dans le profil
+ -->
   <xsl:template name="process_cond">
     <xsl:param name="cond"/>
     <xsl:variable name="predicat" select="substring-before($cond,'=')"/>
@@ -161,39 +196,61 @@
       </xsl:choose>
     </xsl:variable>
 
+
     <xsl:choose>
-      <xsl:when test="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]">
-        <!-- la condition est exprimee pour ce document -->
+      
+     <xsl:when test="$criteria[@code=$predicat][@value]">
+<!--
+     <xsl:when test="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]">
+-->
+        <!-- le critère est spécifié dans le profil et a une valeur -->
         <xsl:variable name="found">
 	  <xsl:choose>
 	    <xsl:when test="starts-with($values,'[')">
 	      <xsl:call-template name="value_in_range">
+		<xsl:with-param name="value" select="$criteria[@code=$predicat]/@value"/>
+<!--
 		<xsl:with-param name="value" select="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]/@content"/>
+-->
 		<xsl:with-param name="range" select="$values"/>
 	      </xsl:call-template>
 	    </xsl:when>
 	    <xsl:otherwise>
 	      <xsl:call-template name="value_in_list">
+<!--
 		<xsl:with-param name="value" select="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]/@content"/>
+-->
+		<xsl:with-param name="value" select="$criteria[@code=$predicat]/@value"/>
 		<xsl:with-param name="list" select="$values"/>
 	      </xsl:call-template>
 	    </xsl:otherwise>
 	  </xsl:choose>
         </xsl:variable>
+
         <xsl:choose>
           <xsl:when test="starts-with(substring-after($cond,'='),'\')">
-            <xsl:value-of select="not($found='true')"/>
+            <xsl:choose>
+	      <xsl:when test="not($found)">true</xsl:when>
+	      <xsl:otherwise>false</xsl:otherwise>
+	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:value-of select="$found"/>
+            <xsl:choose>
+	      <xsl:when test="$found = 'true'">true</xsl:when>
+	      <xsl:otherwise>false</xsl:otherwise>
+	    </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
-      <xsl:otherwise>
-        <!-- la condition n'est pas exprimee pour ce document -->
-        <xsl:value-of select="true()"/>
-      </xsl:otherwise>
+
+      <!-- le critère est spécifié dans le profil et n'a pas de valeur (user) -->
+      <xsl:when test="$criteria[@code=$predicat][not(@value)]">user</xsl:when>
+
+      <!-- le critère n'est pas spécifié dans le profil -->
+      <xsl:otherwise>none</xsl:otherwise>
+
     </xsl:choose>
+
   </xsl:template>
 
 
@@ -202,6 +259,7 @@
   <xsl:template name="value_in_list">
     <xsl:param name="value"/>
     <xsl:param name="list"/>
+    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>
     <xsl:choose>
       <xsl:when test="contains($list,',')">
         <xsl:choose>
