@@ -32,8 +32,7 @@ htmlns="http://www.w3.org/1999/xhtml"
 helpname="WebHelp5"
 
 class plugin(pluginBase.plugin):
-
-
+    
     def postpub(self):
         """
         main publication function
@@ -78,7 +77,7 @@ class plugin(pluginBase.plugin):
         
         try:
             filterfile="%s.xsl"%self.get_script_parameter('template')
-            filter=self.parse('/'.join('design','publication',self._plugin,'config',filterfile))
+            filter=self.parse('/'.join([self.assembly_dir,self.get_base_template(label),filterfile]))
             f=ET.XSLT(filter)
             pivot=f(pivot)
         except:
@@ -92,7 +91,6 @@ class plugin(pluginBase.plugin):
         idxx=self.index(pivot)
         with open(self.getOsPath('/'.join([self.publication_dir,'js','index.js'])),'w') as iff:
             iff.write(idxx)
-
 
         css=self.get_script_parameter('css')
 
@@ -111,10 +109,10 @@ class plugin(pluginBase.plugin):
                      label=u"'%s'"%label,
                      )
         except:
+            logging.error('WebHelp5: pages generation failed')
             import traceback
-            print traceback.format_exc()
-            print "ERROR FROM XSL"
-            print xslt.error_log
+            logging.debug(traceback.format_exc())
+            logging.debug(xslt.error_log)
             raise Exception
 
 #        linkurl = self.publisher.model.local2url(self.publisher.model.pubpath)
@@ -134,9 +132,10 @@ class plugin(pluginBase.plugin):
                 zippy.close()
                 #yield(self.publisher.view.publink('Zip', self.label, '%s/%s' %(linkurl, zipname)))
         except:
+            logging.error('WebHelp5: zip archive generation failed')
             import traceback
-            print traceback.format_exc()
-            #yield(self.publisher.view.error(self.publisher.setmessage(u"[0064]Problème lors de la création de l'archive zip")))
+            logging.debug(traceback.format_exc())
+
         yield self._plugin, "OK"
         return
     
@@ -176,13 +175,12 @@ class plugin(pluginBase.plugin):
 
     def filter_pivot(self,pivot):
         try:
-            
             xslfile ='/'.join(['design','publication',self._plugin,'config','filter.xsl'])
             xsldoc = self.parse(xslfile)
             xslt = ET.XSLT(xsldoc)
             filtered_pivot=xslt(pivot)
         except:
             import traceback
-            print traceback.format_exc()
+            logging.debug(traceback.format_exc())
             return pivot
         return filtered_pivot
