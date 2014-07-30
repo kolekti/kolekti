@@ -47,7 +47,7 @@ class kolektiBase(object):
         projectdir = os.path.basename(path)
 
         try:
-            conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
+            self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
             # logging.debug("project config")
             # logging.debug(ET.tostring(conf))
             self._config = {
@@ -156,6 +156,14 @@ class kolektiBase(object):
         xsl = ET.XSLT(xsldoc, extensions=self.get_extensions(extclass, **kwargs))
         return xsl
 
+    def log_xsl(self, error_log):
+        for entry in error_log:
+            logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+            #logging.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
+            #logging.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
+            #logging.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
+            #logging.debug('[XSL] filename: %s' % entry.filename)
+    
     def parse(self, filename):
         src = self.__makepath(filename)
         return ET.parse(src,self._xmlparser)
