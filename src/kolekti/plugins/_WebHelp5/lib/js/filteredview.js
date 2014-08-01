@@ -87,7 +87,10 @@ $(document).ready(function() {
 	       $('<label>', {
 		   "class":"btn btn-default",
 		   html:[$('<input>', {
-
+		       type:"radio",
+		       id:"uc_"+i+"_"+v,
+		       name:"uc_"+i
+		   }),v]
 			
 	       }).appendTo($('#uc_'+i+" .btn-group"));
 	   });
