@@ -69,7 +69,6 @@ $(document).ready(function() {
 
 
        $.each(conditions, function(i,c) {
-	   console.log(i)
 	   $('<div>',
 	     { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
 	       "id":"uc_"+i,
@@ -86,12 +85,9 @@ $(document).ready(function() {
       	   $.each(c,function(j,v){
 	       console.log(c,v);
 	       $('<label>', {
-		   "class":"btn btn-primary",
+		   "class":"btn btn-default",
 		   html:[$('<input>', {
-		       type:"radio",
-		       id:"uc_"+i+"_"+v,
-		       name:"uc_"+i
-		   }),v]
+
 			
 	       }).appendTo($('#uc_'+i+" .btn-group"));
 	   });
