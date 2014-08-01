@@ -66,37 +66,68 @@ $(document).ready(function() {
 		   conditions[crit] = [];
 	       conditions[crit].push(val); 
 	   });
-
-
-       $.each(conditions, function(i,c) {
-	   $('<div>',
-	     { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
-	       "id":"uc_"+i,
-	       "html":[$('<h5>', {
-		   "class":"col-md-12 col-sm-3",
-		   "html":i}),
-		       $('<div>', {
-			   "class":"btn-group btn-group-justified",
-			   "data-toggle":"buttons"
-		       })
-		      ]
-	     }).appendTo($('#userconditions'));
-
-      	   $.each(c,function(j,v){
-	       console.log(c,v);
-	       $('<label>', {
-		   "class":"btn btn-default",
-		   html:[$('<input>', {
-		       type:"radio",
-		       id:"uc_"+i+"_"+v,
-		       name:"uc_"+i
-		   }),v]
-			
-	       }).appendTo($('#uc_'+i+" .btn-group"));
-	   });
-       });
-				 
+       build_ui_menus(conditions);
    }
+    
+    var build_ui_buttons = function(conditions) {
+	$.each(conditions, function(i,c) {
+	    $('<div>',
+	      { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
+		"id":"uc_"+i,
+		"html":[$('<h5>', {
+		    "class":"col-md-12 col-sm-3",
+		   "html":i}),
+			$('<div>', {
+			    "class":"btn-group btn-group-justified",
+			    "data-toggle":"buttons"
+			})
+		       ]
+	      }).appendTo($('#userconditions'));
+	    
+      	    $.each(c,function(j,v){
+		console.log(c,v);
+		$('<label>', {
+		    "class":"btn btn-default",
+		    html:[$('<input>', {
+			type:"radio",
+			id:"uc_"+i+"_"+v,
+		       name:"uc_"+i
+		    }),v]
+		    
+		}).appendTo($('#uc_'+i+" .btn-group"));
+	    });
+	});
+
+    var build_ui_menus = function(conditions) {
+	$.each(conditions, function(i,c) {
+	    $('<div>',
+	      { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
+		"id":"uc_"+i,
+		"html":[$('<h5>', {
+		    "class":"col-md-12 col-sm-3",
+		   "html":i}),
+			$('<div>', {
+			    "class":"btn-group btn-group-justified",
+			    "data-toggle":"buttons"
+			})
+		       ]
+	      }).appendTo($('#userconditions'));
+	    
+      	    $.each(c,function(j,v){
+		console.log(c,v);
+		$('<label>', {
+		    "class":"btn btn-default",
+		    html:[$('<input>', {
+			type:"radio",
+			id:"uc_"+i+"_"+v,
+		       name:"uc_"+i
+		    }),v]
+		    
+		}).appendTo($('#uc_'+i+" .btn-group"));
+	    });
+	});
+	
+    }
 		   
     build_ui();
  /*
