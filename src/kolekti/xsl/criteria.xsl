@@ -42,8 +42,6 @@
   <xsl:template match="html:head">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
-      <xsl:comment>filter</xsl:comment>
-      <xsl:copy-of select="kfp:criteria()"/>
       <xsl:call-template name="lang" />
       <xsl:apply-templates select="kfp:criteria()"/>
     </xsl:copy>

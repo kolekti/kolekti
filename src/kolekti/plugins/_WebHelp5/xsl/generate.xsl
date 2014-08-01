@@ -507,6 +507,7 @@
      <title><xsl:apply-templates select="/html:html/html:body/html:div[@class='section'][1]/html:*[1]/text()" /></title>
      <meta charset="utf-8" />
      <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+     <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition']"/>
      <link rel="stylesheet" href="lib/css/bootstrap.min.css" type="text/css"/>
      <link rel="stylesheet" href="lib/css/bootstrap-theme.min.css" type="text/css"/>
      <link rel="stylesheet" href="lib/css/WebHelp5.css" type="text/css"/>
@@ -533,6 +534,9 @@
 
  <xsl:template name="genhtmlfooter">
      <script src="lib/js/jquery-2.1.1.min.js" type="text/javascript">
+       <xsl:text>&#x0D;</xsl:text>
+     </script>
+     <script src="lib/js/filteredview.js" type="text/javascript">
        <xsl:text>&#x0D;</xsl:text>
      </script>
      <script src="lib/js/bootstrap.min.js" type="text/javascript">
@@ -641,7 +645,12 @@
        <ul id="ksearchmenu" class="col-sm-12"></ul>
           
      </div>
-        
+          
+     <xsl:if test="/html:html/html:head/html:meta[@scheme='user_condition']">
+       <div id="userconditions" class="well navbar-nav  col-sm-12">
+       </div>
+     </xsl:if>
+
      <div id="menu" class="well navbar-nav col-sm-12">
        <h5><xsl:value-of select="kfp:variable(string($translationfile),'TdmTitre')"/></h5>
        <ul class="menu-list list-group list-unstyled">
