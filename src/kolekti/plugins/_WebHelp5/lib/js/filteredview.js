@@ -97,6 +97,7 @@ $(document).ready(function() {
 		}).appendTo($('#uc_'+i+" .btn-group"));
 	    });
 	});
+    }
 
     var build_ui_menus = function(conditions) {
 	$.each(conditions, function(i,c) {
