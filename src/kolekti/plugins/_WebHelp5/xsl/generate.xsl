@@ -649,7 +649,7 @@
           
      <xsl:if test="/html:html/html:head/html:meta[@scheme='user_condition']">
        <div class="well navbar-nav  col-sm-12">
-	 <h5><xsl:value-of select="kfp:variable(string($translationfile),'Conditions')"/></h5>
+	 <h5><xsl:value-of select="kfp:variable(string($translationfile),'conditions')"/></h5>
 	 <div id="userconditions">
 	 </div>
        </div>
