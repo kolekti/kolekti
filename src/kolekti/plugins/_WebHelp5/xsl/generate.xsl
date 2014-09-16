@@ -508,6 +508,7 @@
      <meta charset="utf-8" />
      <meta content="width=device-width, initial-scale=1.0" name="viewport" />
      <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition']"/>
+     <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition_label']"/>
      <link rel="stylesheet" href="lib/css/bootstrap.min.css" type="text/css"/>
      <link rel="stylesheet" href="lib/css/bootstrap-theme.min.css" type="text/css"/>
      <link rel="stylesheet" href="lib/css/WebHelp5.css" type="text/css"/>
@@ -647,7 +648,10 @@
      </div>
           
      <xsl:if test="/html:html/html:head/html:meta[@scheme='user_condition']">
-       <div id="userconditions" class="well navbar-nav  col-sm-12">
+       <div class="well navbar-nav  col-sm-12">
+	 <h5><xsl:value-of select="kfp:variable(string($translationfile),'Conditions')"/></h5>
+	 <div id="userconditions">
+	 </div>
        </div>
      </xsl:if>
 

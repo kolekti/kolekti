@@ -170,7 +170,8 @@ border-top-right-radius: 0px;
 }
 
 
-.sidebar .well a {
+.sidebar .well#search_results a,
+.sidebar .well#menu a {
     color: #315585;
     font-family: Verdana,Arial,Helvetica,sans-serif;
     font-size: 8pt;
