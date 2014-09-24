@@ -33,8 +33,10 @@ class PublisherMixin(object):
         super(PublisherMixin, self).__init__(*args, **kwargs)
 
         if self._publang is None:
+            print self._config
             self._publang = self._config.get("sourcelang","en")
-
+            print self._publang
+            
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
 
@@ -42,14 +44,6 @@ class PublisherMixin(object):
         extra.update({"LANG":self._publang})
         return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
 
-    def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
-        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        if self._draft:
-            assembly_dir = "/drafts/" + assembly_dir
-        else:
-            assembly_dir = "/releases/" + assembly_dir
-        return assembly_dir
     
     def pubdir(self, assembly_dir, profile):
         # calculates and creates the publication directory
@@ -173,23 +167,6 @@ class Publisher(PublisherMixin, kolektiBase):
         return self.substitute_variables(self.substitute_criteria(s,profile),profile)
 
 
-    # publishes a list of jobs
-    
-    def publish_toc(self, toc, jobs):
-        """ publishes a kolekti toc, using the profiles sets present in jobs list"""
-        
-        # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
-        toc = self.get_base_toc(toc) + ".html"
-        logging.debug("publish toc %s",toc)
-        xtoc = self.parse(toc)
-        for job in jobs:
-            path = self.get_base_job(job) + ".xml"
-            xjob = self.parse(path)
-            # assembly
-            logging.debug('********************************** CREATE ASSEMBLY')
-            assembly = self.publish_assemble(xtoc, xjob.getroot())
-            logging.debug('********************************** PUBLISH ASSEMBLY')
-            self.publish_job(assembly, xjob.getroot())
 		
 
     def publish_assemble(self, toc, xjob):
@@ -375,7 +352,6 @@ class Publisher(PublisherMixin, kolektiBase):
     def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
-            logging.debug('image src : %s'%ref)
             ref = self.substitute_criteria(ref, profile)
             med.set('src',self.substitute_criteria(ref, profile)[1:])
             logging.debug('image src : %s'%ref)
@@ -746,4 +722,65 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             print traceback.format_exc()
 
+            
+class DraftPublisher(Publisher):
+    def __init__(self, *args, **kwargs):
+        super(DraftPublisher, self).__init__(*args, **kwargs)
+        self._draft = True
+
+    def assembly_dir(self, xjob):
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        assembly_dir = "/drafts/" + assembly_dir
+        return assembly_dir
+
+    def cleanup_assembly_dir(self, xjob):
+        assembly_dir = self.assembly_dir(xjob)
+        self.rmtree(assembly_dir + "/sources")
+        self.rmtree(assembly_dir + "/kolekti")
+        
+
+    # publishes a list of jobs
+    
+    def publish_toc(self, toc, jobs):
+        """ publishes a kolekti toc, using the profiles sets present in jobs list"""
+        
+        # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
+        toc = self.get_base_toc(toc) + ".html"
+        logging.debug("publish toc %s",toc)
+        xtoc = self.parse(toc)
+        for job in jobs:
+            path = self.get_base_job(job) + ".xml"
+            xjob = self.parse(path)
+            # assembly
+            logging.debug('********************************** CREATE ASSEMBLY')
+            assembly = self.publish_assemble(xtoc, xjob.getroot())
+            logging.debug('********************************** PUBLISH ASSEMBLY')
+            self.publish_job(assembly, xjob.getroot())
+            self.cleanup_assembly_dir(xjob.getroot())
+                    
+class Releaser(Publisher):
+    def __init__(self, *args, **kwargs):
+        super(Releaser, self).__init__(*args, **kwargs)
+        self._release_path = ''
+        
+    def assembly_dir(self, xjob):
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        assembly_dir = "/releases/" + self._release_path + "/" + assembly_dir
+        return assembly_dir
+
+    def make_release(self, toc, jobs, release_path):
+        """ releases a kolekti toc, using the profiles sets present in jobs list"""
+        self._release_path = release_path
+        # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
+        toc = self.get_base_toc(toc) + ".html"
+        logging.debug("release toc %s",toc)
+        xtoc = self.parse(toc)
+        for job in jobs:
+            path = self.get_base_job(job) + ".xml"
+            xjob = self.parse(path)
+            # assembly
+            logging.debug('********************************** CREATE ASSEMBLY')
+            assembly = self.publish_assemble(xtoc, xjob.getroot())
             

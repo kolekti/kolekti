@@ -97,22 +97,48 @@ if __name__ == '__main__':
     defaults.update({'cmd':'server'})
     parser_s.set_defaults(**defaults)
 
-    # publication
-    parser_pub = subparsers.add_parser('publish', help="assemble, filter and publish documents")
-    parser_pub.add_argument('toc', action='store')
-    parser_pub.add_argument('job', action='store')
-    parser_pub.add_argument('-l', '--lang', action='store', nargs="+")
-    defaults=config.get("publish",{})
-    defaults.update({'cmd':'publish'})
-    parser_pub.set_defaults(**defaults)
+    # draft generation
+    parser_draft = subparsers.add_parser('draft', help="assemble, filter and produce draft documents")
+    parser_draft.add_argument('toc', action='store')
+    parser_draft.add_argument('job', action='store')
+#    parser_draft.add_argument('-l', '--lang', action='store', nargs="+")
+    defaults=config.get("draft",{})
+    defaults.update({'cmd':'draft'})
+    parser_draft.set_defaults(**defaults)
+    
+    # release generation
+    parser_release = subparsers.add_parser('release', help="assemble, filter and produce draft documents")
+    parser_release.add_argument('toc', action='store')
+    parser_release.add_argument('job', action='store')
+    parser_release.add_argument('release', action='store')
+#    parser_release.add_argument('-l', '--lang', action='store', nargs="+")
+    defaults=config.get("release",{})
+    defaults.update({'cmd':'release'})
+    parser_release.set_defaults(**defaults)
     
 
-    # re-publication 
-    parser_pub = subparsers.add_parser('republish', help="publish documents from assembly")
+    # publication d'une release 
+    parser_pub = subparsers.add_parser('publish', help="publish release")
     parser_pub.add_argument('assembly', action='store')
     defaults=config.get("republish",{})
     defaults.update({'cmd':'republish'})
     parser_pub.set_defaults(**defaults)
+    
+    # variables file conversion xml->ods 
+    parser_varods = subparsers.add_parser('varods', help="convert variables from xml to ods")
+    parser_varods.add_argument('varfile', action='store')
+    parser_varods.add_argument('-l','--lines', help="produces lines-oriented ods", action = 'store_false' )
+    defaults=config.get("varods",{})
+    defaults.update({'cmd':'varods'})
+    parser_varods.set_defaults(**defaults)
+    
+    # variables file conversion ods->xml 
+    parser_varxml = subparsers.add_parser('varxml', help="convert variables from ods to xml")
+    parser_varxml.add_argument('varfile', action='store')
+    parser_varxml.add_argument('-l','--lines', help="produces lines-oriented ods", action = 'store_false' )
+    defaults=config.get("varxml",{})
+    defaults.update({'cmd':'varxml'})
+    parser_varxml.set_defaults(**defaults)
     
     args = parser.parse_args()
 
@@ -125,27 +151,32 @@ if __name__ == '__main__':
         wsgi = wsgiclass(args.base)
         httpserver.serve(wsgi, host, port)
         
-    if args.cmd == 'publish':
+    if args.cmd == 'draft':
         from kolekti import publish
-        langs = args.lang
         try:
-            if langs is None:
-                p = publish.Publisher(args.base)
-                p.publish_toc(args.toc, [args.job])
-            else:
-                for lang in langs:
-                    p = publish.Publisher(args.base, lang=lang)
-                    p.publish_toc(args.toc, [args.job])
+            p = publish.DraftPublisher(args.base)
+            p.publish_toc(args.toc, [args.job])
             logging.info("Publication sucessful")
         except:
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Publication ended with errors")
-            
-    if args.cmd == 'republish':
+
+    if args.cmd == 'release':
         from kolekti import publish
         try:
-            p = publish.Publisher(args.base)
+            p = publish.Releaser(args.base)
+            p.make_release(args.toc, [args.job], args.release)
+            logging.info(" sucessful")
+        except:
+            import traceback
+            logging.debug(traceback.format_exc())
+            logging.error("Publication ended with errors")
+                    
+    if args.cmd == 'publish':
+        from kolekti import publish
+        try:
+            p = publish.ReleasePublisher(args.base)
             p.publish_assembly(args.assembly)
             logging.info("Republication sucessful")
         except:
@@ -153,7 +184,12 @@ if __name__ == '__main__':
             logging.debug(traceback.format_exc())
             logging.error("Republication ended with errors")
             
-    if args.cmd == 'convert':
-        from kolekti import convert
-        c = convert.converter(args.base)
-        c.convert(args.svnurl,args.svnuser,args.svnpass)
+    if args.cmd == 'varods':
+        from kolekti import variables
+        c = variables.XMLToOds(args.base)
+        c.convert(args.varfile)
+
+    if args.cmd == 'varxml':
+        from kolekti import variables
+        c = variables.OdsToXML(args.base)
+        c.convert(args.varfile)
