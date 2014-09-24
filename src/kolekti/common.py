@@ -54,10 +54,10 @@ class kolektiBase(object):
                 "project":conf.get('project',projectdir),
                 "sourcelang":conf.get('sourcelang'),
                 "version":conf.get('version'),
-                "languages":[l.text() for l in conf.xpath('/settings/languages/lang')],
+                "languages":[l.text for l in conf.xpath('/settings/languages/lang')],
                 "projectdir":projectdir,
                 }
-
+            
         except:
             # logging.debug("default config")
             self._config = {
@@ -67,7 +67,8 @@ class kolektiBase(object):
                 "languages":["en","fr"],
                 "projectdir":projectdir,
                 }
-        # logging.debug(self._config)
+            import traceback
+            logging.debug(traceback.format_exc() )
         self._version = self._config['version']
         # logging.debug("kolekti v%s"%self._version)
         
@@ -196,6 +197,10 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         os.makedirs(ospath)
         
+    def rmtree(self, path):
+        ospath = self.__makepath(path)
+        shutil.rmtree(ospath)
+        
     def exists(self, path):
         ospath = self.__makepath(path)
         return os.path.exists(ospath)
@@ -217,6 +222,8 @@ class kolektiBase(object):
             pass
         return shutil.copytree(ossource, ospath)
 
+
+    
     def getOsPath(self, source):
         return self.__makepath(source)
 
