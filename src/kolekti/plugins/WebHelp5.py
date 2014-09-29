@@ -81,7 +81,7 @@ class plugin(pluginBase.plugin):
             f=ET.XSLT(filter)
             pivot=f(pivot)
         except:
-            logging.info("Filter file not found: %s", filterfile)
+            yield "warning: Filter file not found: %s"%filterfile
 
         # generer l'index pour recherche
         try:
@@ -136,7 +136,7 @@ class plugin(pluginBase.plugin):
             import traceback
             logging.debug(traceback.format_exc())
 
-        yield self._plugin, "OK"
+        yield "generation complete"
         return
     
     def index(self,pivot):

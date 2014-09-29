@@ -101,13 +101,13 @@ if __name__ == '__main__':
     parser_draft = subparsers.add_parser('draft', help="assemble, filter and produce draft documents")
     parser_draft.add_argument('toc', action='store')
     parser_draft.add_argument('job', action='store')
-#    parser_draft.add_argument('-l', '--lang', action='store', nargs="+")
+    parser_draft.add_argument('-l', '--lang', action='store')
     defaults=config.get("draft",{})
     defaults.update({'cmd':'draft'})
     parser_draft.set_defaults(**defaults)
     
     # release generation
-    parser_release = subparsers.add_parser('release', help="assemble, filter and produce draft documents")
+    parser_release = subparsers.add_parser('release', help="create release document")
     parser_release.add_argument('toc', action='store')
     parser_release.add_argument('job', action='store')
     parser_release.add_argument('release', action='store')
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     
 
     # publication d'une release 
-    parser_pub = subparsers.add_parser('publish', help="publish release")
+    parser_pub = subparsers.add_parser('publish', help="publish release document")
     parser_pub.add_argument('assembly', action='store')
     defaults=config.get("republish",{})
     defaults.update({'cmd':'republish'})
@@ -154,8 +154,8 @@ if __name__ == '__main__':
     if args.cmd == 'draft':
         from kolekti import publish
         try:
-            p = publish.DraftPublisher(args.base)
-            p.publish_toc(args.toc, [args.job])
+            p = publish.DraftPublisher(args.base, lang=args.lang)
+            p.publish_draft(args.toc, [args.job])
             logging.info("Publication sucessful")
         except:
             import traceback
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     if args.cmd == 'publish':
         from kolekti import publish
         try:
-            p = publish.ReleasePublisher(args.base)
+            p = publish.ReleasePublisher(args.base, lang=args.lang)
             p.publish_assembly(args.assembly)
             logging.info("Republication sucessful")
         except:

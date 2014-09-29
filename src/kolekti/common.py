@@ -80,7 +80,7 @@ class kolektiBase(object):
                 return f
         except:
             import traceback
-            print traceback.format_exc()
+            logging.debug(traceback.format_exc())
             pass
         return super(kolektiBase, self).__getattribute__(name)
 
@@ -208,7 +208,7 @@ class kolektiBase(object):
     def copyFile(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
-        logging.debug("copyFile %s -> %s"%(ossource, ospath))
+        # logging.debug("copyFile %s -> %s"%(ossource, ospath))
                
         return shutil.copy(ossource, ospath)
 
@@ -229,7 +229,7 @@ class kolektiBase(object):
 
     def getUrlPath(self, source):
         path = self.__makepath(source)
-        logging.debug(path)
+        # logging.debug(path)
         upath = urllib.pathname2url(path.encode('utf-8'))
         if upath[:3]=='///':
             return 'file:' + upath
@@ -302,7 +302,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content').text
-        print "Warning: Variable not matched",sheet, variable
+        logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
         return "[??]"
 
 class XSLExtensions(kolektiBase):

@@ -78,7 +78,7 @@ class plugin(PublisherMixin,kolektiBase):
         except:
             logging.debug("publication path %s already exists"%self.publication_dir)            
         
-        print "Script ", scriptlabel
+        logging.debug("Script ", scriptlabel)
 
         for m in self.postpub():
             yield m
@@ -117,5 +117,6 @@ class plugin(PublisherMixin,kolektiBase):
             return self.scriptdef.xpath('string(./parameters/parameter[@name="%s"]/@value)'%param)
         except:
             import traceback
-            print traceback.format_exc()
+            logging.error("Unable to read script parameters: %s"%param)
+            logging.debug(traceback.format_exc())
             return None

@@ -20,22 +20,18 @@ class PublisherMixin(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
     def __init__(self, *args, **kwargs):
         # intercept lang & draft parameters
+
         self._publang = None
         if kwargs.has_key('lang'):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
 
         self._draft = False
-        if kwargs.has_key('draft'):
-            self._draft = kwargs.get('draft')
-            kwargs.pop('draft')
     
         super(PublisherMixin, self).__init__(*args, **kwargs)
 
         if self._publang is None:
-            print self._config
             self._publang = self._config.get("sourcelang","en")
-            print self._publang
             
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
@@ -145,8 +141,10 @@ class Publisher(PublisherMixin, kolektiBase):
     """
     def __init__(self, *args,**kwargs):
         super(Publisher, self).__init__(*args, **kwargs)
-        if self._publang is None:
-            self._publang = self._config.get("sourcelang","en")
+
+        # moved to PublisherMixin init
+        #if self._publang is None:
+        #    self._publang = self._config.get("sourcelang","en")
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
@@ -197,6 +195,7 @@ class Publisher(PublisherMixin, kolektiBase):
         
         if self._draft:
             pubname += "_draft"
+            
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
@@ -246,9 +245,6 @@ class Publisher(PublisherMixin, kolektiBase):
         for profile in xjob.xpath('/job/profiles/profile'):
 #            logging.debug(profile)
             if profile.get('enabled','0') == '1':
-                logging.info('publishing profile %s'%profile.find('label').text)
-
-
                 # creates the document (pivot) file
                 pivot = self.publish_profile(assembly, profile, assembly_dir)
                  # invoke scripts
@@ -397,7 +393,7 @@ class Publisher(PublisherMixin, kolektiBase):
             for pdef in scrdef.xpath('parameters/parameter'):
                 pname = pdef.get('name')
                 pval =  params.get(pname)
-                print pname, pval
+                logging.debug("copy libs %s %s"%(pname, pval))
                 if pval is not None and pdef.get('type')=='filelist':
                     srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
                     if pdef.get('ext') == "less":
@@ -448,7 +444,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
-            print "Impossible de trouver le script: %s" %label
+            logging.error("Impossible de trouver le script: %s" %label)
             raise Exception
 
         
@@ -491,9 +487,9 @@ class Publisher(PublisherMixin, kolektiBase):
                     raise Exception
 
                 for msg in plugin(script, profile, assembly_dir, fpivot, self._publang):
-                    print msg
+                    logging.info("[%s] %s"%(plugname.encode('utf-8'),msg))
 
-                print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
+                #logging.info("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
             elif stype=="shell":
@@ -513,7 +509,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
-                print cmd
+                logging.debug(cmd)
 
                 try:
                     import subprocess
@@ -534,14 +530,10 @@ class Publisher(PublisherMixin, kolektiBase):
                             continue
                         # display warning or error
                         if re.search('warning', line):
-                            print "Attention %(warn)s"% {'warn': line}
+                            logging.info("Attention %(warn)s"% {'warn': line})
                         elif re.search('error', line) or re.search('not found', line):
-                            print line
-                            print "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(LOCAL_ENCODING).encode('utf-8'),
-                                                                                                                  'error': line.encode('utf-8')}
-
-                                                                                                                  
-                        
+                            logging.error(line)
+                            logging.error("Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')})
                             has_error = True
 
                     # if no error display link
@@ -550,7 +542,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         xl=scrdef.find('link')
                         outfile=self.__substscript(xl.get('name'), subst, profile)
                         outref=self.__substscript(xl.get('ref'), subst, profile)
-                        print "Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')}
+                        logging.debug("Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')})
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
@@ -701,11 +693,12 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             source= u"%s/%s.%s"%(srcdir,filer,ext)
             dest=   u"%s/%s.%s"%(destpath,filer,ext)
-            print source,'->', dest
+            logging.debug('copy resource %s -> %s'%(source, dest))
             self.copyFile(source,dest)
         except:
             import traceback
-            print traceback.format_exc()
+            logging.error("Impossible de copier la ressource %s"%source)
+            logging.debug(traceback.format_exc())
             raise Exception
         
         try:
@@ -720,8 +713,9 @@ class Publisher(PublisherMixin, kolektiBase):
 
         except:
             import traceback
-            print traceback.format_exc()
-
+            logging.error("Impossible de copier la ressource %s"%source)
+            logging.debug(traceback.format_exc())
+            raise Exception
             
 class DraftPublisher(Publisher):
     def __init__(self, *args, **kwargs):
@@ -742,7 +736,7 @@ class DraftPublisher(Publisher):
 
     # publishes a list of jobs
     
-    def publish_toc(self, toc, jobs):
+    def publish_draft(self, toc, jobs):
         """ publishes a kolekti toc, using the profiles sets present in jobs list"""
         
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
