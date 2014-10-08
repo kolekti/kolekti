@@ -110,8 +110,7 @@ if __name__ == '__main__':
     parser_release = subparsers.add_parser('release', help="create release document")
     parser_release.add_argument('toc', action='store')
     parser_release.add_argument('job', action='store')
-    parser_release.add_argument('release', action='store')
-#    parser_release.add_argument('-l', '--lang', action='store', nargs="+")
+#    parser_release.add_argument('release', action='store')
     defaults=config.get("release",{})
     defaults.update({'cmd':'release'})
     parser_release.set_defaults(**defaults)
@@ -119,9 +118,11 @@ if __name__ == '__main__':
 
     # publication d'une release 
     parser_pub = subparsers.add_parser('publish', help="publish release document")
+    parser_pub.add_argument('release', action='store')
     parser_pub.add_argument('assembly', action='store')
-    defaults=config.get("republish",{})
-    defaults.update({'cmd':'republish'})
+    parser_pub.add_argument('-l', '--lang', action='store')
+    defaults=config.get("publish",{})
+    defaults.update({'cmd':'publish'})
     parser_pub.set_defaults(**defaults)
     
     # variables file conversion xml->ods 
@@ -139,6 +140,19 @@ if __name__ == '__main__':
     defaults=config.get("varxml",{})
     defaults.update({'cmd':'varxml'})
     parser_varxml.set_defaults(**defaults)
+    
+    # build search index  
+    parser_idx = subparsers.add_parser('index', help="(re)build search index")
+    defaults=config.get("index",{})
+    defaults.update({'cmd':'index'})
+    parser_idx.set_defaults(**defaults)
+    
+    # search query  
+    parser_search = subparsers.add_parser('search', help="search query")
+    parser_search.add_argument('query', action='store')
+    defaults=config.get("search",{})
+    defaults.update({'cmd':'search'})
+    parser_search.set_defaults(**defaults)
     
     args = parser.parse_args()
 
@@ -166,23 +180,23 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.Releaser(args.base)
-            p.make_release(args.toc, [args.job], args.release)
-            logging.info(" sucessful")
+            p.make_release(args.toc, [args.job])
+            logging.info("Release sucessful")
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("Publication ended with errors")
+            logging.error("Release ended with errors")
                     
     if args.cmd == 'publish':
         from kolekti import publish
         try:
             p = publish.ReleasePublisher(args.base, lang=args.lang)
-            p.publish_assembly(args.assembly)
-            logging.info("Republication sucessful")
+            p.publish_assembly(args.release, args.assembly)
+            logging.info("Publication sucessful")
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("Republication ended with errors")
+            logging.error("Publication ended with errors")
             
     if args.cmd == 'varods':
         from kolekti import variables
@@ -193,3 +207,15 @@ if __name__ == '__main__':
         from kolekti import variables
         c = variables.OdsToXML(args.base)
         c.convert(args.varfile)
+
+
+    if args.cmd == 'index':
+        from kolekti import searchindex
+        ix = searchindex.indexer(args.base)
+        ix.indexbase()
+
+    if args.cmd == 'search':
+        from kolekti import searchindex
+        ix = searchindex.searcher(args.base)
+        ix.search(args.query)
+

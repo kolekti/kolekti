@@ -93,6 +93,10 @@ class kolektiBase(object):
 
     def syspath(self, path):
         return self.__makepath(path)
+
+    def localpath(self, path):
+        lp = path.replace(self._path,'')
+        return '/' + '/'.join(lp.split(os.path.sep))
     
     def __makepath(self, path):
         # returns os absolute path from relative path
@@ -305,6 +309,48 @@ class kolektiBase(object):
         logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
         return "[??]"
 
+
+    @property
+    def itertopics(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if 'topics' in rootparts:
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.html':
+                        yield self.localpath('/'.join(rootparts+[file]))
+
+    @property
+    def itervariables(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if 'variables' in rootparts:
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.xml':
+                        yield self.localpath('/'.join(rootparts+[file]))
+        
+    @property
+    def iterassemblies(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if 'assembly' in rootparts:
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.html':
+                        yield self.localpath('/'.join(rootparts+[file]))
+
+        
+    @property
+    def iterpivots(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file=='document.xhtml':
+                    yield self.localpath('/'.join(rootparts+[file]))
+                        
+
+
+        
+        
+    
 class XSLExtensions(kolektiBase):
     """
     Extensions functions for xslt that are applied during publishing process

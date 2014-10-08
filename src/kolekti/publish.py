@@ -187,7 +187,7 @@ class Publisher(PublisherMixin, kolektiBase):
         assembly = s(assembly,action="'assemble'")
         self.log_xsl(s.error_log)
 
-        # logging.debug("after cond! %s"%str([ET.tostring(c) for c in assembly.xpath('//*[local-name() = "cond"]')]))
+        # logging.debug("after cond! %s"%str([ET.tostring(c) for c in assembly.xpath('//*[local-name() = "cond"]')
             
 
         pubname = xjob.get('id','')
@@ -199,16 +199,17 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
+            logging.error("unable to create assembly directory")
             import traceback
             logging.debug(traceback.format_exc())
-
-        self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/content_" + pubname + ".html")
+            
+        self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
 
         logging.debug('********************************** copy media')
         self.copy_media(assembly, xjob, assembly_dir)
 
         logging.debug('********************************** create settings')
-        self.create_settings(xjob, assembly_dir)
+        self.create_settings(xjob, pubname, assembly_dir)
 
         logging.debug('********************************** copy scripts resources')
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
@@ -225,25 +226,17 @@ class Publisher(PublisherMixin, kolektiBase):
                     raise Exception
 
         return assembly
-                        
-    def publish_assembly(self, assembly):
-        """ publish an assembly""" 
-        jobs = self.parse(os.path.join(assembly, '../settings.xml'))
-        for job in jobs:
-            path = self.get_base_job(job) + ".xml"
-            xjob = self.parse(path)
-            xassembly = self.parse(assembly)
-            self.publish_job(xassembly,xjob.getroot())
+
 
 
     def publish_job(self, assembly, xjob):
         """publishes a an assembly for every profile in xjob
            invoke publication scripts for every publication """ 
         assembly_dir = self.assembly_dir(xjob)
-
-    #        logging.debug(ET.tostring(xjob))
+        
+        # logging.debug(ET.tostring(xjob))
         for profile in xjob.xpath('/job/profiles/profile'):
-#            logging.debug(profile)
+            #  logging.debug(profile)
             if profile.get('enabled','0') == '1':
                 # creates the document (pivot) file
                 pivot = self.publish_profile(assembly, profile, assembly_dir)
@@ -338,7 +331,7 @@ class Publisher(PublisherMixin, kolektiBase):
         return pivot
 
     # create settings.xml file in assembly directory
-    def create_settings(self, profile, assembly_dir):
+    def create_settings(self, xjob, pubname, assembly_dir):
         pass
 
 
@@ -756,17 +749,15 @@ class DraftPublisher(Publisher):
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
-        self._release_path = ''
         
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        assembly_dir = "/releases/" + self._release_path + "/" + assembly_dir
+        assembly_dir = "/releases/" + assembly_dir
         return assembly_dir
 
-    def make_release(self, toc, jobs, release_path):
+    def make_release(self, toc, jobs):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
-        self._release_path = release_path
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         toc = self.get_base_toc(toc) + ".html"
         logging.debug("release toc %s",toc)
@@ -777,4 +768,41 @@ class Releaser(Publisher):
             # assembly
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly = self.publish_assemble(xtoc, xjob.getroot())
+
+
+    # copies the job in release directory
+    def create_settings(self, xjob, pubname, assembly_dir):
+        try:
+            self.makedirs(assembly_dir + "/kolekti/publication-parameters")
+        except:
+            logging.error("unable to create release publication parameters directory")
+            import traceback
+            logging.debug(traceback.format_exc())
+
+        self.xwrite(xjob, assembly_dir + "/kolekti/publication-parameters/" + pubname + ".xml")
+
+class ReleasePublisher(Publisher):
+    def __init__(self, *args, **kwargs):
+        super(ReleasePublisher, self).__init__(*args, **kwargs)
+
+    def assembly_dir(self, xjob):
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        assembly_dir = "/releases/" + assembly_dir
+        return assembly_dir
+
+    def cleanup_assembly_dir(self, xjob):
+        pass
+
+    def publish_assembly(self, release, assembly):
+        """ publish an assembly"""
+        try:
+            xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+        except:
+            logging.error("unable to read assembly %s"%assembly)
+            import traceback
+            logging.debug(traceback.format_exc())
             
+        xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        logging.debug(ET.tostring(xjob))
+        self.publish_job(xassembly,xjob.getroot())
