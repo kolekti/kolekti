@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Parametres {{ kolekti.project }}{% endblock %}
+
+
+{% block menu %}
+	  <div class="panel-group" id="accordion_rightmenu">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a href="criteria">
+		    Critères de filtrage
+		  </a>
+		</h4>
+	      </div>
+
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a href="#">
+		    Parametres de publication
+		  </a>
+		</h4>
+	      </div>
+	      <div class="panel-body">
+		{% for job in jobs %}
+		  <a href="editjob?job=job.path">{{ job.name }}</a><br>
+		{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+{% endblock %}
+
+
+{% block content %}
+	  
+{% endblock %}
+

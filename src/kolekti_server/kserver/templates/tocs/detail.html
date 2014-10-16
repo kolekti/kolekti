@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-tocs.js"></script>
+{% endblock %}
+
+{% block title %}{{ toctitle }}{% endblock %}
+
+
+{% block menu %}
+    <div>
+      <button type="button" class="btn btn-default disabled" id="btn_save" title="Enregistrer">
+	<span class="glyphicon glyphicon-save"></span>
+      </button>
+      <button type="button" class="btn btn-default" id="btn_expand_all" title="Tout déplier">
+	<span class="glyphicon glyphicon-resize-full"></span>
+      </button>
+      <button type="button" class="btn btn-default" id="btn_collapse_all" title="Tout plier">
+	<span class="glyphicon glyphicon-resize-small"></span>
+      </button>
+    </div>
+
+	  <div class="panel-group" id="accordion_rightmenu">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseEdit">
+		    Éditer
+		  </a>
+		</h4>
+	      </div>
+	      <div id="collapseEdit" class="panel-collapse collapse">
+		<div class="panel-body">
+		  <button type="button" class="btn btn-block btn-default">Ajouter un topic</button>
+		  <button type="button" class="btn btn-block btn-default">Supprimer les topics</button>
+		  <button type="button" class="btn btn-block btn-default">Ajouter un sommaire</button>
+		  <button type="button" class="btn btn-block btn-default">Ajouter un index </button>
+		</div>
+	      </div>
+	    </div>
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseFilter">
+		    Filtrer
+		  </a>
+		</h4>
+	      </div>
+	      <div id="collapseFilter" class="panel-collapse collapse">
+		<div class="panel-body">
+		  
+		</div>
+	      </div>
+	    </div>
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapsePub">
+		    Publier
+		  </a>
+		</h4>
+	      </div>
+	      <div id="collapsePub" class="panel-collapse collapse">
+		<div class="panel-body">
+		  {% for job in jobs %}
+		  <div class="checkbox">
+		    <label>
+  		      <input type="checkbox" class="publish" id="job_{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
+		      {{ job.name }}
+		    </label>
+		  </div>
+
+		  {% endfor %}
+		  <hr>
+		  <div class="checkbox">
+		    <label>
+  		      <input type="checkbox"/>
+		      Créer un document "release"
+		    </label>
+		  </div>
+		  <button type="button" class="btn btn-block btn-default">Lancer</button>
+		</div>
+	      </div>
+	    </div>
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		<h4 class="panel-title">
+		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapsePub2">
+		    Publications
+		  </a>
+		</h4>
+	      </div>
+	      <div id="collapsePub2" class="panel-collapse collapse">
+		<div class="panel-body">
+		  TODO...
+		</div>
+	      </div>
+	    </div>
+	  </div>
+{% endblock %}
+
+
+{% block content %}
+<div class="main panel panel-default">
+  {{ toccontent|safe}}
+</div>
+{% endblock %}
+
