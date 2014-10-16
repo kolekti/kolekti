@@ -40,7 +40,10 @@ class kolektiBase(object):
     def __init__(self,path):
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         # logging.debug('project path : %s'%path)
-        self._path = path
+        if path[-1]=='/':
+            self._path = path
+        else:
+            self._path = path + '/'
         self._xmlparser = ET.XMLParser()
         self._xmlparser.resolvers.add(PrefixResolver())
         
@@ -73,6 +76,9 @@ class kolektiBase(object):
         # logging.debug("kolekti v%s"%self._version)
         
     def __getattribute__(self, name):
+        # logging.debug('get attribute: ' +name)
+        import traceback
+        #logging.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
@@ -80,6 +86,7 @@ class kolektiBase(object):
                 return f
         except:
             import traceback
+            logging.debug('error getting attribute '+name)
             logging.debug(traceback.format_exc())
             pass
         return super(kolektiBase, self).__getattribute__(name)
@@ -135,11 +142,14 @@ class kolektiBase(object):
 
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
-
         extensions = {}
+        print extclass
         extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
+        for k,e in extensions.iteritems():
+            if k[1] == "gettopic":
+                print k,e
         return extensions
         
 
@@ -156,8 +166,9 @@ class kolektiBase(object):
                 xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
         xsldoc  = ET.parse(path,self._xmlparser)
-        if extclass is None:
+        if extclass is  None:
             extclass = XSLExtensions
+    
         xsl = ET.XSLT(xsldoc, extensions=self.get_extensions(extclass, **kwargs))
         return xsl
 
@@ -320,6 +331,15 @@ class kolektiBase(object):
                         yield self.localpath('/'.join(rootparts+[file]))
 
     @property
+    def itertocs(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if 'tocs' in rootparts:
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.html':
+                        yield self.localpath('/'.join(rootparts+[file]))
+
+    @property
     def itervariables(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
@@ -347,6 +367,18 @@ class kolektiBase(object):
                     yield self.localpath('/'.join(rootparts+[file]))
                         
 
+    @property
+    def iterjobs(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'kolekti','publication-parameters'), topdown=False):
+            print root, dirs, files
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if os.path.splitext(file)[-1] == '.xml':
+                    if not file=='criterias.xml':
+                        yield {"path":self.localpath('/'.join(rootparts+[file])),
+                               "name":os.path.splitext(file)[0]}
+                        
+
 
         
         
@@ -355,12 +387,10 @@ class XSLExtensions(kolektiBase):
     """
     Extensions functions for xslt that are applied during publishing process
     """
-    ens = "kolekti:extension:functions"
+    ens = "kolekti:extensions:functions"
     def __init__(self, path):
         super(XSLExtensions, self).__init__(path)
 
-
-    
 class PrefixResolver(ET.Resolver):
     """
     lxml url resolver for kolekti:// url

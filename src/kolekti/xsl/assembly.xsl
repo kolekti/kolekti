@@ -24,9 +24,9 @@
   xmlns:exsl="http://exslt.org/common"
   xmlns:html="http://www.w3.org/1999/xhtml" 
   xmlns:kt="kolekti:trames"
-  xmlns:kfp="kolekti:extensions:functions:publication"
-  extension-element-prefixes="exsl kfp" 
-  exclude-result-prefixes="html kfp kt"
+  xmlns:kf="kolekti:extensions:functions:publication"
+  extension-element-prefixes="exsl kf" 
+  exclude-result-prefixes="html kf kt"
   version="1.0">
 
   <xsl:output  method="xml" 
@@ -157,7 +157,7 @@
   <xsl:template match="html:a[@rel = 'kolekti:topic']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     
-    <xsl:variable name="topic_url" select="kfp:gettopic(string(@href))"/>
+    <xsl:variable name="topic_url" select="kf:gettopic(string(@href))"/>
     <xsl:variable name="topic" select="document($topic_url)"/>
 
     <div class="topic" id="{generate-id()}">

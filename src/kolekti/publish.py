@@ -66,14 +66,17 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
             kwargs.pop('profile')
         super(PublisherExtensions,self).__init__(*args, **kwargs)
         
+
     def gettopic(self, _, *args):
+        logging.debug("get topic")
         modid = args[0]
         path = self.process_path(modid)
+        print path
         upath = self.getUrlPath(path)
         logging.debug("get topic %s -> %s"%(modid,upath))
         logging.debug("--")
         return upath
-        
+
     def criteria(self, _, *args):
         logging.debug('xslt ext criteria')
         return self._profile.xpath("criteria/criterion|/job/criteria/criterion")
