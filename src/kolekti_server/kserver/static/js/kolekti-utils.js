@@ -21,3 +21,35 @@ $.ajaxSetup({
          }
      } 
 });
+
+
+var kolekti_browser = function(args) {
+    var url = "/browse/"
+    var params = {}
+    if (args && args.type)
+	url += args.type + "/";
+    path="";
+
+    resfuncs = {};
+
+    $.get(url, function(data) {
+	$('.modal-body').html(data);
+    }).done(function(){
+	
+	$('.modal').modal();
+    });
+    
+    var select = function(f) {	
+	resfuncs['select']=f;
+	return {"always":always};
+    };
+
+    var always = function(f) {
+	resfuncs['always']=f;
+    };
+
+    return {
+	"select":select,
+	"always":always
+    }
+}

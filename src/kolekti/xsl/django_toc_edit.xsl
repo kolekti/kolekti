@@ -28,16 +28,18 @@
   <xsl:output  method="html" 
                indent="yes"/>
 
-  <xsl:template match="node()|@*">
-    <xsl:copy>
+  <xsl:template match="text()|@*">
+    <xsl:copy/>
+  </xsl:template>
+
+  <xsl:template match="*">
+    <xsl:element name="{local-name()}">
       <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="/">
-   <div id="toc_root" data-kolekti-title="{html:html/html:head/html:title}">
      <xsl:apply-templates select="html:html/html:body/*"/>
-   </div>
   </xsl:template>
 
   <xsl:template match="html:a[@rel='kolekti:toc']">

@@ -12,6 +12,25 @@ $('#btn_expand_all').on('click', function() {
     $('.main .collapse').collapse('show');
 });
 
+$('.btn_topic_delete').on('click', function() {
+    var topic = $(this).closest('.topic');
+    topic.remove();
+    enable_save();
+});
+
+$('#btn_topic_add').on('click', function() {
+    kolekti_browser({"type":"topics"})
+	.select(function(path) {console.log(path)})
+	.always(function() {console.log("after")})
+    ;
+/*
+    $.get('/browser/sources/fr/topics', function(data) {   
+        $('#').append(data);
+    });
+*/
+});
+
+
 $('.btn_topic_up').on('click', function() {
     var topic = $(this).closest('.topic');
     if (topic.prev('.topic').length) {
@@ -87,11 +106,10 @@ var process_toc = function(elt) {
 		buf += "'";
 	    }
 	    buf += ">";
-	    for (e
-	    elt.children().each(function(i,child) {
-		
+	    for (var j = 0; j < domelt.childNodes.length; j++) {
+		var child = domelt.childNodes[j]
 		buf += process_toc($(child));
-	    });
+	    };
 	    buf += "</" + domelt.localName +">";
 	} else {
 	    buf += domelt.nodeValue;

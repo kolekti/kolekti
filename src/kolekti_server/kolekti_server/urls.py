@@ -19,5 +19,7 @@ urlpatterns = patterns('',
     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
     # url(r'^blog/', include('blog.urls')),
 
+    url(r'^browse/', BrowserView.as_view(),name="kolekti_browser"),
+
 #    url(r'^admin/', include(admin.site.urls)),
 )

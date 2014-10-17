@@ -179,6 +179,9 @@ class kolektiBase(object):
             #logging.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
             #logging.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
             #logging.debug('[XSL] filename: %s' % entry.filename)
+
+    def parse_string(self, src):
+        return ET.XML(src,self._xmlparser)
     
     def parse(self, filename):
         src = self.__makepath(filename)

@@ -31,7 +31,7 @@
 	      </div>
 	      <div id="collapseEdit" class="panel-collapse collapse">
 		<div class="panel-body">
-		  <button type="button" class="btn btn-block btn-default">Ajouter un topic</button>
+		  <button type="button" class="btn btn-block btn-default" id="btn_topic_add">Ajouter un topic</button>
 		  <button type="button" class="btn btn-block btn-default">Supprimer les topics</button>
 		  <button type="button" class="btn btn-block btn-default">Ajouter un sommaire</button>
 		  <button type="button" class="btn btn-block btn-default">Ajouter un index </button>
@@ -102,7 +102,9 @@
 
 {% block content %}
 <div class="main panel panel-default">
+   <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}">
   {{ toccontent|safe}}
+   </div>
 </div>
 {% endblock %}
 

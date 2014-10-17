@@ -70,15 +70,25 @@ class TocView(kolektiMixin, View):
 
     def get(self, request):
         context = self.get_context_data()
-        toctitle, toccontent = self.get_toc_edit(request.GET.get('toc'))
-        context.update({'toctitle':toctitle,'toccontent':toccontent})
+        tocpath = request.GET.get('toc')
+        toctitle, toccontent = self.get_toc_edit(tocpath)
+        context.update({'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
     
     def post(self, request):
-        print request.body
-        return HttpResponse('ok')
+        try:
+            xtoc=self.parse_string(request.body)
+            tocpath = xtoc.get('data-kolekti-path')
+            xtoc_save = self.get_xsl('django_toc_save')
+            xtoc = xtoc_save(xtoc)
+            self.write(str(xtoc), tocpath)
+            return HttpResponse('ok')
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
 
 class TranslationsListView(ListView):
     template_name = "home.html"
@@ -121,3 +131,36 @@ class CriteriaEditView(kolektiMixin, TemplateView):
         context = self.get_context_data()
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
+
+
+
+
+class BrowserView(kolektiMixin, View):
+    def get(self,request):
+        path = request.GET.get('path','/')
+
+
+
+        
+class PublicationView(kolektiMixin, View):
+    def __init__(self, *args, **kwargs):
+        super(PublicationView, self).__init__(*args, **kwargs)
+        from kolekti import publish
+        
+class DraftView(kolektiMixin, View):
+    def post(self,request):
+        tocpath = request.POST.get('toc')
+        jobpath = request.POST.get('job')
+        from kolekti import publish
+        p = publish.DraftPublisher(args.base, lang=args.lang)
+        p.publish_draft(args.toc, [args.job])
+
+class ReleaseView(kolektiMixin, View):
+    def post(self,request):
+        tocpath = request.POST.get('toc')
+        jobpath = request.POST.get('job')
+        from kolekti import publish
+        p = publish.DraftPublisher(args.base, lang=args.lang)
+        p.publish_draft(args.toc, [args.job])
+
+        
