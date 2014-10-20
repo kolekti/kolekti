@@ -1,0 +1,32 @@
+# General
+.bundle
+.rvmrc
+.powenv
+mercury.ids
+
+# Local config files
+Gemfile.lock
+mongoid.yml
+
+# Script files
+script/
+
+# Build files
+distro/build
+pkg/
+
+# Databases
+spec/dummy/db/*.sqlite3
+
+# Logs
+log/
+
+# Tempfiles
+tmp/
+coverage
+capybara*
+
+# Assets
+.sass-cache
+public/system
+public/assets

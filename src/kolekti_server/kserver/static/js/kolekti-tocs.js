@@ -18,6 +18,41 @@ $('.btn_topic_delete').on('click', function() {
     enable_save();
 });
 
+$('#btn_topics_delete').on('click', function() {
+    $('.select_topic').each(function(i,e) {
+	if (e.checked) {
+	    var topic = $(e).closest('.topic');
+	    topic.remove();
+	    enable_save();
+	}
+    });
+});
+
+var first_selected = function() {
+    ft = $('.select_topic:checked').first();
+    if (ft.length == 0)
+	ft = $('.select_topic').first();
+    return ft;
+}
+
+$('#btn_idx_add').on('click', function() {
+    first_selected().each(function(i,e) {
+	var topic = $(e).closest('.topic');
+	$('<div class="topic" data-kolekti-topic-rel="kolekti:index"><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><input type="checkbox" class="select_topic"> <a data-toggle="collapse" href="#collapse_idm290171584"><span data-toggle="tooltip" data-placement="top" title="Index alphabétique"><span class="glyphicon glyphicon-cog"></span>Index alphabétique</span></a> <span class="dropdown"><a data-toggle="dropdown" href="#" id="dropdownMenu_idmidx"><span class="caret"></span></a><ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu_idmidx"><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li><li role="presentation" class="divider"></li><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_up">Monter</a></li><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_down">Descendre</a></li></ul></span></h4></div></div></div>').insertBefore(topic);
+	    enable_save();
+	    return;
+    });
+});
+
+$('#btn_toc_add').on('click', function() {
+    first_selected().each(function(i,e) {
+	var topic = $(e).closest('.topic');
+	$('<div class="topic" data-kolekti-topic-rel="kolekti:index"><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><input type="checkbox" class="select_topic"> <a data-toggle="collapse" href="#collapse_idm290171584"><span data-toggle="tooltip" data-placement="top" title="Index alphabétique"><span class="glyphicon glyphicon-cog"></span>Index alphabétique</span></a> <span class="dropdown"><a data-toggle="dropdown" href="#" id="dropdownMenu_idmtoc"><span class="caret"></span></a><ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu_idmtoc"><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li><li role="presentation" class="divider"></li><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_up">Monter</a></li><li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_down">Descendre</a></li></ul></span></h4></div></div></div>').insertBefore(topic);
+	    enable_save();
+	    return;
+    });
+});
+
 $('#btn_topic_add').on('click', function() {
     kolekti_browser({"type":"topics"})
 	.select(function(path) {console.log(path)})
@@ -96,6 +131,7 @@ var process_toc = function(elt) {
 	    buf += "href='" + elt.data('kolekti-topic-href') + "' ";
 	buf += "rel='" + elt.data('kolekti-topic-rel') + "'/>";
     }
+
     else {
 	if (domelt.nodeType==1) {
 	    buf += "<" + domelt.localName;
@@ -128,4 +164,33 @@ $('#btn_save').on('click', function() {
     }).done(function(data) {
 	console.log(data);
     });
+})
+
+$('#btn_publish').on('click', function() {
+    var url='/publish/'
+    if ($('#publish_release').get(0).checked) {
+	url += 'release/'
+    } else {
+	url += 'draft/'
+    }
+    var toc = $('#toc_root').data('kolekti-path');
+    $('.publish_job').each(function(i,e){
+	if (e.checked) {
+	    job = $(e).data('kolekti-job');
+	    
+	    $.ajax({
+		url:url,
+		type:'POST',
+		data:{'toc':toc, 'job':job}
+	    }).done(function(data) {
+		console.log(data);
+	    });
+	}})
+})
+
+$('body').on('click', '.btn_topic_edit', function() {
+    var topic = $(this).closest('.topic');
+    var url = topic.data('kolekti-topic-href');
+    
+    window.open('/topics/edit/?topic='+url);
 })

@@ -32,9 +32,9 @@
 	      <div id="collapseEdit" class="panel-collapse collapse">
 		<div class="panel-body">
 		  <button type="button" class="btn btn-block btn-default" id="btn_topic_add">Ajouter un topic</button>
-		  <button type="button" class="btn btn-block btn-default">Supprimer les topics</button>
-		  <button type="button" class="btn btn-block btn-default">Ajouter un sommaire</button>
-		  <button type="button" class="btn btn-block btn-default">Ajouter un index </button>
+		  <button type="button" class="btn btn-block btn-default"  id="btn_topics_delete">Supprimer les topics</button>
+		  <button type="button" class="btn btn-block btn-default" id="btn_toc_add">Ajouter un sommaire</button>
+		  <button type="button" class="btn btn-block btn-default" id="btn_idx_add">Ajouter un index </button>
 		</div>
 	      </div>
 	    </div>
@@ -65,7 +65,7 @@
 		  {% for job in jobs %}
 		  <div class="checkbox">
 		    <label>
-  		      <input type="checkbox" class="publish" id="job_{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
+  		      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
 		      {{ job.name }}
 		    </label>
 		  </div>
@@ -74,11 +74,11 @@
 		  <hr>
 		  <div class="checkbox">
 		    <label>
-  		      <input type="checkbox"/>
+  		      <input type="checkbox" id="publish_release"/>
 		      Créer un document "release"
 		    </label>
 		  </div>
-		  <button type="button" class="btn btn-block btn-default">Lancer</button>
+		  <button type="button" class="btn btn-block btn-default" id="btn_publish">Lancer</button>
 		</div>
 	      </div>
 	    </div>

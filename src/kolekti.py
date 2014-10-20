@@ -169,7 +169,9 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.DraftPublisher(args.base, lang=args.lang)
-            p.publish_draft(args.toc, [args.job])
+            toc = p.get_base_toc(args.toc) + ".html"
+            jobs = [p.get_base_job(args.job) + ".xml"]
+            p.publish_draft(toc, jobs)
             logging.info("Publication sucessful")
         except:
             import traceback
@@ -180,7 +182,9 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.Releaser(args.base)
-            p.make_release(args.toc, [args.job])
+            toc = p.get_base_toc(args.toc) + ".html"
+            jobs = [p.get_base_job(args.job) + ".xml"]
+            p.make_release(toc, jobs)
             logging.info("Release sucessful")
         except:
             import traceback

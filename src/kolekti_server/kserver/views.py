@@ -15,6 +15,7 @@ from django.http import HttpResponse
 class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def __init__(self, *args, **kwargs):
         base = settings.KOLEKTI_BASE
+        
         super(kolektiMixin, self).__init__(base,*args,**kwargs)
 
     def config(self):
@@ -35,6 +36,13 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
         return toctitle, str(etoc)
+
+    def get_topic_edit(self, path):
+        xtopic = self.parse(path.replace('{LANG}','fr'))
+        topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topiccontent = ''.join([ET.tostring(t) for t in topicbody])
+        return topictitle, topiccontent
 
     def get_tocs(self):
         return self.itertocs
@@ -66,7 +74,6 @@ class TocsListView(kolektiMixin, View):
 
 class TocView(kolektiMixin, View):
     template_name = "tocs/detail.html"
-
 
     def get(self, request):
         context = self.get_context_data()
@@ -133,34 +140,56 @@ class CriteriaEditView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
-
-
 class BrowserView(kolektiMixin, View):
     def get(self,request):
         path = request.GET.get('path','/')
-
-
-
         
 class PublicationView(kolektiMixin, View):
+    template_name = "publication.html"
     def __init__(self, *args, **kwargs):
         super(PublicationView, self).__init__(*args, **kwargs)
-        from kolekti import publish
-        
-class DraftView(kolektiMixin, View):
+        import StringIO
+        self.loggerstream = StringIO.StringIO()
+        import logging
+        self.loghandler = logging.StreamHandler(stream = self.loggerstream)
+        self.loghandler.setLevel(logging.INFO)
+        # set a format which is simpler for console use
+        formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+        # tell the handler to use this format
+        self.loghandler.setFormatter(formatter)
+        # add the handler to the root logger
+        logging.getLogger('').addHandler(self.loghandler)
+    
+class DraftView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
         from kolekti import publish
-        p = publish.DraftPublisher(args.base, lang=args.lang)
-        p.publish_draft(args.toc, [args.job])
-
-class ReleaseView(kolektiMixin, View):
+        p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang='fr')
+        context = p.publish_draft(tocpath, [jobpath])
+        self.loghandler.flush() 
+        context.update({'logger':self.loggerstream.getvalue()})        
+        print context
+        return self.render_to_response(context)
+        
+class ReleaseView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
         from kolekti import publish
-        p = publish.DraftPublisher(args.base, lang=args.lang)
-        p.publish_draft(args.toc, [args.job])
+        r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
+        pp = r.make_release(pathtoc, [jobpath])
+        p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
+        context = publish_release(pp[0], pp[1])
+        context.update({'logger':self.loggerstream.getvalue()})        
+        return self.render_to_response(context)
 
-        
+class TopicEditorView(kolektiMixin, View):
+    template_name = "topics/edit.html"
+    def get(self, request):
+        topicpath = request.GET.get('topic')
+        topictitle, topiccontent = self.get_topic_edit(topicpath)
+        context = {"body":topiccontent, "title": topictitle}
+        return self.render_to_response(context)
+
+
