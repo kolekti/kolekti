@@ -173,19 +173,27 @@ $('#btn_publish').on('click', function() {
     } else {
 	url += 'draft/'
     }
+    $('.modal-body').html('<div id="pubresult"></div>');
+    $('.modal-title').html('Publication');
+    $('.modal-footer button').html('fermer');
+    $('.modal').modal();
     var toc = $('#toc_root').data('kolekti-path');
     $('.publish_job').each(function(i,e){
 	if (e.checked) {
-	    job = $(e).data('kolekti-job');
-	    
+	    var job = $(e).data('kolekti-job');
+	    var idjob = $(e).attr('id');
+	    var label = $(e).data('kolekti-jobname');
+	    $('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#collapse'+idjob+'">Job '+label+'</a></h4></div><div id="collapse'+idjob+'" class="panel-collapse collapse in"><div class="panel-body"><div id="pub_'+idjob+'"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
+
 	    $.ajax({
 		url:url,
 		type:'POST',
 		data:{'toc':toc, 'job':job}
 	    }).done(function(data) {
-		console.log(data);
+		$('#pub_'+idjob).html(data);
 	    });
-	}})
+	}
+    });
 })
 
 $('body').on('click', '.btn_topic_edit', function() {

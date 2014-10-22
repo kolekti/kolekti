@@ -23,7 +23,7 @@
 
  <cmd>xsltproc --novalid --stringparam baseuri "_BASEURI_" "_SRCDIR_/kolekti/publication-templates/fop/_XSL_.xsl" "_PIVOT_" |fop -c _APPDIR_/plugins/_fop/fop.xconf -fo - -pdf "_PUBDIR_/_PUBNAME_.pdf"</cmd>
 
-    <link name="_PUBNAME_.pdf" ref="_PUBDIR_/_PUBNAME_.pdf"/>
+    <link name="_PUBNAME_.pdf" ref="_PUBURI_/_PUBNAME_.pdf" type="pdf"/>
     <parameters>
       <parameter name="XSL" label="Feuille de style" 
 		 type="filelist" dir="kolekti/publication-templates/fop" ext="xsl"/>

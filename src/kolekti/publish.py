@@ -71,7 +71,6 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         logging.debug("get topic")
         modid = args[0]
         path = self.process_path(modid)
-        print path
         upath = self.getUrlPath(path)
         logging.debug("get topic %s -> %s"%(modid,upath))
         logging.debug("--")
@@ -248,15 +247,15 @@ class Publisher(PublisherMixin, kolektiBase):
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
-                        resscripts.append(resscript)
+                        resscripts.append({"script":script.get('name'),"docs":resscript})
                         #print "--> Done script:",script.get('name')
                     except:
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
                         logging.debug(traceback.format_exc())
                         raise Exception
-                res.append({'profile':profile.get('id'), 'scripts':resscripts})
-
+                res.append({'profile':profile.find('label').text, 'scripts':resscripts})
+        return res
 
 
     def publish_profile(self, assembly, profile, assembly_dir):
@@ -425,6 +424,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
     def start_script(self, script, profile, assembly_dir, pivot):
+        res = None
         pubdir = self.pubdir(assembly_dir, profile)
         label = profile.xpath('string(label)') 
         suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
@@ -461,11 +461,13 @@ class Publisher(PublisherMixin, kolektiBase):
             pivfile = pubdir + "/document.xhtml"
 
         subst = copy.copy(params)
+        
         subst.update({
             "APPDIR":self._appdir,
             "PUBDIR":self.getOsPath(pubdir),
             "SRCDIR":self.getOsPath(assembly_dir),
             "BASEURI":self.getUrlPath(assembly_dir) + '/',
+            "PUBURI":pubdir,
             "PUBNAME": pubname,
             "PIVOT": self.getOsPath(pivfile)
             })
@@ -484,9 +486,8 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise Exception
 
-                for msg in plugin(script, profile, assembly_dir, fpivot, self._publang):
-                    logging.info("[%s] %s"%(plugname.encode('utf-8'),msg))
-
+                res = plugin(script, profile, assembly_dir, fpivot, self._publang)
+            
                 #logging.info("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
@@ -508,7 +509,6 @@ class Publisher(PublisherMixin, kolektiBase):
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
-
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -535,15 +535,19 @@ class Publisher(PublisherMixin, kolektiBase):
                             has_error = True
 
                     # if no error display link
-                    
+    
                     if not has_error:
                         xl=scrdef.find('link')
                         outfile=self.__substscript(xl.get('name'), subst, profile)
                         outref=self.__substscript(xl.get('ref'), subst, profile)
+                        outtype=xl.get('type')
                         logging.debug("Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')})
+                        res=[{"type":outtype, "label":outfile, "url":outref}]
+                        print res
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
+                    print traceback.format_exc()
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
                     raise Exception
 
@@ -575,14 +579,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     try:
                         self.model.pubsave(str(docf),'/'.join((label,sout)))
                     except:
-                        print "Impossible d'exécuter le script %(label)s"%{'label': label.encode('utf-8')}
-                        return
+                        logging.error("Impossible d'exécuter le script %(label)s"%{'label': label.encode('utf-8')})
+                        raise Exception
                     errors = set()
                     for err in xslt.error_log:
                         if not err.message in errors:
-                            print err.message
+                            logging.debug(err.message)
                             errors.add(err.message)
-                    print "Exécution du script %(label)s réussie"%{'label': label.encode('utf-8')}
+                    logging.info("Exécution du script %(label)s réussie"%{'label': label.encode('utf-8')})
 
                     # output link to result of transformation
                     #                    yield (self.view.publink(sout.split('/')[-1],
@@ -620,9 +624,10 @@ class Publisher(PublisherMixin, kolektiBase):
         except:
             import traceback
             logging.debug(traceback.format_exc())
+            print traceback.format_exc()
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
             raise Exception
-        return
+        return res
 
 
 
@@ -644,7 +649,7 @@ class Publisher(PublisherMixin, kolektiBase):
         except:
             dbgexc()
 
-        debug(("script less compile to",destcd))
+        logging.debug(("script less compile to",destcd))
         
         try:
             source= u"%s/%s.%s"%(srcpath,lessfile,"less")
@@ -750,9 +755,10 @@ class DraftPublisher(Publisher):
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
 
             logging.debug('********************************** PUBLISH ASSEMBLY')
-            publications.append(self.publish_job(assembly, xjob.getroot()))
+            pubres = self.publish_job(assembly, xjob.getroot())
+            publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
             self.cleanup_assembly_dir(xjob.getroot())
-        return {'publications':publications}
+        return publications
     
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
@@ -815,4 +821,4 @@ class ReleasePublisher(Publisher):
             
         xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         logging.debug(ET.tostring(xjob))
-        return {'publications':[self.publish_job(xassembly,xjob.getroot())]}
+        return [{"job":xjob.get('id'), "publications":self.publish_job(xassembly,xjob.getroot())}]

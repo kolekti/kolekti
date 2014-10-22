@@ -1,3 +1,22 @@
 <div class="publication">
-  {{ logger }}
+  {% if success %}
+  {% for pubresitem in pubres %}
+	{% for profileitem in pubresitem.publications %}
+	<h5>Profile {{ profileitem.profile }}</h5>
+	<ul>
+	  {% for scriptitem in profileitem.scripts %}
+	  <li>Script {{ scriptitem.script }}: 
+	    {% for doc in scriptitem.docs %}
+	    {{ doc.type }}: <a href="/static{{ doc.url }}" target="_blank">{{ doc.label }}</a> 
+            {% endfor %}
+	  </li>
+	  {% endfor %}
+	</ul>
+	{% endfor %}
+  {% endfor %}
+  {% else %}
+  <div class="error">
+    <p>{{ logger }}</p>
+  </div>
+  {% endif %}
 </div>

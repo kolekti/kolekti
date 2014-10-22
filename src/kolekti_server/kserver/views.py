@@ -164,24 +164,42 @@ class DraftView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
+        context={}
         from kolekti import publish
-        p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang='fr')
-        context = p.publish_draft(tocpath, [jobpath])
-        self.loghandler.flush() 
-        context.update({'logger':self.loggerstream.getvalue()})        
-        print context
+        try:
+            p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang='fr')
+            pubres = p.publish_draft(tocpath, [jobpath])
+            context.update({'pubres':pubres})
+            context.update({'success':True})
+        except:
+            import traceback
+            print traceback.format_exc()
+            self.loghandler.flush()
+            context.update({'success':False})
+            context.update({'logger':self.loggerstream.getvalue()})        
+
         return self.render_to_response(context)
         
 class ReleaseView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
+        context = {}
         from kolekti import publish
         r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
-        pp = r.make_release(pathtoc, [jobpath])
-        p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
-        context = publish_release(pp[0], pp[1])
-        context.update({'logger':self.loggerstream.getvalue()})        
+        pp = r.make_release(tocpath, [jobpath])
+        try:
+            p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
+            pubres = p.publish_assembly(pp[0], pp[1])
+            context.update({'pubres':pubres})
+            context.update({'success':True})
+        except:
+            import traceback
+            print traceback.format_exc()
+            self.loghandler.flush()
+            context.update({'success':False})
+            context.update({'logger':self.loggerstream.getvalue()})        
+
         return self.render_to_response(context)
 
 class TopicEditorView(kolektiMixin, View):

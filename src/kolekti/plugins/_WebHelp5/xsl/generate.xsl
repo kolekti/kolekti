@@ -13,7 +13,6 @@
 
   <xsl:param name="pubdir" />
   <xsl:param name="templatedir" />
-  <xsl:param name="templatetrans" />
   <xsl:param name="template" />
   <xsl:param name="label" />
   <xsl:param name="css" />

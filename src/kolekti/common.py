@@ -143,13 +143,13 @@ class kolektiBase(object):
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
-        print extclass
+#        print extclass
         extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
-        for k,e in extensions.iteritems():
-            if k[1] == "gettopic":
-                print k,e
+#        for k,e in extensions.iteritems():
+#            if k[1] == "gettopic":
+#                print k,e
         return extensions
         
 
@@ -373,7 +373,7 @@ class kolektiBase(object):
     @property
     def iterjobs(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'kolekti','publication-parameters'), topdown=False):
-            print root, dirs, files
+#            print root, dirs, files
             rootparts = root.split(os.path.sep)
             for file in files:
                 if os.path.splitext(file)[-1] == '.xml':

@@ -83,3 +83,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 KOLEKTI_BASE = "/home/waloo/Bureau/kolekti/projets/omegadoc"
+
+STATICFILES_DIRS = (
+    KOLEKTI_BASE,
+)

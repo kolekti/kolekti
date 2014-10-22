@@ -50,11 +50,6 @@ class plugin(PublisherMixin,kolektiBase):
         
     def get_xsl(self,xslfile, **kwargs):
         logging.debug("get xsl from plugin %s"%self._plugindir)
-
-    
-        
-        # resdir = self.pubdir + "/" + self.substitute_criteria(self.profile.xpath('string(label)'), self.profile) + '_c'
-        
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
@@ -70,7 +65,8 @@ class plugin(PublisherMixin,kolektiBase):
         
         scriptlabel = scriptdef.get('name')
         profilelabel = profile.xpath('string(label)')
-        
+        logging.debug("calling script ", scriptlabel)
+                
         self.publication_dir = self.pubdir(assembly_dir, profile) + "/" + scriptlabel
 
         try:
@@ -78,12 +74,7 @@ class plugin(PublisherMixin,kolektiBase):
         except:
             logging.debug("publication path %s already exists"%self.publication_dir)            
         
-        logging.debug("Script ", scriptlabel)
-
-        for m in self.postpub():
-            yield m
-            
-        return
+        return self.postpub()
 
     def copylibs(self, assembly_dir, label):
         # copy libs from plugin directory to assembly space
@@ -104,13 +95,11 @@ class plugin(PublisherMixin,kolektiBase):
             if self.exists(source):
                 self.copyDirs(source,target)
             
-        
     def postpub(self):
         """
         postpub is the iterator used in plugin
         """
-        yield "Dummy plugin"
-        return
+        return "Dummy plugin"
 
     def get_script_parameter(self, param):
         try:

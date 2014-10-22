@@ -65,7 +65,7 @@
 		  {% for job in jobs %}
 		  <div class="checkbox">
 		    <label>
-  		      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
+  		      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
 		      {{ job.name }}
 		    </label>
 		  </div>
