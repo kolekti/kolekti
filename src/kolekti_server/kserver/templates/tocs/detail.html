@@ -8,18 +8,82 @@
 
 
 {% block menu %}
+    
     <div>
-      <button type="button" class="btn btn-default disabled" id="btn_save" title="Enregistrer">
-	<span class="glyphicon glyphicon-save"></span>
+      <button type="button" class="btn btn-default btn-block disabled" id="btn_save">
+	{# <span class="glyphicon glyphicon-save"></span> #}
+	Enregistrer
       </button>
-      <button type="button" class="btn btn-default" id="btn_expand_all" title="Tout déplier">
-	<span class="glyphicon glyphicon-resize-full"></span>
-      </button>
-      <button type="button" class="btn btn-default" id="btn_collapse_all" title="Tout plier">
-	<span class="glyphicon glyphicon-resize-small"></span>
+      <button type="button" class="btn btn-default btn-block" id="btn_save_as">
+	{# <span class="glyphicon glyphicon-save"></span> #}
+	Enregistrer sous...
       </button>
     </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapsePublier">
+	    Publication
+	  </a>
+	</h4>
+      </div>
+      <div id="collapsePublier" class="panel-collapse collapse in">
+	<div class="panel-body">
+	  {% for job in jobs %}
+	  <div class="checkbox">
+	    <label>
+  	      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
+	      {{ job.name }}
+	    </label>
+	  </div>
+	  
+	  {% endfor %}
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-block btn-default" id="btn_publish">Publier</button>
+	    </div>
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-block btn-default" id="btn_draft">Créer un instantané</button>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseAfficher">
+	    Affichage
+	  </a>
+	</h4>
+      </div>
+      <div id="collapseAfficher" class="panel-collapse collapse">
+	<div class="panel-body">
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-default btn-block" id="btn_expand_all">
+		<span class="glyphicon glyphicon-resize-full"></span> 
+		Tout déplier
+	      </button>
+	    </div>
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-default btn-block" id="btn_collapse_all">
+		<span class="glyphicon glyphicon-resize-small"></span> 
+		Tout plier
+	      </button>
+	    </div>
+	  </div>
+	  <hr/>
+	  <!-- filtrage -->
+	</div>
+      </div>
+    </div>      
+    <button type="button" class="btn btn-default btn-block" id="btn_audit">
+      {# <span class="glyphicon glyphicon-resize-small"></span> #}
+      Générer un diagnostic...
+    </button>
 
+{% comment %}
 	  <div class="panel-group" id="accordion_rightmenu">
 	    <div class="panel panel-default">
 	      <div class="panel-heading">
@@ -62,23 +126,6 @@
 	      </div>
 	      <div id="collapsePub" class="panel-collapse collapse">
 		<div class="panel-body">
-		  {% for job in jobs %}
-		  <div class="checkbox">
-		    <label>
-  		      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
-		      {{ job.name }}
-		    </label>
-		  </div>
-
-		  {% endfor %}
-		  <hr>
-		  <div class="checkbox">
-		    <label>
-  		      <input type="checkbox" id="publish_release"/>
-		      Créer un document "release"
-		    </label>
-		  </div>
-		  <button type="button" class="btn btn-block btn-default" id="btn_publish">Lancer</button>
 		</div>
 	      </div>
 	    </div>
@@ -97,6 +144,7 @@
 	      </div>
 	    </div>
 	  </div>
+{% endcomment %}
 {% endblock %}
 
 

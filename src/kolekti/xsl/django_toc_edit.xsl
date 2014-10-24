@@ -47,8 +47,6 @@
       <div class="panel panel-default">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <input type="checkbox" class="select_topic"/>
-	    <xsl:text> </xsl:text>
 	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
 	      <span data-toggle="tooltip" data-placement="top" title="Table des Matières">
 		<span class="glyphicon glyphicon-cog"> </span>
@@ -56,13 +54,17 @@
 	      </span>
 	    </a>
 	    <xsl:text> </xsl:text>
-	    <span class="dropdown">
-	      <a data-toggle="dropdown"  href="#" id="dropdownMenu_{generate-id()}">
-		<span class="caret"></span>
-	      </a>
-	      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu_{generate-id()}">
-		<xsl:call-template name="topicmenu"/>
-	      </ul>
+	    <span class="pull-right">
+	      <span class="btn-group">
+		<button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+		  <span class="glyphicon glyphicon-cog"> </span>
+		  Actions
+		  <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:call-template name="topicmenu"/>
+		</ul>
+	      </span>
 	    </span>
 	  </h4>
 	</div>
@@ -75,8 +77,6 @@
       <div class="panel panel-default">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <input type="checkbox" class="select_topic"/>
-	    <xsl:text> </xsl:text>
 	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
 	      <span data-toggle="tooltip" data-placement="top" title="Index alphabétique">
 		<span class="glyphicon glyphicon-cog"> </span>
@@ -84,13 +84,17 @@
 	      </span>
 	    </a>
 	    <xsl:text> </xsl:text>
-	    <span class="dropdown">
-	      <a data-toggle="dropdown"  href="#" id="dropdownMenu_{generate-id()}">
-		<span class="caret"></span>
-	      </a>
-	      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu_{generate-id()}">
-		<xsl:call-template name="topicmenu"/>
-	      </ul>
+	    <span class="pull-right">
+	      <span class="btn-group">
+		<button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+		  <span class="glyphicon glyphicon-cog"> </span>
+		  Actions
+		  <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:call-template name="topicmenu"/>
+		</ul>
+	      </span>
 	    </span>
 	  </h4>
 	</div>
@@ -107,22 +111,35 @@
       <div class="panel panel-default">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
+	    <!--
 	    <input type="checkbox" class="select_topic"/>
 	    <xsl:text> </xsl:text>
+	    -->
 	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
 	      <span data-toggle="tooltip" data-placement="top" title="{@href}">
 		<xsl:value-of select="$topic/html:html/html:head/html:title"/>
 	      </span>
 	    </a>
 	    <xsl:text> </xsl:text>
-	    <span class="dropdown">
-	      <a data-toggle="dropdown"  href="#" id="dropdownMenu_{generate-id()}">
-		<span class="caret"></span>
-	      </a>
-	      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu_{generate-id()}">
-		<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_edit">Editer</a></li>
-		<xsl:call-template name="topicmenu"/>
-	      </ul>
+	    <span class="pull-right">
+	      <span class="usecases"><xsl:text> </xsl:text></span> 
+	      <span class="btn-group">
+		<button type="button" class="btn btn-primary btn-xs btn_topic_edit">
+		<span class="glyphicon glyphicon-pencil"> </span>
+		Modifier
+		</button>
+		<div class="btn-group">
+
+		  <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+		    <span class="glyphicon glyphicon-cog"> </span>
+		    Actions
+		    <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu" role="menu">
+		    <xsl:call-template name="topicmenu"/>
+		  </ul>
+		</div>
+	      </span>
 	    </span>
 	  </h4>
 	</div>
@@ -136,10 +153,12 @@
   </xsl:template>
 
   <xsl:template name="topicmenu">
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li>
-    <li role="presentation" class="divider"></li>
     <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_up">Monter</a></li>
     <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_down">Descendre</a></li>
+    <li role="presentation" class="divider"></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert">Insérer...</a></li>
+    <li role="presentation" class="divider"></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li>
   </xsl:template>
 
 
