@@ -156,7 +156,8 @@
     <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_up">Monter</a></li>
     <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_down">Descendre</a></li>
     <li role="presentation" class="divider"></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert">Insérer...</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert_before">Insérer avant...</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert_after">Insérer après...</a></li>
     <li role="presentation" class="divider"></li>
     <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li>
   </xsl:template>
