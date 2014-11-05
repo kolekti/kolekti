@@ -1,0 +1,33 @@
+<div class="browser">
+  <div class="">
+    <span class="pull-right">
+      <button class="btn btn-default btn-sm hidden newfolder">
+	+<span class="glyphicon glyphicon-folder-open"></span>
+      </button>
+    </span>
+    <span class="btn-group">
+      {% for step in pathsteps %}
+      <button class="btn btn-default btn-sm pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}">{{ step.label }}</button>
+      {% endfor %}
+    </span>
+  </div>
+  <table class="table table-stripped dirlist">
+    <thead>
+       <tr>
+	<td></td>
+	<td><a href="#" class="sortcol" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></td>
+	<td><a href="#" class="sortcol" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in files %}
+      <tr  data-sort-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
+	<td><span class="glyphicon {{ f.icon }}"></span></td>
+	<td><a href="#" data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
+	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <input type="text" class="form-control browserfile"/>
+</div>

@@ -48,4 +48,7 @@
     </html>
   </xsl:template>
   
+  <xsl:template match="a[@data-toggle='collapse']">
+    <xsl:apply-templates/>
+  </xsl:template>
 </xsl:stylesheet>

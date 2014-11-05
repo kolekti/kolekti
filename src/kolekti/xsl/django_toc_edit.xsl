@@ -42,29 +42,38 @@
      <xsl:apply-templates select="html:html/html:body/*"/>
   </xsl:template>
 
+
+  <xsl:template match="html:div[@class='section']">
+    <div class="section panel panel-info">
+      <div class="panel-heading">
+	<xsl:apply-templates select="*[not(self::html:a)]" mode="collapse"/>
+      </div>
+
+      <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
+	<div class="panel-body">
+	  <xsl:apply-templates select="html:a"/>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="*" mode="collapse">
+    <xsl:element name="{local-name()}">
+      <xsl:apply-templates select="@*"/>
+      <a data-toggle="collapse" href="#collapse_{generate-id(ancestor::html:div)}">
+	<xsl:apply-templates/>
+      </a>
+    </xsl:element>
+  </xsl:template>
+
+
   <xsl:template match="html:a[@rel='kolekti:toc']">
     <div class="topic" data-kolekti-topic-rel="kolekti:toc">
-      <div class="panel panel-default">
+      <div class="panel panel-warning">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
-	      <span data-toggle="tooltip" data-placement="top" title="Table des Matières">
-		<span class="glyphicon glyphicon-cog"> </span>
-		Table des Matières
-	      </span>
-	    </a>
-	    <xsl:text> </xsl:text>
-	    <span class="pull-right">
-	      <span class="btn-group">
-		<button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
-		  <span class="glyphicon glyphicon-cog"> </span>
-		  Actions
-		  <span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" role="menu">
-		  <xsl:call-template name="topicmenu"/>
-		</ul>
-	      </span>
+	    <span data-toggle="tooltip" data-placement="top" title="Table des Matières">
+	      <em>Table des Matières</em>
 	    </span>
 	  </h4>
 	</div>
@@ -74,27 +83,11 @@
 
   <xsl:template match="html:a[@rel='kolekti:index']">
     <div class="topic" data-kolekti-topic-rel="kolekti:index">
-      <div class="panel panel-default">
+      <div class="panel panel-warning">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
-	      <span data-toggle="tooltip" data-placement="top" title="Index alphabétique">
-		<span class="glyphicon glyphicon-cog"> </span>
-		Index alphabétique
-	      </span>
-	    </a>
-	    <xsl:text> </xsl:text>
-	    <span class="pull-right">
-	      <span class="btn-group">
-		<button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
-		  <span class="glyphicon glyphicon-cog"> </span>
-		  Actions
-		  <span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" role="menu">
-		  <xsl:call-template name="topicmenu"/>
-		</ul>
-	      </span>
+	    <span data-toggle="tooltip" data-placement="top" title="Index alphabétique">
+	      <em>Index alphabétique</em>
 	    </span>
 	  </h4>
 	</div>
@@ -111,56 +104,22 @@
       <div class="panel panel-default">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <!--
-	    <input type="checkbox" class="select_topic"/>
-	    <xsl:text> </xsl:text>
-	    -->
 	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
 	      <span data-toggle="tooltip" data-placement="top" title="{@href}">
 		<xsl:value-of select="$topic/html:html/html:head/html:title"/>
 	      </span>
 	    </a>
-	    <xsl:text> </xsl:text>
-	    <span class="pull-right">
-	      <span class="usecases"><xsl:text> </xsl:text></span> 
-	      <span class="btn-group">
-		<button type="button" class="btn btn-primary btn-xs btn_topic_edit">
-		<span class="glyphicon glyphicon-pencil"> </span>
-		Modifier
-		</button>
-		<div class="btn-group">
-
-		  <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
-		    <span class="glyphicon glyphicon-cog"> </span>
-		    Actions
-		    <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu" role="menu">
-		    <xsl:call-template name="topicmenu"/>
-		  </ul>
-		</div>
-	      </span>
-	    </span>
 	  </h4>
 	</div>
       </div>
       <div class="panel-collapse collapse" id="collapse_{generate-id()}">
-	<div class="topiccontent ">
+	<div class="topiccontent">
 	  <xsl:copy-of select="$topic/html:html/html:body/*"/>
 	</div>
       </div>
     </div>
   </xsl:template>
 
-  <xsl:template name="topicmenu">
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_up">Monter</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_down">Descendre</a></li>
-    <li role="presentation" class="divider"></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert_before">Insérer avant...</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_insert_after">Insérer après...</a></li>
-    <li role="presentation" class="divider"></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_topic_delete">Supprimer</a></li>
-  </xsl:template>
 
 
 </xsl:stylesheet>

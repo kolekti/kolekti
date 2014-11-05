@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></script>
+{% endblock %}
+
+
 {% block extrascripts %}
     <script src="/static/js/kolekti-tocs.js"></script>
 {% endblock %}
@@ -40,10 +45,10 @@
 	  {% endfor %}
 	  <div class="row">
 	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default" id="btn_publish">Publier</button>
+	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Publier</button>
 	    </div>
 	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default" id="btn_draft">Créer un instantané</button>
+	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_draft">Créer un instantané</button>
 	    </div>
 	  </div>
 	</div>
@@ -82,69 +87,6 @@
       {# <span class="glyphicon glyphicon-resize-small"></span> #}
       Générer un diagnostic...
     </button>
-
-{% comment %}
-	  <div class="panel-group" id="accordion_rightmenu">
-	    <div class="panel panel-default">
-	      <div class="panel-heading">
-		<h4 class="panel-title">
-		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseEdit">
-		    Éditer
-		  </a>
-		</h4>
-	      </div>
-	      <div id="collapseEdit" class="panel-collapse collapse">
-		<div class="panel-body">
-		  <button type="button" class="btn btn-block btn-default" id="btn_topic_add">Ajouter un topic</button>
-		  <button type="button" class="btn btn-block btn-default"  id="btn_topics_delete">Supprimer les topics</button>
-		  <button type="button" class="btn btn-block btn-default" id="btn_toc_add">Ajouter un sommaire</button>
-		  <button type="button" class="btn btn-block btn-default" id="btn_idx_add">Ajouter un index </button>
-		</div>
-	      </div>
-	    </div>
-	    <div class="panel panel-default">
-	      <div class="panel-heading">
-		<h4 class="panel-title">
-		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseFilter">
-		    Filtrer
-		  </a>
-		</h4>
-	      </div>
-	      <div id="collapseFilter" class="panel-collapse collapse">
-		<div class="panel-body">
-		  
-		</div>
-	      </div>
-	    </div>
-	    <div class="panel panel-default">
-	      <div class="panel-heading">
-		<h4 class="panel-title">
-		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapsePub">
-		    Publier
-		  </a>
-		</h4>
-	      </div>
-	      <div id="collapsePub" class="panel-collapse collapse">
-		<div class="panel-body">
-		</div>
-	      </div>
-	    </div>
-	    <div class="panel panel-default">
-	      <div class="panel-heading">
-		<h4 class="panel-title">
-		  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapsePub2">
-		    Publications
-		  </a>
-		</h4>
-	      </div>
-	      <div id="collapsePub2" class="panel-collapse collapse">
-		<div class="panel-body">
-		  TODO...
-		</div>
-	      </div>
-	    </div>
-	  </div>
-{% endcomment %}
 {% endblock %}
 
 

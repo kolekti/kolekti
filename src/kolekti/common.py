@@ -6,11 +6,14 @@
 from lxml import etree as ET
 import os
 import re
+from datetime import datetime
 import urllib2
 import urllib
 import urlparse
 import shutil
 import logging
+import mimetypes
+mimetypes.init()
 
 objpathes = {
     "0.6":{
@@ -116,7 +119,24 @@ class kolektiBase(object):
         # imports a script python module
         import plugins
         return plugins.getPlugin(plugin,self._path)
-        
+
+    def get_directory(self, root=None):
+        res=[]
+        if root is None:
+            root = self._path
+        else:
+            root = self.__makepath(root)
+        for f in os.listdir(root):
+            pf = os.path.join(root, f)
+            d = datetime.fromtimestamp(os.path.getmtime(pf))
+            if os.path.isdir(pf):
+                t = "text/directory"
+            else:
+                t = mimetypes.guess_type(pf)
+                if t is None:
+                    t = "application/octet-stream"
+            res.append({'name':f, 'type':t, 'date':d})
+        return res
 
     def get_tree(self, root=None):
         if root is None:

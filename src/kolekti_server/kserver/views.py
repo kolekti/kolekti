@@ -12,6 +12,12 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
 
+
+fileicons= {
+    "application/octet-stream":"glyphicon-file",
+    "text/directory":"glyphicon-folder-close",
+    }
+
 class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def __init__(self, *args, **kwargs):
         base = settings.KOLEKTI_BASE
@@ -141,8 +147,23 @@ class CriteriaEditView(kolektiMixin, TemplateView):
 
 
 class BrowserView(kolektiMixin, View):
+    template_name = "browser/main.html"
     def get(self,request):
+        context={}
         path = request.GET.get('path','/')
+        files = self.get_directory(path)
+        for f in files:
+            print f
+            f.update({'icon':fileicons.get(f.get('type'),"glyphicon-file")})
+        pathsteps = []
+        startpath = ""
+        for step in path.split("/")[1:]:
+            startpath= startpath + "/" + step
+            pathsteps.append({'label':step, 'path': startpath})
+        context.update({'files':files})
+        context.update({'pathsteps':pathsteps})
+        print context
+        return self.render_to_response(context)
         
 class PublicationView(kolektiMixin, View):
     template_name = "publication.html"
@@ -188,9 +209,10 @@ class ReleaseView(PublicationView):
         from kolekti import publish
         r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
         pp = r.make_release(tocpath, [jobpath])
+        release_dir = pp[0][0].replace('/releases/','')
         try:
             p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
-            pubres = p.publish_assembly(pp[0], pp[1])
+            pubres = p.publish_assembly(release_dir, pp[0][1])
             context.update({'pubres':pubres})
             context.update({'success':True})
         except:

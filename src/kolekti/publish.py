@@ -820,5 +820,6 @@ class ReleasePublisher(Publisher):
             logging.debug(traceback.format_exc())
             
         xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        xjob=xjob.getroot()
         logging.debug(ET.tostring(xjob))
-        return [{"job":xjob.get('id'), "publications":self.publish_job(xassembly,xjob.getroot())}]
+        return [{"job":xjob.get('id'), "publications":self.publish_job(xassembly,xjob)}]

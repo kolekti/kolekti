@@ -8,7 +8,7 @@
 
     <!-- Bootstrap -->
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
+    {% block extracss %}{% endblock %}
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -72,7 +72,7 @@
 
 
     <div class="modal fade">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-lg">
 	<div class="modal-content">
 	  <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>

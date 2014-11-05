@@ -1,3 +1,7 @@
+var kolekti = {
+    'lang' : 'fr'
+}
+
 $.ajaxSetup({ 
      beforeSend: function(xhr, settings) {
          function getCookie(name) {
@@ -24,21 +28,40 @@ $.ajaxSetup({
 
 
 var kolekti_browser = function(args) {
-    var url = "/browse/"
-    var params = {}
-    if (args && args.type)
-	url += args.type + "/";
-    path="";
+    var url = "/browse/";
+    var params = {};
+    var path="";
 
-    resfuncs = {};
+    var mode = "select";
+    var parent = ".modal-body";
+    var buttonsparent = ".modal-footer";
+    var titleparent = ".modal-header h4";
+    var title = "Navigateur de fichiers";
+    var resfuncs = {};
 
-    $.get(url, function(data) {
-	$('.modal-body').html(data);
-    }).done(function(){
-	
-	$('.modal').modal();
-    });
-    
+    if (args && args.mode)
+	mode = args.mode;
+    if (args && args.root)
+	path = args.root;
+    if (args && args.parent)
+	parent = args.parent;
+    if (args && args.buttonsparent)
+	buttonsparent = args.buttonsparent;
+    if (args && args.titleparent)
+	titleparent = args.titleparent;
+    if (args && args.title)
+	title = args.title;
+
+
+
+    var update = function() {
+	$.get(url+"?path="+path, function(data) {
+	    $(parent).html(data);
+	}).done(function(){	
+	    $('.modal').modal();
+	});
+    }
+
     var select = function(f) {	
 	resfuncs['select']=f;
 	return {"always":always};
@@ -48,8 +71,79 @@ var kolekti_browser = function(args) {
 	resfuncs['always']=f;
     };
 
+    var closure = function(f) {
+	$.map(resfuncs , function(v,i) {
+	    v($(".browserfile").val())
+	})
+    };
+
+    $(parent).on('click', '.filelink', function() {
+	if ($(this).data('mimetype') == "text/directory") {
+	    path = path +'/'+ $(this).html();
+	    update();
+	} else {
+	    $(".browserfile").val(path + '/' + $(this).html());
+	}
+    })
+
+    $(parent).on('click', '.pathstep', function() {
+	path = $(this).data("path");
+	update();
+    })
+
+    $(parent).on('click', '.browservalidate', function() {
+	closure();
+    })
+
+    $(parent).on('click', '.sortcol', function(event) {
+	event.preventDefault();
+	var asc = true;
+	$(parent+" .sortcol span").addClass("hidden");
+	if ($(this).data('sort')=="asc") {
+	    asc = false
+	    $(this).data('sort',"des");
+	    $(this).children("span").data('sort',"des");
+	    $(this).children("span").removeClass('glyphicon-arrow-down hidden');
+	    $(this).children("span").addClass('glyphicon-arrow-up');
+	} else {
+	    asc = true
+	    $(this).data('sort',"asc");
+	    $(this).children("span").removeClass('glyphicon-arrow-up hidden');
+	    $(this).children("span").addClass('glyphicon-arrow-down');
+	}
+	bsort($(this).data('sortcol'),asc);
+    })
+
+    var bsort = function(col, asc) {		 
+	var mylist = $('.dirlist tbody');
+	var listitems = mylist.children('tr').get();
+	listitems.sort(function(a, b) {
+	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
+	    console.log(cmp)
+	    return asc?cmp:0-cmp;
+	})
+	$.each(listitems, function(idx, itm) { mylist.append(itm); });
+    }
+
+    
+    if (!$(buttonsparent+'>button.browservalidate').length) {
+	$('<button type="button" class="btn btn-default browservalidate">OK</button>').prependTo($(buttonsparent));
+    }
+    $(buttonsparent).off('click', '.browservalidate');
+    $(buttonsparent).on('click', '.browservalidate', function(event) {
+	closure();
+    });
+    
+
+    $(titleparent).html(title);
+
+    update()
     return {
 	"select":select,
 	"always":always
     }
+    
 }
+
+// events
+
