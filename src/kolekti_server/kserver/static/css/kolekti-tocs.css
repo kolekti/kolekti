@@ -1,9 +1,14 @@
 
 div.section>div> .panel-body {
     padding-right: 0px;
+    padding-left:50px;
 }
 
 .topiccontent {
     padding-right:60px;
     padding-left:15px;
+}
+
+.kolekti-shared-topic {
+   padding-left:15px;
 }

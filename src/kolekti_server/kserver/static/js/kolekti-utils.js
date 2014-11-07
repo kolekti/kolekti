@@ -2,6 +2,17 @@ var kolekti = {
     'lang' : 'fr'
 }
 
+Array.prototype.removevalue = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 $.ajaxSetup({ 
      beforeSend: function(xhr, settings) {
          function getCookie(name) {

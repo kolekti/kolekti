@@ -22,7 +22,7 @@
     <tbody>
       {% for f in files %}
       <tr  data-sort-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
-	<td><span class="glyphicon {{ f.icon }}"></span></td>
+	<td><span style="color:red" class="glyphicon {{ f.icon }}"></span></td>
 	<td><a href="#" data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
 	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
       </tr>

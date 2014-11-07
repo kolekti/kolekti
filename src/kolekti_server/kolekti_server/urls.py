@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),
     url(r'^tocs/edit/$', TocView.as_view(), name='tocedit'),
+    url(r'^tocs/usecases/$', TocUsecasesView.as_view(), name='tocusecases'),
     url(r'^import/$', ImportView.as_view(), name='import'),
     url(r'^tranlations/$', TranslationsListView.as_view(), name='translationlist'),
     url(r'^topics/$', TopicsListView.as_view(), name='topiclist'),
@@ -17,7 +18,9 @@ urlpatterns = patterns('',
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
-    # url(r'^blog/', include('blog.urls')),
+    url(r'^criteria/$', CriteriaView.as_view(), name='criteria'),
+
+# url(r'^blog/', include('blog.urls')),
 
     url(r'^browse/', BrowserView.as_view(),name="kolekti_browser"),
 

@@ -61,7 +61,7 @@ var topicmenu = function(topic) {
 	topic.find('h4');
     parent.append(
 	$('<span>', {
-	    'class':'pull-right kolekti-ui',
+	    'class':'pull-right kolekti-ui kolekti-ui-topic-actions',
 	    'html' :$('<span>', {
 		'class':"btn-group",
 		'html':[
@@ -158,16 +158,66 @@ var topicmenu = function(topic) {
     );
 }
 
+var usecases = function(path) {
+    var listpath = []
+    if( path== undefined) {
+	$('div[data-kolekti-topic-rel="kolekti:topic"]').each(function(i,e) {
+	    listpath.push($(e).data('kolekti-topic-href'))
+	});
+    } else {
+	listpath.push(path)
+    };
+    var tocref=$('#toc_root').data('kolekti-path');
+    $.get('/tocs/usecases/',{"pathes":listpath}).
+	success(function(data){ 
+	    $('.topic').each(function(i,topic) {
+		var topicref = $(topic).data('kolekti-topic-href');
+		if (data[topicref]) {
+		    var v = data[topicref].removevalue(tocref)
+		    if(v.length)
+			$('<span>', {
+			    'class':"btn-group kolekti-shared-topic",
+			    'html':[
+				$('<button>', {
+				    'type':"button",
+				    'class':"btn btn-default btn-xs dropdown-toggle",
+				    'data-toggle':"dropdown",
+				    'html':[
+					" Partagé ",
+					$('<span>',{
+					    'class':"caret",
+					    'html':" "})
+				    ]
+				}),
+				$('<ul>',{
+				    'class':"dropdown-menu",
+				    'role':"menu",
+				    'html':
+					$.map(v, function(tocref) {
+					    return $('<li>', {
+						'role':"presentation",
+						'html':$('<a>', {
+						    'role':"menuitem",
+						    'tabindex':"-1",
+						    'href':'/tocs/edit/?toc='+tocref,
+						    'html':tocref
+						})
+					    })
+					}),
+				})]
+			}).insertBefore($(topic).find('.kolekti-ui-topic-actions'));
+		}
+	    });
+	})
+}
 
-
-
+usecases();
 
 // left panel button events
 
 // save
 
 $('#btn_save').on('click', function() {
-    console.log(process_toc($('#toc_root')));
     $.ajax({
 	url:'/tocs/edit/',
 	type:'POST',
@@ -215,11 +265,11 @@ $('.btn_publish').on('click', function() {
 // display
 
 $('#btn_collapse_all').on('click', function() {
-    $('.main .collapse').collapse('hide');
+    $('.topic .collapse').collapse('hide');
 });
 
 $('#btn_expand_all').on('click', function() {
-    $('.main .collapse').collapse('show');
+    $('.topic .collapse').collapse('show');
 });
 
 // diagnostic
@@ -624,3 +674,5 @@ $('.topic').each(function(i,t){
 $('.section').each(function(i,t){
     topicmenu($(t));
 });
+
+

@@ -7,6 +7,7 @@
 
 {% block extrascripts %}
     <script src="/static/js/kolekti-tocs.js"></script>
+    <script src="/static/js/kolekti-tocs-filter.js"></script>
 {% endblock %}
 
 {% block title %}{{ toctitle }}{% endblock %}
@@ -57,29 +58,38 @@
     <div class="panel panel-default">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" data-parent="#accordion_rightmenu" href="#collapseAfficher">
+	  <a data-toggle="collapse" href="#collapseAfficher">
 	    Affichage
 	  </a>
 	</h4>
       </div>
-      <div id="collapseAfficher" class="panel-collapse collapse">
+      <div id="collapseAfficher" class="panel-collapse collapse in">
 	<div class="panel-body">
 	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
+	    <div class="col-sm-12 col-md-6">
 	      <button type="button" class="btn btn-default btn-block" id="btn_expand_all">
 		<span class="glyphicon glyphicon-resize-full"></span> 
 		Tout déplier
 	      </button>
 	    </div>
-	    <div class="col-sm-6 col-md-6">
+	    <div class="col-sm-12 col-md-6">
 	      <button type="button" class="btn btn-default btn-block" id="btn_collapse_all">
 		<span class="glyphicon glyphicon-resize-small"></span> 
 		Tout plier
 	      </button>
 	    </div>
 	  </div>
-	  <hr/>
-	  <!-- filtrage -->
+	  <br>
+
+	  <div class="panel panel-default">
+	    <div class="panel-heading">Filtres sur le contenu</div>
+	    <ul class="list-group" id="userconditions" >
+	      <!-- filtrage -->	    
+	    </ul>
+	  </div>
+	  <button type="button" class="btn btn-block btn-default" data-toggle="button" aria-pressed="false" autocomplete="off" id="btn_toggle_conditions">
+	    Afficher les conditions
+	  </button>
 	</div>
       </div>
     </div>      

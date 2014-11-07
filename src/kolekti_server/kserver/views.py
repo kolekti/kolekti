@@ -1,4 +1,5 @@
 from lxml import etree as ET
+import json
 from django.http import Http404
 from django.shortcuts import render, render_to_response
 from django.views.generic import View,TemplateView, ListView
@@ -137,6 +138,11 @@ class JobEditView(kolektiMixin, TemplateView):
         context.update({'job':self.get_job_edit(request.GET.get('job'))})
         return self.render_to_response(context)
 
+class CriteriaView(kolektiMixin, View):
+
+    def get(self, request):
+        return HttpResponse(self.read('/kolekti/settings.xml'),content_type="text/xml")
+
 class CriteriaEditView(kolektiMixin, TemplateView):
     template_name = "settings.html"
 
@@ -233,3 +239,18 @@ class TopicEditorView(kolektiMixin, View):
         return self.render_to_response(context)
 
 
+
+
+class TocUsecasesView(kolektiMixin, View):
+    def get(self, request):
+        pathes = request.GET.getlist('pathes[]',[])
+        context={}
+        for toc in self.itertocs:
+            xtoc=self.parse(toc)
+            for path in pathes:
+                if len(xtoc.xpath('//html:a[@href="%s"]'%path,namespaces={'html':'http://www.w3.org/1999/xhtml'})):
+                    try:
+                        context[path].append(toc)
+                    except:
+                        context[path]=[toc]
+        return HttpResponse(json.dumps(context),content_type="application/json")
