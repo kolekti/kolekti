@@ -98,30 +98,6 @@ var topicmenu = function(topic) {
 				    'role':"menuitem",
 				    'tabindex':"-1",
 				    'href':"#",
-				    'class':"btn_topic_up",
-				    'html':"Monter"
-				})
-			    }),
-			    $('<li>', {
-				'role':"presentation",
-				'html':$('<a>', {
-				    'role':"menuitem",
-				    'tabindex':"-1",
-				    'href':"#",
-				    'class':"btn_topic_down",
-				    'html':"Descendre"
-				})
-			    }),
-			    $('<li>', {
-				'role':"presentation",
-				'class':"divider"
-			    }),
-			    $('<li>', {
-				'role':"presentation",
-				'html':$('<a>', {
-				    'role':"menuitem",
-				    'tabindex':"-1",
-				    'href':"#",
 				    'class':"btn_topic_insert_before",
 				    'html':"Insérer avant..."
 				})
@@ -134,6 +110,30 @@ var topicmenu = function(topic) {
 				    'href':"#",
 				    'class':"btn_topic_insert_after",
 				    'html':"Insérer après..."
+				})
+			    }),
+			    $('<li>', {
+				'role':"presentation",
+				'class':"divider"
+			    }),
+			    $('<li>', {
+				'role':"presentation",
+				'html':$('<a>', {
+				    'role':"menuitem",
+				    'tabindex':"-1",
+				    'href':"#",
+				    'class':"btn_topic_up",
+				    'html':"Monter"
+				})
+			    }),
+			    $('<li>', {
+				'role':"presentation",
+				'html':$('<a>', {
+				    'role':"menuitem",
+				    'tabindex':"-1",
+				    'href':"#",
+				    'class':"btn_topic_down",
+				    'html':"Descendre"
 				})
 			    }),
 			    $('<li>', {
