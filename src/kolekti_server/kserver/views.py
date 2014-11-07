@@ -84,6 +84,7 @@ class TocView(kolektiMixin, View):
 
     def get(self, request):
         context = self.get_context_data()
+        print context
         tocpath = request.GET.get('toc')
         toctitle, toccontent = self.get_toc_edit(tocpath)
         context.update({'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath})
