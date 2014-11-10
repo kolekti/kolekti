@@ -22,12 +22,16 @@ urlpatterns = patterns('',
 
 # url(r'^blog/', include('blog.urls')),
 
-    url(r'^browse/', BrowserView.as_view(),name="kolekti_browser"),
+    url(r'^browse/exists$', BrowserExistsView.as_view(),name="kolekti_browser_exists"),
+    url(r'^browse/mkdir$', BrowserMkdirView.as_view(),name="kolekti_browser_mkdir"),
+    url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 
+    
     url(r'^publish/draft/', DraftView.as_view(),name="publish_draft"),
     url(r'^publish/release/', ReleaseView.as_view(),name="publish_release"),
 
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
+    url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
 
 #    (r'^admin/', include(admin.site.urls)),
 )

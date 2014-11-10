@@ -1,17 +1,29 @@
 <div class="browser">
   <div class="">
     <span class="pull-right">
-      <button class="btn btn-default btn-sm hidden newfolder">
+      <button type="button" 
+	      class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfolder"
+	      data-toggle="collapse"
+	      data-target="#foldername_collapse"
+	      aria-expanded="false"
+	      aria-controls="foldername_collapse">
 	+<span class="glyphicon glyphicon-folder-open"></span>
       </button>
     </span>
     <span class="btn-group">
       {% for step in pathsteps %}
-      <button class="btn btn-default btn-sm pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}">{{ step.label }}</button>
+      <button class="btn btn-default btn-xs pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}">{{ step.label }}</button>
       {% endfor %}
+      
     </span>
   </div>
-  <table class="table table-stripped dirlist">
+
+  <div class="collapse" id="foldername_collapse">
+    Nouveau dossier : <input type="text" class="form-control foldername"/>
+    <button class="btn btn-default btn-xs create-folder">ok</button>
+  </div>
+
+  <table class="table table-stripped table-condensed dirlist">
     <thead>
        <tr>
 	<td></td>
@@ -22,12 +34,13 @@
     <tbody>
       {% for f in files %}
       <tr  data-sort-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
-	<td><span style="color:red" class="glyphicon {{ f.icon }}"></span></td>
+	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>
 	<td><a href="#" data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
 	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
-  <input type="text" class="form-control browserfile"/>
+  <input type="text" class="form-control browserfile {% if mode == "selectonly" %}hidden{% endif %}"/>
+
 </div>

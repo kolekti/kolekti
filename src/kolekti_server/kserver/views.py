@@ -55,7 +55,12 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         return self.itertocs
 
     def get_jobs(self):
-        return self.iterjobs
+         for job in self.iterjobs:
+             xj = self.parse(job['path'])
+             job.update({'profiles':[p.text for p in xj.xpath('/job/profiles/profile/label')],
+                         'scripts':[s.get("name") for s in xj.xpath('/job/scripts/script[@enabled="1"]')],
+                        })
+             yield job
 
     def get_job_edit(self,path):
         xjob = self.parse(path)
@@ -84,7 +89,6 @@ class TocView(kolektiMixin, View):
 
     def get(self, request):
         context = self.get_context_data()
-        print context
         tocpath = request.GET.get('toc')
         toctitle, toccontent = self.get_toc_edit(tocpath)
         context.update({'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath})
@@ -151,13 +155,24 @@ class CriteriaEditView(kolektiMixin, TemplateView):
         context = self.get_context_data()
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
-
-
+    
+class BrowserExistsView(kolektiMixin, View):
+    def get(self,request):
+        path = request.GET.get('path','/')
+        return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        
+class BrowserMkdirView(kolektiMixin, View):
+    def post(self,request):
+        path = request.POST.get('path','/')
+        self.makedirs(path)
+        return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        
 class BrowserView(kolektiMixin, View):
     template_name = "browser/main.html"
     def get(self,request):
         context={}
         path = request.GET.get('path','/')
+        mode = request.GET.get('mode','select')
         files = self.get_directory(path)
         for f in files:
             print f
@@ -169,7 +184,7 @@ class BrowserView(kolektiMixin, View):
             pathsteps.append({'label':step, 'path': startpath})
         context.update({'files':files})
         context.update({'pathsteps':pathsteps})
-        print context
+        context.update({'mode':mode})
         return self.render_to_response(context)
         
 class PublicationView(kolektiMixin, View):
@@ -192,11 +207,24 @@ class DraftView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
+        profiles = request.POST.get('profiles[]',[])
+        scripts = request.POST.get('scripts[]',[])
         context={}
-        from kolekti import publish
+        xjob = self.parse(jobpath)
+        print ET.tostring(xjob), profiles, scripts ,request.POST
         try:
+            for jprofile in xjob.xpath('/job/profiles/profile'):
+                if not jprofile.find('label').text in profiles:
+                    jprofile.getparent().remove(jprofile)
+            for jscript in xjob.xpath('/job/scripts/script'):
+                if not jscript.get('name') in scripts:
+                    jscript.getparent().remove(jscript)
+            print ET.tostring(xjob)
+            from kolekti import publish
+
             p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang='fr')
-            pubres = p.publish_draft(tocpath, [jobpath])
+        
+            pubres = p.publish_draft(tocpath, [xjob])
             context.update({'pubres':pubres})
             context.update({'success':True})
         except:
@@ -212,12 +240,23 @@ class ReleaseView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
-        context = {}
-        from kolekti import publish
-        r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
-        pp = r.make_release(tocpath, [jobpath])
-        release_dir = pp[0][0].replace('/releases/','')
+        profiles = request.POST.get('profiles[]',[])
+        scripts = request.POST.get('scripts[]',[])
+        context={}
+        xjob = self.parse(jobpath)
         try:
+            for jprofile in xjob.xpath('/job/profiles/profile'):
+                if not jprofile.find('label').text in profiles:
+                    jprofile.getparent().remove(jprofile)
+            for jscript in xjob.xpath('/job/scripts/script'):
+                if not jscript.get('name') in scripts:
+                    jscript.getparent().remove(jscript)
+
+            from kolekti import publish
+            r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
+            pp = r.make_release(tocpath, [xjob])
+        
+            release_dir = pp[0][0].replace('/releases/','')
             p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
             pubres = p.publish_assembly(release_dir, pp[0][1])
             context.update({'pubres':pubres})
@@ -239,7 +278,13 @@ class TopicEditorView(kolektiMixin, View):
         context = {"body":topiccontent, "title": topictitle}
         return self.render_to_response(context)
 
-
+class TopicCreateView(kolektiMixin, View):
+    def post(self, request):
+        modelpath = request.POST.get('modelpath')
+        topicpath = request.POST.get('topicpath')
+        topic = self.parse(modelpath)
+        self.xwrite(topic, topicpath)
+        return HttpResponse(json.dumps(self.path_exists(topicpath)),content_type="application/json")
 
 
 class TocUsecasesView(kolektiMixin, View):

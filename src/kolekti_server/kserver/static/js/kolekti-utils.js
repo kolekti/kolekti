@@ -63,14 +63,44 @@ var kolekti_browser = function(args) {
     if (args && args.title)
 	title = args.title;
 
-
+    params['mode']=mode;
 
     var update = function() {
-	$.get(url+"?path="+path, function(data) {
+	params['path']=path
+	$.get(url, params, function(data) {
 	    $(parent).html(data);
 	}).done(function(){	
+	    $(parent).find(".browserfile").val(path);
 	    $('.modal').modal();
 	});
+    }
+
+    var browser_alert = function(msg) {
+	
+	$(parent).find('.browser').append(
+	    $('  <div>', {
+		'class':"alert alert-danger alert-dismissible browser-alert",
+		'role':"alert",
+		'html':[
+		    $("<button>", {
+			'type':"button",
+			'class':"close",
+			'data-dismiss':"alert",
+			'html':$("<span>", {
+			    'aria-hidden':"true",
+			    'html':[
+				'&times;',
+				$('<span>',{'class':"sr-only",'html':'Fermer'})
+			    ]
+			})
+		    }),
+		    $("<span>", {
+			'class':"alert-body",
+			'html':msg
+		    })
+		]
+	    })
+	)
     }
 
     var select = function(f) {	
@@ -82,29 +112,63 @@ var kolekti_browser = function(args) {
 	resfuncs['always']=f;
     };
 
+    // calls register callback functions
+
     var closure = function(f) {
-	$.map(resfuncs , function(v,i) {
-	    v($(".browserfile").val())
-	})
+	if (mode == "create")
+	    $.get("/browse/exists", {'path':$(parent).find(".browserfile").val()}, function(data) {
+		if (!data) {
+		    $.map(resfuncs , function(v,i) {
+			v($(parent).find(".browserfile").val())
+		    })
+		} else {
+		    browser_alert("Le fichier sélectionné existe deja")
+		    return
+		}
+	    })
+	else
+	    $.map(resfuncs , function(v,i) {
+		v($(parent).find(".browserfile").val())
+	    })
     };
+
+    // click on file
 
     $(parent).on('click', '.filelink', function() {
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
 	    update();
 	} else {
-	    $(".browserfile").val(path + '/' + $(this).html());
+	    $(parent).find(".browserfile").val(path + '/' + $(this).html());
+	    if (mode=="selectonly") {
+		closure()
+	    }
 	}
     })
+
+    // navigate into prent folders
 
     $(parent).on('click', '.pathstep', function() {
 	path = $(this).data("path");
 	update();
     })
 
+    // new folder
+
+    $(parent).on('click', '.create-folder', function() {
+	folderpath = path + "/" + $(parent).find(".foldername").val();
+	$.post("/browse/mkdir",{path : folderpath}, function(data) {
+	    update();
+	})
+    })
+
+    // Validate modal / browser
+
     $(parent).on('click', '.browservalidate', function() {
 	closure();
     })
+
+    // handler : click for sort
 
     $(parent).on('click', '.sortcol', function(event) {
 	event.preventDefault();
@@ -125,30 +189,41 @@ var kolekti_browser = function(args) {
 	bsort($(this).data('sortcol'),asc);
     })
 
+    // sorting
+
     var bsort = function(col, asc) {		 
-	var mylist = $('.dirlist tbody');
+	var mylist = $(parent).find('.dirlist tbody');
 	var listitems = mylist.children('tr').get();
 	listitems.sort(function(a, b) {
 	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
-	    console.log(cmp)
 	    return asc?cmp:0-cmp;
 	})
 	$.each(listitems, function(idx, itm) { mylist.append(itm); });
     }
 
-    
-    if (!$(buttonsparent+'>button.browservalidate').length) {
-	$('<button type="button" class="btn btn-default browservalidate">OK</button>').prependTo($(buttonsparent));
+    // activate Validate button
+
+    if (mode != "selectonly") {
+	if (!$(buttonsparent+'>button.browservalidate').length) {
+	    $('<button type="button" class="btn btn-default browservalidate">OK</button>').prependTo($(buttonsparent));
+	}
+
+	$(buttonsparent).off('click', '.browservalidate');
+	$(buttonsparent).on('click', '.browservalidate', function(event) {
+	    closure();
+	});
     }
-    $(buttonsparent).off('click', '.browservalidate');
-    $(buttonsparent).on('click', '.browservalidate', function(event) {
-	closure();
-    });
-    
+
+    // set title
 
     $(titleparent).html(title);
+    
+    // fetch directory
 
     update()
+    
+    // return functions
+
     return {
 	"select":select,
 	"always":always
@@ -156,5 +231,11 @@ var kolekti_browser = function(args) {
     
 }
 
+var basename = function(path) {
+    var pathparts = path.split('/'),
+    last = pathparts[pathparts.length - 1];
+//    return last;
+    return last.split('.')[0];
+}
 // events
 

@@ -745,19 +745,29 @@ class DraftPublisher(Publisher):
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("publish toc %s",toc)
-        xtoc = self.parse(toc)
+        if isinstance(toc,ET._ElementTree):
+            xtoc = toc
+        else:
+            xtoc = self.parse(toc)
         publications = []
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
-            xjob = self.parse(job)
+            if isinstance(job,ET._ElementTree):
+                xjob = job
+            else:
+                xjob = self.parse(job)
             # assembly
+            print ET.tostring(job)
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
 
             logging.debug('********************************** PUBLISH ASSEMBLY')
             pubres = self.publish_job(assembly, xjob.getroot())
             publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
-            self.cleanup_assembly_dir(xjob.getroot())
+            try:
+                self.cleanup_assembly_dir(xjob.getroot())
+            except:
+                logging.debug('W coulb not remove tmp dir')
         return publications
     
 class Releaser(Publisher):
@@ -776,10 +786,16 @@ class Releaser(Publisher):
         res = []
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("release toc %s",toc)
-        xtoc = self.parse(toc)
+        if isinstance(toc,ET._ElementTree):
+            xtoc = toc
+        else:
+            xtoc = self.parse(toc)
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
-            xjob = self.parse(job)
+            if isinstance(job,ET._ElementTree):
+                xjob = job
+            else:
+                xjob = self.parse(job)
             # assembly
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())

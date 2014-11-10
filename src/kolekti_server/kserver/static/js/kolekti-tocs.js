@@ -232,8 +232,24 @@ $('#btn_save').on('click', function() {
 
 // publish
 
+var get_publish_params = function(params, job) {
+    params['profiles']=[]
+    $(job).find('.publish_job_profile').each(function(i, e) {
+	if (e.checked)
+	    params['profiles'].push($(e).data('kolekti-profile'))
+    });
+    params['scripts']=[]
+    $(job).find('.publish_job_script').each(function(i, e) {
+	if (e.checked)
+	    params['scripts'].push($(e).data('kolekti-script'))
+    });
+    return params;
+}
+
+
 $('.btn_publish').on('click', function() {
     var url='/publish/'
+    var params = {}
     if ($(this).attr('id') == 'btn_release') {
 	url += 'release/'
     } else {
@@ -244,22 +260,35 @@ $('.btn_publish').on('click', function() {
     $('.modal-footer button').html('fermer');
     $('.modal').modal();
     var toc = $('#toc_root').data('kolekti-path');
+    var nojob = true;
     $('.publish_job').each(function(i,e){
 	if (e.checked) {
+	    nojob = false;
 	    var job = $(e).data('kolekti-job');
 	    var idjob = $(e).attr('id');
 	    var label = $(e).data('kolekti-jobname');
-	    $('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#collapse'+idjob+'">Job '+label+'</a></h4></div><div id="collapse'+idjob+'" class="panel-collapse collapse in"><div class="panel-body"><div id="pub_'+idjob+'"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
-
-	    $.ajax({
-		url:url,
-		type:'POST',
-		data:{'toc':toc, 'job':job}
-	    }).done(function(data) {
-		$('#pub_'+idjob).html(data);
-	    });
+	    $('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#collapse'+idjob+'">Lancement '+label+'</a></h4></div><div id="collapse'+idjob+'" class="panel-collapse collapse in"><div class="panel-body"><div id="pub_'+idjob+'"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
+	    params = get_publish_params(params, $(e).closest('.jobselect'))
+	
+	    if (!(params['profiles'].length &&  params['scripts'].length)) {
+		$('#pub_'+idjob).html('<div class="alert alert-danger" role="alert"><p>Selectionnez au moins un profile et un script</p></div>');
+	    } else {
+		params['toc']=toc;
+		params['job']=job;
+	    
+		$.ajax({
+		    url:url,
+		    type:'POST',
+		    data:params,
+		}).done(function(data) {
+		    $('#pub_'+idjob).html(data);
+		});
+	    }
 	}
     });
+    if (nojob) {
+	$('<div class="alert alert-danger" role="alert"><p>Selectionnez au moins un lancement</p></div>').appendTo($('#pubresult'));
+    }
 })
 
 // display
@@ -408,6 +437,47 @@ $('body').on('click', '.btn_topic_delete', function() {
 // handles dialog for insertion of topics & sections
 
 var newcomp = function(comp, isafter) {
+
+    var create_topic = function(path, id, topic) {
+	var topic_obj = $('<div>', {
+	    'class':"topic",
+	    'data-kolekti-topic-rel':"kolekti:topic",
+	    'data-kolekti-topic-href':path,
+	    'html':$('<div>', {
+		'class':"panel panel-default",
+		'html':[
+		    $('<div>', {
+			'class':"panel-heading",
+			'html':$('<h4>', {
+			    'class':"panel-title",
+			    'html':$('<a>',{
+				'data-toggle':"collapse", 
+				'href':"#collapse_"+id,
+				'html':$('<span>',{
+				    'data-toggle':"tooltip", 
+				    'data-placement':"top",
+				    'title':path,
+				    'html':$(topic).find('title').html()
+				})
+			    })
+			})
+				    }),
+		    $('<div>', {
+			'class':"panel-collapse collapse",
+			'id':"collapse_"+id,
+			'html':$('<div>',{ 
+			    'class':"topiccontent",
+			    'html':$(topic).find('body').children()
+			}),
+		    })
+		]
+	    })
+	});
+	
+	topicmenu(topic_obj);
+	return topic_obj;
+    } 
+
     $('.modal-title').html('Insert Element');
     
     // builds dialog
@@ -421,7 +491,7 @@ var newcomp = function(comp, isafter) {
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-new-module",
 				"href":"#",
-				"html":"Creer module"
+				"html":"Créer module"
 			    }),
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-module",
@@ -451,7 +521,7 @@ var newcomp = function(comp, isafter) {
 	})
     );
 
-    // handles new topic part : select model / select topic
+    // handles new topic part : select model / create topic
 
     $('.modal').on('click','.btn-insert-new-module', function() {
 	$('.modal-footer').off('click', '.browservalidate');
@@ -466,15 +536,90 @@ var newcomp = function(comp, isafter) {
 		}),
 		$('<div>',{
 		    "class":"new-module-browser",
+		}),
+		$('<div>',{
+		    "class":"new-module-models-select",
+		    "html":[
+			$('<div>',{
+			    "class":"new-module-model-select alert alert-info",
+			    "html":[
+				$("<span>",{ 
+				    'class':'pull-right',
+				    "html":$("<button>", {
+					"type":"button",
+					"class":'btn btn-default btn-xs new-module-model-btn align-',
+					"data-toggle":"collapse",
+					"data-target":"#newModuleModelBrowser",
+					"aria-expanded":"false",
+					"aria-controls":"newModuleModelBrowser",
+					"html":"changer..."
+				    })
+				}),
+				$('<strong>Modèle : </strong>'),
+				$("<span>",{ 
+				    'class':'new-module-model-display',
+				    'data-model-path':'/sources/'+kolekti.lang+'/templates/default.html',
+				    'html':'default'
+				}),
+
+				$('<div>',{
+				    "class":"new-module-model-browser collapse",
+				    "id":"newModuleModelBrowser",
+				    "html":$('<div>',{
+					"class":"alert alert-info",
+					"html":$("<p>",{
+					    "class":"new-module-title",
+					    "html":"test&nbsp;"
+					})
+				    })
+				})
+			    ]
+			})
+		    ]  
 		})
 	    ]}));
 
+	kolekti_browser({'root':'/sources/'+kolekti.lang+'/templates',
+			 'parent':".new-module-model-browser",
+			 'title':"selectionnez un modele",
+			 'titleparent':".new-module-browser-title",
+			 'mode':"selectonly"
+			})
+	    .select(
+		function(path) {
+		    $('.new-module-model-display').html(basename(path))
+		    $('.new-module-model-display').data('model-path',path)
+		    console.log(path)
+		}
+	    )
+
 	kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
 			 'parent':".new-module-browser",
-			 'title':"Sélectionnez un modèle",
-			 'titleparent':".new-module-title"
+			 'title':"Créer un module",
+			 'titleparent':".new-module-title",
+			 'mode':"create"
 			})
-	    .select(function(path) {console.log(path)})
+	    .select(
+		function(path) {
+		    $.post('/topics/create/',
+			   {'modelpath': $('.new-module-model-display').data('model-path'),
+			    'topicpath': path})
+			.success(
+			    $.get('/static'+path)
+				.success(function(data) {
+		    		    var topic = $.parseXML( data ),
+				    id = Math.round(new Date().getTime() + (Math.random() * 100)),
+				    topic_obj = create_topic(path, id, topic);
+				    if (isafter) 
+					comp.after(topic_obj)
+				    else 
+					comp.before(topic_obj)
+				    enable_save();
+				    $('.modal').modal('hide');
+				})
+			)
+		}
+	    )
 //	    .always(function() {console.log("after")})
     })
 
@@ -506,42 +651,7 @@ var newcomp = function(comp, isafter) {
 		    function(data){
 			var topic = $.parseXML( data ),
 			id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			topic_obj = $('<div>', {
-			    'class':"topic",
-			    'data-kolekti-topic-rel':"kolekti:topic",
-			    'data-kolekti-topic-href':path,
-			    'html':$('<div>', {
-				'class':"panel panel-default",
-				'html':[
-				    $('<div>', {
-					'class':"panel-heading",
-					'html':$('<h4>', {
-					    'class':"panel-title",
-					    'html':$('<a>',{
-						'data-toggle':"collapse", 
-						'href':"#collapse_"+id,
-						'html':$('<span>',{
-						    'data-toggle':"tooltip", 
-						    'data-placement':"top",
-						    'title':path,
-						    'html':$(topic).find('title').html()
-						})
-					    })
-					})
-				    }),
-				    $('<div>', {
-					'class':"panel-collapse collapse",
-					'id':"collapse_"+id,
-					'html':$('<div>',{ 
-					    'class':"topiccontent",
-					    'html':$(topic).find('body').children()
-					}),
-				    })
-				]
-			    })
-			});
-
-			topicmenu(topic_obj);
+			topic_obj = create_topic(path, id, topic);
 			if (isafter) 
 			    comp.after(topic_obj)
 			else 

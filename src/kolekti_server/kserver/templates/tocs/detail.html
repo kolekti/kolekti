@@ -36,20 +36,52 @@
       <div id="collapsePublier" class="panel-collapse collapse in">
 	<div class="panel-body">
 	  {% for job in jobs %}
-	  <div class="checkbox">
+	  <div class="jobselect">
+	  <div class="checkbox" id="title_job_{{ job.name }}" >
 	    <label>
   	      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
 	      {{ job.name }}
 	    </label>
+	    <a data-toggle="collapse" href="#collapse_job_{{ job.name }}" aria-expanded="false" aria-controls="collapse_job_{{ job.name }}">
+	      <span class="glyphicon glyphicon-chevron-down"></span>
+            </a>
 	  </div>
-	  
+
+	  <div id="collapse_job_{{ job.name }}" class="panel panel-collapse panel-default collapse" role="tabpanel"
+	       aria-labelledby="title_job_{{ job.name }}">
+	    <div class="panel-body jobdetail row">
+	      <div class="col-sm-12 col-md-6">
+		<h6>profiles</h6>
+		{% for profile in job.profiles %}
+		<div class="checkbox" checked>
+		  <label>
+  		    <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile }}" data-kolekti-profile="{{ profile }}" checked/>
+		    {{ profile }}
+		  </label>
+		</div>
+		{% endfor %}
+	      </div>
+	      <div class="col-sm-12 col-md-6">
+		<h6>scripts</h6>
+		{% for script in job.scripts %}
+		<div class="checkbox">
+		  <label>
+  		    <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script }}" data-kolekti-script="{{ script }}" checked/>
+		    {{ script }}
+		  </label>
+		</div>
+		{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+	  </div>
 	  {% endfor %}
 	  <div class="row">
 	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Publier</button>
+	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_draft">Publier</button>
 	    </div>
 	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_draft">Créer un instantané</button>
+	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Créer un instantané</button>
 	    </div>
 	  </div>
 	</div>

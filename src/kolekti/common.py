@@ -108,6 +108,10 @@ class kolektiBase(object):
         lp = path.replace(self._path,'')
         return '/' + '/'.join(lp.split(os.path.sep))
     
+    def path_exists(self, path):
+        lp = self.__makepath(path)
+        return os.path.exists(lp)
+
     def __makepath(self, path):
         # returns os absolute path from relative path
         pathparts = urllib2.url2pathname(path).split(os.path.sep)
