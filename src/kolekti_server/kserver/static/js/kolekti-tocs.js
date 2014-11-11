@@ -246,6 +246,11 @@ var get_publish_params = function(params, job) {
     return params;
 }
 
+$('.publish_job').on('click', function(e) {
+    $('#collapse_'+$(this).attr('id')).collapse('toggle');
+    
+})
+
 
 $('.btn_publish').on('click', function() {
     var url='/publish/'

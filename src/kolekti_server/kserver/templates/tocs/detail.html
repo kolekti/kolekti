@@ -42,9 +42,11 @@
   	      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
 	      {{ job.name }}
 	    </label>
+{% comment %}
 	    <a data-toggle="collapse" href="#collapse_job_{{ job.name }}" aria-expanded="false" aria-controls="collapse_job_{{ job.name }}">
 	      <span class="glyphicon glyphicon-chevron-down"></span>
             </a>
+{% endcomment %}
 	  </div>
 
 	  <div id="collapse_job_{{ job.name }}" class="panel panel-collapse panel-default collapse" role="tabpanel"
