@@ -33,5 +33,8 @@ urlpatterns = patterns('',
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
 
+
+    url(r'^search', SearchView.as_view(),name="kolekti_search"),
+    
 #    (r'^admin/', include(admin.site.urls)),
 )

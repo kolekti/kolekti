@@ -9,6 +9,7 @@ from django.conf import settings
 # Create your models here.
 from kolekti.common import kolektiBase, XSLExtensions
 from kolekti.publish import PublisherExtensions
+from kolekti.searchindex import searcher
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
@@ -300,3 +301,14 @@ class TocUsecasesView(kolektiMixin, View):
                     except:
                         context[path]=[toc]
         return HttpResponse(json.dumps(context),content_type="application/json")
+
+
+class SearchView(kolektiMixin, View):
+    template_name = "search/results.html"
+    def get(self, request):
+        context = self.get_context_data()
+        q = request.GET.get('query')
+        s = searcher(settings.KOLEKTI_BASE)
+        results = s.search(q)
+        context.update({"results":results})
+        return self.render_to_response(context)

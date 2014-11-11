@@ -18,7 +18,7 @@ class indexer(kolektiBase):
             self.makedirs('kolekti/index')
             schema = Schema( 
                 path = ID(stored=True),
-                type = ID,
+                type = ID(stored=True),
                 title = TEXT(stored=True),
                 content = TEXT(field_boost=2.0),
             )
@@ -26,7 +26,6 @@ class indexer(kolektiBase):
 
 
     def indexresource(self, writer, path, restype):
-        
         if restype in ['topic','assembly','pivot']:
             ext = xhtmlExtractor(self._path)
         if restype in ['variables']:
@@ -90,8 +89,8 @@ class searcher(kolektiBase):
     def search(self, query):
         qp = QueryParser("content", schema=self.ix.schema)
         q = qp.parse(query)
+        res = []
         with self.ix.searcher() as searcher:
             results = searcher.search(q)
-
-            for result in results:
-                print result
+            for r in results:
+                yield dict(r)

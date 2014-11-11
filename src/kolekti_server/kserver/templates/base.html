@@ -46,12 +46,17 @@
 	    </li>
             <li><a href="http://www.kolekti.org/projects/kolekti/wiki">Aide</a></li>
           </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Rechercher...">
+          <form class="navbar-form navbar-right" action="/search">
+	    <div class="input-group input-group-sm">
+	      <input type="text" class="form-control" name="query" placeholder="Rechercher...">
+	      <span class="input-group-btn">
+		<button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+	      </span>
+	    </div>
           </form>
-        </div>
+	</div>
       </div>
-    </div>
+   </div>
 
     <div class="container-fluid">
       <div class="row">
@@ -65,7 +70,9 @@
 	  {% block content %}generic template{% endblock %}
 	</div>
 	<div class="col-sm-3 col-md-3">
-	  {% block menu %}{% endblock %}
+	  <div class="affix" data-spy="affix" data-offset-top="60" data-offset-bottom="200">
+	    {% block menu %}{% endblock %}
+	  </div>
 	</div>
       </div>
     </div>

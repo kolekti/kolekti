@@ -221,5 +221,6 @@ if __name__ == '__main__':
     if args.cmd == 'search':
         from kolekti import searchindex
         ix = searchindex.searcher(args.base)
-        ix.search(args.query)
+        for res in ix.search(args.query):
+            print res
 
