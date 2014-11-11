@@ -42,6 +42,7 @@ var kolekti_browser = function(args) {
     var url = "/browse/";
     var params = {};
     var path="";
+    var root ='/';
 
     var mode = "select";
     var parent = ".modal-body";
@@ -49,11 +50,14 @@ var kolekti_browser = function(args) {
     var titleparent = ".modal-header h4";
     var title = "Navigateur de fichiers";
     var resfuncs = {};
+    var modal = true;
 
     if (args && args.mode)
 	mode = args.mode;
-    if (args && args.root)
+    if (args && args.root) {
 	path = args.root;
+        root = args.root;
+    }
     if (args && args.parent)
 	parent = args.parent;
     if (args && args.buttonsparent)
@@ -62,6 +66,8 @@ var kolekti_browser = function(args) {
 	titleparent = args.titleparent;
     if (args && args.title)
 	title = args.title;
+    if (args && args.modal && args.modal=='no')
+	modal = false;
 
     params['mode']=mode;
 
@@ -71,7 +77,8 @@ var kolekti_browser = function(args) {
 	    $(parent).html(data);
 	}).done(function(){	
 	    $(parent).find(".browserfile").val(path);
-	    $('.modal').modal();
+	    if (modal)
+		$('.modal').modal();
 	});
     }
 
@@ -149,8 +156,11 @@ var kolekti_browser = function(args) {
     // navigate into prent folders
 
     $(parent).on('click', '.pathstep', function() {
-	path = $(this).data("path");
-	update();
+	var newpath = $(this).data("path");
+	if (newpath.length >= root.length) {
+	    path = newpath;
+	    update();
+	}
     })
 
     // new folder
