@@ -2,17 +2,30 @@
 
 {% block title %}Trames{% endblock %}
 
+{% block extrascripts %}
+    <script src="/static/js/kolekti-toclist.js"></script>
+{% endblock %}
 
 {% block menu %}
-
+<
 {% endblock %}
 
 
 {% block content %}
+
+<div class="main">
+  <div class="title">
+  </div>
+  <div class="browser">
+  </div>
+</div>
+{% comment %}
+<hr/>
 <ul>
 {% for toc in tocs %}
 <li><a href="/tocs/edit/?toc={{ toc }}">{{ toc }}</a></li>
 {% endfor %}
 </ul>
+{% endcomment %}
 {% endblock %}
 
