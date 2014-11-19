@@ -3,7 +3,6 @@
 #     kOLEKTi : a structural documentation generator
 #     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
 
-from lxml import etree as ET
 import os
 import re
 from datetime import datetime
@@ -12,8 +11,10 @@ import urllib
 import urlparse
 import shutil
 import logging
+import json
 import mimetypes
 mimetypes.init()
+from lxml import etree as ET
 
 objpathes = {
     "0.6":{
@@ -135,6 +136,9 @@ class kolektiBase(object):
             d = datetime.fromtimestamp(os.path.getmtime(pf))
             if os.path.isdir(pf):
                 t = "text/directory"
+                if os.path.exists(os.path.join(pf,'.manifest')):
+                    mf = ET.parse(os.path.join(pf,'.manifest'))
+                    t += "+" + mf.getroot().get('type')
             else:
                 t = mimetypes.guess_type(pf)
                 if t is None:
@@ -408,8 +412,30 @@ class kolektiBase(object):
 
 
         
-        
-    
+    def release_details(self, path, lang):
+        res=[]
+        root = self.__makepath(path)
+        for j in os.listdir(root+'/kolekti/publication-parameters'):
+            print j[-16:]
+            if j[-16:]=='_parameters.json':
+                release_params = json.loads(self.read(path+'/kolekti/publication-parameters/'+j))
+                resrelease = []
+                print release_params
+                
+                for job_params in release_params:
+                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_'+ lang +'_publications.json'))
+                    resjob = {
+                        'lang': lang,
+                        'release':release_params,
+                        'publications':publications
+                    }
+                    resrelease.append(resjob)
+                res.append(resrelease)
+                    
+        return res
+                
+                
+                
 class XSLExtensions(kolektiBase):
     """
     Extensions functions for xslt that are applied during publishing process
