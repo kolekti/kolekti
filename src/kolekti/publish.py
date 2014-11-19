@@ -3,16 +3,20 @@
 #     kOLEKTi : a structural documentation generator
 #     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
 
+from datetime import datetime
+import time
 import urllib
 import re
 import sys
 import os
 import copy
 import logging
+import json
 
 from lxml import etree as ET
 
 from common import kolektiBase, XSLExtensions
+
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
 
@@ -201,7 +205,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
-            logging.error("unable to create assembly directory")
+            logging.debug("W: unable to create assembly directory")
             import traceback
             logging.debug(traceback.format_exc())
             
@@ -235,7 +239,8 @@ class Publisher(PublisherMixin, kolektiBase):
         """publishes a an assembly for every profile in xjob
            invoke publication scripts for every publication """ 
         assembly_dir = self.assembly_dir(xjob)
-        res=[] 
+        res=[]
+        
         # logging.debug(ET.tostring(xjob))
         for profile in xjob.xpath('/job/profiles/profile'):
             #  logging.debug(profile)
@@ -243,6 +248,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 resscripts = []
                 # creates the document (pivot) file
                 pivot = self.publish_profile(assembly, profile, assembly_dir)
+                
                  # invoke scripts
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
@@ -254,7 +260,10 @@ class Publisher(PublisherMixin, kolektiBase):
                         logging.error("Script %s finished with errors"%script.get('name'))
                         logging.debug(traceback.format_exc())
                         raise Exception
-                res.append({'profile':profile.find('label').text, 'scripts':resscripts})
+                res.append({'profile':profile.find('label').text,
+                            'scripts':resscripts,
+                            'time':time.time(), #datetime.now(),
+                            })
         return res
 
 
@@ -719,7 +728,14 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.error("Impossible de copier la ressource %s"%source)
             logging.debug(traceback.format_exc())
             raise Exception
-            
+
+
+
+
+
+
+
+                    
 class DraftPublisher(Publisher):
     def __init__(self, *args, **kwargs):
         super(DraftPublisher, self).__init__(*args, **kwargs)
@@ -763,11 +779,13 @@ class DraftPublisher(Publisher):
 
             logging.debug('********************************** PUBLISH ASSEMBLY')
             pubres = self.publish_job(assembly, xjob.getroot())
+
             publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
             try:
                 self.cleanup_assembly_dir(xjob.getroot())
             except:
                 logging.debug('W coulb not remove tmp dir')
+        # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
         return publications
     
 class Releaser(Publisher):
@@ -799,7 +817,15 @@ class Releaser(Publisher):
             # assembly
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
-            res.append((assembly_dir, pubname))
+            res.append({"assembly_dir":assembly_dir,
+                        "pubname":pubname,
+                        "datetime":time.time(), #datetime.now(),
+                        "job":unicode(xjob.getroot().get('id')),
+                        "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
+                })
+        print res
+        self.write('<publication type="release"/>', assembly_dir+"/.manifest")
+        self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+pubname+"_"+self._publang+"_parameters.json")
         return res
 
     # copies the job in release directory
@@ -807,11 +833,15 @@ class Releaser(Publisher):
         try:
             self.makedirs(assembly_dir + "/kolekti/publication-parameters")
         except:
-            logging.error("unable to create release publication parameters directory")
+            logging.debug("W: unable to create release publication parameters directory")
             import traceback
             logging.debug(traceback.format_exc())
 
         self.xwrite(xjob, assembly_dir + "/kolekti/publication-parameters/" + pubname + ".xml")
+
+
+
+
 
 class ReleasePublisher(Publisher):
     def __init__(self, *args, **kwargs):
@@ -828,6 +858,7 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
+        assembly_dir = 'releases/' + release
         try:
             xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
         except:
@@ -837,5 +868,7 @@ class ReleasePublisher(Publisher):
             
         xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         xjob=xjob.getroot()
-        logging.debug(ET.tostring(xjob))
-        return [{"job":xjob.get('id'), "publications":self.publish_job(xassembly,xjob)}]
+        print(ET.tostring(xjob))
+        publications = self.publish_job(xassembly,xjob)
+        self.write(json.dumps(publications), assembly_dir+'/kolekti/publication-parameters/'+ assembly + '_' + self._publang + '_publications.json')
+        return [{"job":xjob.get('id'), "publications":publications}]
