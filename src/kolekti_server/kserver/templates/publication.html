@@ -1,8 +1,10 @@
+{% load timetags %}
 <div class="publication">
   {% if success %}
   {% for pubresitem in pubres %}
 	{% for profileitem in pubresitem.publications %}
 	<h5>Profile {{ profileitem.profile }}</h5>
+	<p>publié le {{ profileitem.time|print_timestamp }}</p>
 	<ul>
 	  {% for scriptitem in profileitem.scripts %}
 	  <li>Script {{ scriptitem.script }}: 

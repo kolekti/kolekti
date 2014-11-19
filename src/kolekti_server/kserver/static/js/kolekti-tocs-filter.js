@@ -15,40 +15,6 @@ $(document).ready(function() {
 	   build_ui_menus(conditions);
        })
    }
-    
-    var build_ui_buttons = function(conditions) {
-	$.each(conditions, function(i,c) {
-	    $('<div>',
-	      { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
-		"id":"uc_"+i,
-		"html":[$('<div>', {
-		    "class":"col-md-12 col-sm-3",
-		    "html":i}),
-			$('<div>', {
-			    "class":"btn-group btn-group-justified",
-			    "data-toggle":"buttons"
-			    
-			})
-		       ]
-	      }).appendTo($('#userconditions'));
-	    
-      	    $.each(c,function(j,v){
-		$('<label>', {
-		    "class":"btn btn-default",
-		    html:[$('<input>', {
-			type:"radio",
-			"class":"userselect",
-			id:"uc_"+i+"_"+v,
-			name:"uc_"+i
-		    }).change(function() {
-			console.log('click');
-			filter_view();
-		    }),v]
-		    
-		}).appendTo($('#uc_'+i+" .btn-group"));
-	    });
-	});
-    }
 
     var build_ui_menus = function(conditions) {
 	$.each(conditions, function(i,c) {
@@ -63,7 +29,7 @@ $(document).ready(function() {
 			    "html":[
 				$("<button>", {
 				    "type":"button",
-				    "class":"btn btn-sm btn-default dropdown-toggle",
+				    "class":"btn btn-xs btn-default dropdown-toggle",
 				    "data-toggle":"dropdown",
 				    "html":["Non filtré ",$("<span>", {"class":"caret"})]
 				}),

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-search.css"></script>
+{% endblock %}
+
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-search.js"></script>
+{% endblock %}
+
+{% block title %}Résultats de la recherche pour <em>{{ query }}</em>{% endblock %}
+
+
+{% block menu %}
+{% endblock %}
+
+
+{% block content %}
+<div class="main">
+ {% for result in results %}
+  <div class="panel panel-default">
+    <div class="panel-heading" id='snippet_{{forloop.counter}}'>
+      <div class="panel-title">
+	<h4>
+	  <a class="snippet-title" href="{{ result.path }}" data-kolekti-type="{{ result.type }}">{{ result.title }}</a>
+	</h4>
+	<p>
+	  {{ result.type }}
+	  <span class="pull-right">
+	    <a data-toggle="collapse" href="#snippet_plus_{{forloop.counter}}" aria-expanded="false" aria-controls="snippet_plus_{{forloop.counter}}">
+	      plus...
+            </a>
+	  </span>
+	</p>
+      </div>
+    </div>
+    <div id="snippet_plus_{{forloop.counter}}" class="panel-collpse collapse" role="tabpanel" aria-labelled-by="snippet_{{forloop.counter}}">
+      <div class="panel-body">
+	<a href="/static{{ result.path }}">[lien direct]</a>
+	
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

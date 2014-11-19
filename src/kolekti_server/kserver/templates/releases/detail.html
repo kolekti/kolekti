@@ -1,0 +1,28 @@
+<div class="release">
+  {% for l in kolekti.languages %}
+  <button class="btn btn-default btn-xs {% if l == lang  %}active{% endif %}">{{ l }}</button>
+  {% endfor %}
+{% for pubres in releasesinfo %}
+{% for pubjob in pubres %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    {% for pj in pubjob.release %}
+    <a href="/releases/assembly/edit?path={{ pj.assembly_dir }}/sources/{{ lang }}/assembly/{{ pj.pubname }}.html">{{ pj.pubname }}</a>
+    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Collapsible Group Item #1
+        </a>
+    {% endfor %}
+
+  </div>
+  <div class="panel-body">
+    {% include "publication.html" %}
+    <button class="btn btn-default btn-block" data-pubname="{{ pj.pubname }}">Republier</button> 
+  </div>
+  <div class="panel-footer">
+  </div>
+</div>
+
+</div>
+{% endfor %}
+{% endfor %}
+</div>

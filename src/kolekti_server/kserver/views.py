@@ -37,16 +37,17 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def get_toc_edit(self, path):
         xtoc = self.parse(path)
         toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang='fr')
+        tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
         try:
             etoc = xsl(xtoc)
         except:
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
-        return toctitle, str(etoc)
+        return toctitle, tocjob, str(etoc)
 
     def get_topic_edit(self, path):
-        xtopic = self.parse(path.replace('{LANG}','fr'))
+        xtopic = self.parse(path.replace('{LANG}',settings.KOLEKTI_SRC_LANG))
         topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         topiccontent = ''.join([ET.tostring(t) for t in topicbody])
@@ -56,16 +57,18 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         return self.itertocs
 
     def get_jobs(self):
-         for job in self.iterjobs:
-             xj = self.parse(job['path'])
-             job.update({'profiles':[p.text for p in xj.xpath('/job/profiles/profile/label')],
-                         'scripts':[s.get("name") for s in xj.xpath('/job/scripts/script[@enabled="1"]')],
+        res = []
+        for job in self.iterjobs:
+            xj = self.parse(job['path'])
+            job.update({'profiles':[p.text for p in xj.xpath('/job/profiles/profile/label')],
+                        'scripts':[s.get("name") for s in xj.xpath('/job/scripts/script[@enabled="1"]')],
                         })
-             yield job
+            res.append(job)
+        return res
 
     def get_job_edit(self,path):
         xjob = self.parse(path)
-        xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang='fr')
+        xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
         try:
             ejob = xsl(xjob)
         except:
@@ -91,8 +94,10 @@ class TocView(kolektiMixin, View):
     def get(self, request):
         context = self.get_context_data()
         tocpath = request.GET.get('toc')
-        toctitle, toccontent = self.get_toc_edit(tocpath)
-        context.update({'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath})
+        tocfile = tocpath.split('/')[-1]
+        toctitle, tocjob, toccontent = self.get_toc_edit(tocpath)
+        
+        context.update({'tocfile':tocfile,'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath, 'tocjob':tocjob})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
@@ -110,14 +115,29 @@ class TocView(kolektiMixin, View):
             print traceback.format_exc()
             return HttpResponse(status=500)
 
-class TranslationsListView(ListView):
-    template_name = "home.html"
+class ReleaseListView(TemplateView):
+    template_name = "releases/list.html"
 
+class ReleaseDetailsView(kolektiMixin, TemplateView):
+    template_name = "releases/detail.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        lang = request.GET.get('lang', settings.KOLEKTI_SRC_LANG)
+        context = self.get_context_data()
+        context.update({
+            'releasesinfo':self.release_details(path, lang),
+            'success':True,
+            'lang':lang,
+        })
+        print json.dumps(context, indent=2)
+        return self.render_to_response(context)
+        #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
+    
 class TopicsListView(TemplateView):
-    template_name = "home.html"
+    template_name = "topics/list.html"
 
 class ImagesListView(TemplateView):
-    template_name = "home.html"
+    template_name = "list.html"
 
 class SyncView(TemplateView):
     template_name = "home.html"
@@ -145,10 +165,21 @@ class JobEditView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 class CriteriaView(kolektiMixin, View):
-
     def get(self, request):
         return HttpResponse(self.read('/kolekti/settings.xml'),content_type="text/xml")
 
+class CriteriaCssView(kolektiMixin, TemplateView):
+    template_name = "settings/criteria-css.html"
+    def get(self, request):
+        try:
+            settings = self.parse('/kolekti/settings.xml')
+            xsl = self.get_xsl('django_criteria_css')
+            print xsl(settings)
+            return HttpResponse(str(xsl(settings)), "text/css")
+        except:
+            import traceback
+            print traceback.format_exc()
+            
 class CriteriaEditView(kolektiMixin, TemplateView):
     template_name = "settings.html"
 
@@ -176,7 +207,6 @@ class BrowserView(kolektiMixin, View):
         mode = request.GET.get('mode','select')
         files = self.get_directory(path)
         for f in files:
-            print f
             f.update({'icon':fileicons.get(f.get('type'),"glyphicon-file")})
         pathsteps = []
         startpath = ""
@@ -208,8 +238,8 @@ class DraftView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
-        profiles = request.POST.get('profiles[]',[])
-        scripts = request.POST.get('scripts[]',[])
+        profiles = request.POST.getlist('profiles[]',[])
+        scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
         print ET.tostring(xjob), profiles, scripts ,request.POST
@@ -223,7 +253,7 @@ class DraftView(PublicationView):
             print ET.tostring(xjob)
             from kolekti import publish
 
-            p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang='fr')
+            p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
         
             pubres = p.publish_draft(tocpath, [xjob])
             context.update({'pubres':pubres})
@@ -241,8 +271,12 @@ class ReleaseView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
-        profiles = request.POST.get('profiles[]',[])
-        scripts = request.POST.get('scripts[]',[])
+
+        print request.POST
+
+        profiles = request.POST.getlist('profiles[]',[])
+        print profiles
+        scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
         try:
@@ -254,12 +288,15 @@ class ReleaseView(PublicationView):
                     jscript.getparent().remove(jscript)
 
             from kolekti import publish
-            r = publish.Releaser(settings.KOLEKTI_BASE, lang='fr')
+            r = publish.Releaser(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
             pp = r.make_release(tocpath, [xjob])
-        
-            release_dir = pp[0][0].replace('/releases/','')
-            p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang='fr')
-            pubres = p.publish_assembly(release_dir, pp[0][1])
+            print "----"
+            print pp
+            print "----"
+            release_dir = pp[0]['assembly_dir'].replace('/releases/','')
+            p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
+            pubres = p.publish_assembly(release_dir, pp[0]['pubname'])
+            print pubres
             context.update({'pubres':pubres})
             context.update({'success':True})
         except:
@@ -311,4 +348,5 @@ class SearchView(kolektiMixin, View):
         s = searcher(settings.KOLEKTI_BASE)
         results = s.search(q)
         context.update({"results":results})
+        context.update({"query":q})
         return self.render_to_response(context)

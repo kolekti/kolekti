@@ -1,7 +1,13 @@
 var kolekti = {
     'lang' : 'fr'
 }
-
+function basename(path) {
+    return path.replace(/\\/g,'/').replace( /.*\//, '' );
+}
+ 
+function dirname(path) {
+    return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');;
+}
 Array.prototype.removevalue = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -49,6 +55,8 @@ var kolekti_browser = function(args) {
     var buttonsparent = ".modal-footer";
     var titleparent = ".modal-header h4";
     var title = "Navigateur de fichiers";
+    var editable_path = false
+    var titlepath = false
     var resfuncs = {};
     var modal = true;
 
@@ -66,17 +74,50 @@ var kolekti_browser = function(args) {
 	titleparent = args.titleparent;
     if (args && args.title)
 	title = args.title;
+    if (args && args.titlepath)
+	titlepath = args.titlepath;
     if (args && args.modal && args.modal=='no')
 	modal = false;
+    if (args && args.editable_path && args.editable_path=='yes')
+	editable_path = true;
 
     params['mode']=mode;
+
+    var get_browser_value = function() {
+	var path;
+	if (editable_path)
+	    path = $(parent).find(".browserfile").val();
+	else
+	    path = $(parent).find(".browserfile").data('path')+'/'+$(parent).find(".browserfile").val();
+	return path;
+    }
+
+    var set_browser_value = function(path) {
+	if (editable_path)
+	    $(parent).find(".browserfile").val(path);
+	else {
+	    $(parent).find(".browserfile").data('path', dirname(path))
+	    $(parent).find(".browserfile").val(basename(path));
+	}
+
+    }
 
     var update = function() {
 	params['path']=path
 	$.get(url, params, function(data) {
-	    $(parent).html(data);
+	    $(parent).html(
+		$('<div>', {
+		    'class':'panel panel-default',
+		    'html':$('<div>', {
+			'class':'panel-body',
+			'html':[
+			    data,
+			    $('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><label class="col-sm-2 control-label" for="browserval">'+(editable_path?'Chemin':'Nom')+'</label><div class="col-sm-10">  <input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
+		    })
+		})
+	    )
 	}).done(function(){	
-	    $(parent).find(".browserfile").val(path);
+	    set_browser_value(path + '/');
 	    if (modal)
 		$('.modal').modal();
 	});
@@ -123,10 +164,10 @@ var kolekti_browser = function(args) {
 
     var closure = function(f) {
 	if (mode == "create")
-	    $.get("/browse/exists", {'path':$(parent).find(".browserfile").val()}, function(data) {
+	    $.get("/browse/exists", {'path':get_browser_value()}, function(data) {
 		if (!data) {
 		    $.map(resfuncs , function(v,i) {
-			v($(parent).find(".browserfile").val())
+			v(get_browser_value())
 		    })
 		} else {
 		    browser_alert("Le fichier sélectionné existe deja")
@@ -135,7 +176,7 @@ var kolekti_browser = function(args) {
 	    })
 	else
 	    $.map(resfuncs , function(v,i) {
-		v($(parent).find(".browserfile").val())
+		v(get_browser_value());
 	    })
     };
 
@@ -146,14 +187,14 @@ var kolekti_browser = function(args) {
 	    path = path +'/'+ $(this).html();
 	    update();
 	} else {
-	    $(parent).find(".browserfile").val(path + '/' + $(this).html());
+	    set_browser_value(path + '/' + $(this).html())
 	    if (mode=="selectonly") {
 		closure()
 	    }
 	}
     })
 
-    // navigate into prent folders
+    // navigate into parent folders
 
     $(parent).on('click', '.pathstep', function() {
 	var newpath = $(this).data("path");
@@ -241,11 +282,13 @@ var kolekti_browser = function(args) {
     
 }
 
-var basename = function(path) {
+
+var radicalbasename = function(path) {
     var pathparts = path.split('/'),
     last = pathparts[pathparts.length - 1];
 //    return last;
     return last.split('.')[0];
 }
+
 // events
 

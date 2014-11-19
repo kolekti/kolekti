@@ -16,6 +16,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
+
   <body>
    <div class="navbar navbar-inverse" role="navigation">
       <div class="container-fluid">
@@ -37,7 +38,7 @@
 	      <ul class="dropdown-menu" role="menu">
 		<li><a href="/tocs/">Éditer, publier une trame</a></li>
 		<li><a href="/import/">Importer des contenus</a></li>
-		<li><a href="/translations/">Gérer des traductions</a></li>
+		<li><a href="/releases/">Gérer des traductions</a></li>
 		<li><a href="/topics/">Créer, éditer des module</a></li>
 		<li><a href="/images/">Gérer des images</a></li>
 		<li><a href="/sync/">Synchroniser le projet</a></li>
@@ -59,20 +60,21 @@
    </div>
 
     <div class="container-fluid">
+{% comment %}
       <div class="row">
         <div class="col-sm-12 col-md-12">
           <h1 class="page-header">{% block title %}{% endblock %}</h1>
 
         </div>
-      </div>      
+      </div>  
+{% endcomment %}
       <div class="row">
         <div class="col-sm-9 col-md-9 main">
+          <h1>{% block title %}{% endblock %}</h1>
 	  {% block content %}generic template{% endblock %}
 	</div>
 	<div class="col-sm-3 col-md-3">
-	  <div class="affix" data-spy="affix" data-offset-top="60" data-offset-bottom="200">
-	    {% block menu %}{% endblock %}
-	  </div>
+	  {% block menu %}{% endblock %}
 	</div>
       </div>
     </div>

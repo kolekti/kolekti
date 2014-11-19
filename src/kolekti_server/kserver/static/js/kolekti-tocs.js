@@ -65,7 +65,7 @@ var topicmenu = function(topic) {
 	    'html' :$('<span>', {
 		'class':"btn-group",
 		'html':[
-		    (topic.data('kolekti-topic-rel')=='kolekti:topic' || topic.hasClass('section'))?$('<button>', {
+		    (topic.data('kolekti-topic-rel')=='kolekti:topic')?$('<button>', {
 			'type':"button",
 			'class':"btn btn-primary btn-xs btn_topic_edit",
 			'html':[
@@ -112,6 +112,17 @@ var topicmenu = function(topic) {
 				    'html':"Insérer après..."
 				})
 			    }),
+			    topic.hasClass('section')?$('<li>', {
+				'role':"presentation",
+				'html':$('<a>', {
+				    'role':"menuitem",
+				    'tabindex':"-1",
+				    'href':"#",
+				    'class':"btn_section_rename",
+				    'html':"Renommer"
+				})
+			    }):null,
+
 			    $('<li>', {
 				'role':"presentation",
 				'class':"divider"
@@ -173,6 +184,7 @@ var usecases = function(path) {
 	    $('.topic').each(function(i,topic) {
 		var topicref = $(topic).data('kolekti-topic-href');
 		if (data[topicref]) {
+		    $(topic).find('.kolekti-shared-topic').remove();
 		    var v = data[topicref].removevalue(tocref)
 		    if(v.length)
 			$('<span>', {
@@ -230,6 +242,30 @@ $('#btn_save').on('click', function() {
     });
 })
 
+$('#btn_save_as').on('click', function() {
+    kolekti_browser({
+	'root':'/sources/'+kolekti.lang+'/tocs',
+	'title':"Enregistrer sous...",
+	'mode':"create"
+    }).select(function(path) {
+	console.log(path);
+	$('#toc_root').attr('data-kolekti-path', path);
+	$.ajax({
+	    url:'/tocs/edit/',
+	    type:'POST',
+	    data:process_toc($('#toc_root')),
+	    contentType:'text/plain'
+	}).success(function() {
+	    $('#btn_save').addClass('disabled');
+	    $('#btn_save').addClass('btn-default');
+	    $('#btn_save').removeClass('btn-warning');
+	    document.location.href = '/tocs/edit/?toc='+path
+	});
+    }).always(function(data) {
+	$('.modal').modal('hide');
+    })
+})
+
 // publish
 
 var get_publish_params = function(params, job) {
@@ -266,17 +302,18 @@ $('.btn_publish').on('click', function() {
     $('.modal').modal();
     var toc = $('#toc_root').data('kolekti-path');
     var nojob = true;
-    $('.publish_job').each(function(i,e){
-	if (e.checked) {
+//    $('.publish_job').each(function(i,e){
+    $('.kolekti-job').each(function(i,e){
+	if (!$(e).hasClass('hidden')) {
 	    nojob = false;
 	    var job = $(e).data('kolekti-job');
 	    var idjob = $(e).attr('id');
 	    var label = $(e).data('kolekti-jobname');
 	    $('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#collapse'+idjob+'">Lancement '+label+'</a></h4></div><div id="collapse'+idjob+'" class="panel-collapse collapse in"><div class="panel-body"><div id="pub_'+idjob+'"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
-	    params = get_publish_params(params, $(e).closest('.jobselect'))
+	    params = get_publish_params(params, $(e))
 	
 	    if (!(params['profiles'].length &&  params['scripts'].length)) {
-		$('#pub_'+idjob).html('<div class="alert alert-danger" role="alert"><p>Selectionnez au moins un profile et un script</p></div>');
+		$('#pub_'+idjob).html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
 	    } else {
 		params['toc']=toc;
 		params['job']=job;
@@ -292,7 +329,7 @@ $('.btn_publish').on('click', function() {
 	}
     });
     if (nojob) {
-	$('<div class="alert alert-danger" role="alert"><p>Selectionnez au moins un lancement</p></div>').appendTo($('#pubresult'));
+	$('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un lancement</p></div>').appendTo($('#pubresult'));
     }
 })
 
@@ -317,39 +354,54 @@ $('#btn_audit').on('click', function() {
 
 
 
+// components from meta
+
+$('body').on('click','.entry_tocjob', function(e) {
+    var job = $.trim($(this).text())
+    console.log(job)
+    $('#toc_root').data('kolekti-job',job)
+    $('#editjoblink').attr('href','/settings/editjob?job='+job)
+    $('.label_job').each(function(i,e) {
+	$(e).html(job)}
+			);
+    $('.kolekti-job').addClass('hidden')
+    $('.kolekti-job-'+job).removeClass('hidden')
+    enable_save()
+});
+
 // contextual menus
 
 // modify topic / section
 
 $('body').on('click', '.btn_topic_edit', function() {
     var topic = $(this).closest('.topic');
-    if (topic.length) {
-	var url = topic.data('kolekti-topic-href');
-	window.open('/topics/edit/?topic='+url);
-    } else {
-	// get section title
-	var title_elt = $(this).closest('.section')
-	    .children('.panel-heading')
-	    .children('')
-	    .children('a');
-	// change section title
-	$('.modal-title').html('Renommer');
-	$('.modal-footer')
-	$('.modal-body').html($('<input>', {
-	    'type':'text',
-	    'id':'input_section_title',
-	    'placeholder':title_elt.text()
-	}))
-	if (!$('.modal-footer>button.browservalidate').length)
-	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
-	$('.modal-footer').off('click', '.browservalidate');
-	$('.modal-footer').on('click', '.browservalidate', function(){
-	    title_elt.html($('#input_section_title').val());
-	    enable_save();
-	    $('.modal').modal('hide')	    
-	});	
-	$('.modal').modal()
-    }
+    var url = topic.data('kolekti-topic-href');
+    window.open('/topics/edit/?topic='+url);
+}) 
+
+$('body').on('click', '.btn_section_rename', function() {
+    // get section title
+    var title_elt = $(this).closest('.section')
+	.children('.panel-heading')
+	.children('')
+	.children('a');
+    // change section title
+    $('.modal-title').html('Renommer');
+    $('.modal-footer')
+    $('.modal-body').html($('<input>', {
+	'type':'text',
+	'id':'input_section_title',
+	'placeholder':title_elt.text()
+    }))
+    if (!$('.modal-footer>button.browservalidate').length)
+	$('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
+    $('.modal-footer').off('click', '.browservalidate');
+    $('.modal-footer').on('click', '.browservalidate', function(){
+	title_elt.html($('#input_section_title').val());
+	enable_save();
+	$('.modal').modal('hide')	    
+    });	
+    $('.modal').modal()
 })
 	    
 
@@ -444,6 +496,8 @@ $('body').on('click', '.btn_topic_delete', function() {
 var newcomp = function(comp, isafter) {
 
     var create_topic = function(path, id, topic) {
+	var steps = path.split('/');
+	var topicfile = steps[steps.length - 1];
 	var topic_obj = $('<div>', {
 	    'class':"topic",
 	    'data-kolekti-topic-rel':"kolekti:topic",
@@ -462,7 +516,8 @@ var newcomp = function(comp, isafter) {
 				    'data-toggle':"tooltip", 
 				    'data-placement':"top",
 				    'title':path,
-				    'html':$(topic).find('title').html()
+				    'html':topicfile
+//				    'html':$(topic).find('title').html()
 				})
 			    })
 			})
@@ -600,7 +655,7 @@ var newcomp = function(comp, isafter) {
 
 	kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
 			 'parent':".new-module-browser",
-			 'title':"Créer un module",
+			 'title':"Selectionnez l'emplacement, le nom et le modèle pour la création du module",
 			 'titleparent':".new-module-title",
 			 'mode':"create"
 			})
@@ -650,7 +705,8 @@ var newcomp = function(comp, isafter) {
 	    {'root':'/sources/'+kolekti.lang+'/topics',
 	     'parent':".new-module-browser",
 	     'title':"Sélectionnez le module à insérer",
-	     'titleparent':".new-module-title"
+	     'titleparent':".new-module-title",
+	     'editable_path':false
 	    }).select(function(path) {
 		$.get('/static'+path).success(
 		    function(data){
@@ -661,6 +717,7 @@ var newcomp = function(comp, isafter) {
 			    comp.after(topic_obj)
 			else 
 			    comp.before(topic_obj)
+			usecases(path);
 			enable_save();
 			$('.modal').modal('hide');
 		    })
