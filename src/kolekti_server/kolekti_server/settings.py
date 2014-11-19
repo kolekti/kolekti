@@ -87,3 +87,6 @@ KOLEKTI_BASE = "/home/waloo/Bureau/kolekti/projets/omegadoc"
 STATICFILES_DIRS = (
     KOLEKTI_BASE,
 )
+
+KOLEKTI_SRC_LANG = 'fr'
+KOLEKTI_LANGS = ['fr','en','us','de','it']
