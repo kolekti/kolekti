@@ -35,12 +35,26 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:template match="head">
+    <xsl:element namespace="http://www.w3.org/1999/xhtml" name="head">
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="div[div/@id='collapseMeta']"/>
+
   <xsl:template match="/div">
     <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;
 </xsl:text>
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
 	<title><xsl:value-of select="@data-kolekti-title"/></title>
+	<xsl:if test="string(//span[@id='label_job']) != ''">
+	  <xsl:element namespace='http://www.w3.org/1999/xhtml' name="meta">
+	    <xsl:attribute name="name">kolekti.job</xsl:attribute>
+	    <xsl:attribute name="content"><xsl:value-of select="//span[@id='label_job']"/></xsl:attribute>
+	  </xsl:element>
+	</xsl:if> 
       </head>
       <body>
 	<xsl:apply-templates/>

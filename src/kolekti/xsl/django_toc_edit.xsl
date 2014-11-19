@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
     kOLEKTi : a structural documentation generator
-    Copyright (C) 2007 Stéphane Bonhomme (stephane@exselt.com)
+    Copyright (C) 2007 StÃ©phane Bonhomme (stephane@exselt.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,8 +72,8 @@
       <div class="panel panel-warning">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <span data-toggle="tooltip" data-placement="top" title="Table des Matières">
-	      <em>Table des Matières</em>
+	    <span data-toggle="tooltip" data-placement="top" title="Table des MatiÃ¨res">
+	      <em>Table des MatiÃ¨res</em>
 	    </span>
 	  </h4>
 	</div>
@@ -86,8 +86,8 @@
       <div class="panel panel-warning">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
-	    <span data-toggle="tooltip" data-placement="top" title="Index alphabétique">
-	      <em>Index alphabétique</em>
+	    <span data-toggle="tooltip" data-placement="top" title="Index alphabÃ©tique">
+	      <em>Index alphabÃ©tique</em>
 	    </span>
 	  </h4>
 	</div>
@@ -96,6 +96,7 @@
   </xsl:template>
 
   <xsl:template match="html:a[@rel='kolekti:topic']">
+    
     <div class="topic" data-kolekti-topic-href="{@href}" data-kolekti-topic-rel="kolekti:topic">
 
       <xsl:variable name="topic_url" select="kf:gettopic(string(@href))"/>
@@ -106,7 +107,10 @@
 	  <h4 class="panel-title">
 	    <a data-toggle="collapse" href="#collapse_{generate-id()}">
 	      <span data-toggle="tooltip" data-placement="top" title="{@href}">
-		<xsl:value-of select="$topic/html:html/html:head/html:title"/>
+		<xsl:call-template name="basename">
+		  <xsl:with-param name="path" select="@href"/>
+		</xsl:call-template>
+		<!--<xsl:value-of select="$topic/html:html/html:head/html:title"/>-->
 	      </span>
 	    </a>
 	  </h4>
@@ -121,5 +125,19 @@
   </xsl:template>
 
 
+
+  <xsl:template name="basename">
+    <xsl:param name="path"/>
+    <xsl:choose>
+      <xsl:when test="contains($path,'/')">
+	<xsl:call-template name="basename">
+	  <xsl:with-param name="path" select="substring-after($path,'/')"/>
+	</xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:value-of select="$path"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
 </xsl:stylesheet>
