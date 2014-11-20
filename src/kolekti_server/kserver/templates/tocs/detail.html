@@ -12,12 +12,14 @@
 {% endblock %}
 
 {% block title %}
-    {{ tocfile }}
+    <a href="#" data-toggle="collapse" data-target="#collapseMeta" aria-expanded="false" aria-controls="collapseMeta">{{ tocfile }}</a>
+{% comment %}
     <span class="pull-right">
       <small><button class="btn btn-primary btn-xs btn-kolekti-metatoc" data-toggle="collapse" data-target="#collapseMeta" aria-expanded="false" aria-controls="collapseMeta">      
 	  Plus...       
       </button></small>
     </span>
+{% endcomment %}
 {% endblock %}
 
 
