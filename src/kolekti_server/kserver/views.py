@@ -1,5 +1,6 @@
 from lxml import etree as ET
 import json
+import re
 from django.http import Http404
 from django.shortcuts import render, render_to_response
 from django.views.generic import View,TemplateView, ListView
@@ -198,14 +199,21 @@ class BrowserMkdirView(kolektiMixin, View):
         path = request.POST.get('path','/')
         self.makedirs(path)
         return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
-        
+
 class BrowserView(kolektiMixin, View):
     template_name = "browser/main.html"
+    def __browserfilter(self, entry):
+        for exc in settings.RE_BROWSER_IGNORE:
+            if re.search(exc, entry.get('name','')):
+                return False
+        return True
+                         
     def get(self,request):
         context={}
         path = request.GET.get('path','/')
         mode = request.GET.get('mode','select')
-        files = self.get_directory(path)
+        files = filter(self.__browserfilter,self.get_directory(path))
+        
         for f in files:
             f.update({'icon':fileicons.get(f.get('type'),"glyphicon-file")})
         pathsteps = []

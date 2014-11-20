@@ -90,3 +90,4 @@ STATICFILES_DIRS = (
 
 KOLEKTI_SRC_LANG = 'fr'
 KOLEKTI_LANGS = ['fr','en','us','de','it']
+RE_BROWSER_IGNORE=["~$","^\.svn$"]
