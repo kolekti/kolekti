@@ -49,10 +49,10 @@
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
 	<title><xsl:value-of select="@data-kolekti-title"/></title>
-	<xsl:if test="string(//span[@id='label_job']) != ''">
+	<xsl:if test="@data-kolekti-job">
 	  <xsl:element namespace='http://www.w3.org/1999/xhtml' name="meta">
 	    <xsl:attribute name="name">kolekti.job</xsl:attribute>
-	    <xsl:attribute name="content"><xsl:value-of select="//span[@id='label_job']"/></xsl:attribute>
+	    <xsl:attribute name="content"><xsl:value-of select="@data-kolekti-job"/></xsl:attribute>
 	  </xsl:element>
 	</xsl:if> 
       </head>

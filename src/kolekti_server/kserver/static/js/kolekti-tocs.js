@@ -112,6 +112,12 @@ var topicmenu = function(topic) {
 				    'html':"Insérer après..."
 				})
 			    }),
+
+			    topic.hasClass('section')?$('<li>', {
+				'role':"presentation",
+				'class':"divider"
+			    }):null,
+
 			    topic.hasClass('section')?$('<li>', {
 				'role':"presentation",
 				'html':$('<a>', {
@@ -360,6 +366,7 @@ $('body').on('click','.entry_tocjob', function(e) {
     var job = $.trim($(this).text())
     console.log(job)
     $('#toc_root').data('kolekti-job',job)
+    $('#toc_root').attr('data-kolekti-job',job)
     $('#editjoblink').attr('href','/settings/editjob?job='+job)
     $('.label_job').each(function(i,e) {
 	$(e).html(job)}
