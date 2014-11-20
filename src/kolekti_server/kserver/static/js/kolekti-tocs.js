@@ -558,17 +558,17 @@ var newcomp = function(comp, isafter) {
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-new-module",
 				"href":"#",
-				"html":"Créer module"
+				"html":"Nouveau module"
 			    }),
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-module",
 				"href":"#",
-				"html":"Choisir module"
+				"html":"Module existant"
 			    }),
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-section",
 				"href":"#",
-				"html":"Section"
+				"html":"Nouvelle section"
 			    }),
 			$('<a>',{
 				"class":"btn btn-block btn-default btn-insert-toc",
