@@ -129,10 +129,27 @@ $(document).ready( function () {
 					})
 				    }):null,
 				    
+				    topic.hasClass('section')?$('<li>', {
+					'role':"presentation",
+					'class':"divider"
+				    }):null,
+				    
+				    topic.hasClass('section')?$('<li>', {
+					'role':"presentation",
+					'html':$('<a>', {
+					    'role':"menuitem",
+					    'tabindex':"-1",
+					    'href':"#",
+					    'class':"btn_section_exclude",
+					    'html':"Exclure du sommaire"
+					})
+				    }):null,
+				    
 				    $('<li>', {
 					'role':"presentation",
 					'class':"divider"
 				    }),
+
 				    $('<li>', {
 					'role':"presentation",
 					'html':$('<a>', {
@@ -403,13 +420,14 @@ $(document).ready( function () {
 
     // modify topic / section
 
-    $('body').on('click', '.btn_topic_edit', function() {
+    $('body').on('click', '.btn_topic_edit', function(e) {
 	var topic = $(this).closest('.topic');
 	var url = topic.data('kolekti-topic-href');
 	window.open('/topics/edit/?topic='+url);
+	e.preventDefault();
     }) 
 
-    $('body').on('click', '.btn_section_rename', function() {
+    $('body').on('click', '.btn_section_rename', function(e) {
 	// get section title
 	var title_elt = $(this).closest('.section')
 	    .children('.panel-heading')
@@ -432,12 +450,13 @@ $(document).ready( function () {
 	    $('.modal').modal('hide')	    
 	});	
 	$('.modal').modal()
+	e.preventDefault();
     })
     
 
     // move topic
 
-    $('body').on('click', '.btn_topic_up', function() {
+    $('body').on('click', '.btn_topic_up', function(e) {
 	var topic = $(this).closest('.topic');
 	if (topic) {
 	    if (topic.prev('.topic').length) {
@@ -458,10 +477,11 @@ $(document).ready( function () {
 	    }
 	} else {
 	}
+	e.preventDefault();
     });
 
 
-    $('body').on('click','.btn_topic_down', function() {
+    $('body').on('click','.btn_topic_down', function(e) {
 	var topic = $(this).closest('.topic');
 	if (topic) {
 	    if (topic.next('.topic').length) {
@@ -496,27 +516,31 @@ $(document).ready( function () {
 		}
 	    }
 	}
+	e.preventDefault();
     });
 
-    $('body').on('click', '.btn_topic_insert_before', function() {
+    $('body').on('click', '.btn_topic_insert_before', function(e) {
 	var topic = $(this).closest('.topic');
 	newcomp(topic, false);
+	e.preventDefault();
     });
 
-    $('body').on('click', '.btn_topic_insert_after', function() {
+    $('body').on('click', '.btn_topic_insert_after', function(e) {
 	var topic = $(this).closest('.topic');
 	newcomp(topic,true);
+	e.preventDefault();
     });
     
     // remove topic
 
-    $('body').on('click', '.btn_topic_delete', function() {
+    $('body').on('click', '.btn_topic_delete', function(e) {
 	var topic = $(this).closest('.topic');
 	if (topic)
 	    topic.remove();
 	else 
 	    $(this).closest('.section').remove();
 	enable_save();
+	e.preventDefault();
     });
 
     
