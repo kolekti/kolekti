@@ -1,0 +1,8 @@
+<div>
+{% if update|length %}
+<p>Actualisé à la version {{ update.0.number }}</p>
+{% endif %}
+{% if commit|length %}
+<p>Création de la révision {{commit }}{{ commit.0.number }}
+{% endif %}
+</div>

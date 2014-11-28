@@ -1,0 +1,41 @@
+/** toggles in collapse headers */
+a[data-toggle=mycollapse] span[aria-hidden=true] ,
+a[data-toggle=collapse] span[aria-hidden=true] {
+    display:none;
+}
+a[data-toggle=mycollapse].collapsed span[aria-hidden=true] ,
+a[data-toggle=collapse].collapsed span[aria-hidden=true] {
+    display:inline;
+}
+a[data-toggle=mycollapse] span[aria-hidden=false] ,
+a[data-toggle=collapse] span[aria-hidden=false] {
+    display:inline;
+}
+a[data-toggle=mycollapse].collapsed span[aria-hidden=false] ,
+a[data-toggle=collapse].collapsed span[aria-hidden=false] {
+    display:none;
+}
+a[data-toggle=mycollapse] ,
+a[data-toggle=collapse] {
+    color: black;
+}
+a[data-toggle=mycollapse]:hover ,
+a[data-toggle=collapse]:hover {
+    text-decoration:none;
+}
+
+
+/** sidepanel overrides */
+.side .checkbox {
+    margin-top:0px;
+    margin-bottom:0px;
+}
+
+.side h5 {
+    margin-top:16px;
+    border-bottom:1px solid #D0D0D0;
+}
+
+.side {
+    margin-top: 25px;
+}

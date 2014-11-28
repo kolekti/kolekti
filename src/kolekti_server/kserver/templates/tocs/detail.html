@@ -12,7 +12,14 @@
 {% endblock %}
 
 {% block title %}
-    <a href="#" data-toggle="collapse" data-target="#collapseMeta" aria-expanded="false" aria-controls="collapseMeta">{{ tocfile }}</a>
+        <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
+	{{ tocdisplay }}
+	<span class="pull-right">
+	  <button type="button" class="btn btn-default disabled hidden" id="btn_save">
+	    Enregistrer
+	  </button>
+</span>
+
 {% comment %}
     <span class="pull-right">
       <small><button class="btn btn-primary btn-xs btn-kolekti-metatoc" data-toggle="collapse" data-target="#collapseMeta" aria-expanded="false" aria-controls="collapseMeta">      
@@ -25,6 +32,7 @@
 
 {% block menu %}
     
+{% comment %}
     <div>
       <button type="button" class="btn btn-default btn-block disabled" id="btn_save">
 	{# <span class="glyphicon glyphicon-save"></span> #}
@@ -35,76 +43,97 @@
 	Enregistrer sous...
       </button><br>
     </div>
-
+{% endcomment %}
+    <div class="row">
+      <div class="col-sm-6 col-md-6">
+	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
+      </div>
+      <div class="col-sm-6 col-md-6">
+	<button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Créer une version</button>
+      </div>
+    </div>
+    <br/>
     <div class="panel panel-default">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePublier">
-	    Publication
+	  <a data-toggle="collapse" href="#collapsePublier" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Paramètres de publication
 	  </a>
 	</h4>
       </div>
-      <div id="collapsePublier" class="panel-collapse collapse in">
+      <div id="collapsePublier" class="panel-collapse collapse">
 	<div class="panel-body">
+	  <h5>
+	  Fichier de paramètres
+	  </h5>
+	  <span class="btn-group">
+	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">		  
+	      <span class="label_job">{{ tocjob }}</span>
+	      <span class="caret"></span>
+	    </button>
+	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+	      {% for job in jobs %}
+	      <li role="presentation">
+		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob">
+		  {{ job.name }}
+		</a>
+	      </li>
+	      {% endfor %}
+	    </ul>
+	  </span>
+	  <span class="pull-right">
+	    <a id="editjoblink" href="/settings/editjob?job={{ tocjob }}" title="Éditer le fichier de paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
+	  </span>
+
+	  <h5>
+	  Titre
+	  </h5>
+	  
+	  <input type='text'
+		 class='block-control'
+		 id='input_toc_title'
+		 value="{{ toctitle }}"/>
+
+	  
 	  {% for job in jobs %}
-{% comment %}
-	  <div class="jobselect">
-	  <div class="checkbox" id="title_job_{{ job.name }}" >
-	    <label>
-  	      <input type="checkbox" class="publish_job" id="job_{{ job.name }}" data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}"/>
-	      {{ job.name }}
-	    </label>
-	  </div>
 
-	  <div id="collapse_job_{{ job.name }}" class="panel panel-collapse panel-default collapse" role="tabpanel"
-	       aria-labelledby="title_job_{{ job.name }}">
-	    <div class="panel-body jobdetail row">
-{% endcomment %}
 
-	    <div class="row {% if job.name != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
-		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
-	      <div class="col-sm-12 col-md-6">
+	  <div class="row {% if job.name != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
+	    <div class="col-sm-12 col-md-12">
 
-		<h6>profiles</h6>
-		{% for profile in job.profiles %}
-		<div class="checkbox" checked>
-		  <label>
-  		    <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile }}" data-kolekti-profile="{{ profile }}" checked/>
-		    {{ profile }}
-		  </label>
-		</div>
-		{% endfor %}
-	      </div>
-	      <div class="col-sm-12 col-md-6">
-		<h6>scripts</h6>
-		{% for script in job.scripts %}
-		<div class="checkbox">
-		  <label>
-  		    <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script }}" data-kolekti-script="{{ script }}" checked/>
-		    {{ script }}
-		  </label>
-		</div>
-		{% endfor %}
+	      <h5>Profils</h5>
+	    </div>
+	    {% for profile in job.profiles %}
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox" checked>
+		<label>
+  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile }}" data-kolekti-profile="{{ profile }}" checked/>
+		  {{ profile }}
+		</label>
 	      </div>
 	    </div>
-
-{% comment %}
+	    {% endfor %}
+	    <div class="col-sm-12 col-md-12">
+	      <h5>Sorties</h5>
+	    </div>
+	    {% for script in job.scripts %}
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox">
+		<label>
+  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script }}" data-kolekti-script="{{ script }}" checked/>
+		  {{ script }}
+		</label>
+	      </div>
+	    </div>
+	    {% endfor %}
 	  </div>
-	  </div>
-{% endcomment %}
 	  {% endfor %}
-	  <div class="row">
-	    <div class="col-sm-12 col-md-12">
-	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_draft">Publier</button>
-	    </div>
-	    <div class="col-sm-12 col-md-12">
-	      <button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Créer un instantané</button>
-	    </div>
-	  </div>
 	</div>
-      </div>
-      <div class="panel-footer">
-	  <a id="editjoblink" href="/settings/editjob?job={{ tocjob }}"><small><span class="glyphicon glyphicon-cog"> </span></small> Editer les paramètres <em><span class="label_job">{{ tocjob }}</span></em></a>
       </div>
     </div>
 
@@ -112,88 +141,52 @@
     <div class="panel panel-default">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapseAfficher">
-	    Affichage
+	  <a data-toggle="collapse" href="#collapseAfficher" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Vue filtrée
 	  </a>
 	</h4>
       </div>
-      <div id="collapseAfficher" class="panel-collapse collapse in">
+      <div id="collapseAfficher" class="panel-collapse collapse">
 	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-12 col-md-6">
-	      <button type="button" class="btn btn-default btn-block" id="btn_expand_all">
-		<span class="glyphicon glyphicon-resize-full"></span> 
-		Tout déplier
-	      </button>
-	    </div>
-	    <div class="col-sm-12 col-md-6">
-	      <button type="button" class="btn btn-default btn-block" id="btn_collapse_all">
-		<span class="glyphicon glyphicon-resize-small"></span> 
-		Tout plier
-	      </button>
-	    </div>
-	  </div>
-	  <br>
-
-	  <div class="panel panel-default">
-	    <div class="panel-heading">Vue filtrée</div>
-	    <ul class="list-group" id="userconditions" >
-	      <!-- filtrage -->	    
-	    </ul>
-	  </div>
-<!--
-	  <button type="button" class="btn btn-block btn-default" data-toggle="button" aria-pressed="false" autocomplete="off" id="btn_toggle_conditions">
-	    Afficher les conditions
-	  </button>
--->
+	  <ul class="list-group" id="userconditions" >
+	    <!-- filtrage -->	    
+	  </ul>
 	</div>
       </div>
-    </div>      
-    <button type="button" class="btn btn-default btn-block" id="btn_audit">
-      {# <span class="glyphicon glyphicon-resize-small"></span> #}
-      Générer un diagnostic...
-    </button>
+    </div>
+
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapseDiag" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Diagnostic
+	  </a>
+	</h4>
+      </div>
+      <div id="collapseDiag" class="panel-collapse collapse">
+	<div class="panel-body diag">
+	  <p> En cours de chargement... </p>
+	</div>
+      </div>
+    </div>
+
 {% endblock %}
 
 
 {% block content %}
 
-  <div class="main">
-   <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}">
-    <div class="panel panel-default">
-      <div id="collapseMeta" class="panel-collapse collapse">
-	<div class="panel-body" id="tocmeta">
-	  <div class="row">
-	    <div class="col-sm-12 col-md-6">
-	      <p>Titre : {{ toctitle }} <button type="button" class="btn btn-default btn-xs">Modifier</button></p>
-	      <p>Emplacement : {{ tocpath }}</p>
-	    </div>
-	    <div class="col-sm-12 col-md-6">
-	      Parametres de publication :
-	      <span class="btn-group">
-		<button type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">		  
-		  <span class="label_job">{{ tocjob }}</span>
-
-		  <span class="caret"></span>
-		</button>
-
-		<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-		  {% for job in jobs %}
-		  <li role="presentation">
-		    <a href="#" role="menuitem" tabindex="-1" class="entry_tocjob">
-		      {{ job.name }}
-		    </a>
-		  </li>
-		  {% endfor %}
-		</ul>
-	      <span>
-	    </div>
-	  </div>
-	</div>
-      </div>
-    </div>
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}">
+    <hr>
   {{ toccontent|safe}}
    </div>
-</div>
 {% endblock %}
 

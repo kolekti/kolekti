@@ -7,7 +7,6 @@ from datetime import datetime
 import time
 import urllib
 import re
-import sys
 import os
 import copy
 import logging
@@ -15,9 +14,8 @@ import json
 
 from lxml import etree as ET
 
-from common import kolektiBase, XSLExtensions
+from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 
-LOCAL_ENCODING=sys.getfilesystemencoding()
 
 
 class PublisherMixin(object):
@@ -72,13 +70,18 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         
 
     def gettopic(self, _, *args):
-        logging.debug("get topic")
         modid = args[0]
         path = self.process_path(modid)
         upath = self.getUrlPath(path)
         logging.debug("get topic %s -> %s"%(modid,upath))
-        logging.debug("--")
         return upath
+
+    def gettopic2(self, _, *args):
+        modid = args[0]
+        path = self.process_path(modid)
+        logging.debug("get topic path %s -> %s"%(modid,path))
+        print "get topic %s -> %s"%(modid,path)
+        return path
 
     def criteria(self, _, *args):
         logging.debug('xslt ext criteria')

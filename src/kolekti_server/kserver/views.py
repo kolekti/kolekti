@@ -1,6 +1,7 @@
+import re
+import os
 from lxml import etree as ET
 import json
-import re
 from django.http import Http404
 from django.shortcuts import render, render_to_response
 from django.views.generic import View,TemplateView, ListView
@@ -43,6 +44,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         try:
             etoc = xsl(xtoc)
         except:
+            import traceback
+            print traceback.format_exc()
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
         return toctitle, tocjob, str(etoc)
@@ -76,18 +79,19 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
         return str(ejob)
-    
-class HomeView(TemplateView):
+
+    def get(self, request):
+        context = self.get_context_data()
+        return self.render_to_response(context)
+
+        
+class HomeView(kolektiMixin, View):
     template_name = "home.html"
 
     
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
     
-    def get(self, request):
-        context = self.get_context_data()
-        context.update({'tocs':self.itertocs})
-        return self.render_to_response(context)
 
 class TocView(kolektiMixin, View):
     template_name = "tocs/detail.html"
@@ -96,9 +100,10 @@ class TocView(kolektiMixin, View):
         context = self.get_context_data()
         tocpath = request.GET.get('toc')
         tocfile = tocpath.split('/')[-1]
+        tocdisplay = os.path.splitext(tocfile)[0]
         toctitle, tocjob, toccontent = self.get_toc_edit(tocpath)
         
-        context.update({'tocfile':tocfile,'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath, 'tocjob':tocjob})
+        context.update({'tocfile':tocfile,'tocdisplay':tocdisplay,'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath, 'tocjob':tocjob})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
@@ -116,7 +121,7 @@ class TocView(kolektiMixin, View):
             print traceback.format_exc()
             return HttpResponse(status=500)
 
-class ReleaseListView(TemplateView):
+class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
 class ReleaseDetailsView(kolektiMixin, TemplateView):
@@ -134,16 +139,13 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
-class TopicsListView(TemplateView):
+class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"
 
-class ImagesListView(TemplateView):
+class ImagesListView(kolektiMixin, TemplateView):
     template_name = "list.html"
 
-class SyncView(TemplateView):
-    template_name = "home.html"
-
-class ImportView(TemplateView):
+class ImportView(kolektiMixin, TemplateView):
     template_name = "home.html"
 
 
@@ -324,6 +326,11 @@ class TopicEditorView(kolektiMixin, View):
         context = {"body":topiccontent, "title": topictitle}
         return self.render_to_response(context)
 
+    def put(self,request):
+        print request.GET
+        return HttpResponse('saved')
+
+    
 class TopicCreateView(kolektiMixin, View):
     def post(self, request):
         modelpath = request.POST.get('modelpath')
@@ -357,4 +364,65 @@ class SearchView(kolektiMixin, View):
         results = s.search(q)
         context.update({"results":results})
         context.update({"query":q})
+        return self.render_to_response(context)
+
+
+
+class SyncView(kolektiMixin, View):
+    template_name = "synchro/main.html"
+    def get(self, request):
+        context = self.get_context_data()
+        from kolekti.synchro import synchro
+        sync = synchro(settings.KOLEKTI_BASE)
+        changes = sync.statuses()
+        newmerge = []
+        newconflict = []
+        for change in changes['merge']:
+            mergeinfo = sync.merge_dryrun(change['path'])
+            if len(mergeinfo['conflict']):
+                newconflict.append(change)
+            else:
+                newmerge.append(change)
+        changes.update({
+            "merge":newmerge,
+            "conflict":newconflict
+            })
+        context.update({
+            "history": sync.history(),
+            "changes": changes,
+            "ok":len(changes['error'])==0
+        })
+        
+        return self.render_to_response(context)
+
+class SyncStartView(kolektiMixin, View):
+    template_name = "synchro/sync.html"
+    def post(self, request):
+        message = request.POST.get("syncromsg")
+        from kolekti.synchro import synchro
+        sync = synchro(settings.KOLEKTI_BASE)
+        
+        context = {
+            'update':sync.update_all(),
+            'commit':sync.commit_all(message)
+            }
+        
+        return self.render_to_response(context)
+
+class SyncDiffView(kolektiMixin, View):
+    template_name = "synchro/diff.html"
+    def get(self, request):
+        entry = request.GET.get("file")
+        from kolekti.synchro import synchro
+        sync = synchro(settings.KOLEKTI_BASE)
+        diff,  headdata, workdata = sync.diff(entry) 
+        import difflib
+        #htmldiff = hd.make_table(headdata.splitlines(), workdata.splitlines())
+        context = {
+            'diff':difflib.ndiff(headdata.splitlines(), workdata.splitlines()),
+            'headdata':headdata,
+            'workdata':workdata,
+#            'htmldiff':htmldiff,
+            }
+        
         return self.render_to_response(context)

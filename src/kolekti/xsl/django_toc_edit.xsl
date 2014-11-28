@@ -96,12 +96,21 @@
   </xsl:template>
 
   <xsl:template match="html:a[@rel='kolekti:topic']">
-    
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="data-kolekti-topic-url">
+	<xsl:value-of select="kf:gettopic2(string(@href))"/>
+      </xsl:attribute>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template name="old">
     <div class="topic" data-kolekti-topic-href="{@href}" data-kolekti-topic-rel="kolekti:topic">
 
       <xsl:variable name="topic_url" select="kf:gettopic(string(@href))"/>
-      <xsl:variable name="topic" select="document($topic_url)"/>
-
+      <!--<xsl:variable name="topic" select="document($topic_url)"/>
+-->
       <div class="panel panel-default">
 	<div class="panel-heading">
 	  <h4 class="panel-title">
@@ -118,7 +127,11 @@
       </div>
       <div class="panel-collapse collapse" id="collapse_{generate-id()}">
 	<div class="topiccontent">
-	  <xsl:copy-of select="$topic/html:html/html:body/*"/>
+
+	  <xsl:if test="document($topic_url)">
+	    <xsl:copy-of select="document($topic_url)/html:html/html:body/*"/>
+	  </xsl:if>
+
 	</div>
       </div>
     </div>

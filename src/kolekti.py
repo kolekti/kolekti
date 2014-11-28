@@ -154,9 +154,26 @@ if __name__ == '__main__':
     defaults.update({'cmd':'search'})
     parser_search.set_defaults(**defaults)
     
+
+    # svn synchro  
+    parser_sync = subparsers.add_parser('sync', help="synchronize project")
+    subparsers_sync = parser_sync.add_subparsers(title='synchro commands')
+
+    # status
+    parser_sync_status = subparsers_sync.add_parser('status', help="get synchro status")
+    parser_sync_status.set_defaults(cmdsync='status')
+    parser_sync_update = subparsers_sync.add_parser('update', help="get synchro status")
+    parser_sync_update.set_defaults(cmdsync='update')
+
+        #parser_sync_status.add_argument('synccmd', action='store')
+
+    defaults=config.get("sync",{})
+    defaults.update({'cmd':'sync'})
+    parser_sync.set_defaults(**defaults)
+ 
     args = parser.parse_args()
 
-    #print args
+    print args
 
     if args.cmd == 'server':
         host,port = args.host.split(':')
@@ -224,3 +241,27 @@ if __name__ == '__main__':
         for res in ix.search(args.query):
             print res
 
+    if args.cmd == 'sync':
+        from kolekti import synchro
+        sync = synchro.synchro(args.base)
+        if args.cmdsync == "status":
+            changes = sync.statuses()
+            for s,l in changes.iteritems():
+                print s,len(l)
+                for item in l:
+                    logging.debug(item)
+            
+            # print 'files to be added:'
+            # print changes['added']
+            # print 'files to be removed:'
+            # print changes['removed']
+            # print 'files that have changed:'
+            # print changes['changed']
+            # print 'files with merge conflicts:'
+            # print changes['conflict']
+            # print 'unversioned files:'
+            # print changes['unversioned']
+
+        if args.cmdsync == "update":
+            updates = sync.update()
+            print updates

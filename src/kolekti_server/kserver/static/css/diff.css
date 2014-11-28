@@ -1,0 +1,8 @@
+.diff-source .diff-plus,
+.diff-dest .diff-minus {
+    color:red
+}
+.diff-source .diff-minus,
+.diff-dest .diff-plus {
+    color:white
+}

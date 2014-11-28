@@ -1,6 +1,12 @@
 var kolekti = {
     'lang' : 'fr'
 }
+
+function displayname(path) {
+    var f = basename(path)
+    return f.replace(/\.[^\.]+$/,'')
+}
+
 function basename(path) {
     return path.replace(/\\/g,'/').replace( /.*\//, '' );
 }

@@ -4,6 +4,7 @@
 #     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
 
 import os
+import sys
 import re
 from datetime import datetime
 import urllib2
@@ -15,6 +16,8 @@ import json
 import mimetypes
 mimetypes.init()
 from lxml import etree as ET
+
+LOCAL_ENCODING=sys.getfilesystemencoding()
 
 objpathes = {
     "0.6":{
