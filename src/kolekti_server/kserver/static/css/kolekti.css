@@ -24,6 +24,11 @@ a[data-toggle=collapse]:hover {
     text-decoration:none;
 }
 
+a[data-toggle=mycollapse] small,
+a[data-toggle=collapse] small
+{
+    margin-right: .5em;
+}
 
 /** sidepanel overrides */
 .side .checkbox {
@@ -38,4 +43,27 @@ a[data-toggle=collapse]:hover {
 
 .side {
     margin-top: 25px;
+}
+
+.section>.panel-heading h1,
+.section>.panel-heading h2,
+.section>.panel-heading h3,
+.section>.panel-heading h4,
+.section>.panel-heading h5,
+.section>.panel-heading h6 {
+    margin-top:0;
+    margin-bottom:0;
+    font-size:26px;
+}
+.section>.panel-heading h1 {
+}
+.section>.panel-heading h2 {
+}
+.section>.panel-heading h3 {
+}
+.section>.panel-heading h4 {
+}
+.section>.panel-heading h5 {
+}
+.section>.panel-heading h6 {
 }

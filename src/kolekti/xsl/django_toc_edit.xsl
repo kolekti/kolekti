@@ -61,6 +61,10 @@
     <xsl:element name="{local-name()}">
       <xsl:apply-templates select="@*"/>
       <a data-toggle="collapse" href="#collapse_{generate-id(ancestor::html:div)}">
+	<small>
+	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	</small>
 	<xsl:apply-templates/>
       </a>
     </xsl:element>
