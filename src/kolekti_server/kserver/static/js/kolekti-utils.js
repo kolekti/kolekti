@@ -296,5 +296,10 @@ var radicalbasename = function(path) {
     return last.split('.')[0];
 }
 
-// events
+// affix width
 
+$(document).ready(function () {
+    $(window).resize(function () {
+        $('#sideaffix').width($('#sideaffix').parent().width());
+    });
+});

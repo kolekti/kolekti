@@ -1,3 +1,26 @@
+/* room for navbar */
+body {
+    padding-top:50px;
+}
+
+/*
+.side .affix {
+    width:100%;
+}
+
+@media (min-width: 768px) {
+.side .affix, 
+.side .affix-bottom {
+width: 213px;
+}
+}
+
+@media (min-width: 992px) {
+.side .affix, .side .affix-bottom {
+width: 412px;
+}
+}
+*/
 /** toggles in collapse headers */
 a[data-toggle=mycollapse] span[aria-hidden=true] ,
 a[data-toggle=collapse] span[aria-hidden=true] {

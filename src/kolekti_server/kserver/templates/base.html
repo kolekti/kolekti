@@ -20,7 +20,7 @@
   </head>
 
   <body>
-    <div class="navbar navbar-inverse" role="navigation">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container-fluid">
 	<div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
@@ -57,7 +57,7 @@
       </div>
     </div> <!-- navbar -->
 
-
+    
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-9 col-md-9 main">
@@ -65,7 +65,9 @@
 	  {% block content %}generic template{% endblock %}
 	</div>
 	<div class="col-sm-3 col-md-3 side">
-	  {% block menu %}{% endblock %}
+	  <div data-spy="affix" data-offset-top="0" id="sideaffix">
+	    {% block menu %}{% endblock %}
+	  </div>
 	</div>
       </div>
     </div>
