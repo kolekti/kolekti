@@ -299,6 +299,7 @@ var radicalbasename = function(path) {
 // affix width
 
 $(document).ready(function () {
+    $('#sideaffix').width($('#sideaffix').parent().width());
     $(window).resize(function () {
         $('#sideaffix').width($('#sideaffix').parent().width());
     });
