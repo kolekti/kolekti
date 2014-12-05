@@ -195,8 +195,8 @@ $(document).ready( function () {
 
     // create / insert "shared" menu for every topic
 
-    var usecases = function(path) {
-	var listpath = []
+    var usecases = function(topic) {
+/*
 	if( path== undefined) {
 	    $('div[data-kolekti-topic-rel="kolekti:topic"]').each(function(i,e) {
 		listpath.push($(e).data('kolekti-topic-href'))
@@ -204,49 +204,46 @@ $(document).ready( function () {
 	} else {
 	    listpath.push(path)
 	};
+*/
+	var topicref = $(topic).data('kolekti-topic-href');
 	var tocref=$('#toc_root').data('kolekti-path');
-	$.get('/tocs/usecases/',{"pathes":listpath}).
+	$.get('/tocs/usecases/',{"pathes":[topicref]}).
 	    success(function(data){ 
-		$('.topic').each(function(i,topic) {
-		    var topicref = $(topic).data('kolekti-topic-href');
-		    if (data[topicref]) {
-			$(topic).find('.kolekti-shared-topic').remove();
-			var v = data[topicref].removevalue(tocref)
-			if(v.length)
-			    $('<span>', {
-				'class':"btn-group kolekti-shared-topic",
+		$(topic).find('.kolekti-shared-topic').remove();
+		var v = data[topicref].removevalue(tocref)
+		if(v.length)
+		    $('<span>', {
+			'class':"btn-group kolekti-shared-topic",
+			'html':[
+			    $('<button>', {
+				'type':"button",
+				'class':"btn btn-default btn-xs dropdown-toggle",
+				'data-toggle':"dropdown",
 				'html':[
-				    $('<button>', {
-					'type':"button",
-					'class':"btn btn-default btn-xs dropdown-toggle",
-					'data-toggle':"dropdown",
-					'html':[
-					    " Partagé ",
-					    $('<span>',{
-						'class':"caret",
-						'html':" "})
-					]
-				    }),
-				    $('<ul>',{
-					'class':"dropdown-menu",
-					'role':"menu",
-					'html':
-					$.map(v, function(tocref) {
-					    return $('<li>', {
-						'role':"presentation",
-						'html':$('<a>', {
-						    'role':"menuitem",
-						    'tabindex':"-1",
-						    'href':'/tocs/edit/?toc='+tocref,
-						    'html':tocref
-						})
-					    })
-					}),
-				    })]
-			    }).insertBefore($(topic).find('.kolekti-ui-topic-actions'));
-		    }
-		});
-	    })
+				    " Partagé ",
+				    $('<span>',{
+					'class':"caret",
+					'html':" "})
+				]
+			    }),
+			    $('<ul>',{
+				'class':"dropdown-menu",
+				'role':"menu",
+				'html':
+				$.map(v, function(tocref) {
+				    return $('<li>', {
+					'role':"presentation",
+					'html':$('<a>', {
+					    'role':"menuitem",
+					    'tabindex':"-1",
+					    'href':'/tocs/edit/?toc='+tocref,
+					    'html':tocref
+					})
+				    })
+				}),
+			    })]
+		    }).insertBefore($(topic).find('.kolekti-ui-topic-actions'));
+	    });
     }
 
 
@@ -433,25 +430,23 @@ $(document).ready( function () {
 	    .children('.panel-heading')
 	    .children('')
 	    .children('a');
-	// change section title
-	$('.modal-title').html('Renommer');
-	$('.modal-footer')
-	$('.modal-body').html($('<input>', {
-	    'type':'text',
-	    'id':'input_section_title',
-	    'placeholder':title_elt.text()
-	}))
-	if (!$('.modal-footer>button.browservalidate').length)
-	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
-	$('.modal-footer').off('click', '.browservalidate');
-	$('.modal-footer').on('click', '.browservalidate', function(){
-	    title_elt.html($('#input_section_title').val());
-	    enable_save();
-	    $('.modal').modal('hide')	    
-	});	
-	$('.modal').modal()
+
+	title_elt.after(
+	    $('<input>',{
+		"type":'text',
+		"value":title_elt.children('span').html()
+	    }).on('focusout',function(e){
+		if ($(this).closest('tr').data('name')!= $(this).val()) {
+		    var new_title=$(this).val();
+		    title_elt.children('span').html(new_title);
+		    enable_save();
+		    $(this).remove();
+		}
+	    })
+	);
+	title_elt.children('span').html('');
 	e.preventDefault();
-    })
+    });	
     
 
     // move topic
@@ -609,7 +604,7 @@ $(document).ready( function () {
     var newcomp = function(comp, isafter) {
 
 
-	$('.modal-title').html('Insert Element');
+	$('.modal-title').html('Insertion');
 	
 	// builds dialog
 	$('.modal-body').html(
@@ -617,7 +612,7 @@ $(document).ready( function () {
 		"class":"row",
 		"html":[
 		    $("<div>", {
-			"class":"col-sm-12 col-md-4",
+			"class":"col-sm-12 col-md-4 insert-buttons",
 			"html":[
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-new-module",
@@ -654,10 +649,14 @@ $(document).ready( function () {
 
 	// handles new topic part : select model / create topic
 
-	$('.modal').on('click','.btn-insert-new-module', function() {
+	$('.modal').on('click','.btn-insert-new-module', function(e) {
+	    e.preventDefault();
+	    $('.insert-buttons a').removeClass('active');
+	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 	    $('.insert-main').html($('<div>',{
 		"html":[
+/*
 		    $('<div>',{
 			"class":"alert alert-info",
 			"html":$("<p>",{
@@ -665,6 +664,7 @@ $(document).ready( function () {
 			    "html":"test&nbsp;"
 			})
 		    }),
+*/
 		    $('<div>',{
 			"class":"new-module-browser",
 		    }),
@@ -758,6 +758,9 @@ $(document).ready( function () {
 	// handle add existing topic : select topic
 
 	$('.modal').on('click','.btn-insert-module', function(e) {
+	    e.preventDefault();
+	    $('.insert-buttons a').removeClass('active');
+	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 	    $('.insert-main').html($('<div>',{
 		'html':[
@@ -789,7 +792,7 @@ $(document).ready( function () {
 				comp.after(topic_obj)
 			    else 
 				comp.before(topic_obj)
-			    usecases(path);
+			    usecases(topic_obj);
 			    enable_save();
 			    $('.modal').modal('hide');
 			})
@@ -798,7 +801,10 @@ $(document).ready( function () {
 
 	// handles add section : get section title & update structure
 
-	$('.modal').on('click','.btn-insert-section', function() {
+	$('.modal').on('click','.btn-insert-section', function(e) {
+	    e.preventDefault();
+	    $('.insert-buttons a').removeClass('active');
+	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 	    $('.insert-main').html([
 		$('<div>',{
@@ -825,7 +831,11 @@ $(document).ready( function () {
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:toc"]').length) {
 	    $('.modal .btn-insert-toc').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-toc', function() {
+	    $('.modal').on('click','.btn-insert-toc', function(e) {
+	    e.preventDefault();
+	    $('.insert-buttons a').removeClass('active');
+	    $(this).addClass('active');
+
 		$('.modal-footer').off('click', '.browservalidate');
 		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer une table des matières"})}));
 		$('.modal-footer').on('click', '.browservalidate', function(event) {
@@ -866,7 +876,10 @@ $(document).ready( function () {
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:index"]').length) {
 	    $('.modal .btn-insert-idx').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-idx', function() {
+	    $('.modal').on('click','.btn-insert-idx', function(e) {
+		e.preventDefault();
+		$('.insert-buttons a').removeClass('active');
+		$(this).addClass('active');
 		$('.modal-footer').off('click', '.browservalidate');
 		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer un index alphabétique"})}));
 		$('.modal-footer').on('click', '.browservalidate', function(event) {
@@ -926,7 +939,7 @@ $(document).ready( function () {
 			id = Math.round(new Date().getTime() + (Math.random() * 100)),
 			topic_obj = create_topic(path, id, topic);
 			$(comp).after(topic_obj)
-			usecases(path);
+			usecases(topic_obj);
 			$(comp).detach()
 
 		    }

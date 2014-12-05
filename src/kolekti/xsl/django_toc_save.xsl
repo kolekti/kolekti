@@ -65,4 +65,9 @@
   <xsl:template match="a[@data-toggle='collapse']">
     <xsl:apply-templates/>
   </xsl:template>
+
+  <xsl:template match="*[@data-ui='yes']"/>
+  <xsl:template match="*[@data-ui='wrap']">
+    <xsl:apply-templates/>
+  </xsl:template>
 </xsl:stylesheet>

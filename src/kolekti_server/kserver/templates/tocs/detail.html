@@ -19,31 +19,11 @@
 	    Enregistrer
 	  </button>
 </span>
-
-{% comment %}
-    <span class="pull-right">
-      <small><button class="btn btn-primary btn-xs btn-kolekti-metatoc" data-toggle="collapse" data-target="#collapseMeta" aria-expanded="false" aria-controls="collapseMeta">      
-	  Plus...       
-      </button></small>
-    </span>
-{% endcomment %}
 {% endblock %}
 
 
 {% block menu %}
     
-{% comment %}
-    <div>
-      <button type="button" class="btn btn-default btn-block disabled" id="btn_save">
-	{# <span class="glyphicon glyphicon-save"></span> #}
-	Enregistrer
-      </button>
-      <button type="button" class="btn btn-default btn-block" id="btn_save_as">
-	{# <span class="glyphicon glyphicon-save"></span> #}
-	Enregistrer sous...
-      </button><br>
-    </div>
-{% endcomment %}
     <div class="row">
       <div class="col-sm-6 col-md-6">
 	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
@@ -183,9 +163,8 @@
 
 
 {% block content %}
-
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}">
     <hr>
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}">
   {{ toccontent|safe}}
    </div>
 {% endblock %}

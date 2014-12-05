@@ -56,13 +56,14 @@ var kolekti_browser = function(args) {
     var path="";
     var root ='/';
 
-    var mode = "select";
+    var mode = "select"; // select : Shows select only - create
     var parent = ".modal-body";
     var buttonsparent = ".modal-footer";
     var titleparent = ".modal-header h4";
     var title = "Navigateur de fichiers";
     var editable_path = false
     var titlepath = false
+    var os_actions = false
     var resfuncs = {};
     var modal = true;
 
@@ -71,6 +72,7 @@ var kolekti_browser = function(args) {
     if (args && args.root) {
 	path = args.root;
         root = args.root;
+	params['root']=root
     }
     if (args && args.parent)
 	parent = args.parent;
@@ -86,6 +88,8 @@ var kolekti_browser = function(args) {
 	modal = false;
     if (args && args.editable_path && args.editable_path=='yes')
 	editable_path = true;
+    if (args && args.os_actions && args.os_actions=='yes')
+	os_actions= true;
 
     params['mode']=mode;
 
@@ -110,19 +114,57 @@ var kolekti_browser = function(args) {
 
     var update = function() {
 	params['path']=path
+	$(parent).data('path',path)
 	$.get(url, params, function(data) {
-	    $(parent).html(
-		$('<div>', {
-		    'class':'panel panel-default',
-		    'html':$('<div>', {
-			'class':'panel-body',
-			'html':[
-			    data,
-			    $('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><label class="col-sm-2 control-label" for="browserval">'+(editable_path?'Chemin':'Nom')+'</label><div class="col-sm-10">  <input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
-		    })
-		})
-	    )
+	    $(parent).html([
+		data,
+		$('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><div class="col-sm-2">'+(editable_path?'Chemin':'Nom')+' :</div><div class="col-sm-10"><input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
+			  )
 	}).done(function(){	
+	    if (!os_actions) 
+		$(parent).find('.koleti-browser-item-action').hide()
+	    else {
+		$(parent).find('.kolekti-action-remove').click(function(e){
+		    $.post('/browse/delete',{"path": path + "/" + $(this).closest('tr').data('name')})
+			.done(function(data) {
+			    console.log(data)
+			    update();
+			})
+
+		});
+		$(parent).find('.kolekti-action-rename').click(function(e){
+		    $(this).closest('tr').find('.filelink').parent().html(
+			$('<input>',{
+			    "type":'text',
+			    "value":$(this).closest('tr').data('name')
+			}).on('focusout',function(e){
+			    if ($(this).closest('tr').data('name')!= $(this).val())
+				$.post('/browse/move',
+				       {'from':path + "/" + $(this).closest('tr').data('name'),
+					'to': path + "/" + $(this).val()
+				       })
+				.done(function(data) {
+				    update();
+				})
+			    else
+				update()
+			})
+		    );
+		    $(this).closest('tr').find('input').focus();
+		});
+		$(parent).find('.kolekti-action-move').click(function(e){
+		    $.post('/browse/move',
+			   {'from':path + "/" + $(this).closest('tr').data('name'),
+			    'to': path + "/" + $(this).data('dir')
+			   })
+			.done(function(data) {
+			    console.log(data)
+			    update();
+			})
+
+		});
+	    }
+
 	    set_browser_value(path + '/');
 	    if (modal)
 		$('.modal').modal();

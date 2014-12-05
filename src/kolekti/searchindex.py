@@ -1,45 +1,75 @@
-import os.path
+import sys
+import os
+import mimetypes
+
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
 #from whoosh.analysis import StemmingAnalyser
 from whoosh.qparser import QueryParser
 from whoosh import index, writing
-from common import kolektiBase
+#from common import kolektiBase
+
+mimetypes.init()
 htmlns="http://www.w3.org/1999/xhtml"
+LOCAL_ENCODING=sys.getfilesystemencoding()
 
-class indexer(kolektiBase):
+class indexer(object):
 
-    def __init__(self, *args, **kargs):
-        super(indexer,self).__init__(*args, **kargs)        
-
-        indexpath = self.syspath('kolekti/index')
+    def __init__(self, base):
+        self._base = base
+        indexpath = os.path.join(base,'kolekti/index')
         if os.path.exists(indexpath):
             self.ix = index.open_dir(indexpath)
         else:
-            self.makedirs('kolekti/index')
+            os.makedirs(indexpath)
             schema = Schema( 
-                path = ID(stored=True),
+                path = ID(stored=True, unique=True),
                 type = ID(stored=True),
                 title = TEXT(stored=True),
                 content = TEXT(field_boost=2.0),
             )
             self.ix = index.create_in(indexpath, schema)             
 
-
-    def indexresource(self, writer, path, restype):
-        if restype in ['topic','assembly','pivot']:
-            ext = xhtmlExtractor(self._path)
-        if restype in ['variables']:
-            ext = xmlVarExtractor(self._path)
-            
-        title, content = ext.extract(path)
         
+    def indexresource(self, writer, path, restype):
+        if restype in ['directory',None]:
+            return
+        elif restype in ['topic','assembly','pivot','toc']:
+            ext = self.xhtml_extract(path)
+        elif restype in ['variables']:
+            ext = self.xml_var_extract(path)
+        else:
+            ext = self.extract(path)
+            
+        title, content = ext
         writer.add_document(path = unicode(path),
                             type = unicode(restype),
                             title = title,
                             content = content)
 
+    def guess_restype(self, path):
+        ospath = os.path.join(self._base, path)
+        mime = mimetypes.guess_type(ospath)[0]
+        if os.path.isdir(ospath):
+            return "directory"
+        if path[:9] == '/sources/':
+            if path[11:19] == '/topics/':
+                if mime == "text/html":
+                    return 'topic'
+            if path[11:17] == "/tocs/":
+                if mime == "text/html":
+                    return 'toc'
+            if path[11:17] == "/variables/":
+                if mime == "text/xml":
+                    return 'variable'
+            if path[8:15] == '/share/variables/':
+                if mime == "text/xml":
+                    return 'variable'
+        if path[:10] == '/releases/':
+            pass
+        if path[:14] == '/publications/':
+            pass
+        return None
     
-        
     def indexbase(self):
         with self.ix.writer() as writer:
             # clear index
@@ -60,30 +90,81 @@ class indexer(kolektiBase):
 
 
 
-                
-class Extractor(kolektiBase):
-    pass
+    # extractors
+    def extract(self, path):
+        return u"",self.read(path).decode(LOCAL_ENCODING)
+    
+    def xhtml_extract(self, path):
+        xtopic = self.parse(path)
+        title = unicode(xtopic.xpath("/h:html/h:head/h:title/text()",namespaces={'h':htmlns})[0])
+        content = u" ".join(xtopic.xpath("/h:html/h:body//text()",namespaces={'h':htmlns}))
+        return title, content
 
-class xhtmlExtractor(Extractor):
+    def xml_var_extract(self, path):
+        xvars = self.parse(path)
+        title = unicode(os.path.splitext(path.split('/')[-1])[0])
+        content = u" ".join(xvars.xpath("//content//text()"))
+        return title, content
+
+class indexerMixin(indexer):
+    def post_save(self, path):
+        print "post save index"
+        restype = self.guess_restype(path)
+        print "index",restype, path
+        with self.ix.writer() as writer:
+            self.indexresource(writer, path, restype)
+        try:
+            super(indexerMixin, self).post_save(path)
+        except AttributeError:
+            pass
+
+    def move_resource(self, src, dst):
+        ossrc = os.path.join(self._base, src)
+        osdst = os.path.join(self._base, dst)
+        
+        super(indexerMixin, self).move_resource(src,dst)
+        
+    def delete_resource(self, path):
+        with self.ix.writer() as writer:
+            ix.delete_by_term('path',unicode(path))
+            ix.commit()
+        super(indexerMixin, self).delete_resource(path)
+
+
+        
+                                
+class extractor(object):
+    def parse(self, path):
+        return self.read(path)
+
+    def read(self, path):
+        with open(path) as f:
+            return f.read()
+    
+    def extract(self, path):
+        return self.read(path)
+        
+class xhtml_extractor(extractor):
     def extract(self, path):
         xtopic = self.parse(path)
         title = unicode(xtopic.xpath("/h:html/h:head/h:title/text()",namespaces={'h':htmlns})[0])
         content = unicode(" ".join(xtopic.xpath("/h:html/h:body//text()",namespaces={'h':htmlns})))
         return title, content
     
-class xmlVarExtractor(Extractor):
+class xml_var_extractor(extractor):
     def extract(self, path):
         xvars = self.parse(path)
         title = unicode(os.path.splitext(path.split('/')[-1])[0])
         content = unicode(" ".join(xvars.xpath("//content//text()")))
         return title, content
     
-    
-class searcher(kolektiBase):
-    def __init__(self, *args, **kargs):
-        super(searcher,self).__init__(*args, **kargs)        
-        
-        indexpath = self.syspath('kolekti/index')
+
+
+
+class searcher(object):
+    def __init__(self, base):
+        self._base = base
+        indexpath = os.path.join(base,'kolekti/index')        
         self.ix = index.open_dir(indexpath)
 
     def search(self, query):

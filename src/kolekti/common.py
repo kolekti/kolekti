@@ -17,6 +17,9 @@ import mimetypes
 mimetypes.init()
 from lxml import etree as ET
 
+from synchro import synchroMixin
+from searchindex import indexerMixin
+
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
 objpathes = {
@@ -43,8 +46,9 @@ objpathes = {
     }
 
  
-class kolektiBase(object):
-    def __init__(self,path):
+class kolektiBase(indexerMixin, synchroMixin):
+    def __init__(self, path):
+        super(kolektiBase, self).__init__(path)
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         # logging.debug('project path : %s'%path)
         if path[-1]=='/':
@@ -53,7 +57,8 @@ class kolektiBase(object):
             self._path = path + '/'
         self._xmlparser = ET.XMLParser()
         self._xmlparser.resolvers.add(PrefixResolver())
-        
+        self._htmlparser = ET.HTMLParser()
+
         projectdir = os.path.basename(path)
 
         try:
@@ -81,6 +86,11 @@ class kolektiBase(object):
             logging.debug(traceback.format_exc() )
         self._version = self._config['version']
         # logging.debug("kolekti v%s"%self._version)
+
+        # instanciate synchro & indexer classes
+        #self.synchro = synchro(self._path)
+        #self.indexer = indexer(self._path)
+
         
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
@@ -121,6 +131,7 @@ class kolektiBase(object):
         pathparts = urllib2.url2pathname(path).split(os.path.sep)
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
+        
         return os.path.join(self._path, *pathparts)
 
     def get_script(self, plugin):
@@ -143,7 +154,7 @@ class kolektiBase(object):
                     mf = ET.parse(os.path.join(pf,'.manifest'))
                     t += "+" + mf.getroot().get('type')
             else:
-                t = mimetypes.guess_type(pf)
+                t = mimetypes.guess_type(pf)[0]
                 if t is None:
                     t = "application/octet-stream"
             res.append({'name':f, 'type':t, 'date':d})
@@ -214,6 +225,9 @@ class kolektiBase(object):
     def parse_string(self, src):
         return ET.XML(src,self._xmlparser)
     
+    def parse_html_string(self, src):
+        return ET.XML(src,self._htmlparser)
+    
     def parse(self, filename):
         src = self.__makepath(filename)
         return ET.parse(src,self._xmlparser)
@@ -227,11 +241,15 @@ class kolektiBase(object):
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(content)
-            
-    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True):
+        self.post_save(filename)
+        
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
+
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
-            f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print))
+            f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
+        self.post_save(filename)
+
             
     # for demo
     def save(self, path, content):
@@ -241,10 +259,25 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         with open(ospath, "w") as f:
             f.write(ET.tostring(mod, encoding = "utf-8", pretty_print = True))
+        # index / svn propagation
+        self.post_save(path)
 
+    def move_resource(self, src, dest):
+        super(KolektiBase,self).move_resource(src, dest)
+        
+    def delete_resource(self, path):
+        super(KolektiBase,self).delete_resource(path)
+        
+    def post_save(self, path):
+        super(kolektiBase, self).post_save(path)
+        
+
+        
     def makedirs(self, path):
         ospath = self.__makepath(path)
         os.makedirs(ospath)
+        # svn add if file did not exist
+        self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)

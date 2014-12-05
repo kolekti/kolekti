@@ -21,3 +21,7 @@ div.section>div> .panel-body {
 .btn-kolekti-metatoc {
     margin-right:20px;
 }
+
+#toc_root .panel {
+    margin-bottom:2px;
+}

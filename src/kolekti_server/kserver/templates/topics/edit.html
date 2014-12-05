@@ -5,10 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/static/mercury/distro/javascripts/mercury_loader.js?pack=bundled" type="text/javascript"></script>
     <title>Kolekti</title>
+    <link href="/static/css/kolekti-mercury.css" rel="stylesheet">
+    <link href="/static/css/kolekti-topic-edit.css" rel="stylesheet">
   </head>
   <body>
     <div data-mercury="full" id="topic_editable">
-      {{ body|safe }}
+      <!-- meta data -->
+      <div id="kolekti_meta" style ="display:none">
+	<ul>
+	  {% for m in meta %}
+	  <li data-tag="{{m.tag}}" 
+	      data-name="{{m.name}}" 
+	      data-type="{{m.type}}" 
+	      data-rel="{{m.rel}}" 
+	      data-href="{{m.href}}" 
+	      data-title="{{m.title}}" 
+	      data-content="{{m.content}}"
+	      >{{ m.0 }} : {{ m.1 }}</li>
+	  {% endfor %}
+      </div>
+      <div id="kolekti_body">
+	<!-- topic contents -->
+	{{ body|safe }}
+      </div>
     </div>
   </body>
 </html>

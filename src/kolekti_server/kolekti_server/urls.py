@@ -29,6 +29,8 @@ urlpatterns = patterns('',
 
     url(r'^browse/exists$', BrowserExistsView.as_view(),name="kolekti_browser_exists"),
     url(r'^browse/mkdir$', BrowserMkdirView.as_view(),name="kolekti_browser_mkdir"),
+    url(r'^browse/move$', BrowserMoveView.as_view(),name="kolekti_browser_move"),
+    url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
     url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 
     

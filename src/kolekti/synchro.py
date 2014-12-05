@@ -1,11 +1,14 @@
+import os
 import tempfile
 import logging
 import pysvn
-from common import  LOCAL_ENCODING
+#from common import  LOCAL_ENCODING
+import sys
+LOCAL_ENCODING=sys.getfilesystemencoding()
 
 
-def get_log_message():
-    return True, "no message specified"
+def get_log_message(arg):
+    pass
 
 class synchro(object):
     statuses_modified = [
@@ -179,3 +182,28 @@ class synchro(object):
             workdata = f.read()
         headdata = self._client.cat(path)
         return diff, headdata, workdata  
+
+
+# os operations
+class synchroMixin(synchro):
+    def post_save(self, path):
+        print "post save synchro"
+        ospath = os.path.join(self._base, path)
+        if self._client.info(ospath) is None:
+            self._client.add(ospath)
+        try:
+            super(synchroMixin, self).post_save(path)
+        except AttributeError:
+            pass
+
+    def move_resource(self, src, dst):
+        ossrc = os.path.join(self._base, src)
+        osdst = os.path.join(self._base, dst)
+        self._client.move(ossrc, osdest,force=True)
+        super(synchroMixin, self).move_resource(src,dst)
+        
+    def delete_resource(self,path):
+        ospath = os.path.join(self._base, path)
+        self._client.remove(ospath,force=True)
+        super(synchroMixin, self).delete_resource(path)
+

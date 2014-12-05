@@ -1,48 +1,82 @@
 <div class="browser">
-  <div class="">
-    <span class="pull-right">
-      <button type="button" 
-	      class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfolder"
-	      data-toggle="collapse"
-	      data-target="#foldername_collapse"
-	      aria-expanded="false"
-	      aria-controls="foldername_collapse">
-	+<span class="glyphicon glyphicon-folder-open"></span>
-      </button>
-    </span>
-    <span class="btn-group">
-      {% for step in pathsteps %}
-      <button class="btn btn-default btn-xs pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}">{{ step.label }}</button>
-      {% endfor %}
-      
-    </span>
-  </div>
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+      <span class="pull-right">
+	<button type="button" 
+		class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfolder"
+		data-toggle="collapse"
+		data-target="#foldername_collapse"
+		aria-expanded="false"
+		title="Nouveau dossier"
+		aria-controls="foldername_collapse">
+	  +<i class="fa fa-folder-open-o"></i>
+	</button>
 
-  <div class="collapse" id="foldername_collapse">
-    Nouveau dossier : <input type="text" class="form-control foldername"/>
-    <button class="btn btn-default btn-xs create-folder">ok</button>
-  </div>
+	<button type="button" 
+		class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfile"
+		data-toggle="collapse"
+		data-target="#foldername_collapse"
+		aria-expanded="false"
+		title="Nouveau fichier"
+		aria-controls="foldername_collapse">
+	  +<span class="fa fa-file-o"></i>
+	</button>
 
+      </span>
+      Dossier : &nbsp;
+      <span class="btn-group">
+	{% for step in pathsteps %} / <a class="pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#">{{ step.label }}</a>{% endfor %}
+	
+      </span>
+      <div class="collapse" id="foldername_collapse">
+	Nouveau dossier : <input type="text" class="form-control foldername"/>
+	<button class="btn btn-default btn-xs create-folder">ok</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+  <div class="panel-body">
   <table class="table table-stripped table-condensed dirlist">
     <thead>
        <tr>
-	<td></td>
-	<td><a href="#" class="sortcol" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></td>
-	<td><a href="#" class="sortcol" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></td>
+	<th></th>
+	<th><a href="#" class="sortcol" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
+	<th><a href="#" class="sortcol" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
+	<th></th>
       </tr>
     </thead>
     <tbody>
       {% for f in files %}
-      <tr  data-sort-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
-	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>
+      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
+	<td><i class="fa {{ f.icon }}"></i>
+<!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td><a href="#" data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
 	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
+	<td class="koleti-browser-item-action">
+	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
+	    <i class="fa fa-trash-o"></i>
+	  </button>
+	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
+	    <i class="fa fa-edit"></i>
+	  </button>
+	  <div class="btn-group">
+	    <button class="btn btn-xs btn-default" title="Déplacer" data-toggle="dropdown" aria-expanded="false">
+	      <i class="fa fa-folder-o"></i>
+	      <span class="caret"></span>
+	    </button>
+	    <ul  class="dropdown-menu" role="menu">
+	      <li><a href="#" class="kolekti-action-move" data-dir=".."><i class="fa fa-arrow-up"></i> Dossier parent</a><li>
+		{% for fmove in files %}
+		{% if fmove.type == "text/directory" and fmove.name != f.name %}
+	      <li><a href="#" class="kolekti-action-move" data-dir="{{fmove.name}}"><i class="fa fa-arrow-right"></i> {{fmove.name}}</a><li>
+		{% endif %}
+		{% endfor %}
+	  </div>
+	</td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
-{% comment %}
-  <input type="text" class="form-control browserfile {% if mode == "selectonly" %}hidden{% endif %}"/> 
-{% endcomment %}
-
+  </div>
+  </div>
 </div>

@@ -120,7 +120,6 @@ class plugin(pluginBase.plugin):
 #        yield(self.publisher.view.publink('index.html', self.label, '/'.join((linkurl, self.label, 'index.html'))))
 
         try:
-            print "zip ?"
             if self.get_script_parameter('zip'):
                 from zipfile import ZipFile
                 #produire un zip
@@ -130,7 +129,6 @@ class plugin(pluginBase.plugin):
                 with ZipFile(zf,"w") as zippy:
                     for root, dirs, files in os.walk(top):
                         for name in files:
-                            print root, name, zipname
                             if name == zipname:
                                 continue
                             rt=root[len(top) + 1:]

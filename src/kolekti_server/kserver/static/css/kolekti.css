@@ -90,3 +90,7 @@ a[data-toggle=collapse] small
 }
 .section>.panel-heading h6 {
 }
+a.pathstep:active,
+a.pathstep {
+color:black;
+}

@@ -18,8 +18,30 @@ from django.http import HttpResponse
 
 
 fileicons= {
-    "application/octet-stream":"glyphicon-file",
-    "text/directory":"glyphicon-folder-close",
+    "application/zip":"fa-file-archive-o",
+    'application/x-tar':"fa-file-archive-o",
+    "audio/mpeg":"fa-file-audio-o",
+    "audio/ogg":"fa-file-audio-o",
+    "application/xml":"fa-file-code-o",
+    "application/vnd.ms-excel":"fa-file-excel-o",
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':"fa-file-excel-o",
+    'application/vnd.oasis.opendocument.spreadsheet':"fa-file-excel-o",
+    'image/png':"fa-file-image-o",
+    'image/gif':"fa-file-image-o",
+    'image/jpeg':"fa-file-image-o",
+    'image/tiff':"fa-file-image-o",
+    "application/pdf":"fa-file-pdf-o",
+    'application/vnd.oasis.opendocument.presentation':"fa-file-powerpoint-o",
+    'application/vnd.ms-powerpoint':"fa-file-powerpoint-o",
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation':"fa-file-powerpoint-o",
+    'text/html':"fa-file-text-o",
+    'text/plain':"fa-file-text-o",
+    'video/mpeg':"fa-file-video-o",
+    'application/vnd.oasis.opendocument.text':"fa-file-word-o",
+    'application/msword':"fa-file-word-o",
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':"fa-file-word-o",
+    "application/octet-stream":"fa-file-o",
+    "text/directory":"fa-folder-o",
     }
 
 class kolektiMixin(TemplateResponseMixin, kolektiBase):
@@ -50,12 +72,23 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             raise Exception, xsl.error_log
         return toctitle, tocjob, str(etoc)
 
+    def localname(self,e):
+        return re.sub('\{[^\}]+\}','',e.tag)
+    
     def get_topic_edit(self, path):
         xtopic = self.parse(path.replace('{LANG}',settings.KOLEKTI_SRC_LANG))
         topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topicmeta = xtopic.xpath('/html:html/html:head/html:meta[@name]', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topicmetalist = [{'tag':self.localname(m),'name':m.get('name',None),'content':m.get('content',None)} for m in topicmeta]
+        topicmeta = xtopic.xpath('/html:html/html:head/html:title', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topicmetalist += [{'tag':self.localname(m),'title':m.text} for m in topicmeta]
+        topicmeta = xtopic.xpath('/html:html/html:head/html:link', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        topicmetalist += [{'tag':self.localname(m),'rel':m.get('rel',None),'type':m.get('type',None),'href':m.get('href',None)} for m in topicmeta]
         topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        topiccontent = ''.join([ET.tostring(t) for t in topicbody])
-        return topictitle, topiccontent
+        xsl = self.get_xsl('django_topic_edit')
+        print [str(xsl(t)) for t in topicbody]
+        topiccontent = ''.join([str(xsl(t)) for t in topicbody])
+        return topictitle, topicmetalist, topiccontent
 
     def get_tocs(self):
         return self.itertocs
@@ -200,7 +233,22 @@ class BrowserMkdirView(kolektiMixin, View):
     def post(self,request):
         path = request.POST.get('path','/')
         self.makedirs(path)
-        return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        return HttpResponse("",content_type="text/plain")
+#        return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+
+class BrowserMoveView(kolektiMixin, View):
+    def post(self,request):
+        src = request.POST.get('from','/')
+        dest = request.POST.get('to','/')
+        self.move_resource(src, dest)
+        return HttpResponse("",content_type="text/plain")
+        #return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+
+class BrowserDeleteView(kolektiMixin, View):
+    def post(self,request):
+        path = request.POST.get('path','/')
+        self.delete_resource(path)
+        return HttpResponse("",content_type="text/plain")
 
 class BrowserView(kolektiMixin, View):
     template_name = "browser/main.html"
@@ -217,7 +265,8 @@ class BrowserView(kolektiMixin, View):
         files = filter(self.__browserfilter,self.get_directory(path))
         
         for f in files:
-            f.update({'icon':fileicons.get(f.get('type'),"glyphicon-file")})
+            print f.get('type')
+            f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
         pathsteps = []
         startpath = ""
         for step in path.split("/")[1:]:
@@ -322,14 +371,33 @@ class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit.html"
     def get(self, request):
         topicpath = request.GET.get('topic')
-        topictitle, topiccontent = self.get_topic_edit(topicpath)
-        context = {"body":topiccontent, "title": topictitle}
+        topictitle, topicmeta, topiccontent = self.get_topic_edit(topicpath)
+        context = {"body":topiccontent, "title": topictitle, "meta":topicmeta}
         return self.render_to_response(context)
 
     def put(self,request):
-        print request.GET
-        return HttpResponse('saved')
+        try:
+            path=request.GET['topic']
+            param = json.loads(request.body)
+            print param
+            xmod = self.parse_html_string("<div>%s</div>"%param['content']['topic_editable']['value'])
+            xsl = self.get_xsl('django_topic_save', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
+            try:
+                emod = xsl(xmod)
+            except:
+                import traceback
+                print traceback.format_exc()
+                self.log_xsl(xsl.error_log)
+                raise Exception, xsl.error_log
 
+            print ET.tostring(xmod)
+            self.xwrite(emod, path)
+            print topic, param
+            return HttpResponse('')
+        except:
+            import  traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'error'}))
     
 class TopicCreateView(kolektiMixin, View):
     def post(self, request):
