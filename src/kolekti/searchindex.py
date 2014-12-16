@@ -1,6 +1,8 @@
 import sys
 import os
 import mimetypes
+import urllib2
+from lxml import etree as ET
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
 #from whoosh.analysis import StemmingAnalyser
@@ -12,7 +14,7 @@ mimetypes.init()
 htmlns="http://www.w3.org/1999/xhtml"
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-class indexer(object):
+class IndexManager(object):
 
     def __init__(self, base):
         self._base = base
@@ -28,6 +30,11 @@ class indexer(object):
                 content = TEXT(field_boost=2.0),
             )
             self.ix = index.create_in(indexpath, schema)             
+
+    def __makepath(self, path):
+        # returns os absolute path from relative path
+        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        return os.path.join(self._base, *pathparts)
 
         
     def indexresource(self, writer, path, restype):
@@ -89,6 +96,8 @@ class indexer(object):
                 self.indexresource(writer, pivot, 'pivot')
 
 
+    def parse(self, path):
+        return ET.parse(self.__makepath(path))
 
     # extractors
     def extract(self, path):
@@ -106,29 +115,28 @@ class indexer(object):
         content = u" ".join(xvars.xpath("//content//text()"))
         return title, content
 
-class indexerMixin(indexer):
     def post_save(self, path):
         print "post save index"
+        if path[:8] == "/drafts/":
+            return
         restype = self.guess_restype(path)
         print "index",restype, path
         with self.ix.writer() as writer:
             self.indexresource(writer, path, restype)
-        try:
-            super(indexerMixin, self).post_save(path)
-        except AttributeError:
-            pass
 
     def move_resource(self, src, dst):
         ossrc = os.path.join(self._base, src)
         osdst = os.path.join(self._base, dst)
         
-        super(indexerMixin, self).move_resource(src,dst)
-        
+
+    def copy_resource(self, src, dst):
+        ossrc = os.path.join(self._base, src)
+        osdst = os.path.join(self._base, dst)
+            
     def delete_resource(self, path):
         with self.ix.writer() as writer:
             ix.delete_by_term('path',unicode(path))
             ix.commit()
-        super(indexerMixin, self).delete_resource(path)
 
 
         

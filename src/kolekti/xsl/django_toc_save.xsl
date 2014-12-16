@@ -52,7 +52,7 @@
 	<xsl:if test="@data-kolekti-job">
 	  <xsl:element namespace='http://www.w3.org/1999/xhtml' name="meta">
 	    <xsl:attribute name="name">kolekti.job</xsl:attribute>
-	    <xsl:attribute name="content"><xsl:value-of select="@data-kolekti-job"/></xsl:attribute>
+	    <xsl:attribute name="content"><xsl:value-of select="@data-kolekti-job-path"/></xsl:attribute>
 	  </xsl:element>
 	</xsl:if> 
       </head>

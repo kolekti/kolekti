@@ -1,16 +1,18 @@
 import os
 import tempfile
 import logging
+import urllib2
 import pysvn
 #from common import  LOCAL_ENCODING
 import sys
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
+from exceptions import ExcSyncNoSync
 
 def get_log_message(arg):
     pass
 
-class synchro(object):
+class SynchroManager(object):
     statuses_modified = [
         pysvn.wc_status_kind.deleted,
         pysvn.wc_status_kind.added,
@@ -41,8 +43,17 @@ class synchro(object):
         self._base = base
         self._client = pysvn.Client()
         self._client.callback_get_log_message = get_log_message
-        self._info = self._client.info(base)
+        try:
+            self._info = self._client.info(base)
+        except pysvn.ClientError:
+            raise ExcSyncNoSync
 
+    def __makepath(self, path):
+        # returns os absolute path from relative path
+        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        return os.path.join(self._base, *pathparts)
+
+                    
     def history(self):
         return self._client.log(self._base)
         
@@ -116,57 +127,6 @@ class synchro(object):
             "merge":[c[3:] for c in out.splitlines() if c[0:3] == 'G  ']
             }
 
-
-
-
-        
-    def foo(self):
-
-        list_remote = self._client.list(self._info.url, recurse = True)
-        logging.debug('--- remote')
-        for remote_status in list_remote:
-            local_path = self._base + f[0].repos_path[1:]
-            
-            #logging.debug(path)
-            remote_rev = remote_status[0].created_rev.number
-            #logging.debug('remote rev '+str(remote_rev))
-            try:
-                if os.path.exists(local_path):
-                    local_status = self._client.status(local_path)[0]
-                    #logging.debug("local rev " + str(local_status.is_versioned))
-                    #logging.debug("local rev " + str(local_status.text_status))
-                    if local_status.entry is None:
-                        stats.update({path:{"local":local_status,
-                                            "remote":remote_status[0]}})
-                        logging.debug(path + " not present in local")
-                    
-                    else:
-                        local_rev = local_status.entry.revision.number
-                        if remote_rev > local_rev:
-                            logging.debug(path + " outdated")
-                            if local_status.text_status != pysvn.wc_status_kind.normal:
-                                stats.update({path:{"local":local_status,
-                                                    "remote":remote_status[0]}})
-
-                                logging.debug(" +--> local status modified "+str(local_status.text_status))
-            except IndexError:
-                logging.debug(path + " local not found ")
-
-
-        logging.debug('---')
-        
-        changes = self._client.status(self._base, update=True)
-        #print changes
-        return {
-            "added" :     [f.path for f in changes if f.text_status == pysvn.wc_status_kind.added],
-            "removed":    [f.path for f in changes if f.text_status == pysvn.wc_status_kind.deleted],
-            "changed":    [f.path for f in changes if f.text_status == pysvn.wc_status_kind.modified],
-            "conflict":  [f.path for f in changes if f.text_status == pysvn.wc_status_kind.conflicted],
-            "unversioned":[f.path for f in changes if f.text_status == pysvn.wc_status_kind.unversioned],
-            }
-
-
-        
     def update_all(self):
         update_revision = self._client.update(self._base, recurse = True)
         return update_revision
@@ -183,27 +143,26 @@ class synchro(object):
         headdata = self._client.cat(path)
         return diff, headdata, workdata  
 
-
-# os operations
-class synchroMixin(synchro):
     def post_save(self, path):
         print "post save synchro"
-        ospath = os.path.join(self._base, path)
+        if path[:8]=='/drafts/':
+            return
+        ospath = self.__makepath(path)
         if self._client.info(ospath) is None:
             self._client.add(ospath)
-        try:
-            super(synchroMixin, self).post_save(path)
-        except AttributeError:
-            pass
 
     def move_resource(self, src, dst):
-        ossrc = os.path.join(self._base, src)
-        osdst = os.path.join(self._base, dst)
-        self._client.move(ossrc, osdest,force=True)
-        super(synchroMixin, self).move_resource(src,dst)
+        ossrc = self.__makepath(src)
+        osdst = self.__makepath(dst)
+        self._client.move(ossrc, osdst,force=True)
         
+    def copy_resource(self, src, dst):
+        ossrc = self.__makepath(src)
+        osdst = self.__makepath(dst)
+        self._client.copy(ossrc, osdst)
+
     def delete_resource(self,path):
-        ospath = os.path.join(self._base, path)
+        ospath = self.__makepath(path)
         self._client.remove(ospath,force=True)
-        super(synchroMixin, self).delete_resource(path)
+
 

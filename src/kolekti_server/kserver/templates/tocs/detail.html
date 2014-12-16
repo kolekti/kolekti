@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ostags %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></script>
@@ -51,14 +52,15 @@
 	  Fichier de paramètres
 	  </h5>
 	  <span class="btn-group">
-	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">		  
-	      <span class="label_job">{{ tocjob }}</span>
+	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-job-path="{{ tocjob }}">		  
+	      <span class="label_job">{{ tocjob|basename }}</span>
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 	      {% for job in jobs %}
 	      <li role="presentation">
-		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob">
+		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
+		   data-kolekti-job-path="{{ job.path }}">
 		  {{ job.name }}
 		</a>
 	      </li>
@@ -66,7 +68,7 @@
 	    </ul>
 	  </span>
 {#	  <span class="pull-right"> #}
-	    <a id="editjoblink" href="/settings/editjob?job={{ tocjob }}" title="Éditer le fichier de paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
+	    <a id="editjoblink" href="/settings/job?job={{ tocjob }}.xml" title="Éditer le fichier de paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
 {#	  </span>#}
 
 	  <h5>
@@ -82,7 +84,7 @@
 	  {% for job in jobs %}
 
 
-	  <div class="row {% if job.name != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+	  <div class="row {% if job.path != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
 	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	    <div class="col-sm-12 col-md-12">
 
@@ -164,7 +166,7 @@
 
 {% block content %}
     <hr>
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}">
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}" data-kolekti-job-path="{{ tocjob }}">
   {{ toccontent|safe}}
    </div>
 {% endblock %}

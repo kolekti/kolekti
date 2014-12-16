@@ -17,8 +17,9 @@ import mimetypes
 mimetypes.init()
 from lxml import etree as ET
 
-from synchro import synchroMixin
-from searchindex import indexerMixin
+from exceptions import *
+from synchro import SynchroManager
+from searchindex import IndexManager
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
@@ -46,9 +47,9 @@ objpathes = {
     }
 
  
-class kolektiBase(indexerMixin, synchroMixin):
+class kolektiBase(object):
     def __init__(self, path):
-        super(kolektiBase, self).__init__(path)
+#        super(kolektiBase, self).__init__(path)
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         # logging.debug('project path : %s'%path)
         if path[-1]=='/':
@@ -88,8 +89,8 @@ class kolektiBase(indexerMixin, synchroMixin):
         # logging.debug("kolekti v%s"%self._version)
 
         # instanciate synchro & indexer classes
-        #self.synchro = synchro(self._path)
-        #self.indexer = indexer(self._path)
+        self.syncMgr = SynchroManager(self._path)
+        self.indexMgr = IndexManager(self._path)
 
         
     def __getattribute__(self, name):
@@ -262,16 +263,42 @@ class kolektiBase(indexerMixin, synchroMixin):
         # index / svn propagation
         self.post_save(path)
 
+
+
     def move_resource(self, src, dest):
-        super(KolektiBase,self).move_resource(src, dest)
+        try:
+            self.syncMgr.move_resource(src, dest)
+        except ExcSyncNoSync:
+            logging.info('Synchro unavailable')
+            shutil.move(self._makepath(src), self._makepath(dst))
+        self.indexMgr.move_resource(src, dest)
         
+    def copy_resource(self, src, dest):
+        try:
+            self.syncMgr.copy_resource(src, dest)
+        except ExcSyncNoSync:
+            logging.info('Synchro unavailable')
+            shutil.copy(self._makepath(src), self._makepath(dst))
+        self.indexMgr.copy_resource(src, dest)
+
     def delete_resource(self, path):
-        super(KolektiBase,self).delete_resource(path)
+        try:
+            self.syncMgr.delete_resource(path)
+        except ExcSyncNoSync:
+            logging.info('Synchro unavailable')
+            if os.path.isdir(self._makepath(path)):
+                shutil.rmtree(self._makepath(path))
+            else:
+                os.unlink(self._makepath(path))
+            
+        self.indexMgr.delete_resource(path)
         
     def post_save(self, path):
-        super(kolektiBase, self).post_save(path)
-        
-
+        try:
+            self.syncMgr.post_save(path)
+        except ExcSyncNoSync:
+            logging.info('Synchro unavailable')
+        self.indexMgr.post_save(path)
         
     def makedirs(self, path):
         ospath = self.__makepath(path)

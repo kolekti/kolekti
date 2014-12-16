@@ -23,7 +23,7 @@
 	</button>
 
       </span>
-      Dossier : &nbsp;
+
       <span class="btn-group">
 	{% for step in pathsteps %} / <a class="pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#">{{ step.label }}</a>{% endfor %}
 	
@@ -56,9 +56,14 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">
+	    <i class="fa fa-copy"></i>
+	  </button>
+	  {% if expertmode %}
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-edit"></i>
 	  </button>
+	  
 	  <div class="btn-group">
 	    <button class="btn btn-xs btn-default" title="Déplacer" data-toggle="dropdown" aria-expanded="false">
 	      <i class="fa fa-folder-o"></i>
@@ -72,6 +77,7 @@
 		{% endif %}
 		{% endfor %}
 	  </div>
+	  {% endif %}
 	</td>
       </tr>
     {% endfor %}

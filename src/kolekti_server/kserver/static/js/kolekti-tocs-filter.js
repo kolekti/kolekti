@@ -63,7 +63,8 @@ $(document).ready(function() {
 			    "id":"uc_"+i+"_"+v,
 			    "data-code":v,
 			    "html":v
-			}).click(function() {
+			}).click(function(e) {
+			    e.preventDefault();
 			    $('#uc_'+i).data('codevalue',$(this).data('code'));
 			    $('#uc_'+i+" button").html(v+" <span class='caret'/>");
 			    filter_view();

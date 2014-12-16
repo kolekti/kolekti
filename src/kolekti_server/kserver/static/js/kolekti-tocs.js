@@ -293,14 +293,14 @@ $(document).ready( function () {
 
     // publish
 
-    var get_publish_params = function(params, job) {
+    var get_publish_params = function(params) {
 	params['profiles']=[]
-	$(job).find('.publish_job_profile').each(function(i, e) {
+	$(".kolekti-job").find('.publish_job_profile').each(function(i, e) {
 	    if (e.checked)
 		params['profiles'].push($(e).data('kolekti-profile'))
 	});
 	params['scripts']=[]
-	$(job).find('.publish_job_script').each(function(i, e) {
+	$(".kolekti-job").find('.publish_job_script').each(function(i, e) {
 	    if (e.checked)
 		params['scripts'].push($(e).data('kolekti-script'))
 	});
@@ -326,36 +326,32 @@ $(document).ready( function () {
 	$('.modal-footer button').html('fermer');
 	$('.modal').modal();
 	var toc = $('#toc_root').data('kolekti-path');
-	var nojob = true;
+
 	//    $('.publish_job').each(function(i,e){
-	$('.kolekti-job').each(function(i,e){
-	    if (!$(e).hasClass('hidden')) {
-		nojob = false;
-		var job = $(e).data('kolekti-job');
-		var idjob = $(e).attr('id');
-		var label = $(e).data('kolekti-jobname');
-		$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#collapse'+idjob+'">Lancement '+label+'</a></h4></div><div id="collapse'+idjob+'" class="panel-collapse collapse in"><div class="panel-body"><div id="pub_'+idjob+'"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
-		params = get_publish_params(params, $(e))
+//	$('.kolekti-job').each(function(i,e){
+//	    if (!$(e).hasClass('hidden')) {
+//		nojob = false;
+
+	var job = $('#toc_root').data('kolekti-job');
+	var jobpath =  $('#toc_root').data('kolekti-job-path');
+//	var idjob = $(e).attr('id');
+	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div id="pub_results"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
+	params = get_publish_params(params)
 		
-		if (!(params['profiles'].length &&  params['scripts'].length)) {
-		    $('#pub_'+idjob).html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
-		} else {
-		    params['toc']=toc;
-		    params['job']=job;
-		    
-		    $.ajax({
-			url:url,
-			type:'POST',
-			data:params,
-		    }).done(function(data) {
-			$('#pub_'+idjob).html(data);
-		    });
-		}
-	    }
-	});
-	if (nojob) {
-	    $('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un lancement</p></div>').appendTo($('#pubresult'));
-	}
+	if (!(params['profiles'].length &&  params['scripts'].length)) {
+	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
+	} else {
+	    params['toc']=toc;
+	    params['job']=jobpath;
+	    
+	    $.ajax({
+		url:url,
+		type:'POST',
+		data:params,
+	    }).done(function(data) {
+		$('#pub_results').html(data);
+	    });
+	};
     })
 
     // display
@@ -400,16 +396,19 @@ $(document).ready( function () {
     })
 
     $('body').on('click','.entry_tocjob', function(e) {
-	var job = $.trim($(this).text())
-	console.log(job)
-	$('#toc_root').data('kolekti-job',job)
-	$('#toc_root').attr('data-kolekti-job',job)
-	$('#editjoblink').attr('href','/settings/editjob?job='+job)
+	var name = $.trim($(this).text())
+	var path = $(this).data('kolekti-job-path');
+	console.log(name)
+	$('#toc_root').data('kolekti-job',name)
+	$('#toc_root').attr('data-kolekti-job',name)
+	$('#toc_root').data('kolekti-job-path',path)
+	$('#toc_root').attr('data-kolekti-job-path',path)
+	$('#editjoblink').attr('href','/settings/job?path='+path)
 	$('.label_job').each(function(i,e) {
-	    $(e).html(job)}
+	    $(e).html(name)}
 			    );
 	$('.kolekti-job').addClass('hidden')
-	$('.kolekti-job-'+job).removeClass('hidden')
+	$('.kolekti-job-'+name).removeClass('hidden')
 	enable_save()
     });
 

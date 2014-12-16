@@ -139,6 +139,7 @@ class TocView(kolektiMixin, View):
         context.update({'tocfile':tocfile,'tocdisplay':tocdisplay,'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath, 'tocjob':tocjob})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
+        print context
         return self.render_to_response(context)
     
     def post(self, request):
@@ -160,7 +161,7 @@ class ReleaseListView(kolektiMixin, TemplateView):
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
-        path = request.GET.get('path')
+        path = request.GET.get('release')
         lang = request.GET.get('lang', settings.KOLEKTI_SRC_LANG)
         context = self.get_context_data()
         context.update({
@@ -243,6 +244,15 @@ class BrowserMoveView(kolektiMixin, View):
         self.move_resource(src, dest)
         return HttpResponse("",content_type="text/plain")
         #return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+
+class BrowserCopyView(kolektiMixin, View):
+    def post(self,request):
+        src = request.POST.get('from','/')
+        dest = request.POST.get('to','/')
+        self.copy_resource(src, dest)
+        return HttpResponse("",content_type="text/plain")
+        #return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+
 
 class BrowserDeleteView(kolektiMixin, View):
     def post(self,request):
@@ -440,8 +450,8 @@ class SyncView(kolektiMixin, View):
     template_name = "synchro/main.html"
     def get(self, request):
         context = self.get_context_data()
-        from kolekti.synchro import synchro
-        sync = synchro(settings.KOLEKTI_BASE)
+        from kolekti.synchro import SynchroManager
+        sync = SynchroManager(settings.KOLEKTI_BASE)
         changes = sync.statuses()
         newmerge = []
         newconflict = []
@@ -467,8 +477,8 @@ class SyncStartView(kolektiMixin, View):
     template_name = "synchro/sync.html"
     def post(self, request):
         message = request.POST.get("syncromsg")
-        from kolekti.synchro import synchro
-        sync = synchro(settings.KOLEKTI_BASE)
+        from kolekti.synchro import SynchroManager
+        sync = SynchroManager(settings.KOLEKTI_BASE)
         
         context = {
             'update':sync.update_all(),
@@ -481,8 +491,8 @@ class SyncDiffView(kolektiMixin, View):
     template_name = "synchro/diff.html"
     def get(self, request):
         entry = request.GET.get("file")
-        from kolekti.synchro import synchro
-        sync = synchro(settings.KOLEKTI_BASE)
+        from kolekti.synchro import SynchroManager
+        sync = SynchroManager(settings.KOLEKTI_BASE)
         diff,  headdata, workdata = sync.diff(entry) 
         import difflib
         #htmldiff = hd.make_table(headdata.splitlines(), workdata.splitlines())

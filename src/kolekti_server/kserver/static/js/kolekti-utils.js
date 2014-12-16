@@ -132,6 +132,38 @@ var kolekti_browser = function(args) {
 			})
 
 		});
+
+
+		$(parent).find('.kolekti-action-copy').click(function(e){
+		    var picto = $(this).closest('tr').find('td').first().clone(),
+		    name = 'Copie de '+$(this).closest('tr').data('name');
+		    $(this).closest('tr').after(
+			$('<tr>', {
+			    'html':[$('<td>',{'html':picto}),
+				    $('<td>',{
+					'html': $('<input>',{
+					    'type':'text',
+					    'class':"copynameinput",
+					    "value":name
+					}).on('focusout',function(e){
+					    $.post('/browse/copy',
+						   {'from':path + "/" + $(this).closest('tr').data('name'),
+						    'to': path + "/" + $(this).data('dir')
+						   })
+						.done(function(data) {
+						    console.log(data)
+						    update();
+						})
+					})
+				    }),
+				    $('<td>'),
+				    $('<td>')]
+			}))
+		    $('.copynameinput').focus();
+
+		});
+
+
 		$(parent).find('.kolekti-action-rename').click(function(e){
 		    $(this).closest('tr').find('.filelink').parent().html(
 			$('<input>',{

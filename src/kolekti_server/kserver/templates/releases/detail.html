@@ -1,28 +1,147 @@
+{% extends "base.html" %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-releases.css"></script>
+    <link rel="stylesheet" type="text/css"  href="/criteria.css"></script>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-releases.js"></script>
+{% endblock %}
+
+{% block title %}
+ [RELEASE]
+{% endblock %}
+
+{% block menu %}
+    <div class="row">
+      <div class="col-sm-6 col-md-6">
+	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_publish">Publier</button>
+      </div>
+      <div class="col-sm-6 col-md-6">
+	<button type="button" class="btn btn-block btn-default btn_publish" id="btn_plublish_langs">Plusieurs lanques</button>
+      </div>
+    </div>
+
+    <br/>
+
+    <div class="panel panel-default hidden">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Publier plusieurs langues
+	  </a>
+	</h4>
+      </div>
+      <div id="collapsePL" class="panel-collapse collapse on">
+	<div class="panel-body">
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="publangs" name="pl_lang" value ="all" id="pl_all"/>
+		  Toutes
+		</label>
+	      </div>
+	    </div>
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="publangs" name="pl_lang" value ="none" id="pl_none"/>
+		  Aucune
+		</label>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="row">
+	    {% for lang in langs %}
+	    <div class="col-sm-12 col-md-4">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="publangs" name="pl_lang" value ="{{lang.code}}" id="pl_{{lang.code}}"/>
+		  {{ lang.code }}
+		</label>
+	      </div>
+	    </div>
+	    {% endfor %} 
+	  </div>
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-block btn-primary btn_publish" id="btn_publish">Publier</button>
+	    </div>
+	  </div>
+	</div> <!-- panel body -->
+      </div>
+    </div>
+
+
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapseAS" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Assemblage
+	  </a>
+	</h4>
+      </div>
+      <div id="collapseAS" class="panel-collapse collapse">
+	<div class="panel-body">
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-block btn-default btn_export" id="btn_export">Export</button>
+	    </div>
+	    <div class="col-sm-6 col-md-6">
+	      <button type="button" class="btn btn-block btn-default btn_import" id="btn_import">Import</button>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+
+
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Dernières publications
+	  </a>
+	</h4>
+      </div>
+
+      <div id="collapsePU" class="panel-collapse collapse">
+	<div class="panel-body">
+	  {% include "publication.html" %}
+	  {#    <button class="btn btn-default btn-block" data-pubname="{{ pj.pubname }}">Republier</button>  #}
+	</div>
+      </div>
+    </div>
+
+
+{% endblock %}
+
+{% block content %}
+
+
+
 <div class="release">
   {% for l in kolekti.languages %}
   <button class="btn btn-default btn-xs {% if l == lang  %}active{% endif %}">{{ l }}</button>
   {% endfor %}
-{% for pubres in releasesinfo %}
-{% for pubjob in pubres %}
-<div class="panel panel-default">
-  <div class="panel-heading">
-    {% for pj in pubjob.release %}
-    <a href="/releases/assembly/edit?path={{ pj.assembly_dir }}/sources/{{ lang }}/assembly/{{ pj.pubname }}.html">{{ pj.pubname }}</a>
-    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Collapsible Group Item #1
-        </a>
-    {% endfor %}
+</div>
+{% endblock %}
 
-  </div>
-  <div class="panel-body">
-    {% include "publication.html" %}
-    <button class="btn btn-default btn-block" data-pubname="{{ pj.pubname }}">Republier</button> 
-  </div>
-  <div class="panel-footer">
-  </div>
-</div>
 
-</div>
-{% endfor %}
-{% endfor %}
-</div>
+
