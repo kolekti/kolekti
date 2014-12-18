@@ -135,6 +135,10 @@ class kolektiBase(object):
         
         return os.path.join(self._path, *pathparts)
 
+    def get_scripts_defs(self):
+        defs = os.path.join(self._appdir, 'pubscripts.xml')
+        return ET.parse(defs).getroot()
+
     def get_script(self, plugin):
         # imports a script python module
         import plugins

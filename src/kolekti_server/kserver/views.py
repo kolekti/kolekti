@@ -1,5 +1,6 @@
 import re
 import os
+from copy import copy
 from lxml import etree as ET
 import json
 from django.http import Http404
@@ -9,7 +10,7 @@ from django.views.generic import View,TemplateView, ListView
 from django.views.generic.base import TemplateResponseMixin
 from django.conf import settings
 # Create your models here.
-from kolekti.common import kolektiBase, XSLExtensions
+from kolekti.common import kolektiBase
 from kolekti.publish import PublisherExtensions
 from kolekti.searchindex import searcher
 from django.views.decorators.csrf import csrf_protect
@@ -105,9 +106,13 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 
     def get_job_edit(self,path):
         xjob = self.parse(path)
+        xjob.getroot().append(copy(self._project_settings))
+        xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
+        with open('/tmp/xml','w') as f:
+            f.write(ET.tostring(xjob, pretty_print=True))
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
         try:
-            ejob = xsl(xjob)
+            ejob = xsl(xjob, path="'%s'"%path)
         except:
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
@@ -193,13 +198,25 @@ class SettingsView(kolektiMixin, TemplateView):
 
 
 class JobEditView(kolektiMixin, TemplateView):
-    template_name = "settings.html"
+    template_name = "settings/job.html"
 
     def get(self, request):
         context = self.get_context_data()
         context.update({'jobs':self.get_jobs()})
-        context.update({'job':self.get_job_edit(request.GET.get('job'))})
+        context.update({'job':self.get_job_edit(request.GET.get('path'))})
         return self.render_to_response(context)
+
+    def post(self, request):
+        try:
+            xjob = self.parse_string(request.body)
+            jobpath = request.GET.get('path')
+            self.xwrite(xjob, jobpath)
+            return HttpResponse('ok')
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+
 
 class CriteriaView(kolektiMixin, View):
     def get(self, request):

@@ -135,14 +135,22 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def evaluate_condition(self, _, args):
         conditions = args.replace(' ','')
         list_conditions = conditions.split(";")
-        
+        return ''
+    
+    def listdir(self, _, *args):
+        path = args[0]
+        ext = args[1]        
+        return [os.path.splitext(f['name'])[0] for f in self.get_directory(path) if os.path.splitext(f['name'])[1][1:]==ext] 
+
+
+
 def test():
     testprofile = """
     <profile>
     </profile>"""
     profile = ET.XML(testprofile)
     pe = PublisherExtensions(profile)
-    
+    pe.listdir('/sources')
 
 class Publisher(PublisherMixin, kolektiBase):
     """Manage all publication process functions, assembly tocs, filters assemblies, invoke scripts

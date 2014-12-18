@@ -24,7 +24,7 @@
 	      </div>
 	      <div class="panel-body">
 		{% for job in jobs %}
-		  <a href="editjob?job=job.path">{{ job.name }}</a><br>
+		  <a href="/settings/job?path={{job.path}}">{{ job.name }}</a><br>
 		{% endfor %}
 	      </div>
 	    </div>

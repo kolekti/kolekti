@@ -1,0 +1,17 @@
+{% extends "settings.html" %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-job.css"></script>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-job.js"></script>
+{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+
+{{ job|safe }}
+
+{% endblock %}
