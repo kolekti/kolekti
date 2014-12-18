@@ -57,7 +57,7 @@
 
   <xsl:template match="/job/criteria">
     <div class="panel panel-default">
-      <div class="panel-heading"><h4>Filtres à l'assemblage</h4></div>
+      <div class="panel-heading"><h4>Préfiltrage<!--Filtres à l'assemblage--></h4></div>
       <div class="panel-body" id="crit_assembly">
 	<xsl:apply-templates select="/job/settings/criteria">
 	  <xsl:with-param name="profile" select="''"/>
