@@ -26,12 +26,13 @@
   exclude-result-prefixes="kf html"
   version="1.0">
 
-  <xsl:output  method="xml" 
+  <xsl:output  method="html" 
                indent="yes"/>
 
   <xsl:param name="path"/>
 
   <xsl:template match="/">
+    <h4>Paramètres de publication</h4>
     <h2><span id="job_id"><xsl:value-of select='job/@id'/></span>
 	<span class="pull-right">
 	  <button type="button" class="btn btn-default disabled hidden" id="btn_save" data-path="{$path}">
@@ -43,6 +44,10 @@
     <xsl:apply-templates select="/job/criteria"/>
     <xsl:apply-templates select="/job/profiles"/>
     <xsl:apply-templates select="/job/scripts"/>
+    <div class="job-templates hidden">
+      <xsl:call-template name="profil"/>
+      <xsl:call-template name="pubscripts"/>
+    </div>
   </xsl:template>
 
   <xsl:template match="dir"/>
@@ -57,88 +62,160 @@
 
   <xsl:template match="/job/criteria">
     <div class="panel panel-default">
-      <div class="panel-heading"><h4>Préfiltrage<!--Filtres à l'assemblage--></h4></div>
-      <div class="panel-body" id="crit_assembly">
-	<xsl:apply-templates select="/job/settings/criteria">
-	  <xsl:with-param name="profile" select="''"/>
-	</xsl:apply-templates>
+      <div class="panel-heading">
+	<a class="collapsed" data-toggle="collapse" href="#collapse_{generate-id()}">
+	  <small data-ui="yes">
+	    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	    <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	  </small>
+	  <strong>Filtrage avant assemblage</strong>
+	</a>
+      </div>
+
+      <div class="panel-collapse collapse" id="collapse_{generate-id()}">
+	<div class="panel-body" id="crit_assembly">
+	  <div class="form form-horizontal">
+	    <xsl:apply-templates select="/job/settings/criteria">
+	      <xsl:with-param name="profile" select="''"/>
+	    </xsl:apply-templates>
+	  </div>
+	</div>
       </div>
     </div>
   </xsl:template>
 
   <xsl:template match="/job/profiles">
     <div class="panel panel-default">
-      <div class="panel-heading"><h4>Profils de publication</h4></div>
-      <div class="panel-body">
-	<xsl:apply-templates/>
-	<button class="btn btn-default btn-sm" id="btn_add_profil">Ajouter un profil</button>
+      <div class="panel-heading">
+	<a data-toggle="collapse" href="#collapse_{generate-id()}">
+	  <small data-ui="yes">
+	    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	    <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	  </small>
+	  <strong>Profils</strong>
+	</a>
+      </div>
+      <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
+	<div class="panel-body" id="job_profiles">
+	  <xsl:apply-templates/>
+	  <button class="btn btn-default btn-sm" id="btn_add_profil">Ajouter un profil</button>
+	</div>
       </div>
     </div>
   </xsl:template>
 
   <xsl:template match="/job/scripts">
     <div class="panel panel-default">
-      <div class="panel-heading"><h4>Scripts de publication</h4></div>
-      <div class="panel-body">
-	<div class="form-group">
+      <div class="panel-heading">
+	<a data-toggle="collapse" href="#collapse_{generate-id()}">
+	  <small data-ui="yes">
+	    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	    <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	  </small>
+	  <strong>Sorties</strong>
+	</a>
+      </div>
+      <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
+	<div class="panel-body" id="job_scripts">
 	  <xsl:apply-templates/>
-	</div>
-	<div class="btn-group">
-	  <button class="btn btn-default btn-sm dropdown-toggle" id="btn_add_script" data-toggle="dropdown" aria-expanded="false">
-	    Ajouter un script
-	    <span class="caret"/>
-	  </button>
-	  <ul class="dropdown-menu" role="menu">
-	    <xsl:apply-templates select="/job/settings/scripts"/>
-	  </ul>
+	  <div class="btn-group">
+	    <button class="btn btn-default btn-sm dropdown-toggle" id="btn_add_script" data-toggle="dropdown" aria-expanded="false">
+	      Ajouter une sortie
+	      <span class="caret"/>
+	    </button>
+	    <ul class="dropdown-menu" role="menu">
+	      <xsl:apply-templates select="/job/settings/scripts" mode="scripts_menu"/>
+	    </ul>
+	  </div>
 	</div>
       </div>
     </div>
   </xsl:template>
 
-  <xsl:template match="pubscript">
-    <li><a href="#"><xsl:value-of select="name"/></a></li>
+  <xsl:template match="pubscript" mode="scripts_menu">
+    <li><a href="#" class="script-menu-item" data-kolekti-script-id="{@id}"><xsl:value-of select="name"/></a></li>
   </xsl:template>
 
-  <xsl:template match="profile">
-    <div class="job-comp profile">
-      <div class="row">
-	<div class="col-sm-3 col-xs-12">Profil</div>
-	<div class="col-sm-6 col-xs-12">
-	  <input type="text" name="profile_name" class="profile-name" value="{label}"/>
+  <xsl:template match="profile" name="profil">
+    <div class="panel panel-default job-comp profile">
+      <div class="panel-body">
+	<div class="row">
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="row">
+	      <div class="col-sm-6 col-xs-12">
+		<label for="profil_name_{generate-id()}"><strong>Nom du profil</strong></label>
+	      </div>
+	      <div class="col-sm-6 col-xs-12">
+		<input type="text" name="profile_name" class="profile-name" value="{label}" id="profil_name_{generate-id()}"/>
+	      </div>
+	      <div class="col-sm-6 col-xs-12">
+		<label for="profil_dir_{generate-id()}">Dossier</label>
+	      </div>
+	      <div class="col-sm-6 col-xs-12">
+		<input type="text" name="profile_dir" class="profile-dir" value="{dir/@value}" id="profil_dir_{generate-id()}" />
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="profile-enabled">
+		  <xsl:if test="@enabled='1'">
+		    <xsl:attribute name="checked">checked</xsl:attribute>
+		  </xsl:if>
+		</input>
+		<xsl:text> Profil actif</xsl:text>
+	      </label>
+	    </div>
+	  </div>
 	</div>
-	<div class="col-sm-3 col-xs-12">
+	<h5>Filtres à la publication</h5>
+	<xsl:variable name="profile" select="label"/>
+	<xsl:apply-templates select="/job/settings/criteria">
+	  <xsl:with-param name="profile" select="$profile"/>
+	</xsl:apply-templates>
+	<hr/>
+	<div class="pull-right">
 	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
 	</div>
       </div>
-      <div class="row">
-	<div class="col-sm-3 col-xs-12">Dossier</div>
-	<div class="col-sm-6 col-xs-12">
-	  <input type="text" name="profile_dir" class="profile-dir" value="{dir/@value}"/>
-	</div>
-	<div class="col-sm-3 col-xs-12">
-	  <input type="checkbox">
-	    <xsl:if test="@enabled='1'">
-	      <xsl:attribute name="checked">checked</xsl:attribute>
-	    </xsl:if>
-	  </input>
-	  <xsl:text> Activé</xsl:text>
-
-	</div>
-	
-      </div>
-      <h5>Filtres à la publication</h5>
-      <xsl:variable name="profile" select="label"/>
-      <xsl:apply-templates select="/job/settings/criteria">
-	<xsl:with-param name="profile" select="$profile"/>
-      </xsl:apply-templates>
-      <hr/>
     </div>
+  </xsl:template>
+  
+  <xsl:template name="criterion-value">
+    <xsl:param name="profile"/>
+    <xsl:param name="nofilter" select="'Pas de filtrage'"/>
+    <xsl:choose>
+      <xsl:when test="$profile = ''">
+	<xsl:choose>
+	  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
+	    <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
+	  </xsl:when>
+	  <xsl:otherwise>
+	    <xsl:value-of select="$nofilter"/>
+	  </xsl:otherwise>
+	</xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:choose>
+	  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
+	    <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
+	  </xsl:when>
+	  <xsl:otherwise><xsl:value-of select="$nofilter"/></xsl:otherwise>
+	</xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="settings/criteria/criterion">
     <xsl:param name="profile"/>
-    <div class="row kolekti-crit">
+    <div class="row kolekti-crit" data-kolekti-crit-code="{@code}">
+      <xsl:attribute name="data-kolekti-crit-value">
+	<xsl:call-template name="criterion-value">
+	  <xsl:with-param name="profile" select="$profile"/>
+	  <xsl:with-param name="nofilter" select="''"/>
+	</xsl:call-template>
+      </xsl:attribute>
       <div class="col-sm-3 col-xs-12 kolekti-crit-code">
 	<xsl:value-of select="@code"/>
       </div>
@@ -146,24 +223,10 @@
 	<div class="btn-group">
 	  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
 	    <span class="kolekti-crit-value-menu">
-	      <xsl:choose>
-		<xsl:when test="$profile = ''">
-		  <xsl:choose>
-		    <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
-		      <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
-		    </xsl:when>
-		    <xsl:otherwise>non filtré</xsl:otherwise>
-		  </xsl:choose>
-		</xsl:when>
-	      <xsl:otherwise>
-		<xsl:choose>
-		  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
-		    <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
-		  </xsl:when>
-		    <xsl:otherwise>non filtré</xsl:otherwise>
-		  </xsl:choose>
-	      </xsl:otherwise>
-	    </xsl:choose>
+	      <xsl:call-template name="criterion-value">
+		<xsl:with-param name="profile" select="$profile"/>
+		<xsl:with-param name="nofilter" select="'Pas de filtrage'"/>
+	      </xsl:call-template>
 	    </span>
 	    <xsl:text> </xsl:text>
 	    <span class="caret"/>
@@ -173,7 +236,11 @@
 	      <xsl:with-param name="profile" select="$profile"/>
 	    </xsl:apply-templates>
 	    <li class="divider"></li>
-	    <li><a href="#" class="crit-val-menu-entry">non filtré</a></li>
+	    <xsl:if test="$profile != ''">
+	      <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="*">Sélection utilisateur</a></li>
+	      <li class="divider"></li>
+	    </xsl:if>
+	    <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="">Pas de filtrage</a></li>
 	  </ul>
 	</div>
       </div>
@@ -181,33 +248,52 @@
   </xsl:template>
 
   <xsl:template match="settings/criteria/criterion/value">
-    <li><a href="#" class="crit-val-menu-entry"><xsl:value-of select="."/></a></li>
+    <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="{.}"><xsl:value-of select="."/></a></li>
   </xsl:template>
 
+
+
+
+
   <xsl:template match="script">
-    <div class="job-comp script" data-kolekti-script-id="{/job/settings/scripts/pubscript[@id=current()/@name]/@id}">
-      <div class="row">
-	<div class="col-sm-9 col-xs-12">
-	  <h5><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></h5>
+    <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
+      <div class="panel-body">
+	<div class="row">
+	  <div class="col-sm-9 col-xs-12">
+	    <h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>	    
+	  </div>
 	</div>
-	<div class="col-sm-3 col-xs-12">
-	  <button class="btn btn-default btn-xs suppr" id="btn_add_profil">Supprimer</button>
+
+	<div class="row">
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="row">
+	      <div class="col-sm-6 col-xs-12">
+		<label for="script_suffix_{generate-id()}">Suffixe</label>
+	      </div>
+	      <div class="col-sm-6 col-xs-12">
+		<input type="text" name="script_suffix" class="script-suffix" id="script_suffix_{generate-id()}" value="{suffix}"/>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="checkbox">
+	      <label for="script_enabled_{generate-id()}">
+		<input type="checkbox" class="script-enabled">
+		  <xsl:if test="@enabled='1'">
+		    <xsl:attribute name="checked">checked</xsl:attribute>
+		  </xsl:if>
+		</input>
+		<xsl:text> Sortie active</xsl:text>
+	      </label>
+	    </div>
+	  </div>
+	</div>
+	<xsl:apply-templates select="parameters"/>
+	<hr/>
+	<div class="pull-right">
+	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
 	</div>
       </div>
-      <div class="row">
-	<div class="col-sm-3 col-xs-12">Suffixe</div>
-	<div class="col-sm-6 col-xs-12"><input type="text" name="script_suffix" class="script-suffix" value="{suffix}"/></div>
-	<div class="col-sm-3 col-xs-12">
-	  <input type="checkbox">
-	    <xsl:if test="@enabled='1'">
-	      <xsl:attribute name="checked">checked</xsl:attribute>
-	    </xsl:if>
-	  </input>
-	  <xsl:text> Activé</xsl:text>
-	</div>
-      </div>
-      <xsl:apply-templates select="parameters"/>
-      <hr/>
     </div>
   </xsl:template>
 
@@ -217,41 +303,91 @@
     </xsl:apply-templates>
   </xsl:template>
 
-  <xsl:template match="pubscript/parameters/parameter">
-    <xsl:param name="value"/>
+  <xsl:template name="pubscripts">
+    <xsl:apply-templates select="/job/settings/scripts/pubscript"/>
+  </xsl:template>
 
-    <div class="row script-parameter" data-script-param-name='{@name}' data-script-param-type='{@type}'>
+  <xsl:template match="pubscript"> <!-- template for new scripts -->
+    <div class="panel panel-default job-comp script {@id}" data-kolekti-script-id="{@id}">
+      <div class="panel-body">
+	<div class="row">
+	  <div class="col-sm-9 col-xs-12">
+	    <h5><strong><xsl:value-of select="name"/></strong></h5>
+	  </div>
+	</div>
+	
+	<div class="row">
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="row">
+	      <div class="col-sm-6 col-xs-12">
+		<label for="script_suffix_{generate-id()}">Suffixe</label>
+	      </div>
+	      <div class="col-sm-6  col-xs-12">
+		<input type="text" name="script_suffix" class="script-suffix" id="script_suffix_{generate-id()}" value=""/>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-sm-6 col-xs-12">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="script-enabled">
+		  <xsl:if test="@enabled='1'">
+		    <xsl:attribute name="checked">checked</xsl:attribute>
+		  </xsl:if>
+		</input>
+		<xsl:text> Sortie active</xsl:text>
+	      </label>
+	    </div>
+	  </div>
+	</div>
+	<xsl:apply-templates select="parameters/parameter"/>
+	<hr/>
+	<div class="pull-right">
+	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+
+
+
+  <xsl:template match="pubscript/parameters/parameter">
+    <xsl:param name="value" select="''"/>
+
+    <div class="row script-parameter" data-script-param-name='{@name}' data-script-param-type='{@type}' data-kolekti-param-value="{$value}">
       <div class="col-sm-3 col-xs-12">
-	<xsl:value-of select="@label"/>
+	<label for="script-param_{generate-id()}">
+	  <xsl:value-of select="@label"/>
+	</label>
       </div>
       <div class="col-sm-9 col-xs-12">
 	<xsl:choose>
 	  <xsl:when test="@type='filelist'">
-	    <div class="btn-group">
-	      <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-		<span class="kolekti-crit-value-menu">
+	    <div class="btn-group kolekti-param-menu">
+	      <button type="button" class="btn btn-default btn-sm dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
+		<span class="kolekti-param-value-menu">
 		  <xsl:value-of select="$value"/>
+		  <xsl:text> </xsl:text>
 		</span>
 		<xsl:text> </xsl:text>
 		<span class="caret"/>
 	      </button>
 	      <ul class="dropdown-menu" role="menu">
 		<xsl:for-each select="kf:listdir(string(@dir),string(@ext))">
-		  <li><a href="#"><xsl:value-of select="."/></a></li>
+		  <li><a href="#" class="script-param-menu-entry" data-kolekti-param-value="{.}"><xsl:value-of select="."/></a></li>
 		</xsl:for-each>
 	      </ul>
 	    </div>
 	  </xsl:when>
 	  <xsl:when test="@type='boolean'">
-	    <input type="checkbox" class="kolekti-crit-value">
+	    <input type="checkbox" class="kolekti-crit-value" id="script-param_{generate-id()}">
 	      <xsl:if test="$value='yes'">
 		<xsl:attribute name="checked">checked</xsl:attribute>
 	      </xsl:if>
 	    </input>
-	    <xsl:value-of select="label"/>
 	  </xsl:when>
 	  <xsl:when test="@type='text'">
-	    <input type="text" class="kolekti-crit-value" value="{$value}"/>
+	    <input type="text" class="kolekti-crit-value" value="{$value}" id="script-param_{generate-id()}"/>
 	  </xsl:when>
 	</xsl:choose>
       </div>

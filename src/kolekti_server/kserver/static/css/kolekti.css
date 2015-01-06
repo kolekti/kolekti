@@ -94,3 +94,7 @@ a.pathstep:active,
 a.pathstep {
 color:black;
 }
+
+label {
+    font-weight:100;
+}

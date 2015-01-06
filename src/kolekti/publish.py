@@ -140,7 +140,10 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def listdir(self, _, *args):
         path = args[0]
         ext = args[1]        
-        return [os.path.splitext(f['name'])[0] for f in self.get_directory(path) if os.path.splitext(f['name'])[1][1:]==ext] 
+        try:
+            return [os.path.splitext(f['name'])[0] for f in self.get_directory(path) if os.path.splitext(f['name'])[1][1:]==ext]
+        except:
+            return ["Error: path %s does not exist"%path]
 
 
 

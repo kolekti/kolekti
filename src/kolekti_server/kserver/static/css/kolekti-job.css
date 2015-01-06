@@ -1,0 +1,9 @@
+.kolekti-crit.disabled {
+    color:#808080;
+    display:none;
+}
+
+.job-comp h5 {
+    font-weight:700;
+    border-bottom: 1px solid #E0E0E0;
+}
