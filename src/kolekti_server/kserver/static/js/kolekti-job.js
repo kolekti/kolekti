@@ -12,16 +12,20 @@ $(document).ready(function() {
 	buf += $('#job_id').html();
 	buf += "'>";
 	buf += "<dir value='"+$('#job_id').html()+"'/>";
+
+	// pre assembly filters
 	buf += "<criteria>";
 	$("#crit_assembly .kolekti-crit").each(function(i,e) {
-	    var val = $(e).find('.kolekti-crit-value-menu').html();
-	    if (val != 'non filtré') {
-		buf += "<criterion code='"+ $(e).find('.kolekti-crit-code').html() +"' value='"+ val +"'/>" ;
+	    var val = $(e).data('kolekti-crit-value');
+	    if (val != '') {
+		buf += "<criterion code='"+ $(e).data('kolekti-crit-code') +"' value='"+ val +"'/>" ;
 	    }
 	});
 	buf += "</criteria>";
+
+	// profiles
 	buf += "<profiles>";
-	$(".profile").each(function(i,e) {
+	$("#job_body .profile").each(function(i,e) {
 	    buf += "<profile enabled='";
 	    if ($(e).find('.profile-enabled').get(0).checked) {
 		buf += "1"
@@ -33,8 +37,11 @@ $(document).ready(function() {
 	    buf += "<dir value='" + $(e).find('.profile-dir').val() + "'/>";
 	    buf += "<criteria>";
 	    $(e).find(".kolekti-crit").each(function(i,c) {
-		var val = $(c).find('.kolekti-crit-value-menu').html();
-		if (val != 'non filtré') {
+		var val = $(c).data('kolekti-crit-value');
+		if (val == '*') {
+		    buf += "<criterion code='"+ $(c).data('kolekti-crit-code') +"'/>" ;
+		}
+		else if (val != '') {
 		    buf += "<criterion code='"+ $(c).find('.kolekti-crit-code').html() +"' value='"+ val +"'/>" ;
 		}
 	    });
@@ -43,7 +50,7 @@ $(document).ready(function() {
 	});
 	buf += "</profiles>";
 	buf += "<scripts>";
-	$(".script").each(function(i,e) {
+	$("#job_body .script").each(function(i,e) {
 	    buf += "<script name='"+$(e).data("kolekti-script-id")+"' enabled='";
 	    if ($(e).find('.script-enabled').get(0).checked) {
 		buf += "1"
@@ -123,6 +130,21 @@ $(document).ready(function() {
 	enable_save();
     })
 
+    // change any text field
+    $('#job_body input[type=text]').on('change', function(e) {
+	enable_save();
+    })
+
+    // click on active script or profile
+    $('.script-enabled').on('click', function(e) {
+	enable_save();
+    })
+
+    $('.profile-enabled').on('click', function(e) {
+	enable_save();
+    })
+
+
     //click on add profile
     $('#btn_add_profil').on('click', function(e) {
 	$('#job_profiles .profile').last().after(
@@ -167,4 +189,5 @@ $(document).ready(function() {
 	    }
 	});
     };
+    update_filters();
 })

@@ -34,16 +34,17 @@
   <xsl:template match="/">
     <h4>Paramètres de publication</h4>
     <h2><span id="job_id"><xsl:value-of select='job/@id'/></span>
-	<span class="pull-right">
-	  <button type="button" class="btn btn-default disabled hidden" id="btn_save" data-path="{$path}">
-	    Enregistrer
-	  </button>
-	</span>
-
+    <span class="pull-right">
+      <button type="button" class="btn btn-default disabled hidden" id="btn_save" data-path="{$path}">
+	Enregistrer
+      </button>
+    </span>
     </h2>
-    <xsl:apply-templates select="/job/criteria"/>
-    <xsl:apply-templates select="/job/profiles"/>
-    <xsl:apply-templates select="/job/scripts"/>
+    <div id="job_body">
+      <xsl:apply-templates select="/job/criteria"/>
+      <xsl:apply-templates select="/job/profiles"/>
+      <xsl:apply-templates select="/job/scripts"/>
+    </div>
     <div class="job-templates hidden">
       <xsl:call-template name="profil"/>
       <xsl:call-template name="pubscripts"/>
@@ -173,6 +174,7 @@
 	<xsl:variable name="profile" select="label"/>
 	<xsl:apply-templates select="/job/settings/criteria">
 	  <xsl:with-param name="profile" select="$profile"/>
+	  <xsl:with-param name="template" select="local-name() != 'profile'"/>
 	</xsl:apply-templates>
 	<hr/>
 	<div class="pull-right">
@@ -185,11 +187,12 @@
   <xsl:template name="criterion-value">
     <xsl:param name="profile"/>
     <xsl:param name="nofilter" select="'Pas de filtrage'"/>
+    <xsl:param name="userselect" select="'Sélection utilisateur'"/>
     <xsl:choose>
       <xsl:when test="$profile = ''">
 	<xsl:choose>
-	  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
-	    <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
+	  <xsl:when test="/job/criteria/criterion[@code=current()/@code]">
+	    <xsl:value-of select="/job/criteria/criterion[@code=current()/@code]/@value"/>
 	  </xsl:when>
 	  <xsl:otherwise>
 	    <xsl:value-of select="$nofilter"/>
@@ -201,6 +204,9 @@
 	  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value">
 	    <xsl:value-of select="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]/@value"/>
 	  </xsl:when>
+	  <xsl:when test="/job/profiles/profile[label=$profile]/criteria/criterion[@code=current()/@code]">
+	    <xsl:value-of select="$userselect"/>
+	  </xsl:when>
 	  <xsl:otherwise><xsl:value-of select="$nofilter"/></xsl:otherwise>
 	</xsl:choose>
       </xsl:otherwise>
@@ -209,11 +215,13 @@
 
   <xsl:template match="settings/criteria/criterion">
     <xsl:param name="profile"/>
+    <xsl:param name="template" select="false()"/>
     <div class="row kolekti-crit" data-kolekti-crit-code="{@code}">
       <xsl:attribute name="data-kolekti-crit-value">
 	<xsl:call-template name="criterion-value">
 	  <xsl:with-param name="profile" select="$profile"/>
 	  <xsl:with-param name="nofilter" select="''"/>
+	  <xsl:with-param name="userselect" select="'*'"/>
 	</xsl:call-template>
       </xsl:attribute>
       <div class="col-sm-3 col-xs-12 kolekti-crit-code">
@@ -225,7 +233,6 @@
 	    <span class="kolekti-crit-value-menu">
 	      <xsl:call-template name="criterion-value">
 		<xsl:with-param name="profile" select="$profile"/>
-		<xsl:with-param name="nofilter" select="'Pas de filtrage'"/>
 	      </xsl:call-template>
 	    </span>
 	    <xsl:text> </xsl:text>
@@ -236,7 +243,7 @@
 	      <xsl:with-param name="profile" select="$profile"/>
 	    </xsl:apply-templates>
 	    <li class="divider"></li>
-	    <xsl:if test="$profile != ''">
+	    <xsl:if test="$template or $profile != ''">
 	      <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="*">Sélection utilisateur</a></li>
 	      <li class="divider"></li>
 	    </xsl:if>
@@ -277,7 +284,7 @@
 	  </div>
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="checkbox">
-	      <label for="script_enabled_{generate-id()}">
+	      <label>
 		<input type="checkbox" class="script-enabled">
 		  <xsl:if test="@enabled='1'">
 		    <xsl:attribute name="checked">checked</xsl:attribute>
@@ -330,11 +337,7 @@
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="checkbox">
 	      <label>
-		<input type="checkbox" class="script-enabled">
-		  <xsl:if test="@enabled='1'">
-		    <xsl:attribute name="checked">checked</xsl:attribute>
-		  </xsl:if>
-		</input>
+		<input type="checkbox" class="script-enabled" checked="checked"/>
 		<xsl:text> Sortie active</xsl:text>
 	      </label>
 	    </div>
