@@ -136,7 +136,8 @@ var kolekti_browser = function(args) {
 
 		$(parent).find('.kolekti-action-copy').click(function(e){
 		    var picto = $(this).closest('tr').find('td').first().clone(),
-		    name = 'Copie de '+$(this).closest('tr').data('name');
+		    name = 'Copie de '+$(this).closest('tr').data('name'),
+		    srcname = $(this).closest('tr').data('name');
 		    $(this).closest('tr').after(
 			$('<tr>', {
 			    'html':[$('<td>',{'html':picto}),
@@ -147,8 +148,8 @@ var kolekti_browser = function(args) {
 					    "value":name
 					}).on('focusout',function(e){
 					    $.post('/browse/copy',
-						   {'from':path + "/" + $(this).closest('tr').data('name'),
-						    'to': path + "/" + $(this).data('dir')
+						   {'from':path + "/" + srcname,
+						    'to': path + "/" + $(this).val()
 						   })
 						.done(function(data) {
 						    console.log(data)
@@ -369,6 +370,8 @@ var radicalbasename = function(path) {
 //    return last;
     return last.split('.')[0];
 }
+
+
 
 // affix width
 
