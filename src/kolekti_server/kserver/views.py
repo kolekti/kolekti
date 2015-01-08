@@ -189,12 +189,15 @@ class ImportView(kolektiMixin, TemplateView):
 
 
 class SettingsView(kolektiMixin, TemplateView):
-    template_name = "settings.html"
+    template_name = "settings/list.html"
 
     def get(self, request):
         context = self.get_context_data()
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
+
+class JobCreateView(kolektiMixin, TemplateView):
+    template_name = "home.html"
 
 
 class JobEditView(kolektiMixin, TemplateView):
