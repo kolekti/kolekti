@@ -36,13 +36,13 @@
 	</div>
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	  <ul class="nav navbar-nav">
-	    <li><a href="/tocs/">Trames</a></li>
-	    <li><a href="/topics/">Modules</a></li>
-	    <li><a href="/images/">Images</a></li>
-	    <li><a href="/releases/">Versions</a></li>
-	    <li><a href="/import/">Import</a></li>
-	    <li><a href="/sync/">Synchro</a></li>
-	    <li><a href="/settings/">Préférences</a></li>
+	    <li><a href="/tocs/" {% block current_trames %}{% endblock %}>Trames</a></li>
+	    <li><a href="/topics/" {% block current_topics %}{% endblock %}>Modules</a></li>
+	    <li><a href="/images/" {% block current_images %}{% endblock %}>Images</a></li>
+	    <li><a href="/releases/" {% block current_releases %}{% endblock %}>Versions</a></li>
+	    <li><a href="/import/" {% block current_import %}{% endblock %}>Import</a></li>
+	    <li><a href="/sync/" {% block current_sync %}{% endblock %}>Synchro</a></li>
+	    <li><a href="/settings/" {% block current_settings %}{% endblock %}>Préférences</a></li>
 	  </ul>
 	  <ul class="nav navbar-nav navbar-right">
             <li><a href="http://www.kolekti.org/projects/kolekti/wiki">kolekti.org</a></li>
