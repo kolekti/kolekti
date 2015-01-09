@@ -225,8 +225,6 @@ class Publisher(PublisherMixin, kolektiBase):
             
         self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
 
-        logging.debug('********************************** copy media')
-        self.copy_media(assembly, xjob, assembly_dir)
 
         logging.debug('********************************** create settings')
         self.create_settings(xjob, pubname, assembly_dir)
@@ -234,6 +232,8 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.debug('********************************** copy scripts resources')
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
             # logging.debug(profile)
+            logging.debug('********************************** copy media')
+            self.copy_media(assembly, profile, assembly_dir)
 
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
@@ -368,6 +368,7 @@ class Publisher(PublisherMixin, kolektiBase):
     def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
+            #print ET.tostring(profile)
             ref = self.substitute_criteria(ref, profile)
             med.set('src',self.substitute_criteria(ref, profile)[1:])
             logging.debug('image src : %s'%ref)
