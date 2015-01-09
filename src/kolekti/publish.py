@@ -787,7 +787,7 @@ class DraftPublisher(Publisher):
             else:
                 xjob = self.parse(job)
             # assembly
-            print ET.tostring(job)
+            # print ET.tostring(job)
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
 
