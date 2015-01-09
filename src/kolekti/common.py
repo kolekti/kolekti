@@ -306,9 +306,10 @@ class kolektiBase(object):
         
     def makedirs(self, path):
         ospath = self.__makepath(path)
-        os.makedirs(ospath)
-        # svn add if file did not exist
-        self.post_save(path)
+        if not os.path.exists(ospath):
+            os.makedirs(ospath)
+            # svn add if file did not exist
+            self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
@@ -373,7 +374,7 @@ class kolektiBase(object):
     def substitute_criteria(self,string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
-        # logging.debug(criteria_dict)
+        #logging.debug(criteria_dict)
         for criterion, val in criteria_dict.iteritems():
             if val is not None:
                 string=string.replace('{%s}'%criterion, val)
@@ -483,11 +484,11 @@ class kolektiBase(object):
         res=[]
         root = self.__makepath(path)
         for j in os.listdir(root+'/kolekti/publication-parameters'):
-            print j[-16:]
+            # print j[-16:]
             if j[-16:]=='_parameters.json':
                 release_params = json.loads(self.read(path+'/kolekti/publication-parameters/'+j))
                 resrelease = []
-                print release_params
+                # print release_params
                 
                 for job_params in release_params:
                     publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_'+ lang +'_publications.json'))

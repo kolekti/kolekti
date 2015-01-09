@@ -370,7 +370,9 @@ class Publisher(PublisherMixin, kolektiBase):
             ref = med.get('src')
             #print ET.tostring(profile)
             ref = self.substitute_criteria(ref, profile)
-            med.set('src',self.substitute_criteria(ref, profile)[1:])
+            if ref[0] == '/':
+                ref = ref[1:]
+            med.set('src',ref)
             logging.debug('image src : %s'%ref)
             try:
                 refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
@@ -797,7 +799,8 @@ class DraftPublisher(Publisher):
 
             publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
             try:
-                self.cleanup_assembly_dir(xjob.getroot())
+                pass
+                #self.cleanup_assembly_dir(xjob.getroot())
             except:
                 logging.debug('W coulb not remove tmp dir')
         # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
