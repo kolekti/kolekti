@@ -762,6 +762,8 @@ class DraftPublisher(Publisher):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/drafts/" + assembly_dir
+        if assembly_dir[-1] != "/":
+            assembly_dir += "/"
         return assembly_dir
 
     def cleanup_assembly_dir(self, xjob):
