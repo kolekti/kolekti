@@ -100,6 +100,11 @@ label {
 }
 
 /* current menubar item */
-.menu-current {
-    color:white !important;
+.navbar-inverse .navbar-nav>li>a {
+color: white;
 }
+.menu-current {
+    /* color:#428bca !important;*/
+    font-weight:bold;
+}
+
