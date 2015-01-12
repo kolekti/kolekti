@@ -180,7 +180,8 @@ $(document).ready(function() {
 	    prefilters[$(e).data('kolekti-crit-code')] = $(e).data('kolekti-crit-value')
 	});
 	$('.profile .kolekti-crit').each(function(i,e) {
-	    if( prefilters[$(e).data('kolekti-crit-code')] != "") {
+	    if( prefilters.hasOwnProperty($(e).data('kolekti-crit-code')) &&
+		prefilters[$(e).data('kolekti-crit-code')] != "") {
 		$(e).addClass('disabled');
 		$(e).find('button').addClass('disabled');
 	    } else {
