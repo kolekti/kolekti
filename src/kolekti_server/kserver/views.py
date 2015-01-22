@@ -87,7 +87,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         topicmetalist += [{'tag':self.localname(m),'rel':m.get('rel',None),'type':m.get('type',None),'href':m.get('href',None)} for m in topicmeta]
         topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('django_topic_edit')
-        print [str(xsl(t)) for t in topicbody]
+        #print [str(xsl(t)) for t in topicbody]
         topiccontent = ''.join([str(xsl(t)) for t in topicbody])
         return topictitle, topicmetalist, topiccontent
 
@@ -144,7 +144,7 @@ class TocView(kolektiMixin, View):
         context.update({'tocfile':tocfile,'tocdisplay':tocdisplay,'toctitle':toctitle,'toccontent':toccontent,'tocpath':tocpath, 'tocjob':tocjob})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
-        print context
+        #print context
         return self.render_to_response(context)
     
     def post(self, request):
@@ -174,7 +174,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'success':True,
             'lang':lang,
         })
-        print json.dumps(context, indent=2)
+        #print json.dumps(context, indent=2)
         return self.render_to_response(context)
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
@@ -196,9 +196,22 @@ class SettingsView(kolektiMixin, TemplateView):
         context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
 
-class JobCreateView(kolektiMixin, TemplateView):
-    template_name = "home.html"
-
+class JobCreateView(kolektiMixin, View):
+    def post(self, request):        
+        try:
+            path = request.POST.get('path')
+            ospath = self.getOsPath(path)
+            jobid, ext = os.path.splitext(os.path.basename(path))
+            if not len(ext):
+                ext = ".xml"
+            job = self.parse_string('<job id="%s"><dir value="%s"/><criteria/><profiles/><scripts/></job>'%(jobid, jobid))
+            self.xwrite(job, os.path.join(os.path.dirname(path),jobid + ext))
+            return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+        
 
 class JobEditView(kolektiMixin, TemplateView):
     template_name = "settings/job.html"
@@ -231,7 +244,7 @@ class CriteriaCssView(kolektiMixin, TemplateView):
         try:
             settings = self.parse('/kolekti/settings.xml')
             xsl = self.get_xsl('django_criteria_css')
-            print xsl(settings)
+            #print xsl(settings)
             return HttpResponse(str(xsl(settings)), "text/css")
         except:
             import traceback
@@ -277,7 +290,12 @@ class BrowserCopyView(kolektiMixin, View):
 class BrowserDeleteView(kolektiMixin, View):
     def post(self,request):
         path = request.POST.get('path','/')
-        self.delete_resource(path)
+        try:
+            self.delete_resource(path)
+        except:
+            import traceback
+            print traceback.format_exc()
+
         return HttpResponse("",content_type="text/plain")
 
 class BrowserView(kolektiMixin, View):
@@ -295,7 +313,7 @@ class BrowserView(kolektiMixin, View):
         files = filter(self.__browserfilter,self.get_directory(path))
         
         for f in files:
-            print f.get('type')
+            # print f.get('type')
             f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
         pathsteps = []
         startpath = ""
@@ -331,7 +349,7 @@ class DraftView(PublicationView):
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
-        print ET.tostring(xjob), profiles, scripts ,request.POST
+        # print ET.tostring(xjob), profiles, scripts ,request.POST
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
                 if not jprofile.find('label').text in profiles:
@@ -339,7 +357,7 @@ class DraftView(PublicationView):
             for jscript in xjob.xpath('/job/scripts/script'):
                 if not jscript.get('name') in scripts:
                     jscript.getparent().remove(jscript)
-            print ET.tostring(xjob)
+            # print ET.tostring(xjob)
             from kolekti import publish
 
             p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
@@ -361,10 +379,10 @@ class ReleaseView(PublicationView):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
 
-        print request.POST
+        # print request.POST
 
         profiles = request.POST.getlist('profiles[]',[])
-        print profiles
+        # print profiles
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
@@ -379,13 +397,13 @@ class ReleaseView(PublicationView):
             from kolekti import publish
             r = publish.Releaser(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
             pp = r.make_release(tocpath, [xjob])
-            print "----"
-            print pp
-            print "----"
+            #print "----"
+            #print pp
+            #print "----"
             release_dir = pp[0]['assembly_dir'].replace('/releases/','')
             p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
             pubres = p.publish_assembly(release_dir, pp[0]['pubname'])
-            print pubres
+            #print pubres
             context.update({'pubres':pubres})
             context.update({'success':True})
         except:
@@ -398,45 +416,50 @@ class ReleaseView(PublicationView):
         return self.render_to_response(context)
 
 class TopicEditorView(kolektiMixin, View):
-    template_name = "topics/edit.html"
+    template_name = "topics/edit-ckeditor.html"
     def get(self, request):
         topicpath = request.GET.get('topic')
         topictitle, topicmeta, topiccontent = self.get_topic_edit(topicpath)
         context = {"body":topiccontent, "title": topictitle, "meta":topicmeta}
         return self.render_to_response(context)
 
-    def put(self,request):
+    def post(self,request):
         try:
             path=request.GET['topic']
-            param = json.loads(request.body)
-            print param
-            xmod = self.parse_html_string("<div>%s</div>"%param['content']['topic_editable']['value'])
-            xsl = self.get_xsl('django_topic_save', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
-            try:
-                emod = xsl(xmod)
-            except:
-                import traceback
-                print traceback.format_exc()
-                self.log_xsl(xsl.error_log)
-                raise Exception, xsl.error_log
-
-            print ET.tostring(xmod)
-            self.xwrite(emod, path)
-            print topic, param
-            return HttpResponse('')
+            xbody = self.parse_html_string(request.body)
+            
+            xtopic = self.parse(path.replace('{LANG}',settings.KOLEKTI_SRC_LANG))
+            body = xtopic.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
+            for e in xtopic.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
+                body.remove(e)
+            for e in xbody.xpath('/html/body/*'):
+                body.append(e)
+            self.xwrite(xtopic, path)
+            return HttpResponse(json.dumps({'status':'ok'}))
         except:
             import  traceback
             print traceback.format_exc()
             return HttpResponse(json.dumps({'status':'error'}))
     
 class TopicCreateView(kolektiMixin, View):
+    template_name = "home.html"
     def post(self, request):
-        modelpath = request.POST.get('modelpath')
-        topicpath = request.POST.get('topicpath')
-        topic = self.parse(modelpath)
-        self.xwrite(topic, topicpath)
+        try:
+            modelpath = '/sources/'+ settings.KOLEKTI_SRC_LANG + "/templates/" + request.POST.get('model')
+            topicpath = request.POST.get('topicpath')
+            topic = self.parse(modelpath)
+            self.xwrite(topic, topicpath)
+        except:
+            import  traceback
+            print traceback.format_exc()
         return HttpResponse(json.dumps(self.path_exists(topicpath)),content_type="application/json")
 
+class TopicTemplatesView(kolektiMixin, View):
+    def get(self, request):
+        lang = request.GET.get('lang')
+        tpls = self.get_directory(root = "/sources/"+lang+"/templates")
+        tnames = [t['name'] for t in tpls]
+        return HttpResponse(json.dumps(tnames),content_type="application/json")
 
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
