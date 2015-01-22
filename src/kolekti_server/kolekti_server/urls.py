@@ -23,7 +23,7 @@ urlpatterns = patterns('',
     
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
-    url(r'^settings/jobs/create$', JobCreateView.as_view(), name='jobcreate'),
+    url(r'^settings/jobs/create/', JobCreateView.as_view(), name='jobcreate'),
     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
     url(r'^criteria/$', CriteriaView.as_view(), name='criteria'),
     url(r'^criteria.css$', CriteriaCssView.as_view(), name='criteriacss'),
@@ -41,6 +41,7 @@ urlpatterns = patterns('',
     url(r'^publish/draft/', DraftView.as_view(),name="publish_draft"),
     url(r'^publish/release/', ReleaseView.as_view(),name="publish_release"),
 
+    url(r'^topics/templates/', TopicTemplatesView.as_view(),name="topic_templates"),
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
 
