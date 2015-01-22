@@ -105,7 +105,10 @@ class IndexManager(object):
     
     def xhtml_extract(self, path):
         xtopic = self.parse(path)
-        title = unicode(xtopic.xpath("/h:html/h:head/h:title/text()",namespaces={'h':htmlns})[0])
+        try:
+            title = unicode(xtopic.xpath("/h:html/h:head/h:title/text()",namespaces={'h':htmlns})[0])
+        except IndexError:
+            title = u"unknown"
         content = u" ".join(xtopic.xpath("/h:html/h:body//text()",namespaces={'h':htmlns}))
         return title, content
 
@@ -135,8 +138,7 @@ class IndexManager(object):
             
     def delete_resource(self, path):
         with self.ix.writer() as writer:
-            ix.delete_by_term('path',unicode(path))
-            ix.commit()
+            writer.delete_by_term('path',unicode(path))
 
 
         
