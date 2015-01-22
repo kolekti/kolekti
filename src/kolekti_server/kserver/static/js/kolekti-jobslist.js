@@ -3,9 +3,9 @@ $(document).ready(function() {
     $('#btn_create').on("click", function(e) {
 	var folder = $('.browserparent').data('path');
 	var file = $('#new_name').val()
-	$.post('/jobs/create/',
-	       {'modelpath': $('#template').data('path'),
-		'topicpath': folder + "/" + file
+	$.post('/settings/jobs/create/',
+	       {
+		   'path': folder + "/" + file
 	       })
 	    .success(
 		window.location.reload()
@@ -22,7 +22,7 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		window.open('/settings/job?path='+path);
+		location.assign('/settings/job?path='+path);
 	    }
 	)
 })
