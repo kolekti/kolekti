@@ -97,8 +97,10 @@
 	</a>
       </div>
       <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
-	<div class="panel-body" id="job_profiles">
-	  <xsl:apply-templates/>
+	<div class="panel-body">
+	  <div id="job_profiles">
+	    <xsl:apply-templates/>
+	  </div>
 	  <button class="btn btn-default btn-sm" id="btn_add_profil">Ajouter un profil</button>
 	</div>
       </div>
@@ -117,8 +119,10 @@
 	</a>
       </div>
       <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
-	<div class="panel-body" id="job_scripts">
-	  <xsl:apply-templates/>
+	<div class="panel-body">
+	  <div id="job_scripts">
+	    <xsl:apply-templates/>
+	  </div>
 	  <div class="btn-group">
 	    <button class="btn btn-default btn-sm dropdown-toggle" id="btn_add_script" data-toggle="dropdown" aria-expanded="false">
 	      Ajouter une sortie

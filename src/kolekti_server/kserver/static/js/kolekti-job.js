@@ -147,7 +147,7 @@ $(document).ready(function() {
 
     //click on add profile
     $('#btn_add_profil').on('click', function(e) {
-	$('#job_profiles .profile').last().after(
+	$('#job_profiles').append(
 	    $('.job-templates .profile').clone(true)
 	)
 	update_filters();
@@ -160,7 +160,7 @@ $(document).ready(function() {
     //click on add script item
     $('.script-menu-item').on('click', function(e) {
 	var script = $(this).data('kolekti-script-id');
-	$('#job_scripts .script').last().after(
+	$('#job_scripts').append(
 	    $('.job-templates .'+script).clone(true)
 	)
 	$('#job_scripts .script').last().find('input').first().focus();
