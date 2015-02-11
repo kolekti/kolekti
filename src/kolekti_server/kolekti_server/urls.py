@@ -1,5 +1,8 @@
 from django.conf.urls import patterns, include, url
 from kserver.views import *
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -49,4 +52,4 @@ urlpatterns = patterns('',
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
     
 #    (r'^admin/', include(admin.site.urls)),
-)
+)+static(settings.STATIC_URL, document_root='kolekti_server/kserver/static/')
