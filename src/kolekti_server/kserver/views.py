@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
 
+from kolekti.exceptions import ExcSyncNoSync
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -493,27 +494,30 @@ class SyncView(kolektiMixin, View):
     template_name = "synchro/main.html"
     def get(self, request):
         context = self.get_context_data()
-        from kolekti.synchro import SynchroManager
-        sync = SynchroManager(settings.KOLEKTI_BASE)
-        changes = sync.statuses()
-        newmerge = []
-        newconflict = []
-        for change in changes['merge']:
-            mergeinfo = sync.merge_dryrun(change['path'])
-            if len(mergeinfo['conflict']):
-                newconflict.append(change)
-            else:
-                newmerge.append(change)
-        changes.update({
-            "merge":newmerge,
-            "conflict":newconflict
-            })
-        context.update({
-            "history": sync.history(),
-            "changes": changes,
-            "ok":len(changes['error'])==0
-        })
-        
+        try:
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(settings.KOLEKTI_BASE)
+            changes = sync.statuses()
+            newmerge = []
+            newconflict = []
+            for change in changes['merge']:
+                mergeinfo = sync.merge_dryrun(change['path'])
+                if len(mergeinfo['conflict']):
+                    newconflict.append(change)
+                else:
+                    newmerge.append(change)
+            changes.update({
+                    "merge":newmerge,
+                    "conflict":newconflict
+                    })
+            context.update({
+                    "history": sync.history(),
+                    "changes": changes,
+                    "ok":len(changes['error'])==0
+                    })
+        except ExcSyncNoSync:
+            
+            context = {'status':'nosync'}
         return self.render_to_response(context)
 
 class SyncStartView(kolektiMixin, View):
