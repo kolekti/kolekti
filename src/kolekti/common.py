@@ -89,9 +89,14 @@ class kolektiBase(object):
         # logging.debug("kolekti v%s"%self._version)
 
         # instanciate synchro & indexer classes
-        self.syncMgr = SynchroManager(self._path)
-        self.indexMgr = IndexManager(self._path)
-
+        try:
+            self.syncMgr = SynchroManager(self._path)
+        except ExcSyncNoSync:
+            pass
+        try:
+            self.indexMgr = IndexManager(self._path)
+        except:
+            pass
         
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
