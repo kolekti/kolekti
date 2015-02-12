@@ -15,7 +15,7 @@ from kolekti.publish import PublisherExtensions
 from kolekti.searchindex import searcher
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from kolekti.exceptions import ExcSyncNoSync
 
@@ -126,7 +126,29 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
+    def get(self, request):
+        if settings.KOLEKTI_CONFIG.get('active_project','') == '':
+            return HttpResponseRedirect('/projects')
+        return self.render_to_response()
 
+
+class ProjectsView(kolektiMixin, View):
+    template_name = "projects.html"
+    def get(self, request):
+        projects = []
+        for projectname in os.listdir(settings.KOLEKTI_CONFIG.get('projects_dir','')):
+            project={'name':projectname}
+            try:
+                from kolekti.synchro import SynchroManager
+                synchro = SynchroManager(os.path.join(settings.KOLEKTI_CONFIG.get('projects_dir'),projectname))
+                projecturl = synchro.geturl()
+                project.update({"status":"svn","url":projecturl})
+            except ExcSyncNoSync:
+                project.update({"status":"local"})
+            projects.append(project)
+            
+        context = {"projects" : projects,"active_project":settings.KOLEKTI_CONFIG.get('active_project').encode('utf-8')}
+        return self.render_to_response(context)
     
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'

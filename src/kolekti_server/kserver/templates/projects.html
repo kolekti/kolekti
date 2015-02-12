@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kolekti</title>
+
+    <!-- Bootstrap -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="/static/css/kolekti.css" rel="stylesheet">
+    {% block extracss %}{% endblock %}
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+	<div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Kolekti</a>
+	</div>
+	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+	  <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://www.kolekti.org/projects/kolekti/wiki">kolekti.org</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
+	  </ul>
+	</div>
+      </div>
+    </div> <!-- navbar -->
+
+    
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-9 col-md-9 main">
+          <h1>Gestion des projets</h1>
+	  {% if projects|length %}
+	  <div id="menu">
+	    <div class="panel panel-default list-group">
+	      <div class="panel-heading">
+		<h4>Projets disponibles</h4>
+	      </div>
+
+	      {% for project in projects %}
+	      <a href="#" class="list-group-item" data-toggle="collapse" data-target="#sm{{ project.name }}" data-parent="#menu">
+		<strong>{{ project.name }}</strong> 
+		<span class="label label-info pull-right">
+		  {% ifequal project.status  "svn" %}
+		  svn
+		  {% else %}
+		  local
+		  {% endifequal %}
+		</span>
+		
+		{% if project.name == active_project %}
+		<span class="label label-warning pull-right">Actif</span>
+		<span>  </span>
+		{% endif %}
+	      </a>
+	      
+	      <div id="sm{{ project.name }}" class="sublinks collapse">
+		<div class="panel-body">
+		  {% ifequal project.status "svn" %}
+		  <p>SVN url : {{ project.url }}</p>
+		  {% else %}
+		  <p>local project</p>
+		  {% endifequal %}
+		  {% if project.name != active_project %}
+		  <hr/>
+		  {{ project.name }} {{active_project }}<a href="/projects/activate.project={{project.name}}" class="btn btn-default">Activer ce projet</a>
+		  {% endif %}
+		</div>
+		
+	      </div>
+	      {% endfor %}
+	    </div>
+	    {% endif %}
+	  </div>	    
+	  <div class="panel panel-default">
+	    <div class="panel-heading">
+	      <h4>Créer un nouveau projet</h4>
+	    </div>
+	    <div class="panel-body">
+	      <form method="POST">
+		<div class="form-group">
+		  <label for="project">Dossier projet</label>
+		  <input type="url" class="form-control" id="project" placeholder="Entrez le nom du dossier projet">
+		</div>
+		<div class="form-group">
+		  <label for="project">URL du dépôt svn (laisser vide pour un projet local)</label>
+		  <input type="url" class="form-control" id="svn" placeholder="Entrez une URL">
+		</div>
+		<div class="form-group">
+		  <div class="col-sm-offset-2 col-sm-10">
+		    <button type="submit" class="btn btn-default">Créer</button>
+		  </div>
+		</div>		
+	      </form>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="col-sm-3 col-md-3 side">
+	  <div data-spy="affix" data-offset-top="0" id="sideaffix">
+	    {% block menu %}{% endblock %}
+	  </div>
+	</div>
+      </div>
+    </div>
+
+
+    <div class="modal fade">
+      <div class="modal-dialog modal-lg">
+	<div class="modal-content">
+	  <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+            <h4 class="modal-title">Modal title</h4>
+	  </div>
+	  <div class="modal-body">
+            <p>Generic modal</p>
+	  </div>
+	  <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="/static/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/js/kolekti-utils.js"></script>
+    {% block extrascripts %}{% endblock %}
+  </body>
+</html>
