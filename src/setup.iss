@@ -41,6 +41,55 @@ Source: "C:\Users\waloo\Desktop\kolekti\kolekti\src\dist\kolekti_server\*"; Dest
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
+[INI]
+Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "projectsPath"; String: "{code:GetDataDir}"
+
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+
+[Code]
+var
+  DataDirPage: TInputDirWizardPage;
+  
+procedure InitializeWizard;
+begin
+  { Create the pages }
+  
+  DataDirPage := CreateInputDirPage(wpSelectDir,
+    'Sélectionnez le dossier projets', 'les projets kolekti seront installés dans el dossier sélectionné',
+    'Select the folder in which Setup should install personal data files, then click Next.',
+    False, '');
+  DataDirPage.Add('');
+
+  { Set default values, using settings that were stored last time if possible }
+
+  DataDirPage.Values[0] := GetPreviousData('DataDir', '');
+end;
+
+procedure RegisterPreviousData(PreviousDataKey: Integer);
+var
+  UsageMode: String;
+begin
+  { Store the settings so we can restore them next time }
+  SetPreviousData(PreviousDataKey, 'DataDir', DataDirPage.Values[0]);
+end;
+      {
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+    Result := False;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  I: Integer;
+begin
+    Result := True;
+end;
+       }
+
+function GetDataDir(Param: String): String;
+begin
+  { Return the selected DataDir }
+  Result := DataDirPage.Values[0];
+end;
