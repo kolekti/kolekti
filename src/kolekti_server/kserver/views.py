@@ -129,7 +129,7 @@ class HomeView(kolektiMixin, View):
     def get(self, request):
         if settings.KOLEKTI_CONFIG.get('active_project','') == '':
             return HttpResponseRedirect('/projects')
-        return self.render_to_response()
+        return self.render_to_response({})
 
 
 class ProjectsView(kolektiMixin, View):

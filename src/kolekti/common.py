@@ -125,6 +125,11 @@ class kolektiBase(object):
         return self.__makepath(path)
 
     def localpath(self, path):
+        print ""
+        print "localpath", 
+        print path
+        print self._path
+        print ""
         lp = path.replace(self._path,'')
         return '/' + '/'.join(lp.split(os.path.sep))
     
@@ -432,7 +437,8 @@ class kolektiBase(object):
             if 'topics' in rootparts:
                 for file in files:
                     if os.path.splitext(file)[-1] == '.html':
-                        yield self.localpath('/'.join(rootparts+[file]))
+                        print 
+                        yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
     def itertocs(self):
@@ -441,7 +447,7 @@ class kolektiBase(object):
             if 'tocs' in rootparts:
                 for file in files:
                     if os.path.splitext(file)[-1] == '.html':
-                        yield self.localpath('/'.join(rootparts+[file]))
+                        yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
     def itervariables(self):
@@ -450,7 +456,7 @@ class kolektiBase(object):
             if 'variables' in rootparts:
                 for file in files:
                     if os.path.splitext(file)[-1] == '.xml':
-                        yield self.localpath('/'.join(rootparts+[file]))
+                        yield self.localpath(os.path.sep.join(rootparts+[file]))
         
     @property
     def iterassemblies(self):
@@ -459,7 +465,7 @@ class kolektiBase(object):
             if 'assembly' in rootparts:
                 for file in files:
                     if os.path.splitext(file)[-1] == '.html':
-                        yield self.localpath('/'.join(rootparts+[file]))
+                        yield self.localpath(os.path.sep.join(rootparts+[file]))
 
         
     @property
@@ -468,18 +474,21 @@ class kolektiBase(object):
             rootparts = root.split(os.path.sep)
             for file in files:
                 if file=='document.xhtml':
-                    yield self.localpath('/'.join(rootparts+[file]))
+                    yield self.localpath(os.path.sep.join(rootparts+[file]))
                         
 
     @property
     def iterjobs(self):
+        print "iter jobs, path :",self._path
         for root, dirs, files in os.walk(os.path.join(self._path, 'kolekti','publication-parameters'), topdown=False):
 #            print root, dirs, files
             rootparts = root.split(os.path.sep)
             for file in files:
                 if os.path.splitext(file)[-1] == '.xml':
                     if not file=='criterias.xml':
-                        yield {"path":self.localpath('/'.join(rootparts+[file])),
+                        print '-----------------'
+                        print root, file, self.localpath(os.path.sep.join(rootparts+[file])),
+                        yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
                                "name":os.path.splitext(file)[0]}
                         
 
