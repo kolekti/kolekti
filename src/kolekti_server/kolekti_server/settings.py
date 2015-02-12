@@ -82,6 +82,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+
 STATIC_URL = '/static/'
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -89,20 +90,17 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.    
     "kolekti_server/kserver/templates",
 )
+RE_BROWSER_IGNORE=["~$","^\.svn$"]
 
-try:
-    with open('config.json') as cf:
-        KOLEKTI_CONFIG = json.load(cf)
-except:
-    import traceback
-    print traceback.format_exc()
-    KOLEKTI_CONFIG = {'state':'none','project_dir':'none'}
-print KOLEKTI_CONFIG
-KOLEKTI_BASE =     KOLEKTI_CONFIG.get('project_dir')
+# kolekti configuration
+
+with open('config.json') as cf:
+    KOLEKTI_CONFIG = json.load(cf)
+KOLEKTI_BASE =     KOLEKTI_CONFIG.get('projects_dir') + KOLEKTI_CONFIG.get('active_project')
 STATICFILES_DIRS = (
-    KOLEKTI_CONFIG.get('project_dir'),
+    KOLEKTI_BASE,
 )
 
 KOLEKTI_SRC_LANG = 'fr'
 KOLEKTI_LANGS = ['fr','en','us','de','it']
-RE_BROWSER_IGNORE=["~$","^\.svn$"]
+
