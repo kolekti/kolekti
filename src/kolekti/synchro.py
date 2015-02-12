@@ -53,7 +53,9 @@ class SynchroManager(object):
         pathparts = urllib2.url2pathname(path).split(os.path.sep)
         return os.path.join(self._base, *pathparts)
 
-                    
+    def geturl(self):
+        return self._info.get('repos')
+
     def history(self):
         return self._client.log(self._base)
         
