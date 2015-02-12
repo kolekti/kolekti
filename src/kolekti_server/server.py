@@ -97,20 +97,22 @@ class KolektiTray(wx.App):
         wx.EventLoop.SetActive(prevEventLoop)
 
 if __name__ == '__main__':
-#    lockfile=os.path.join(kolektiConf.conf['tmpdir'],"kolekti.lock")
-#    if not os.path.exists(lockfile):
-#	    file(lockfile,'w');
-#	    f.write('lock')
-#	    f.close()
-#	    kserver = KolektiServer()
-#	    kserver.MainLoop()
-#	    os.unlink(lockfile)
- #   else:
-#	    print "Another instance of kolekti serveur is running, if not, remove lock file %s"%lockfile
-#
+
+    # check config
+    try:
+        with open("config.json") as f:
+            f.read()
+    except:
+        try:
+            import ConfigParser
+            Config = ConfigParser.ConfigParser()
+            Config.read("kolekti.ini")
+            projects_path = Config.get('InstallSetings','projectspath')
+        except:
+            projects_path = "C:\\kolekti\\projects"
+        conf_dict= {"projects_dir": projects_path,
+                    "active_project":""}
 
     systray = KolektiTray()
-
     systray.MainLoop()
     sys.exit(0)
-#    httpserver.serve(app, host='127.0.0.1', port='8080')
