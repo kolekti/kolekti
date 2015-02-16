@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
 
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
+    url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
