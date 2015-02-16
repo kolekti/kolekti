@@ -7,6 +7,7 @@ import os
 import sys
 import re
 from datetime import datetime
+import ConfigParser
 import urllib2
 import urllib
 import urlparse
@@ -50,12 +51,18 @@ objpathes = {
 class kolektiBase(object):
     def __init__(self, path):
 #        super(kolektiBase, self).__init__(path)
-        self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+        #TODO  :  read ini file for gettininstallation directory
+        try:
+            Config = ConfigParser.ConfigParser()
+            Config.read("kolekti.ini")
+            self._appdir = Config.get('InstallSetings','installdir')
+        except : 
+            self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         # logging.debug('project path : %s'%path)
-        if path[-1]=='/':
+        if path[-1]==os.path.sep:
             self._path = path
         else:
-            self._path = path + '/'
+            self._path = path + os.path.sep
         self._xmlparser = ET.XMLParser()
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser()
@@ -125,11 +132,6 @@ class kolektiBase(object):
         return self.__makepath(path)
 
     def localpath(self, path):
-        print ""
-        print "localpath", 
-        print path
-        print self._path
-        print ""
         lp = path.replace(self._path,'')
         return '/' + '/'.join(lp.split(os.path.sep))
     
@@ -437,7 +439,6 @@ class kolektiBase(object):
             if 'topics' in rootparts:
                 for file in files:
                     if os.path.splitext(file)[-1] == '.html':
-                        print 
                         yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
@@ -479,20 +480,13 @@ class kolektiBase(object):
 
     @property
     def iterjobs(self):
-        print "iter jobs, path :",self._path
         for root, dirs, files in os.walk(os.path.join(self._path, 'kolekti','publication-parameters'), topdown=False):
-#            print root, dirs, files
             rootparts = root.split(os.path.sep)
             for file in files:
                 if os.path.splitext(file)[-1] == '.xml':
                     if not file=='criterias.xml':
-                        print '-----------------'
-                        print root, file, self.localpath(os.path.sep.join(rootparts+[file])),
                         yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
                                "name":os.path.splitext(file)[0]}
-                        
-
-
         
     def release_details(self, path, lang):
         res=[]
