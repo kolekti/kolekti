@@ -94,15 +94,27 @@ RE_BROWSER_IGNORE=["~$","^\.svn$"]
 
 # kolekti configuration
 
-with open('config.json') as cf:
-    KOLEKTI_CONFIG = json.load(cf)
+try:
+#    print "reading config"
+    # get userdir
+    userdir = os.path.expanduser("~")
+    configfile = os.path.join(userdir,".kolekti")
+    with open(configfile) as cf:
+        KOLEKTI_CONFIG = json.load(cf)
+except:
+    KOLEKTI_CONFIG = {"projects_dir": "",
+                      "active_project":""}
+# print KOLEKTI_CONFIG
 KOLEKTI_PROJECT = KOLEKTI_CONFIG.get('active_project')
 KOLEKTI_BASE =    os.path.join(KOLEKTI_CONFIG.get('projects_dir'), KOLEKTI_PROJECT )
+# print KOLEKTI_BASE
 
 STATICFILES_DIRS = (
     KOLEKTI_BASE, 
 )
 
-KOLEKTI_SRC_LANG = KOLEKTI_CONFIG.get('languages').get(KOLEKTI_PROJECT) 
+KOLEKTI_SRC_LANG = KOLEKTI_CONFIG.get('languages', {KOLEKTI_PROJECT:"fr"}).get(KOLEKTI_PROJECT) 
 KOLEKTI_LANGS = ['fr','en','us','de','it']
-print KOLEKTI_BASE, KOLEKTI_LANGS
+
+# settings for active project
+
