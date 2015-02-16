@@ -50,6 +50,19 @@ $.ajaxSetup({
 });
 
 
+/* kolekti objects browser
+   inserts a browsable view of the server files in the kolekti interface
+   parmaters passed to the browser:
+   - mode : select / selectonly / create: 
+   - parent : class of the parent element in which the browser is to be inserter
+   - buttonsparent : class of the element to contain the action buttons
+   - titleparent  : class of the element to conatin the title of the browser
+   - title : title of the browser
+   - editable_path (boolean) : shall the browser contain a path component 
+   - editable_path_title : 
+*/
+
+
 var kolekti_browser = function(args) {
     var url = "/browse/";
     var params = {};

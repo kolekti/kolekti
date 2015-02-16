@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block current_settings %}class="menu-current"{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-criteria.css"></script>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-criteria.js"></script>
+{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+
+<h2>Critères
+  <span class="pull-right">
+    <button type="button" class="btn btn-default disabled hidden" id="btn_save">
+      Enregistrer
+    </button>
+  </span>
+</h2>
+
+<div>
+  {% for criterion in criteria %}
+  <div class="criterion" data-criterion="{{ criterion.code }}">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+      	<a class="collapsed" data-toggle="collapse" href="#collapse_{{ forloop.counter }}">
+	  <small data-ui="yes">
+	    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	    <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	  </small>
+	  <strong>Code</strong>
+	  <input type="text" value="{{ criterion.code }}"></input>
+	</a>
+	<span class="pull-right">
+	  <button type="button" class="btn btn-default btn-xs delete-criterion">
+	    Supprimer
+	  </button>
+	</span>
+      </div>
+      <div class="panel-collapse collapse" id="collapse_{{ forloop.counter }}">
+	<div class="panel-body">
+	  {% for val in criterion.values %}
+	  <div class="row">
+	    <div class="">
+	      <input type="text" value="{{ val }}"/>
+	    </div>
+	  </div>
+	  {% endfor %}
+	  </ul>
+	</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
