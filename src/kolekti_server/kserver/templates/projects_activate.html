@@ -47,69 +47,10 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-9 col-md-9 main">
-          <h1>Gestion des projets</h1>
-	  {% if projects|length %}
-	  <div id="menu">
-	    <div class="panel panel-default list-group">
-	      <div class="panel-heading">
-		<h4>Projets disponibles</h4>
-	      </div>
-
-	      {% for project in projects %}
-	      <a href="#" class="list-group-item" data-toggle="collapse" data-target="#sm{{ project.name }}" data-parent="#menu">
-		<strong>{{ project.name }}</strong> 
-		<span class="label label-info pull-right">
-		  {% ifequal project.status  "svn" %}
-		  svn
-		  {% else %}
-		  local
-		  {% endifequal %}
-		</span>
-		
-		{% if project.name == active_project %}
-		<span class="label label-warning pull-right">Actif</span>
-		<span>  </span>
-		{% endif %}
-	      </a>
-	      
-	      <div id="sm{{ project.name }}" class="sublinks collapse">
-		<div class="panel-body">
-		  {% ifequal project.status "svn" %}
-		  <p>SVN url : {{ project.url }}</p>
-		  {% else %}
-		  <p>local project</p>
-		  {% endifequal %}
-		  {% if project.name != active_project %}
-		  <hr/>
-		  {{ project.name }} {{active_project }}<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
-		  {% endif %}
-		</div>
-		
-	      </div>
-	      {% endfor %}
-	    </div>
-	    {% endif %}
-	  </div>	    
+          <h1>Project activé</h1>
 	  <div class="panel panel-default">
-	    <div class="panel-heading">
-	      <h4>Créer un nouveau projet</h4>
-	    </div>
 	    <div class="panel-body">
-	      <form method="POST">
-		<div class="form-group">
-		  <label for="project">Dossier projet</label>
-		  <input type="url" class="form-control" id="project" placeholder="Entrez le nom du dossier projet">
-		</div>
-		<div class="form-group">
-		  <label for="project">URL du dépôt svn (laisser vide pour un projet local)</label>
-		  <input type="url" class="form-control" id="svn" placeholder="Entrez une URL">
-		</div>
-		<div class="form-group">
-		  <div class="col-sm-offset-2 col-sm-10">
-		    <button type="submit" class="btn btn-default">Créer</button>
-		  </div>
-		</div>		
-	      </form>
+	      <p>redemarrez kolekti et retournez à l'<a href="/">accueil</a></p>
 	    </div>
 	  </div>
 	</div>

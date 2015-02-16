@@ -123,6 +123,16 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         context = self.get_context_data()
         return self.render_to_response(context)
 
+    def project_activate(self,project):
+        # get userdir
+        userdir = os.path.expanduser("~")
+        configfile = os.path.join(userdir,".kolekti")
+        config = settings.KOLEKTI_CONFIG
+        config.update({"active_project":project})
+        with open(configfile,"w") as f:
+            f.write(json.dumps(config))
+        print config
+        print configfile
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
@@ -131,6 +141,12 @@ class HomeView(kolektiMixin, View):
             return HttpResponseRedirect('/projects')
         return self.render_to_response({})
 
+class ProjectsActivateView(kolektiMixin, View):
+    template_name = "projects_activate.html"
+    def get(self, request):
+        project = request.GET.get('project')
+        self.project_activate(project)
+        return self.render_to_response({'project':project})
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
