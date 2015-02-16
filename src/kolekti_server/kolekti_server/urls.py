@@ -1,5 +1,8 @@
 from django.conf.urls import patterns, include, url
 from kserver.views import *
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -20,7 +23,9 @@ urlpatterns = patterns('',
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/start$', SyncStartView.as_view(), name='syncstart'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
-    
+
+    url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
+
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
     url(r'^settings/jobs/create/', JobCreateView.as_view(), name='jobcreate'),
@@ -49,4 +54,4 @@ urlpatterns = patterns('',
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
     
 #    (r'^admin/', include(admin.site.urls)),
-)
+)+static(settings.STATIC_URL, document_root='kolekti_server/kserver/static/')

@@ -15,8 +15,9 @@ from kolekti.publish import PublisherExtensions
 from kolekti.searchindex import searcher
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
+from kolekti.exceptions import ExcSyncNoSync
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -125,7 +126,29 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
+    def get(self, request):
+        if settings.KOLEKTI_CONFIG.get('active_project','') == '':
+            return HttpResponseRedirect('/projects')
+        return self.render_to_response()
 
+
+class ProjectsView(kolektiMixin, View):
+    template_name = "projects.html"
+    def get(self, request):
+        projects = []
+        for projectname in os.listdir(settings.KOLEKTI_CONFIG.get('projects_dir','')):
+            project={'name':projectname}
+            try:
+                from kolekti.synchro import SynchroManager
+                synchro = SynchroManager(os.path.join(settings.KOLEKTI_CONFIG.get('projects_dir'),projectname))
+                projecturl = synchro.geturl()
+                project.update({"status":"svn","url":projecturl})
+            except ExcSyncNoSync:
+                project.update({"status":"local"})
+            projects.append(project)
+            
+        context = {"projects" : projects,"active_project":settings.KOLEKTI_CONFIG.get('active_project').encode('utf-8')}
+        return self.render_to_response(context)
     
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
@@ -502,27 +525,30 @@ class SyncView(kolektiMixin, View):
     template_name = "synchro/main.html"
     def get(self, request):
         context = self.get_context_data()
-        from kolekti.synchro import SynchroManager
-        sync = SynchroManager(settings.KOLEKTI_BASE)
-        changes = sync.statuses()
-        newmerge = []
-        newconflict = []
-        for change in changes['merge']:
-            mergeinfo = sync.merge_dryrun(change['path'])
-            if len(mergeinfo['conflict']):
-                newconflict.append(change)
-            else:
-                newmerge.append(change)
-        changes.update({
-            "merge":newmerge,
-            "conflict":newconflict
-            })
-        context.update({
-            "history": sync.history(),
-            "changes": changes,
-            "ok":len(changes['error'])==0
-        })
-        
+        try:
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(settings.KOLEKTI_BASE)
+            changes = sync.statuses()
+            newmerge = []
+            newconflict = []
+            for change in changes['merge']:
+                mergeinfo = sync.merge_dryrun(change['path'])
+                if len(mergeinfo['conflict']):
+                    newconflict.append(change)
+                else:
+                    newmerge.append(change)
+            changes.update({
+                    "merge":newmerge,
+                    "conflict":newconflict
+                    })
+            context.update({
+                    "history": sync.history(),
+                    "changes": changes,
+                    "ok":len(changes['error'])==0
+                    })
+        except ExcSyncNoSync:
+            
+            context = {'status':'nosync'}
         return self.render_to_response(context)
 
 class SyncStartView(kolektiMixin, View):

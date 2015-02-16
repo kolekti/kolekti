@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import json
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -80,14 +82,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+
 STATIC_URL = '/static/'
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.    
+    "kolekti_server/kserver/templates",
+)
+RE_BROWSER_IGNORE=["~$","^\.svn$"]
 
-KOLEKTI_BASE = "/home/waloo/Bureau/kolekti/projets/omegadoc"
+# kolekti configuration
 
+with open('config.json') as cf:
+    KOLEKTI_CONFIG = json.load(cf)
+KOLEKTI_BASE =     KOLEKTI_CONFIG.get('projects_dir') + KOLEKTI_CONFIG.get('active_project')
 STATICFILES_DIRS = (
     KOLEKTI_BASE,
 )
 
 KOLEKTI_SRC_LANG = 'fr'
 KOLEKTI_LANGS = ['fr','en','us','de','it']
-RE_BROWSER_IGNORE=["~$","^\.svn$"]
+
