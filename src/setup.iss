@@ -43,6 +43,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [INI]
 Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "projectsPath"; String: "{code:GetDataDir}"
+Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "installdir"; String: "{app}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

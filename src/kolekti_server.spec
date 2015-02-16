@@ -1,7 +1,16 @@
 # -*- mode: python -*-
+from glob import glob
+
 a = Analysis(['kolekti_server\\server.py'],
              pathex=['C:\\Users\\waloo\\Desktop\\kolekti\\kolekti\\src'],
-             hiddenimports=['htmlentitydefs','HTMLParser','markupbase','django.contrib.sessions.serializers'],
+             hiddenimports=['htmlentitydefs',
+                            'HTMLParser',
+                            'markupbase',
+                            'django.contrib.sessions.serializers',
+                            'kserver.templatetags.ostags',
+                            'kserver.templatetags.difftags',
+                            'kserver.templatetags.timetags',
+                            ],
              hookspath=None,
              runtime_hooks=None)
 pyz = PYZ(a.pure)
@@ -14,9 +23,25 @@ exe = EXE(pyz,
           upx=True,
           console=True )
 
+
+def extra_datas(mydir):
+    def rec_glob(p, files):
+        import os
+        import glob
+        for d in glob.glob(p):
+            if os.path.isfile(d):
+                files.append(d)
+            rec_glob("%s/*" % d, files)
+    files = []
+    rec_glob("%s/*" % mydir, files)
+    extra_datas = []
+    for f in files:
+        extra_datas.append((f, f, 'DATA'))
+    return extra_datas
+
 data_files = [('LICENSE','LICENCE','DATA'),
-              ('kolekti.ico','kolekti.ico','DATA')
-              ]
+              ('kolekti.ico','kolekti.ico','DATA'),
+              ] + extra_datas('kolekti/xsl') + extra_datas('kolekti/plugins/_WebHelp5')
 
 coll = COLLECT(exe,
                a.binaries,
