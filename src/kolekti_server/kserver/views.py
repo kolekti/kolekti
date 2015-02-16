@@ -251,11 +251,20 @@ class CriteriaCssView(kolektiMixin, TemplateView):
             print traceback.format_exc()
             
 class CriteriaEditView(kolektiMixin, TemplateView):
-    template_name = "settings.html"
+    template_name = "settings/criteria.html"
 
     def get(self, request):
         context = self.get_context_data()
-        context.update({'jobs':self.get_jobs()})
+        settings = self.parse('/kolekti/settings.xml')
+        criteria = []
+        for xcriterion in settings.xpath('/settings/criteria/criterion'):
+            criteria.append(
+                {'code':xcriterion.get('code'),
+                'type':xcriterion.get('type'),
+                'values':[str(v.text) for v in xcriterion.findall("value")]
+                })
+        context.update({'criteria':criteria})
+        print context
         return self.render_to_response(context)
     
 class BrowserExistsView(kolektiMixin, View):
