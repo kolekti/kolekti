@@ -2,6 +2,7 @@ CKEDITOR.editorConfig = function( config ) {
     config.autoGrow_onStartup = true;
     config.contentsCss = '/criteria.css';
     config.extraPlugins = 'codemirror,textselection';
+    config.entities = false;
 /*
 config.toolbarGroups = [
     { name: 'document',    groups: [ 'mode', 'document', 'doctools' ] },
