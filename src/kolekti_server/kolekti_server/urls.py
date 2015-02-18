@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
     url(r'^criteria/$', CriteriaView.as_view(), name='criteria'),
     url(r'^criteria.css$', CriteriaCssView.as_view(), name='criteriacss'),
+    url(r'^criteria.json$', CriteriaJsonView.as_view(), name='criteriacss'),
 
 # url(r'^blog/', include('blog.urls')),
 
