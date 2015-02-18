@@ -382,6 +382,13 @@ class kolektiBase(object):
             criteria_dict.update({c.get('code'):c.get('value',None)})
         return criteria_dict
 
+    def _get_criteria_def_dict(self):
+        criteria = self._project_settings.xpath("/settings/criteria/criterion")
+        criteria_dict={}
+        for c in criteria:
+            criteria_dict.update({c.get('code'):[v.text for v in c]})
+        return criteria_dict
+
 
     def substitute_criteria(self,string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
