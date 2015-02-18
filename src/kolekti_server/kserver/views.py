@@ -289,6 +289,17 @@ class CriteriaCssView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
             
+class CriteriaJsonView(kolektiMixin, TemplateView):
+    template_name = "settings/criteria-css.html"
+    def get(self, request):
+        try:
+            criterias = self._get_criteria_def_dict()
+            return HttpResponse(json.dumps(criterias),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+    
+                
 class CriteriaEditView(kolektiMixin, TemplateView):
     template_name = "settings/criteria.html"
 
