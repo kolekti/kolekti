@@ -3,6 +3,7 @@ from kserver.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.views.static import serve as staticView
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -53,6 +54,14 @@ urlpatterns = patterns('',
 
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
-    
+
+    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
+    url(r'(?P<path>.*)$', staticView, {'document_root' : settings.KOLEKTI_BASE}),
+
+#    url(r'^publications', staticView, name="kolekti_raw_publication"),
+#    url(r'^drafts', staticView, name="kolekti_raw_draft"),
+
+                       
 #    (r'^admin/', include(admin.site.urls)),
-)+static(settings.STATIC_URL, document_root='kolekti_server/kserver/static/')
+)
+
