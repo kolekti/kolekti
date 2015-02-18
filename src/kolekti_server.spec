@@ -41,6 +41,7 @@ def extra_datas(mydir):
 
 data_files = [('LICENSE','LICENCE','DATA'),
               ('kolekti.ico','kolekti.ico','DATA'),
+              (os.path.join('kolekti','pubscripts.xml'),os.path.join('kolekti','pubscripts.xml'),'DATA'),
               ] + extra_datas('kolekti/xsl') + extra_datas('kolekti/plugins/_WebHelp5')
 
 coll = COLLECT(exe,
