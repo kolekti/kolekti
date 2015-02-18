@@ -736,7 +736,7 @@ $(document).ready( function () {
 			       {'modelpath': $('.new-module-model-display').data('model-path'),
 				'topicpath': path})
 			    .success(
-				$.get('/static'+path)
+				$.get(path)
 				    .success(function(data) {
 		    			var topic = $.parseXML( data ),
 					id = Math.round(new Date().getTime() + (Math.random() * 100)),
@@ -782,7 +782,7 @@ $(document).ready( function () {
 		 'titleparent':".new-module-title",
 		 'editable_path':false
 		}).select(function(path) {
-		    $.get('/static'+path).success(
+		    $.get(path).success(
 			function(data){
 			    var topic = $.parseXML( data ),
 			    id = Math.round(new Date().getTime() + (Math.random() * 100)),
@@ -931,7 +931,7 @@ $(document).ready( function () {
     $('a').each(function(i,comp) {
 	if($(comp).attr('rel')=="kolekti:topic") {
 	    var path = $(this).data('kolekti-topic-url');
-	    $.get('/static'+path)
+	    $.get(path)
 		.done(
 		    function(data){
 			var topic = $.parseXML( data ),
