@@ -3,15 +3,17 @@ $(document).ready(function() {
    var build_ui = function() {
        var crit, val;
        var conditions = {}
-       $.get('/criteria').success(function(xml_criteria) {
+       $.get('/criteria.json').success(
+	   function(conditions) {
 //	   var xml_criteria = $($.parseXML(data))
-	   $(xml_criteria).find('criterion[type=enum]').each(function(i,c){
+/*	   $(xml_criteria).find('criterion[type=enum]').each(function(i,c){
 	       var crit = $(c).attr('code');
 	       conditions[crit] = [];
 	       $(c).children('value').each(function(j,v){
 		   conditions[crit].push($(v).text());
 	       });
 	   });
+*/
 	   build_ui_menus(conditions);
        })
    }
