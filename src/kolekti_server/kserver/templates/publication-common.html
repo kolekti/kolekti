@@ -5,7 +5,7 @@
     <ul class="list-inline">
       {% for script in profile.scripts %}
       {% for doc in script.docs %}
-      <li><span class="badge"><a tabindex="0" tabindex="0" href="/static{{ doc.url }}" target="_blank" data-toggle="popover" data-trigger="focus" title="{{ doc.label }}.{{ doc.type }}" data-content="{{ profile.time|print_timestamp }}, script {{ script.script }}">{{ doc.type }}</a></span> </li>
+      <li><span class="badge"><a tabindex="0" tabindex="0" href="{{ doc.url }}" target="_blank" data-toggle="popover" data-trigger="focus" title="{{ doc.label }}.{{ doc.type }}" data-content="{{ profile.time|print_timestamp }}, script {{ script.script }}">{{ doc.type }}</a></span> </li>
       {% endfor %}  
       {% endfor %}
     </ul>

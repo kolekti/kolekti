@@ -9,7 +9,7 @@
 	  {% for scriptitem in profileitem.scripts %}
 	  <li>Script {{ scriptitem.script }}: 
 	    {% for doc in scriptitem.docs %}
-	    {{ doc.type }}: <a href="/static{{ doc.url }}" target="_blank">{{ doc.label }}</a> 
+	    {{ doc.type }}: <a href="{{ doc.url }}" target="_blank">{{ doc.label }}</a> 
             {% endfor %}
 	  </li>
 	  {% endfor %}
