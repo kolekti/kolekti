@@ -3,7 +3,7 @@
 
   <pubscript id="princexml" type="shell">
     <name>Générer pdf avec PrinceXML</name>
-    <cmd>prince "_PIVOT_" -s "_SRCDIR_kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_." -o "_PUBDIR__PUBNAME_.pdf"</cmd>
+    <cmd>prince "_PIVOT_" -s "_SRCDIR_kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
     <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
     <parameters>
       <parameter name="CSS" label="Feuille de style" 
