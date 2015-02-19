@@ -109,8 +109,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xjob = self.parse(path)
         xjob.getroot().append(copy(self._project_settings))
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
-        with open('/tmp/xml','w') as f:
-            f.write(ET.tostring(xjob, pretty_print=True))
+        #with open('/tmp/xml','w') as f:
+        #    f.write(ET.tostring(xjob, pretty_print=True))
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
         try:
             ejob = xsl(xjob, path="'%s'"%path)
