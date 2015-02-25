@@ -80,7 +80,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         modid = args[0]
         path = self.process_path(modid)
         logging.debug("get topic path %s -> %s"%(modid,path))
-        print "get topic %s -> %s"%(modid,path)
+        # print "get topic %s -> %s"%(modid,path)
         return path
 
     def criteria(self, _, *args):
@@ -774,7 +774,7 @@ class DraftPublisher(Publisher):
 
     # publishes a list of jobs
     
-    def publish_draft(self, toc, jobs):
+    def publish_draft(self, toc, jobs=None):
         """ publishes a kolekti toc, using the profiles sets present in jobs list"""
         
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
@@ -785,6 +785,7 @@ class DraftPublisher(Publisher):
         else:
             xtoc = self.parse(toc)
         publications = []
+        
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
             if isinstance(job,ET._ElementTree):
