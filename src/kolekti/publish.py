@@ -382,7 +382,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 import traceback
                 logging.debug(traceback.format_exc())
 
-            self.copyFile(ref, assembly_dir + ref)
+            self.copyFile(ref, assembly_dir + '/' + ref)
 
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
