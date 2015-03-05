@@ -41,7 +41,7 @@
 
       <parameter name="css" label="Feuille de style" 
          type="filelist" 
-         dir="WebHelp5/styles" 
+         dir="kolekti/publication-templates/WebHelp5/styles" 
          ext="css"
          copytopub="usercss"/>
 
