@@ -146,12 +146,15 @@ class SynchroManager(object):
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        print "post save synchro"
+        logging.debug("post save synchro")
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
-        if self._client.info(ospath) is None:
-            self._client.add(ospath)
+        try:
+            if self._client.info(ospath) is None:
+                self._client.add(ospath)
+        except pysvn.ClientError:
+            self.post_save(path.rsplit('/',1)[0])
 
     def move_resource(self, src, dst):
         ossrc = self.__makepath(src)
