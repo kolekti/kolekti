@@ -55,7 +55,7 @@ class kolektiBase(object):
         try:
             Config = ConfigParser.ConfigParser()
             Config.read("kolekti.ini")
-            self._appdir = Config.get('InstallSetings','installdir')
+            self._appdir = Config.get('InstallSettings','installdir')
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         # logging.debug('project path : %s'%path)
@@ -107,8 +107,8 @@ class kolektiBase(object):
         
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
-        import traceback
-        #logging.debug(traceback.print_stack())
+        # import traceback
+        # logging.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
