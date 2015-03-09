@@ -101,21 +101,19 @@ class SynchroManager(object):
         return res
 
     def callback_notify_merge(self, args):
-        print "callback merge"
-        print args
+        logging.debug("callback merge")
+        logging.debug(str(args))
         
     def merge_dryrun(self, path):
         #self._client.callback_notify = self.callback_notify_merge
         info = self._client.info(path)
-#        for k,v in info.iteritems():
-#            print k,":",v
             
         rurl = info.get('url')
-        print rurl
+        logging.debug('dry run '+rurl)
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
         
-        print "merge", rurl, workrev, rurl, headrev, path
+        logging.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
         #self._client.merge(rurl, workrev, rurl, headrev, path, dry_run=True)
         import subprocess
         cmd = 'svn merge --dry-run -r BASE:HEAD "%s"'%path 

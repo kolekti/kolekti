@@ -2,6 +2,7 @@ import sys
 import os
 import mimetypes
 import urllib2
+import logging
 from lxml import etree as ET
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
@@ -119,11 +120,11 @@ class IndexManager(object):
         return title, content
 
     def post_save(self, path):
-        print "post save index"
+        logging.debug("post save index")
         if path[:8] == "/drafts/":
             return
         restype = self.guess_restype(path)
-        print "index",restype, path
+        logging.debug("index %s %s"%(restype, path)
         with self.ix.writer() as writer:
             self.indexresource(writer, path, restype)
 
