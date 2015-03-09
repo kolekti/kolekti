@@ -69,38 +69,41 @@ if __name__ == '__main__':
     config_sections=['server',
                      'publish',
                      ]
-    
+
+
+
+        
+    if args.verbose:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+        logging.debug('debug')
+    else:
+        logging.basicConfig(format='%(message)s', level=logging.INFO)
+        
     if args.config:
         config = readConfig(config_sections,args.config)
     else:
         config = readConfig(config_sections)
 
-    if args.verbose:
-        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    else:
-        logging.basicConfig(format='%(message)s', level=logging.INFO)
-        
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
     defaults=config.get("kolekti",{})
     
-#    print defaults
     parser.set_defaults(**defaults)
     
     parser.add_argument('-b','--base', action='store',help="kolekti base path")
     subparsers = parser.add_subparsers(title='kolekti commands')
 
     # http server 
-    parser_s = subparsers.add_parser('runserver', help="start kolekti server")
-    parser_s.add_argument('host', action='store', default="127.0.0.1:8088",nargs='?')
-    defaults=config.get("server",{})
-    defaults.update({'cmd':'server'})
-    parser_s.set_defaults(**defaults)
+    # parser_s = subparsers.add_parser('runserver', help="start kolekti server")
+    # parser_s.add_argument('host', action='store', default="127.0.0.1:8088",nargs='?')
+    # defaults=config.get("server",{})
+    # defaults.update({'cmd':'server'})
+    # parser_s.set_defaults(**defaults)
 
     # draft generation
     parser_draft = subparsers.add_parser('draft', help="assemble, filter and produce draft documents")
     parser_draft.add_argument('toc', action='store')
-    parser_draft.add_argument('job', action='store')
+    # parser_draft.add_argument('job', action='store')
     parser_draft.add_argument('-l', '--lang', action='store')
     defaults=config.get("draft",{})
     defaults.update({'cmd':'draft'})
@@ -110,7 +113,7 @@ if __name__ == '__main__':
     parser_release = subparsers.add_parser('release', help="create release document")
     parser_release.add_argument('toc', action='store')
     parser_release.add_argument('job', action='store')
-#    parser_release.add_argument('release', action='store')
+    # parser_release.add_argument('release', action='store')
     defaults=config.get("release",{})
     defaults.update({'cmd':'release'})
     parser_release.set_defaults(**defaults)
@@ -154,7 +157,6 @@ if __name__ == '__main__':
     defaults.update({'cmd':'search'})
     parser_search.set_defaults(**defaults)
     
-
     # svn synchro  
     parser_sync = subparsers.add_parser('sync', help="synchronize project")
     subparsers_sync = parser_sync.add_subparsers(title='synchro commands')
@@ -173,14 +175,14 @@ if __name__ == '__main__':
  
     args = parser.parse_args()
 
-    print args
-
-    if args.cmd == 'server':
-        host,port = args.host.split(':')
-        from kolekti.server.wsgi import wsgiclass
-        from paste import httpserver
-        wsgi = wsgiclass(args.base)
-        httpserver.serve(wsgi, host, port)
+    
+    
+    # if args.cmd == 'server':
+    #    host,port = args.host.split(':')
+    #    from kolekti.server.wsgi import wsgiclass
+    #    from paste import httpserver
+    #    wsgi = wsgiclass(args.base)
+    #    httpserver.serve(wsgi, host, port)
         
     if args.cmd == 'draft':
         from kolekti import publish
