@@ -805,7 +805,7 @@ class DraftPublisher(Publisher):
                 pass
                 #self.cleanup_assembly_dir(xjob.getroot())
             except:
-                logging.debug('W coulb not remove tmp dir')
+                logging.debug('Warning: could not remove tmp dir')
         # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
         return publications
     
