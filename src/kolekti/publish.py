@@ -80,7 +80,6 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         modid = args[0]
         path = self.process_path(modid)
         logging.debug("get topic path %s -> %s"%(modid,path))
-        # print "get topic %s -> %s"%(modid,path)
         return path
 
     def criteria(self, _, *args):
@@ -268,7 +267,6 @@ class Publisher(PublisherMixin, kolektiBase):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
                         resscripts.append({"script":script.get('name'),"docs":resscript})
-                        #print "--> Done script:",script.get('name')
                     except:
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
@@ -368,7 +366,6 @@ class Publisher(PublisherMixin, kolektiBase):
     def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
-            #print ET.tostring(profile)
             ref = self.substitute_criteria(ref, profile)
             if ref[0] == '/':
                 ref = ref[1:]
@@ -569,11 +566,9 @@ class Publisher(PublisherMixin, kolektiBase):
                         outtype=xl.get('type')
                         logging.debug("Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')})
                         res=[{"type":outtype, "label":outfile, "url":outref}]
-                        print res
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
-                    print traceback.format_exc()
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
                     raise Exception
 
@@ -643,14 +638,12 @@ class Publisher(PublisherMixin, kolektiBase):
                     #                         '/'.join((self.model.local2url(self.model.pubpath), zipname))))
             
                 except:
-                    print "Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')}
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
                     raise Exception
-#            print "Script", label,"sucessful"
             
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            print traceback.format_exc()
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
             raise Exception
         return res
@@ -793,7 +786,6 @@ class DraftPublisher(Publisher):
             else:
                 xjob = self.parse(job)
             # assembly
-            # print ET.tostring(job)
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
 
@@ -844,7 +836,7 @@ class Releaser(Publisher):
                         "job":unicode(xjob.getroot().get('id')),
                         "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
                 })
-        print res
+
         self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+pubname+"_"+self._publang+"_parameters.json")
         return res
@@ -889,7 +881,6 @@ class ReleasePublisher(Publisher):
             
         xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         xjob=xjob.getroot()
-        print(ET.tostring(xjob))
         publications = self.publish_job(xassembly,xjob)
         self.write(json.dumps(publications), assembly_dir+'/kolekti/publication-parameters/'+ assembly + '_' + self._publang + '_publications.json')
         return [{"job":xjob.get('id'), "publications":publications}]
