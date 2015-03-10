@@ -124,7 +124,7 @@ class IndexManager(object):
         if path[:8] == "/drafts/":
             return
         restype = self.guess_restype(path)
-        logging.debug("index %s %s"%(restype, path)
+        logging.debug("index %s %s"%(restype, path))
         with self.ix.writer() as writer:
             self.indexresource(writer, path, restype)
 
