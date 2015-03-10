@@ -103,7 +103,7 @@ if __name__ == '__main__':
     # draft generation
     parser_draft = subparsers.add_parser('draft', help="assemble, filter and produce draft documents")
     parser_draft.add_argument('toc', action='store')
-    # parser_draft.add_argument('job', action='store')
+    parser_draft.add_argument('job', action='store')
     parser_draft.add_argument('-l', '--lang', action='store')
     defaults=config.get("draft",{})
     defaults.update({'cmd':'draft'})
