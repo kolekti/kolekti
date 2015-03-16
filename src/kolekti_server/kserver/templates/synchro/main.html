@@ -46,8 +46,8 @@
 <div class="main">
   {% if changes.error|length %}
   <div class="alert alert-error">
-   <strong>Mise Ã  jour impossible</strong> votre copie de travail est en Ã©tat de conflit. 
-   <p>Utlisez votre client subversion pour rÃ©soudre les conflits et synchroniser le projet</p>
+   <strong>Mise à jour impossible</strong> votre copie de travail est en état de conflit. 
+   <p>Utlisez votre client subversion pour résoudre les conflits et synchroniser le projet</p>
   </div>
 
 
@@ -56,16 +56,16 @@
    <div class="alert alert-warning">
 
      <h3>
-       <strong>Attention</strong> des fichiers ont Ã©tÃ© modifiÃ©s localement et sur le dÃ©pot
+       <strong>Attention</strong> des fichiers ont été modifiés localement et sur le dépot
      </h3>
      <div class="panel panel-default">
        <div class="panel-body">
-	 <h4>Modifications concurrentes ne pouvant pas etre fusionnÃ©es</h4>
+	 <h4>Modifications concurrentes ne pouvant pas etre fusionnées</h4>
 	 <ul>
 	   <li class="checkbox">
 	     <label>
 	       <input id="selectall" type="checkbox" value="">
-	       Tout sÃ©lÃ©ctionner / dÃ©selectionner
+	       Tout sélectionner / déselectionner
 	     </label>
 	     <hr>
 	   </li>
@@ -84,12 +84,12 @@
 	 </ul>
 	 <hr/>
 	 <div class="form-group">
-	   <label class="col-sm-6 control-label">Avec les fichiers sÃ©lectionnÃ©s</label>
+	   <label class="col-sm-6 control-label">Avec les fichiers sélectionnés</label>
 	   <div class="col-sm-5">
 	     <select class="form-control select-conflit">
 	       <option value="local">Conserver la version locale</option>
 	       <option value="remote">Remplacer par la version distante</option>
-	       {# 	 <option>Marquer comme rÃ©solu</option> #}
+	       {# 	 <option>Marquer comme résolu</option> #}
 	     </select>
 	     </div>
 	 </div>
@@ -100,12 +100,12 @@
 	   
 	   
 	 {% if changes.merge|length %}
-	 <h4>Modifications concurrentes pouvant etre fusionnÃ©es</h4>
+	 <h4>Modifications concurrentes pouvant etre fusionnées</h4>
 	 <ul>
 	   <li class="checkbox">
 	     <label>
 	       <input id="selectall" type="checkbox" value="" data-path="{{ e.path }}">
-	       Tout sÃ©lÃ©ctionner / dÃ©selectionner
+	       Tout sélectionner / déselectionner
 	     </label>
 	     <hr>
 	   </li>
@@ -124,7 +124,7 @@
 	 </ul>
 	 <hr/>
 	 <div class="form-group">
-	   <label class="col-sm-6 control-label">Avec les fichiers sÃ©lectionnÃ©s</label>
+	   <label class="col-sm-6 control-label">Avec les fichiers sélectionnés</label>
 	   <div class="col-sm-5">
 	     <select class="form-control select-merge">
 	       <option value="local">Conserver la version locale</option>
@@ -145,13 +145,13 @@
   {% if changes.update|length or changes.commit|length or changes.merge|length %}
   <div class="alert alert-success">
     <h3>Synchronisation possible</h3>
-    <a href="#" class="synchro_details" data-toggle="collapse" data-target="#collapseSynchro">masquer dÃ©tails</a>
+    <a href="#" class="synchro_details" data-toggle="collapse" data-target="#collapseSynchro">masquer détails</a>
     <div class="panel panel-default">
       <div class="panel-collapse collapse in" id="collapseSynchro">
 	<div class="panel-body">
 
 	  {% if changes.update|length %}
-	  <h4>RÃ©cupÃ©ration des mises Ã  jour vers l'arborescence locale</h4>
+	  <h4>Récupération des mises à jour vers l'arborescence locale</h4>
 	  <ul>
 	    {% for e in changes.update %}
 	    <li>{{ e.path }} {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}</li>
@@ -169,7 +169,7 @@
 	  {% endif %}
 	  
 	  {% if changes.merge|length %}
-	  <h4>Modifications concurrentes pouvant etre fusionnÃ©es</h4>
+	  <h4>Modifications concurrentes pouvant etre fusionnées</h4>
 	  <ul>
 	    {% for e in changes.merge %}
 	    <li>
@@ -196,7 +196,7 @@
   
   {% else %}
   <div class="alert alert-success">
-    <strong>Le projet est synchronisÃ©</strong>
+    <strong>Le projet est synchronisé</strong>
   </div>
   {% endif %}
 

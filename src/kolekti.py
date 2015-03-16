@@ -8,8 +8,8 @@ import sys
 import os
 
 import argparse
-import ConfigParser
-import settings
+
+from kolekti.settings import settings
 #import pysvn
 
 import logging
@@ -69,15 +69,17 @@ if __name__ == '__main__':
     config_sections=['server',
                      'publish',
                      ]
-
-
-
-        
     if args.verbose:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         logging.debug('debug')
     else:
         logging.basicConfig(format='%(message)s', level=logging.INFO)
+
+    if args.config:
+        config = settings(args.config)
+    else:
+        config = readConfig()
+
         
     if args.config:
         config = readConfig(config_sections,args.config)
@@ -86,7 +88,7 @@ if __name__ == '__main__':
 
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
-    defaults=config.get("kolekti",{})
+    defaults=config.get("InstallSettings",{})
     
     parser.set_defaults(**defaults)
     
