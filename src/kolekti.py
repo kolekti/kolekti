@@ -19,44 +19,6 @@ import mimetypes
 mimetypes.init()
 
 
-def readConfig(cmds = None, alternatefile = None):
-    """Read the kolekti config file.
-    
-    Keywords arguments:
-    appspec -- application name(s) to read config sections from
-    alternatefile -- a alternative config file to ~/.kolekti
-
-    Returns:
-    A dictionnary containing the config and additional config values
-    from appspec
-
-    """
-    
-    config = ConfigParser.SafeConfigParser()
-    res={}
-
-    # shall we read the alternate or default config file
-    try:
-        if alternatefile is not None:
-            config.read(alternatefile)
-        else:
-            config.read(os.path.expanduser('~/.kolekti'))
-    except:
-        logging.info("No config file, using default parameters")
-
-    try:
-        res.update({'kolekti':dict(config.items("kolekti"))})
-    except ConfigParser.NoSectionError:
-        res.update({'kolekti':{}})
-
-    # add additional config sections
-    for cmd in cmds:
-        try:
-            res.update({cmd:dict(config.items(cmd))})
-        except ConfigParser.NoSectionError:
-            res.update({cmd:{}})
-    return res
-
 
 
 if __name__ == '__main__':
@@ -78,14 +40,9 @@ if __name__ == '__main__':
     if args.config:
         config = settings(args.config)
     else:
-        config = readConfig()
+        config = settings()
 
         
-    if args.config:
-        config = readConfig(config_sections,args.config)
-    else:
-        config = readConfig(config_sections)
-
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
     defaults=config.get("InstallSettings",{})

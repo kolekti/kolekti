@@ -4,7 +4,7 @@ import ConfigParser
 
 userdir = os.path.expanduser("~")
 
-default_setting ={
+default_settings ={
     "InstallSettings":{
         "projects_dir":os.path.join(userdir,'kolekti','projects'),
         "base":os.path.join(userdir,'kolekti','projects','quickstart'),
@@ -44,7 +44,7 @@ def settings(settings_file=None):
     
     settings_dict = {}
     for section in default_settings:
-        setings_dict.update({section:{}})
+        settings_dict.update({section:{}})
         try:
             entries = dict(config.items(section))
         except ConfigParser.NoSectionError:
