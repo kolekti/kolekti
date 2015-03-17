@@ -6,51 +6,33 @@ userdir = os.path.expanduser("~")
 
 default_settings ={
     "InstallSettings":{
-        "projects_dir":os.path.join(userdir,'kolekti','projects'),
-        "base":os.path.join(userdir,'kolekti','projects','quickstart'),
+        "projectspath":os.path.join(userdir,'kolekti','projects'),
+#        "base":os.path.join(userdir,'kolekti','projects','quickstart'),
         "active_project":'quickstart'
         },
-    "draft":{},
-    "release":{},
-    "publish":{},
-    "varods":{},
-    "varxml":{},
-    "index":{},
-    "search":{},
-    "sync":{},
 }
 
 
-def settings(settings_file=None):
-    config = ConfigParser.SafeConfigParser()
-    try:
-        # get config from argument (command line)
-        config.read(settings_file)
-    except:
-        # get config from userdir
-        settings_file = os.path.join(userdir,".kolekti.ini")
-        try:
-            config.read(settings_path)
-        except:
-            # get config from /etc/koleti.ini
-            try:
-                config.read('/etc/kolekti.ini')
-            except:
-                # get config from execution directory
-                try:
-                    config.read("kolekti.ini")
-                except:
-                    return default_settings
-    
-    settings_dict = {}
+def settings(settings_file=""):
+    config = ConfigParser.SafeConfigParser(dict_type=dict)
+
+    config_files =[    
+        settings_file,
+        os.path.join(userdir,".kolekti.ini"),
+        '/etc/kolekti.ini',
+        'kolekti.ini']
+
+    read_files = config.read(config_files)
+
     for section in default_settings:
-        settings_dict.update({section:{}})
-        try:
-            entries = dict(config.items(section))
-        except ConfigParser.NoSectionError:
-            entries = {}
-        for entry in default_settings.get(section):
-            settings_dict.get(section).update({entry:entries.get(entry, default_settings.get(entry))})
+        if not config.has_section(section):
+            config.add_section(section)
+        for option, value in default_settings.get(section).iteritems():
+            if not config.has_option(section,option):
+                config.set(section,option,value)
+    settings_dict = {}
+    for section in config.sections():  
+        settings_dict.update({section:dict(config.items(section))})
 
     return settings_dict
 

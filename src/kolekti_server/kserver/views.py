@@ -1,22 +1,27 @@
 import re
 import os
 from copy import copy
-from lxml import etree as ET
 import json
+
+from lxml import etree as ET
+
+from models import Settings
+
 from django.http import Http404
+from django.http import HttpResponse, HttpResponseRedirect
+from django.conf import settings
 from django.shortcuts import render, render_to_response
 from django.views.generic import View,TemplateView, ListView
-#from models import kolektiMixin
 from django.views.generic.base import TemplateResponseMixin
-from django.conf import settings
-# Create your models here.
+from django.views.static import serve 
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
+
+
+# kolekti imports
 from kolekti.common import kolektiBase
 from kolekti.publish import PublisherExtensions
 from kolekti.searchindex import searcher
-from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
-from django.http import HttpResponse, HttpResponseRedirect
-
 from kolekti.exceptions import ExcSyncNoSync
 
 fileicons= {
@@ -48,9 +53,9 @@ fileicons= {
 
 class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def __init__(self, *args, **kwargs):
-        base = settings.KOLEKTI_BASE
-        
-        super(kolektiMixin, self).__init__(base,*args,**kwargs)
+        self.user_settings = Settings.objects.get()
+        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+        super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
 
     def config(self):
         return self._config
@@ -64,7 +69,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xtoc = self.parse(path)
         toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
+        xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
             etoc = xsl(xtoc)
         except:
@@ -78,7 +83,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         return re.sub('\{[^\}]+\}','',e.tag)
     
     def get_topic_edit(self, path):
-        xtopic = self.parse(path.replace('{LANG}',settings.KOLEKTI_SRC_LANG))
+        xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
         topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         topicmeta = xtopic.xpath('/html:html/html:head/html:meta[@name]', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         topicmetalist = [{'tag':self.localname(m),'name':m.get('name',None),'content':m.get('content',None)} for m in topicmeta]
@@ -111,7 +116,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
         #with open('/tmp/xml','w') as f:
         #    f.write(ET.tostring(xjob, pretty_print=True))
-        xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=settings.KOLEKTI_SRC_LANG)
+        xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
             ejob = xsl(xjob, path="'%s'"%path)
         except:
@@ -127,18 +132,18 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         # get userdir
         userdir = os.path.expanduser("~")
         configfile = os.path.join(userdir,".kolekti")
-        config = settings.KOLEKTI_CONFIG
-        config.update({"active_project":project})
-        with open(configfile,"w") as f:
-            f.write(json.dumps(config))
-        print config
-        print configfile
+        self.user_settings.active_project = project
+        self.user_settings.save()
+        
+        #config.update({"active_project":project})
+        #with open(configfile,"w") as f:
+        #    f.write(json.dumps(config))
+        #print config
+        #print configfile
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
-        if settings.KOLEKTI_CONFIG.get('active_project','') == '':
-            return HttpResponseRedirect('/projects')
         return self.render_to_response({})
 
 class ProjectsActivateView(kolektiMixin, View):
@@ -152,18 +157,18 @@ class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
     def get(self, request):
         projects = []
-        for projectname in os.listdir(settings.KOLEKTI_CONFIG.get('projects_dir','')):
+        for projectname in os.listdir(settings.KOLEKTI_BASE):
             project={'name':projectname}
             try:
                 from kolekti.synchro import SynchroManager
-                synchro = SynchroManager(os.path.join(settings.KOLEKTI_CONFIG.get('projects_dir'),projectname))
+                synchro = SynchroManager(os.path.join(settings.KOLEKTI_BASE,projectname))
                 projecturl = synchro.geturl()
                 project.update({"status":"svn","url":projecturl})
             except ExcSyncNoSync:
                 project.update({"status":"local"})
             projects.append(project)
             
-        context = {"projects" : projects,"active_project":settings.KOLEKTI_CONFIG.get('active_project').encode('utf-8')}
+        context = {"projects" : projects,"active_project":self.user_settings.active_project.encode('utf-8')}
         return self.render_to_response(context)
     
 class TocsListView(kolektiMixin, View):
@@ -206,7 +211,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
         path = request.GET.get('release')
-        lang = request.GET.get('lang', settings.KOLEKTI_SRC_LANG)
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
         context = self.get_context_data()
         context.update({
             'releasesinfo':self.release_details(path, lang),
@@ -314,7 +319,6 @@ class CriteriaEditView(kolektiMixin, TemplateView):
                 'values':[str(v.text) for v in xcriterion.findall("value")]
                 })
         context.update({'criteria':criteria})
-        print context
         return self.render_to_response(context)
     
 class BrowserExistsView(kolektiMixin, View):
@@ -418,8 +422,8 @@ class DraftView(PublicationView):
                     jscript.getparent().remove(jscript)
             # print ET.tostring(xjob)
             from kolekti import publish
-
-            p = publish.DraftPublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            p = publish.DraftPublisher(projectpath, lang=self.user_settings.active_srclang)
         
             pubres = p.publish_draft(tocpath, [xjob])
             context.update({'pubres':pubres})
@@ -454,13 +458,14 @@ class ReleaseView(PublicationView):
                     jscript.getparent().remove(jscript)
 
             from kolekti import publish
-            r = publish.Releaser(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
             pp = r.make_release(tocpath, [xjob])
             #print "----"
             #print pp
             #print "----"
             release_dir = pp[0]['assembly_dir'].replace('/releases/','')
-            p = publish.ReleasePublisher(settings.KOLEKTI_BASE, lang=settings.KOLEKTI_SRC_LANG)
+            p = publish.ReleasePublisher(projectpath, lang=self.user_settings.active_srclang)
             pubres = p.publish_assembly(release_dir, pp[0]['pubname'])
             #print pubres
             context.update({'pubres':pubres})
@@ -487,7 +492,7 @@ class TopicEditorView(kolektiMixin, View):
             path=request.GET['topic']
             xbody = self.parse_html_string(request.body)
             
-            xtopic = self.parse(path.replace('{LANG}',settings.KOLEKTI_SRC_LANG))
+            xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
             body = xtopic.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
             for e in xtopic.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
                 body.remove(e)
@@ -504,7 +509,7 @@ class TopicCreateView(kolektiMixin, View):
     template_name = "home.html"
     def post(self, request):
         try:
-            modelpath = '/sources/'+ settings.KOLEKTI_SRC_LANG + "/templates/" + request.POST.get('model')
+            modelpath = '/sources/'+ self.user_settings.active_srclang + "/templates/" + request.POST.get('model')
             topicpath = request.POST.get('topicpath')
             topic = self.parse(modelpath)
             self.xwrite(topic, topicpath)
@@ -540,7 +545,8 @@ class SearchView(kolektiMixin, View):
     def get(self, request):
         context = self.get_context_data()
         q = request.GET.get('query')
-        s = searcher(settings.KOLEKTI_BASE)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        s = searcher(projectpath)
         results = s.search(q)
         context.update({"results":results})
         context.update({"query":q})
@@ -554,7 +560,8 @@ class SyncView(kolektiMixin, View):
         context = self.get_context_data()
         try:
             from kolekti.synchro import SynchroManager
-            sync = SynchroManager(settings.KOLEKTI_BASE)
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            sync = SynchroManager(projectpath)
             changes = sync.statuses()
             newmerge = []
             newconflict = []
@@ -583,7 +590,8 @@ class SyncStartView(kolektiMixin, View):
     def post(self, request):
         message = request.POST.get("syncromsg")
         from kolekti.synchro import SynchroManager
-        sync = SynchroManager(settings.KOLEKTI_BASE)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        sync = SynchroManager(projectpath)
         
         context = {
             'update':sync.update_all(),
@@ -592,12 +600,15 @@ class SyncStartView(kolektiMixin, View):
         
         return self.render_to_response(context)
 
+
+
 class SyncDiffView(kolektiMixin, View):
     template_name = "synchro/diff.html"
     def get(self, request):
         entry = request.GET.get("file")
         from kolekti.synchro import SynchroManager
-        sync = SynchroManager(settings.KOLEKTI_BASE)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        sync = SynchroManager(projectpath)
         diff,  headdata, workdata = sync.diff(entry) 
         import difflib
         #htmldiff = hd.make_table(headdata.splitlines(), workdata.splitlines())
@@ -609,3 +620,11 @@ class SyncDiffView(kolektiMixin, View):
             }
         
         return self.render_to_response(context)
+
+
+
+
+class projectStaticView(kolektiMixin, View):
+    def get(self, request, path):
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
+        return serve(request, path, projectpath)

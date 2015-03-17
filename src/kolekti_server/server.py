@@ -21,6 +21,13 @@ TB_ST_INKSCAPE = wx.NewId()
 class KolektiHttp(Thread):
     def run(self):
         from kolekti_server.wsgi import application
+        cp_config = {'global': {
+                'log.screen': False,
+                'log.error_file': '',
+                'log.access_file': ''
+                }}
+
+        cherrypy.config.update(cp_config)
         cherrypy.tree.graft(application, '/')        
         
         # Unsubscribe the default server
@@ -99,35 +106,6 @@ class KolektiTray(wx.App):
         wx.EventLoop.SetActive(prevEventLoop)
 
 if __name__ == '__main__':
-
-    # get userdir
-    userdir = os.path.expanduser("~")
-    print userdir
-    configfile = os.path.join(userdir,".kolekti")
-    # check config
-    try:
-        with open(configfile) as f:
-            conf_dict = json.load(f)
-        print "config.json ok"
-    except:
-        print "config.json not found"
-        try:
-            print "reading ini file"
-            import ConfigParser
-            Config = ConfigParser.ConfigParser()
-            Config.read("kolekti.ini")
-            projects_path = Config.get('InstallSettings','projectspath')
-            print "reading ini file done", projects_path
-        except:
-            import traceback
-            print traceback.format_exc()
-            projects_path = "C:\\kolekti\\projects"
-        conf_dict= {"projects_dir": projects_path,
-                    "active_project":""}
-        with open(configfile,"w") as f:
-            f.write(json.dumps(conf_dict))
-        print "%s config.json w"%os.getcwd() 
-    print conf_dict
     systray = KolektiTray()
     systray.MainLoop()
     sys.exit(0)

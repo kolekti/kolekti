@@ -57,7 +57,7 @@ urlpatterns = patterns('',
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
     url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
-    url(r'(?P<path>.*)$', staticView, {'document_root' : settings.KOLEKTI_BASE}),
+    url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
 
 #    url(r'^publications', staticView, name="kolekti_raw_publication"),
 #    url(r'^drafts', staticView, name="kolekti_raw_draft"),

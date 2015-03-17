@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import json
+from kolekti.settings import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -94,26 +95,16 @@ RE_BROWSER_IGNORE=["~$","^\.svn$"]
 
 # kolekti configuration
 
-try:
-#    print "reading config"
-    # get userdir
-    userdir = os.path.expanduser("~")
-    configfile = os.path.join(userdir,".kolekti")
-    with open(configfile) as cf:
-        KOLEKTI_CONFIG = json.load(cf)
-except:
-    KOLEKTI_CONFIG = {"projects_dir": "",
-                      "active_project":""}
-# print KOLEKTI_CONFIG
-KOLEKTI_PROJECT = KOLEKTI_CONFIG.get('active_project')
-KOLEKTI_BASE =    os.path.join(KOLEKTI_CONFIG.get('projects_dir'), KOLEKTI_PROJECT )
-# print KOLEKTI_BASE
+
+
+KOLEKTI_CONFIG = settings()
+KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+#print KOLEKTI_CONFIG
 
 STATICFILES_DIRS = (
-    KOLEKTI_BASE, 
+    KOLEKTI_BASE,
 )
 
-KOLEKTI_SRC_LANG = KOLEKTI_CONFIG.get('languages', {KOLEKTI_PROJECT:"fr"}).get(KOLEKTI_PROJECT) 
 KOLEKTI_LANGS = ['fr','en','us','de','it']
 
 # settings for active project
