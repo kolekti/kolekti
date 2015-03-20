@@ -19,6 +19,7 @@ mimetypes.init()
 from lxml import etree as ET
 
 from exceptions import *
+from settings import settings
 from synchro import SynchroManager
 from searchindex import IndexManager
 
@@ -53,11 +54,11 @@ class kolektiBase(object):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
         try:
-            Config = ConfigParser.ConfigParser()
-            Config.read("kolekti.ini")
-            self._appdir = Config.get('InstallSettings','installdir')
+            Config = settings()
+            self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+
         # logging.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path

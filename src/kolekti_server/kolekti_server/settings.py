@@ -59,10 +59,21 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
+KOLEKTI_CONFIG = settings()
+KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+# APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
+if os.sys.platform[:3] == "win":
+    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
+    DB_NAME = appdatadir + '\\db.sqlite3'
+    DB_NAME = DB_NAME.replace('\\','/')
+else:
+    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': DB_NAME,
     }
 }
 
@@ -97,8 +108,8 @@ RE_BROWSER_IGNORE=["~$","^\.svn$"]
 
 
 
-KOLEKTI_CONFIG = settings()
-KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+#KOLEKTI_CONFIG = settings()
+#KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
 #print KOLEKTI_CONFIG
 
 STATICFILES_DIRS = (

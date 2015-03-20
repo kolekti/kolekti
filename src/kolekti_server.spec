@@ -21,7 +21,8 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=True )
+          console=False, 
+          icon='kolekti.ico')
 
 
 def extra_datas(mydir):
@@ -41,7 +42,7 @@ def extra_datas(mydir):
 
 data_files = [('LICENSE','LICENCE','DATA'),
               ('kolekti.ico','kolekti.ico','DATA'),
-              ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3'),'DATA'),
+              ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3.ref'),'DATA'),
               (os.path.join('kolekti','pubscripts.xml'),os.path.join('kolekti','pubscripts.xml'),'DATA'),
               ] + extra_datas('kolekti/xsl') + extra_datas('kolekti/plugins/_WebHelp5')
 

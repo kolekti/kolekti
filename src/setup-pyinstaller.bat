@@ -1,5 +1,7 @@
 @set PYTHONPATH=C:\Users\waloo\Desktop\kolekti\kolekti\src\kolekti_server;C:\Users\waloo\Desktop\kolekti\kolekti\src
-
+@rd build /s /q
+@rd dist /s /q
+@svn export --force --username=waloo http://beta.kolekti.net/svn/quickstart07 dist\quickstart
 @rem pyinstaller -w --name kolekti_server kolekti_server\server.py
 @pyinstaller -y -w  kolekti_server.spec
 @"C:\Program Files\Inno Setup 5\ISCC.exe" C:\Users\waloo\Desktop\kolekti\kolekti\src\setup.iss

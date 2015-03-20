@@ -8,6 +8,8 @@ from threading import Thread
 import wx
 import json
 
+import webbrowser
+
 
 TB_CLOSE = wx.NewId()
 TB_RESTART = wx.NewId()
@@ -21,6 +23,7 @@ TB_ST_INKSCAPE = wx.NewId()
 class KolektiHttp(Thread):
     def run(self):
         from kolekti_server.wsgi import application
+
         cp_config = {'global': {
                 'log.screen': False,
                 'log.error_file': '',
@@ -65,6 +68,7 @@ class KolektiTray(wx.App):
             self.httpThread = KolektiHttp()
             self.httpThread.daemon = True
             self.httpThread.start()
+            webbrowser.open_new('http://localhost:8080')
         except :
             self.OnException()
             
@@ -105,7 +109,38 @@ class KolektiTray(wx.App):
             self.ProcessIdle()
         wx.EventLoop.SetActive(prevEventLoop)
 
+
+def bootstrap():
+    # registers kolekti projects in windows libraries
+    try:
+        import pythoncom
+        from win32com.shell import shell, shellcon
+
+        lib = pythoncom.CoCreateInstance(shell.CLSID_ShellLibrary, None, pythoncom.CLSCTX_INPROC, shell.IID_IShellLibrary)
+        try:
+            lib.SaveInKnownFolder(shell.FOLDERID_Libraries,"kolekti",shellcon.LSF_FAILIFTHERE)
+        except:
+            pass
+        # adds projects folders to library
+        from kolekti.settings import settings
+        s = settings()
+        projectpath = s['InstallSettings']['projectspath']
+        for prj in os.listdir(projectpath):
+            item = shell.SHCreateItemFromParsingName(os.path.join(projectpath, prj),
+                                                     None,
+                                                     shell.IID_IShellItem)
+            lib.AddFolder(item)
+        lib.Commit()
+
+    except:
+        pass
+
 if __name__ == '__main__':
-    systray = KolektiTray()
-    systray.MainLoop()
-    sys.exit(0)
+    if len(sys.argv) == 1:
+        systray = KolektiTray()
+        systray.MainLoop()
+        sys.exit(0)
+    else:
+        if sys.argv[1] == "bootstrap":
+            bootstrap()
+
