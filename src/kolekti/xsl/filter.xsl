@@ -91,15 +91,16 @@
 <!--
     <xsl:message>condition : <xsl:value-of select="@class"/> [<xsl:value-of select="$cond"/>]</xsl:message>
 -->
+    <xsl:comment><xsl:value-of select="$action"/>:[cond <xsl:value-of select="$classcond"/>] <xsl:value-of select="$cond"/>]</xsl:comment>
     <xsl:choose>
 
       <xsl:when test="$cond='true'">
-	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+	<xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> true</xsl:comment>
 	<xsl:apply-templates select="node()"/>        
       </xsl:when>
 
       <xsl:when test="$action = 'assemble' and $cond='none'">
-	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+	<xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
 	<xsl:copy>
 	  <xsl:copy-of select="@class"/>
 	  <xsl:apply-templates select="node()|@*"/>
@@ -257,7 +258,7 @@
         <xsl:choose>
           <xsl:when test="starts-with(substring-after($cond,'='),'\')">
             <xsl:choose>
-	      <xsl:when test="not($found)">true</xsl:when>
+	      <xsl:when test="$found = 'false'">true</xsl:when>
 	      <xsl:otherwise>false</xsl:otherwise>
 	    </xsl:choose>
           </xsl:when>
