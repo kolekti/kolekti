@@ -452,7 +452,7 @@ class Publisher(PublisherMixin, kolektiBase):
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
-        label = profile.xpath('string(label)') 
+        label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
         suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
         if len(suffix):
             pubname = "%s_%s"%(label, suffix)
@@ -476,7 +476,7 @@ class Publisher(PublisherMixin, kolektiBase):
         if 'pivot_filter' in params :
             xfilter = params['pivot_filter']
             xdir = scrdef.xpath("string(parameters/parameter[@name='pivot_filter']/@dir)")
-            xf = self.get_xsl(xfilter, xsldir = self.get_base_template(xdir))
+            xf = self.get_xsl(xfilter, xsldir = xdir)
             fpivot = xf(pivot)
             self.log_xsl(xf.error_log)
 
