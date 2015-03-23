@@ -232,9 +232,9 @@ class Publisher(PublisherMixin, kolektiBase):
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
             # logging.debug(profile)
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
-            assembly = s(assembly)
+            fassembly = s(assembly)
             logging.debug('********************************** copy media')
-            self.copy_media(assembly, profile, assembly_dir)
+            self.copy_media(fassembly, profile, assembly_dir)
 
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
