@@ -130,28 +130,25 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 
     def project_activate(self,project):
         # get userdir
-        userdir = os.path.expanduser("~")
-        configfile = os.path.join(userdir,".kolekti")
         self.user_settings.active_project = project
+        projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
+        languages=[l.text for l in projectsettings.xpath('/settings/languages/lang')]
+        defaultlang = projectsettings.xpath('string(/settings/@sourcelang)')
+        if not self.user_settings.active_srclang in languages:
+             self.user_settings.active_srclang = defaultlang
+        self.user_settings.save()
+
+    def language_activate(self,language):
+        # get userdir
+        self.user_settings.active_srclang = language
         self.user_settings.save()
         
-        #config.update({"active_project":project})
-        #with open(configfile,"w") as f:
-        #    f.write(json.dumps(config))
-        #print config
-        #print configfile
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
         return self.render_to_response({})
 
-class ProjectsActivateView(kolektiMixin, View):
-    template_name = "projects_activate.html"
-    def get(self, request):
-        project = request.GET.get('project')
-        self.project_activate(project)
-        return self.render_to_response({'project':project})
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
@@ -159,6 +156,15 @@ class ProjectsView(kolektiMixin, View):
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
             project={'name':projectname}
+            try:
+                projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, projectname, 'kolekti', 'settings.xml'))
+                if projectsettings.xpath('string(/settings/@version)') != '0.7':
+                    continue
+                project.update({'languages':[l.text for l in projectsettings.xpath('/settings/languages/lang')],
+                                'defaultlang':projectsettings.xpath('string(/settings/@sourcelang)')})
+            except:
+                continue
+
             try:
                 from kolekti.synchro import SynchroManager
                 synchro = SynchroManager(os.path.join(settings.KOLEKTI_BASE,projectname))
@@ -168,9 +174,27 @@ class ProjectsView(kolektiMixin, View):
                 project.update({"status":"local"})
             projects.append(project)
             
-        context = {"projects" : projects,"active_project":self.user_settings.active_project.encode('utf-8')}
+        context = {"projects" : projects,
+                   "active_project" :self.user_settings.active_project.encode('utf-8'),
+                   "active_srclang":self.user_settings.active_srclang,
+                   }
+            
         return self.render_to_response(context)
-    
+
+
+class ProjectsActivateView(ProjectsView):
+    def get(self, request):
+        project = request.GET.get('project')
+        self.project_activate(project)
+        return super(ProjectsActivateView, self).get(request)
+
+class ProjectsLanguageView(ProjectsView):
+    def get(self, request):
+        project = request.GET.get('lang')
+        self.language_activate(project)
+        return super(ProjectsLanguageView, self).get(request)
+
+        
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
     

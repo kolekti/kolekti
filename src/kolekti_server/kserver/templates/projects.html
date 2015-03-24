@@ -60,7 +60,7 @@
 		<strong>{{ project.name }}</strong> 
 		<span class="label label-info pull-right">
 		  {% ifequal project.status  "svn" %}
-		  svn
+		  partagé
 		  {% else %}
 		  local
 		  {% endifequal %}
@@ -72,16 +72,24 @@
 		{% endif %}
 	      </a>
 	      
-	      <div id="sm{{ project.name }}" class="sublinks collapse">
+	      <div id="sm{{ project.name }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
 		<div class="panel-body">
+		  {% if project.name == active_project %}
+		  Langue : <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
+		    {% for lang in project.languages %}
+		    <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
+		    {% endfor %}
+		  </div>
+		  <hr/>
+		  {% endif %}
 		  {% ifequal project.status "svn" %}
-		  <p>SVN url : {{ project.url }}</p>
+		  <p>url du dépot SVN : {{ project.url }}</p>
 		  {% else %}
-		  <p>local project</p>
+		  <p>Projet local</p>
 		  {% endifequal %}
 		  {% if project.name != active_project %}
 		  <hr/>
-		  {{ project.name }} {{active_project }}<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
+		  <a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
 		  {% endif %}
 		</div>
 		
