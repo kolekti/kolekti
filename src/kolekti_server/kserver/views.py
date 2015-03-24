@@ -256,6 +256,15 @@ class ImportView(kolektiMixin, TemplateView):
     template_name = "home.html"
 
 
+class SettingsJsView(kolektiMixin, TemplateView):
+    def get(self, request):
+        settings_js="""
+        var kolekti = {
+        "lang":"%s"
+        }
+        """%(self.user_settings.active_srclang,)
+        return HttpResponse(settings_js,content_type="text/javascript")
+    
 class SettingsView(kolektiMixin, TemplateView):
     template_name = "settings/list.html"
 

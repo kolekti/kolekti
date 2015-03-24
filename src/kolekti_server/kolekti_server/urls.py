@@ -30,6 +30,7 @@ urlpatterns = patterns('',
     url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
+    url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
     url(r'^settings/jobs/create/', JobCreateView.as_view(), name='jobcreate'),
     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
