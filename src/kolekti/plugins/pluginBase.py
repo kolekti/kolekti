@@ -65,7 +65,7 @@ class plugin(PublisherMixin,kolektiBase):
         
         scriptlabel = scriptdef.get('name')
         profilelabel = profile.xpath('string(label)')
-        logging.debug("calling script ", scriptlabel)
+        logging.debug("calling script %s", scriptlabel)
                 
         self.publication_dir = self.pubdir(assembly_dir, profile) + "/" + scriptlabel
 
@@ -89,16 +89,31 @@ class plugin(PublisherMixin,kolektiBase):
 
 
     def copymedias(self):
-        for d in ['sources']:
-            source = self.assembly_dir + '/' + d
-            target = self.publication_dir + '/' + d
-            if self.exists(source):
-                self.copyDirs(source,target)
-            
+        # copy media from assembly space source to publication directory
+        for med in self.pivot.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
+
+            ref = med.get('src')
+            ref = self.substitute_criteria(ref, self.profile)
+            try:
+                refdir = "/".join([self.publication_dir]+ref.split('/')[:-1])
+                self.makedirs(refdir)
+            except OSError:
+                logging.debug('makedir failed')
+                import traceback
+                logging.debug(traceback.format_exc())
+
+            self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_dir,ref]) )
+
+        # copy plugin lib from assembly space to publication directory
+        label = self.scriptdef.get('name')
+        ass_libdir = '/'.join([self.assembly_dir,'kolekti','publication-templates',label,'lib'])
+        self.copyDirs(ass_libdir, self.publication_dir + '/lib')
+        
     def postpub(self):
         """
         postpub is the iterator used in plugin
         """
+        logging.debug('Dummy plugin')
         return "Dummy plugin"
 
     def get_script_parameter(self, param):
