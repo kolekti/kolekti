@@ -144,7 +144,9 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         except:
             return ["Error: path %s does not exist"%path]
 
-
+    def upper_case(self, _, *args):
+        path = args[0]
+        return path.upper()
 
 def test():
     testprofile = """
@@ -325,7 +327,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 self.log_xsl(s.error_log)
 
             # make toc
-            # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
+            # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
             s = self.get_xsl('toc')
             assembly = s(assembly)
             self.log_xsl(s.error_log)
@@ -365,17 +367,18 @@ class Publisher(PublisherMixin, kolektiBase):
 
  
             
-    # copy media to _c, update src attributes in assembly
+    # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
             ref = self.substitute_criteria(ref, profile)
             if ref[0] == '/':
                 ref = ref[1:]
-            med.set('src',ref)
+#            med.set('src',ref)
             logging.debug('image src : %s'%ref)
             try:
-                refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
+                refdir = "/".join([assembly_dir]+ref.split('/')[:-1])
+                # refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
                 self.makedirs(refdir)
             except OSError:
                 logging.debug('makedir failed')
