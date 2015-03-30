@@ -287,7 +287,7 @@
   <xsl:template name="value_in_list">
     <xsl:param name="value"/>
     <xsl:param name="list"/>
-    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>
+<!--    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>-->
     <xsl:choose>
       <xsl:when test="contains($list,',')">
         <xsl:choose>
