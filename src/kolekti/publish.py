@@ -308,7 +308,7 @@ class Publisher(PublisherMixin, kolektiBase):
             
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
-            self.log_xsl(s.error_log)
+            self.log_xsl(s.error_log)            
 
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
