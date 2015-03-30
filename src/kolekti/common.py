@@ -142,7 +142,7 @@ class kolektiBase(object):
 
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
         
