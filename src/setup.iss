@@ -3,7 +3,7 @@
 
 #define BuildDir "C:\Users\waloo\Desktop\kolekti\kolekti\src"
 
-#define MyAppName "kolekti"
+#define MyAppName "Kolekti"
 #define MyAppVersion "0.7"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
