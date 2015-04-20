@@ -147,7 +147,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
-        return self.render_to_response({})
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
 
 class ProjectsView(kolektiMixin, View):
