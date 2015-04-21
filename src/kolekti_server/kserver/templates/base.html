@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kolekti</title>
+    <title>{{ kolekti.project }}{% block page-title %}{% endblock %}</title>
 
     <!-- Bootstrap -->
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -32,10 +32,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">{{ kolekti.project }}</a>
+
 	</div>
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	  <ul class="nav navbar-nav">
+            <li><a href="/" {% block current_home %}{% endblock %}>Accueil</a></li>
 	    <li><a href="/tocs/" {% block current_trames %}{% endblock %}>Trames</a></li>
 	    <li><a href="/topics/" {% block current_topics %}{% endblock %}>Modules</a></li>
 	    <li><a href="/images/" {% block current_images %}{% endblock %}>Images</a></li>
@@ -46,7 +47,9 @@
 	  </ul>
 	  <ul class="nav navbar-nav navbar-right">
             <li><a href="http://www.kolekti.org/projects/kolekti/wiki">kolekti.org</a></li>
+	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
+	    {% endif %}
 	  </ul>
 	  <form class="navbar-form navbar-right" action="/search">
 	    <div class="input-group input-group-sm">
