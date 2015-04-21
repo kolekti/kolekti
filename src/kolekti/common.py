@@ -68,7 +68,7 @@ class kolektiBase(object):
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
-        projectdir = os.path.basename(path)
+        projectdir = os.path.basename(self._path[:-1])
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
