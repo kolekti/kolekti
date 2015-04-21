@@ -168,4 +168,16 @@ class SynchroManager(object):
         ospath = self.__makepath(path)
         self._client.remove(ospath,force=True)
 
+class SVNProjectManager(object):
+    def __init__(self, projectsroot):
+        self._projectsroot = projectsroot
+        self._client = pysvn.Client()
+        self._client.callback_get_log_message = get_log_message
 
+    def export_project(self, folder, url="http://beta.kolekti.net/svn/quickstart07"):
+        ospath = os.path.join(self._projectsroot, folder)
+        self._client.export(url, ospath)
+
+    def checkout_project(self, folder, url):
+        ospath = os.path.join(self._projectsroot, folder)
+        self._client.checkout(url, ospath)
