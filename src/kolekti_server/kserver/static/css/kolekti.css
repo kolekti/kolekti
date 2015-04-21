@@ -99,12 +99,22 @@ label {
     font-weight:100;
 }
 
-/* current menubar item */
-.navbar-inverse .navbar-nav>li>a {
-color: white;
+
+.navbar-inverse {
+ background-color: #428BCA;   
 }
+
+
+/* current menubar item */
+
+
+.navbar-inverse .navbar-nav>li>a {
+color: #E0E0E0;
+}
+
+
 .menu-current {
-    /* color:#428bca !important;*/
+    color:white !important;
     font-weight:bold;
 }
 
