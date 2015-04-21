@@ -32,7 +32,6 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">Kolekti</a>
 	</div>
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	  <ul class="nav navbar-nav navbar-right">
@@ -51,18 +50,27 @@
 	  {% if projects|length %}
 	  <div id="menu">
 	    <div class="panel panel-default list-group">
+<!--
 	      <div class="panel-heading">
 		<h4>Projets disponibles</h4>
 	      </div>
-
+-->
 	      {% for project in projects %}
-	      <a href="#" class="list-group-item" data-toggle="collapse" data-target="#sm{{ project.name }}" data-parent="#menu">
+
+	      <div class="panel-heading">
+	      <a data-toggle="collapse" {% if project.name != active_project %}class="collapsed"{% endif %} href="#collapse_{{ project.name }}">
+		<small>
+		  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"> </span>
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"> </span>
+		</small>
+	      </a>
+
 		<strong>{{ project.name }}</strong> 
 		<span class="label label-info pull-right">
 		  {% ifequal project.status  "svn" %}
 		  partagé
 		  {% else %}
-		  local
+		  privé
 		  {% endifequal %}
 		</span>
 		
@@ -70,9 +78,9 @@
 		<span class="label label-warning pull-right">Actif</span>
 		<span>  </span>
 		{% endif %}
-	      </a>
-	      
-	      <div id="sm{{ project.name }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
+	      </div>
+  
+	      <div id="collapse_{{ project.name }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
 		<div class="panel-body">
 		  {% if project.name == active_project %}
 		  Langue : <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
@@ -84,12 +92,16 @@
 		  {% endif %}
 		  {% ifequal project.status "svn" %}
 		  <p>url du dépot SVN : {{ project.url }}</p>
-		  {% else %}
-		  <p>Projet local</p>
-		  {% endifequal %}
-		  {% if project.name != active_project %}
 		  <hr/>
+{% comment %}
+		  {% else %}
+		  <p>Projet privé</p>
+{% endcomment %}
+		  {% endifequal  %}
+		  {% if project.name != active_project %}
 		  <a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
+		  {% else %}
+		  <a href="/">Accéder au projet {{project.name}}</a>
 		  {% endif %}
 		</div>
 		
@@ -98,9 +110,11 @@
 	    </div>
 	    {% endif %}
 	  </div>	    
+	</div>
+	<div class="col-sm-3 col-md-3 side">
 	  <div class="panel panel-default">
 	    <div class="panel-heading">
-	      <h4>Créer un nouveau projet</h4>
+	      <h4>Nouveau projet</h4>
 	    </div>
 	    <div class="panel-body">
 	      <form method="POST">
@@ -109,7 +123,7 @@
 		  <input type="url" class="form-control" id="project" placeholder="Entrez le nom du dossier projet">
 		</div>
 		<div class="form-group">
-		  <label for="project">URL du dépôt svn (laisser vide pour un projet local)</label>
+		  <label for="project">URL du dépot svn (laisser vide pour un projet local)</label>
 		  <input type="url" class="form-control" id="svn" placeholder="Entrez une URL">
 		</div>
 		<div class="form-group">
