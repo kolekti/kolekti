@@ -182,12 +182,27 @@ class ProjectsView(kolektiMixin, View):
             
         return self.render_to_response(context)
 
+    def post(self, request):
+        project_folder = request.POST.get('projectfolder')
+        project_url = request.POST.get('projecturl')
+        from kolekti.synchro import SVNProjectManager
+        sync = SVNProjectManager(settings.KOLEKTI_BASE)
+        if project_url=="":
+            # create local project
+            sync.export_project(project_folder)
+        else:
+            sync.checkout_project(project_folder, project_url)
+
+        return self.get(request)
+
 
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
         self.project_activate(project)
         return super(ProjectsActivateView, self).get(request)
+    
+
 
 class ProjectsLanguageView(ProjectsView):
     def get(self, request):
