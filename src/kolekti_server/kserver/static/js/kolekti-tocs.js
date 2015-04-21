@@ -934,9 +934,12 @@ $(document).ready( function () {
 	    $.get(path)
 		.done(
 		    function(data){
-			var topic = $.parseXML( data ),
-			id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			topic_obj = create_topic(path, id, topic);
+			if (data instanceof Document)
+			    var topic = data;
+			else
+			    var topic = $.parseXML( data );
+			var id = Math.round(new Date().getTime() + (Math.random() * 100));
+			var topic_obj = create_topic(path, id, topic);
 			$(comp).after(topic_obj)
 			usecases(topic_obj);
 			$(comp).detach()
