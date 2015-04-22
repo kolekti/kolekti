@@ -246,7 +246,16 @@ $(document).ready( function () {
 	    });
     }
 
-
+    var check_empty = function() {
+	if($('#toc_root').find('div').length == 0) {
+	    $('#toc_root').append(
+		$('<button>',{
+		    'type':"button",
+		    'class':"btn btn-default kolekti-ui",
+		    'html':"Insérer"
+		}).on('click', function(e) {newcomp($(this),false)}))
+	}
+    }
 
     // left panel button events
 
@@ -534,11 +543,12 @@ $(document).ready( function () {
 	else 
 	    $(this).closest('.section').remove();
 	enable_save();
+	check_empty();
 	e.preventDefault();
     });
 
     
-    var create_topic = function(path, id, topic) {
+    var create_topic_obj = function(path, id, topic) {
 
 	var topicfile = displayname(path);
 
@@ -611,22 +621,17 @@ $(document).ready( function () {
 		"class":"row",
 		"html":[
 		    $("<div>", {
-			"class":"col-sm-12 col-md-4 insert-buttons",
+			"class":"col-sm-12 col-md-3 insert-buttons",
 			"html":[
-			    $('<a>',{
-				"class":"btn btn-block btn-default btn-insert-new-module",
-				"href":"#",
-				"html":"Nouveau module"
-			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-module",
 				"href":"#",
-				"html":"Module existant"
+				"html":"Module"
 			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-section",
 				"href":"#",
-				"html":"Nouvelle section"
+				"html":"Section"
 			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-toc",
@@ -640,163 +645,54 @@ $(document).ready( function () {
 			    })]
 		    }),
 		    $("<div>", {
-			"class":"col-sm-12 col-md-8 insert-main"
+			"class":"col-sm-12 col-md-9 insert-main"
 		    })
 		]
 	    })
 	);
 
-	// handles new topic part : select model / create topic
-
-	$('.modal').on('click','.btn-insert-new-module', function(e) {
+	var select_topic_browser = function(e) {
 	    e.preventDefault();
 	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
+	    $('.modal .btn-insert-module').addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
-	    $('.insert-main').html($('<div>',{
-		"html":[
-/*
-		    $('<div>',{
-			"class":"alert alert-info",
-			"html":$("<p>",{
-			    "class":"new-module-title",
-			    "html":"test&nbsp;"
-			})
-		    }),
-*/
-		    $('<div>',{
-			"class":"new-module-browser",
-		    }),
-		    $('<div>',{
-			"class":"new-module-models-select",
-			"html":[
-			    $('<div>',{
-				"class":"new-module-model-select alert alert-info",
-				"html":[
-				    $("<span>",{ 
-					'class':'pull-right',
-					"html":$("<button>", {
-					    "type":"button",
-					    "class":'btn btn-default btn-xs new-module-model-btn align-',
-					    "data-toggle":"collapse",
-					    "data-target":"#newModuleModelBrowser",
-					    "aria-expanded":"false",
-					    "aria-controls":"newModuleModelBrowser",
-					    "html":"changer..."
-					})
-				    }),
-				    $('<strong>Modèle : </strong>'),
-				    $("<span>",{ 
-					'class':'new-module-model-display',
-					'data-model-path':'/sources/'+kolekti.lang+'/templates/default.html',
-					'html':'default'
-				    }),
-
-				    $('<div>',{
-					"class":"new-module-model-browser collapse",
-					"id":"newModuleModelBrowser",
-					"html":$('<div>',{
-					    "class":"alert alert-info",
-					    "html":$("<p>",{
-						"class":"new-module-title",
-						"html":"test&nbsp;"
-					    })
-					})
-				    })
-				]
-			    })
-			]  
-		    })
-		]}));
-
-	    kolekti_browser({'root':'/sources/'+kolekti.lang+'/templates',
-			     'parent':".new-module-model-browser",
-			     'title':"selectionnez un modele",
-			     'titleparent':".new-module-browser-title",
-			     'mode':"selectonly"
-			    })
-		.select(
-		    function(path) {
-			$('.new-module-model-display').html(basename(path))
-			$('.new-module-model-display').data('model-path',path)
-			console.log(path)
-		    }
-		)
-
-	    kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
-			     'parent':".new-module-browser",
-			     'title':"Selectionnez l'emplacement, le nom et le modèle pour la création du module",
-			     'titleparent':".new-module-title",
-			     'mode':"create",
-			     'editable_path':false
-			    })
-		.select(
-		    function(path) {
-			$.post('/topics/create/',
-			       {'modelpath': $('.new-module-model-display').data('model-path'),
-				'topicpath': path})
-			    .success(
-				$.get(path)
-				    .success(function(data) {
-		    			var topic = $.parseXML( data ),
-					id = Math.round(new Date().getTime() + (Math.random() * 100)),
-					topic_obj = create_topic(path, id, topic);
-					if (isafter) 
-					    comp.after(topic_obj)
-					else 
-					    comp.before(topic_obj)
-					enable_save();
-					$('.modal').modal('hide');
-				    })
-			    )
-		    }
-		)
-	    //	    .always(function() {console.log("after")})
-	})
-
-	// handle add existing topic : select topic
-
-	$('.modal').on('click','.btn-insert-module', function(e) {
-	    e.preventDefault();
-	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
-	    $('.modal-footer').off('click', '.browservalidate');
-	    $('.insert-main').html($('<div>',{
-		'html':[
-		    $('<div>',{
-			"class":"alert alert-info",
-			"html":$("<p>",{
-			    "class":"new-module-title",
-			    "html":"&nbsp;"
-			})
-		    }),
-		    $('<div>',{
-			"class":"new-module-browser",
-		    })
-		]}));
 
 	    kolekti_browser(
 		{'root':'/sources/'+kolekti.lang+'/topics',
-		 'parent':".new-module-browser",
-		 'title':"Sélectionnez le module à insérer",
+		 'parent':".insert-main",
 		 'titleparent':".new-module-title",
-		 'editable_path':false
+		 'create_actions':'yes',
+		 'create_builder':create_builder
 		}).select(function(path) {
 		    $.get(path).success(
 			function(data){
 			    var topic = $.parseXML( data ),
 			    id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			    topic_obj = create_topic(path, id, topic);
+			    topic_obj = create_topic_obj(path, id, topic);
 			    if (isafter) 
-				comp.after(topic_obj)
+				comp.after(topic_obj);
 			    else 
 				comp.before(topic_obj)
+			    $("#toc_root>button").remove();
 			    usecases(topic_obj);
 			    enable_save();
 			    $('.modal').modal('hide');
 			})
 		})
-	});
+		.create(create_topic)
+
+	    $('.insert-main').on('click', '.tpl-item',function(e){
+		e.preventDefault();
+		$('.label-tpl').html($(this).data('tpl'))
+		$('.label-tpl').data('tpl',$(this).data('tpl'));
+	    })
+
+	};
+
+	// handle add  topic : select topic
+
+	$('.modal').on('click','.btn-insert-module', select_topic_browser);
+
 
 	// handles add section : get section title & update structure
 
@@ -864,6 +760,7 @@ $(document).ready( function () {
 			comp.after(topic_obj)
 		    else 
 			comp.before(topic_obj)
+		    $("#toc_root>button").remove();
 		    enable_save();
 		    $('.modal').modal('hide');
 		});	
@@ -909,6 +806,7 @@ $(document).ready( function () {
 			comp.after(topic_obj)
 		    else 
 			comp.before(topic_obj)
+		    $("#toc_root>button").remove();
 		    enable_save();
 		    $('.modal').modal('hide');
 		});	
@@ -916,6 +814,7 @@ $(document).ready( function () {
 	}
 	if (!$('.modal-footer>button.browservalidate').length)
 	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
+	select_topic_browser({'preventDefault':function(){}});
 
 	// display dialog
 	$('.modal').modal();
@@ -939,7 +838,7 @@ $(document).ready( function () {
 			else
 			    var topic = $.parseXML( data );
 			var id = Math.round(new Date().getTime() + (Math.random() * 100));
-			var topic_obj = create_topic(path, id, topic);
+			var topic_obj = create_topic_obj(path, id, topic);
 			$(comp).after(topic_obj)
 			usecases(topic_obj);
 			$(comp).detach()
@@ -952,4 +851,5 @@ $(document).ready( function () {
     $('.section').each(function(i,t){
 	topicmenu($(t));
     });
+    check_empty();
 })
