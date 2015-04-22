@@ -7,3 +7,9 @@ def basename(path):
     return os.path.splitext(fname)[0]
 
 register.filter(basename)
+
+def urlbasename(path):
+    fname = path.split('/')[-1]
+    return os.path.splitext(fname)[0]
+
+register.filter(urlbasename)
