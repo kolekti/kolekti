@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),
     url(r'^tocs/edit/$', TocView.as_view(), name='tocedit'),
     url(r'^tocs/usecases/$', TocUsecasesView.as_view(), name='tocusecases'),
+    url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
 
     url(r'^import/$', ImportView.as_view(), name='import'),
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),

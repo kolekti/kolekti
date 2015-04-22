@@ -244,6 +244,24 @@ class TocView(kolektiMixin, View):
             print traceback.format_exc()
             return HttpResponse(status=500)
 
+
+class TocCreateView(kolektiMixin, View):
+    template_name = "home.html"
+    def post(self, request):
+        try:
+            tocpath = request.POST.get('tocpath')
+            toc = self.parse_html_string("""<?xml version="1.0"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><title>toc</title></head>
+  <body></body>
+</html>""")
+            self.xwrite(toc, tocpath)
+        except:
+            import  traceback
+            print traceback.format_exc()
+        return HttpResponse(json.dumps(self.path_exists(tocpath)),content_type="application/json")
+
+
 class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
