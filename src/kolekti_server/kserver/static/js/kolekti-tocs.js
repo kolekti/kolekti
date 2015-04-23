@@ -247,7 +247,7 @@ $(document).ready( function () {
     }
 
     var check_empty = function() {
-	if($('#toc_root').find('div').length == 0) {
+	if($('#toc_root').find('div, a[rel=kolekti\\:topic]').length == 0) {
 	    $('#toc_root').append(
 		$('<button>',{
 		    'type':"button",
