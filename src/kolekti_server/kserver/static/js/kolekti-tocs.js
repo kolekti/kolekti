@@ -140,7 +140,7 @@ $(document).ready( function () {
 					    'role':"menuitem",
 					    'tabindex':"-1",
 					    'href':"#",
-					    'class':"btn_section_exclude",
+					    'class':"btn_section_toc_exclude",
 					    'html':"Exclure du sommaire"
 					})
 				    }):null,
@@ -253,7 +253,7 @@ $(document).ready( function () {
 		    'type':"button",
 		    'class':"btn btn-default kolekti-ui",
 		    'html':"Insérer"
-		}).on('click', function(e) {newcomp($(this),false)}))
+		}).one('click', function(e) {newcomp($(this),false)}))
 	}
     }
 
@@ -460,62 +460,46 @@ $(document).ready( function () {
     // move topic
 
     $('body').on('click', '.btn_topic_up', function(e) {
-	var topic = $(this).closest('.topic');
-	if (topic) {
-	    if (topic.prev('.topic').length) {
-		topic.insertBefore(topic.prev('.topic'));
+	var comp = $(this).closest('.topic, .section');
+	if (comp.length) {
+	    if (comp.prev('.topic').length) {
+		// precedent est un topic
+		comp.insertBefore(comp.prev('.topic'));
+		enable_save();
+	    } else if (comp.prev('.section').length) {
+		// precedent est une section
+		comp.appendTo(comp.prev('.section').find('.panel-body'));
 		enable_save();
 	    } else {
-		var section = topic.closest('.section');
+		// pas de précédent, on regarde si on est dans un section
+		var section = comp.closest('.section');
 		if (section.length) {
-		    var prev_section = section.prev('.section');
-		    if (prev_section.length) {
-			topic.appendTo(prev_section),
-			enable_save();
-		    } else {
-			topic.insertBefore(section);
-			enable_save();
-		    }
+		    comp.insertBefore(section);
+		    enable_save();
 		}
 	    }
-	} else {
 	}
 	e.preventDefault();
     });
 
 
     $('body').on('click','.btn_topic_down', function(e) {
-	var topic = $(this).closest('.topic');
-	if (topic) {
-	    if (topic.next('.topic').length) {
-		topic.insertAfter(topic.next('.topic'));
+	var comp = $(this).closest('.topic, .section');
+	if (comp.length) {
+	    if (comp.next('.topic').length) {
+		// suivant  est un topic
+		comp.insertAfter(comp.next('.topic'));
+		enable_save();
+	    } else if (comp.next('.section').length) {
+		// suivant  est une section
+		comp.prependTo(comp.next('.section').find('.panel-body'));
 		enable_save();
 	    } else {
-		var next_section = topic.next('.section');
-		if (next_section.length) {
-		    var first_topic = next_section.find('.topic');
-		    if (first_topic.length) {
-			topic.insertBefore(first_topic[0]);
-			enable_save();
-		    } else {
-			topic.appendTo(next_section),
-			enable_save();
-		    }
-		} else {
-		    var section = topic.closest('.section');
-		    if (section.length) {
-			var next_section = section.next('.section');
-			if (next_section.length) {
-			    var first_topic = next_section.find('.topic');
-			    if (first_topic.length) {
-				topic.insertBefore(first_topic[0]);
-				enable_save();
-			    } else {
-				topic.appendTo(next_section),
-				enable_save();
-			    }
-			}
-		    }
+		// pas de suivant, on regarde si on est dans un section
+		var section = comp.closest('.section');
+		if (section.length) {
+		    comp.insertAfter(section);
+		    enable_save();
 		}
 	    }
 	}
@@ -538,11 +522,15 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_delete', function(e) {
 	var topic = $(this).closest('.topic');
-	if (topic)
+	if (topic.length) {
 	    topic.remove();
-	else 
-	    $(this).closest('.section').remove();
-	enable_save();
+	    enable_save();
+	} else if ($(this).closest('.section').length) {
+	    if (window.confirm('Supprimer la section ?')) {
+		$(this).closest('.section').remove();
+		enable_save();
+	    }
+	}
 	check_empty();
 	e.preventDefault();
     });
@@ -605,6 +593,53 @@ $(document).ready( function () {
 	
 	topicmenu(topic_obj);
 	return topic_obj;
+    } 
+
+    var create_section_obj = function(id, title) {
+	var section_obj = $('<div>', {
+	    'class':"section panel panel-info",
+	    'html':[$('<div>', {
+		'class':"panel-heading",
+		'html':$('<h1>', {
+		    'html':$('<a>',{
+			'data-toggle':"collapse",
+			'class':"collapsed",
+			'href':"#collapse_"+id,
+			'html':[
+			    $('<small>',{
+				'data-ui':'yes',
+				'html':[
+				    $('<span>',{
+					'class':"glyphicon glyphicon-chevron-right",
+					'aria-hidden':"true",
+					html:' '
+				    }),
+				    $('<span>',{
+					'class':"glyphicon glyphicon-chevron-down",
+					'aria-hidden':"false",
+					html:' '
+				    })
+				]}),
+			    $('<span>',{
+				'data-ui':"wrap", 
+				'html':title
+			    })
+			]
+		    })
+		})
+	    }),
+		    $('<div>', {
+			'class':"panel-collapse collapse",
+			'id':"collapse_"+id,
+			'html':$('<div>',{ 
+			    'class':"panel-body",
+			}),
+		    })
+		   ]
+	});
+	
+	topicmenu(section_obj);
+	return section_obj;
     } 
 
 
@@ -711,8 +746,18 @@ $(document).ready( function () {
 		    'type':"button",
 		    'class':"btn btn-default",
 		    'html':"Insérer"
-		}).one('click', function(e) {})
-
+		}).one('click', function(e) {
+		    var id = Math.round(new Date().getTime() + (Math.random() * 100)),
+		    title = $('.modal #input_section_title').val()
+		    section_obj = create_section_obj(id, title);
+		    if (isafter) 
+			comp.after(section_obj);
+		    else 
+			comp.before(section_obj)
+		    $("#toc_root>button").remove();
+		    enable_save();
+		    $('.modal').modal('hide');
+		})
 	    ]);
 	    
 /*
