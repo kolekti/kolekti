@@ -611,8 +611,6 @@ $(document).ready( function () {
     // handles dialog for insertion of topics & sections
 
     var newcomp = function(comp, isafter) {
-
-
 	$('.modal-title').html('Insertion');
 	
 	// builds dialog
@@ -691,7 +689,7 @@ $(document).ready( function () {
 
 	// handle add  topic : select topic
 
-	$('.modal').on('click','.btn-insert-module', select_topic_browser);
+	// $('.modal').on('click','.btn-insert-module', select_topic_browser);
 
 
 	// handles add section : get section title & update structure
@@ -702,23 +700,26 @@ $(document).ready( function () {
 	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 	    $('.insert-main').html([
-		$('<div>',{
-		    "class":"alert alert-info",
-		    "html":$("<p>",{
-			"html":"Nouvelle section"
-		    })
-		}),
+		"Libellé de la section",
 		$('<input>', {
 		    'type':'text',
+		    'class':"form-control",
 		    'id':'input_section_title',		
-		    'placeholder':'Titre de la section'
-		})
+		    'placeholder':''
+		}),
+		$('<button>',{
+		    'type':"button",
+		    'class':"btn btn-default",
+		    'html':"Insérer"
+		}).one('click', function(e) {})
+
 	    ]);
 	    
+/*
 	    $('.modal-footer').on('click', '.browservalidate', function(event) {
 		console.log("add section")
 	    });	
-
+*/
 	})
 
 	// handles add toc (if not already exists)
@@ -726,45 +727,39 @@ $(document).ready( function () {
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:toc"]').length) {
 	    $('.modal .btn-insert-toc').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-toc', function(e) {
-	    e.preventDefault();
-	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
-
-		$('.modal-footer').off('click', '.browservalidate');
-		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer une table des matières"})}));
-		$('.modal-footer').on('click', '.browservalidate', function(event) {
-		    console.log("add toc")
-		    var topic_obj = $('<div>', {
-			'class':"topic",
-			'data-kolekti-topic-rel':"kolekti:toc",
-			'html':$('<div>', {
-			    'class':"panel panel-warning",
-			    'html':[
-				$('<div>', {
-				    'class':"panel-heading",
-				    'html':$('<h4>', {
-					'class':"panel-title",
-					'html':$('<span>',{
-					    'data-toggle':"tooltip", 
-					    'data-placement':"top",
-					    'title':"Table des matières",
-					    'html':$('<em>',{'html':"Table des matières"})
-					})
+	    $('.modal').one('click','.btn-insert-toc', function(e) {
+		e.preventDefault();
+		$('.insert-buttons a').removeClass('active');
+		$(this).addClass('active');
+		var topic_obj = $('<div>', {
+		    'class':"topic",
+		    'data-kolekti-topic-rel':"kolekti:toc",
+		    'html':$('<div>', {
+			'class':"panel panel-warning",
+			'html':[
+			    $('<div>', {
+				'class':"panel-heading",
+				'html':$('<h4>', {
+				    'class':"panel-title",
+				    'html':$('<span>',{
+					'data-toggle':"tooltip", 
+					'data-placement':"top",
+					'title':"Table des matières",
+					'html':$('<em>',{'html':"Table des matières"})
 				    })
-				})]
-			})
-		    });
-		    topicmenu(topic_obj);
-		    if (isafter) 
-			comp.after(topic_obj)
-		    else 
-			comp.before(topic_obj)
-		    $("#toc_root>button").remove();
-		    enable_save();
-		    $('.modal').modal('hide');
-		});	
-	    })
+				})
+			    })]
+		    })
+		});
+		topicmenu(topic_obj);
+		if (isafter) 
+		    comp.after(topic_obj)
+		else 
+		    comp.before(topic_obj)
+		$("#toc_root>button").remove();
+		enable_save();
+		$('.modal').modal('hide');
+	    });	
 	}
 
 	// handles add index (if not already exists)
@@ -772,53 +767,54 @@ $(document).ready( function () {
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:index"]').length) {
 	    $('.modal .btn-insert-idx').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-idx', function(e) {
+	    $('.modal').one('click','.btn-insert-idx', function(e) {
 		e.preventDefault();
 		$('.insert-buttons a').removeClass('active');
 		$(this).addClass('active');
 		$('.modal-footer').off('click', '.browservalidate');
-		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer un index alphabétique"})}));
-		$('.modal-footer').on('click', '.browservalidate', function(event) {
-		    console.log("add index")
-		    var topic_obj = $('<div>', {
-			'class':"topic",
-			'data-kolekti-topic-rel':"kolekti:index",
-			'html':$('<div>', {
-			    'class':"panel panel-warning",
-			    'html':[
-				$('<div>', {
-				    'class':"panel-heading",
-				    'html':$('<h4>', {
-					'class':"panel-title",
-					'html':$('<span>',{
-					    'data-toggle':"tooltip", 
-					    'data-placement':"top",
-					    'title':"Index alphabétique",
-					    'html':$('<em>',{'html':"Index alphabétique"})
-					})
+		var topic_obj = $('<div>', {
+		    'class':"topic",
+		    'data-kolekti-topic-rel':"kolekti:index",
+		    'html':$('<div>', {
+			'class':"panel panel-warning",
+			'html':[
+			    $('<div>', {
+				'class':"panel-heading",
+				'html':$('<h4>', {
+				    'class':"panel-title",
+				    'html':$('<span>',{
+					'data-toggle':"tooltip", 
+					'data-placement':"top",
+					'title':"Index alphabétique",
+					'html':$('<em>',{'html':"Index alphabétique"})
 				    })
-				})]
-			})
-		    });
+				})
+			    })]
+		    })
+		});
 
-		    topicmenu(topic_obj);
-		    if (isafter) 
-			comp.after(topic_obj)
-		    else 
-			comp.before(topic_obj)
-		    $("#toc_root>button").remove();
-		    enable_save();
-		    $('.modal').modal('hide');
-		});	
-	    })
+		topicmenu(topic_obj);
+		if (isafter) 
+		    comp.after(topic_obj)
+		else 
+		    comp.before(topic_obj)
+		$("#toc_root>button").remove();
+		enable_save();
+		$('.modal').modal('hide');
+	    });	
 	}
+	/*
 	if (!$('.modal-footer>button.browservalidate').length)
 	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
+	*/
 	select_topic_browser({'preventDefault':function(){}});
 
 	// display dialog
 	$('.modal').modal();
     }
+
+    // end insert dialog
+
 
     // finalize UI by adding menus to topics
 

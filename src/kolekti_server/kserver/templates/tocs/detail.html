@@ -18,17 +18,21 @@
 {% block title %}
         <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
 	{{ tocdisplay }}
-	<span class="pull-right">
-	  <button type="button" class="btn btn-default disabled hidden" id="btn_save">
-	    Enregistrer
-	  </button>
-</span>
 {% endblock %}
 
 
 {% block menu %}
     
     <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
+
+    <div class="row top-margin">
       <div class="col-sm-6 col-md-6">
 	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
       </div>
