@@ -270,7 +270,6 @@ $(document).ready( function () {
 	}).success(function(data) {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').addClass('hidden');
 	    $('#btn_save').removeClass('btn-warning');
 	});
     })
