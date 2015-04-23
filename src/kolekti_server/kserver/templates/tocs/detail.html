@@ -56,6 +56,16 @@
       </div>
       <div id="collapsePublier" class="panel-collapse collapse">
 	<div class="panel-body">
+
+	  <h5>
+	  Nom de la publication
+	  </h5>	  
+	  <input type='text'
+		 class='block-control'
+		 id='input_toc_title'
+		 value="{{ toctitle }}"/>
+
+
 	  <h5>
 	  Fichier de paramètres
 	  </h5>
@@ -75,18 +85,8 @@
 	      {% endfor %}
 	    </ul>
 	  </span>
-{#	  <span class="pull-right"> #}
-	    <a id="editjoblink" href="/settings/job?path={{ tocjob }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
-{#	  </span>#}
+	  <a id="editjoblink" href="/settings/job?path={{ tocjob }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
 
-	  <h5>
-	  Titre
-	  </h5>
-	  
-	  <input type='text'
-		 class='block-control'
-		 id='input_toc_title'
-		 value="{{ toctitle }}"/>
 
 	  
 	  {% for job in jobs %}
