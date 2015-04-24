@@ -17,3 +17,16 @@
 {{ job|safe }}
 
 {% endblock %}
+
+{% block menu %}
+    
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save" data-path="{{ path }}">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
+{% endblock %}
+

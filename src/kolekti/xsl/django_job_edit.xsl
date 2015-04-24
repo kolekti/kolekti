@@ -33,13 +33,7 @@
 
   <xsl:template match="/">
     <h4>Paramètres de publication</h4>
-    <h2><span id="job_id"><xsl:value-of select='job/@id'/></span>
-    <span class="pull-right">
-      <button type="button" class="btn btn-default disabled hidden" id="btn_save" data-path="{$path}">
-	Enregistrer
-      </button>
-    </span>
-    </h2>
+    <h2><span id="job_id"><xsl:value-of select='job/@id'/></span></h2>
     <div id="job_body">
       <xsl:apply-templates select="/job/criteria"/>
       <xsl:apply-templates select="/job/profiles"/>
