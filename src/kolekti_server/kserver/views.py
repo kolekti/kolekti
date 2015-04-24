@@ -331,6 +331,7 @@ class JobEditView(kolektiMixin, TemplateView):
         context = self.get_context_data()
         context.update({'jobs':self.get_jobs()})
         context.update({'job':self.get_job_edit(request.GET.get('path'))})
+        context.update({'path':request.GET.get('path')})
         return self.render_to_response(context)
 
     def post(self, request):
@@ -387,7 +388,23 @@ class CriteriaEditView(kolektiMixin, TemplateView):
                 })
         context.update({'criteria':criteria})
         return self.render_to_response(context)
-    
+    def post(self, request):
+        try:
+            settings = self.parse('/kolekti/settings.xml')
+            xcriteria = self.parse_string(request.body)
+            xsettingscriteria=settings.xpath('/settings/criteria')[0]
+            for xcriterion in xsettingscriteria:
+                xsettingscriteria.remove(xcriterion)
+                
+            for xcriterion in xcriteria.xpath('/criteria/criterion'):
+                xsettingscriteria.append(xcriterion)
+            self.xwrite(settings, '/kolekti/settings.xml')
+            return HttpResponse('ok')
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+   
 class BrowserExistsView(kolektiMixin, View):
     def get(self,request):
         path = request.GET.get('path','/')
