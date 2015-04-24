@@ -6,7 +6,21 @@ $(document).ready( function () {
     }
 
     var serialize = function() {
-	
+	buf = "<criteria>";
+	$('.criterion').each(function(i,e) {
+	    buf += "<criterion type='enum' code='";
+	    buf += $(e).find('.panel-heading input').val();
+	    buf += "'>"
+	    $(e).find('.panel-body input').each(function(j,v) {
+		buf += "<value>"
+		buf += $(v).val();
+		buf += "</value>";
+	    })
+	    buf += "</criterion>";
+
+	});
+	buf += "</criteria>";
+	return buf;
     }
     
     $('#btn_save').on('click', function(e){
@@ -109,20 +123,25 @@ $(document).ready( function () {
 
     $('body').on('click','.crit-add-value', function(e) {
 	new_value($(this).closest('div.row'));
+	enable_save();
     });
 
     $('body').on('click','.crit-del-value', function(e) {
 	$(this).closest('div.row').remove();
+	enable_save();
     });
 
     $('body').on('click','.crit-add-crit', function(e) {
 	new_criterion();
+	enable_save();
     });
 
     $('body').on('click','.crit-del-crit', function(e) {
 	$(this).closest('div.panel').remove();
+	enable_save();
     });
 
-
-
+    $('body').on('change','input', function(e) {
+	enable_save();
+    });
 });
