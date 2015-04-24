@@ -16,13 +16,19 @@ $(document).ready(function() {
     kolekti_browser({'root':'/kolekti/publication-parameters',
 		     'parent':".browserparent",
 		     'buttonsparent':".buttons",
-		     'mode':"selectonly",
+		     'os_actions':'yes',
 		     'modal':"no",
-		     'os_actions':'yes'
+		     'create_actions':'yes'
 		    })
 	.select(
 	    function(path) {
 		location.assign('/settings/job?path='+path);
 	    }
 	)
+	.create(function(folder, update_function){
+	    var filename = $('.filename').val();
+	    $.post('/settings/jobs/create/',
+		   {'path':folder + "/" + filename})
+		.success(update_function)
+	});
 })
