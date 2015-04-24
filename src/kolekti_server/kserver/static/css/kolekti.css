@@ -109,11 +109,15 @@ label {
 
 
 .navbar-inverse .navbar-nav>li>a {
-color: #E0E0E0;
+    color: #E0E0E0;
+    font-weight:bold;
 }
 
-
 .menu-current {
+    background-color:#225BAA;
+}
+
+.menu-current>a {
     color:white !important;
     font-weight:bold;
 }
