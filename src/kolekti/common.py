@@ -104,7 +104,8 @@ class kolektiBase(object):
         try:
             self.indexMgr = IndexManager(self._path)
         except:
-            pass
+            logging.info('Search index could not be loaded')
+
         
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
@@ -288,7 +289,10 @@ class kolektiBase(object):
         except ExcSyncNoSync:
             logging.info('Synchro unavailable')
             shutil.move(self._makepath(src), self._makepath(dst))
-        self.indexMgr.move_resource(src, dest)
+        try:
+            self.indexMgr.move_resource(src, dest)
+        except:
+            logging.info('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
@@ -296,7 +300,10 @@ class kolektiBase(object):
         except ExcSyncNoSync:
             logging.info('Synchro unavailable')
             shutil.copy(self._makepath(src), self._makepath(dst))
-        self.indexMgr.copy_resource(src, dest)
+        try:
+            self.indexMgr.copy_resource(src, dest)
+        except:
+            logging.info('Search index unavailable')
 
     def delete_resource(self, path):
         try:
@@ -307,16 +314,21 @@ class kolektiBase(object):
                 shutil.rmtree(self._makepath(path))
             else:
                 os.unlink(self._makepath(path))
-            
-        self.indexMgr.delete_resource(path)
-        
+        try:
+            self.indexMgr.delete_resource(path)
+        except:
+            logging.info('Search index unavailable')
+
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
         except ExcSyncNoSync:
             logging.info('Synchro unavailable')
-        self.indexMgr.post_save(path)
-        
+        try:
+            self.indexMgr.post_save(path)
+        except:
+            logging.info('Search index unavailable')
+
     def makedirs(self, path):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
