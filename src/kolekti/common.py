@@ -389,7 +389,7 @@ class kolektiBase(object):
             return aurl
 
     def _get_criteria_dict(self, profile):
-        criteria = profile.xpath("criteria/criterion")
+        criteria = profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):c.get('value',None)})
@@ -403,7 +403,7 @@ class kolektiBase(object):
         return criteria_dict
 
 
-    def substitute_criteria(self,string, profile, extra={}):
+    def substitute_criteria(self, string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
         #logging.debug(criteria_dict)
