@@ -286,7 +286,7 @@ class kolektiBase(object):
     def move_resource(self, src, dest):
         try:
             self.syncMgr.move_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
             shutil.move(self._makepath(src), self._makepath(dst))
         try:
@@ -297,7 +297,7 @@ class kolektiBase(object):
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
             shutil.copy(self._makepath(src), self._makepath(dst))
         try:
@@ -322,7 +322,7 @@ class kolektiBase(object):
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
         try:
             self.indexMgr.post_save(path)
