@@ -288,7 +288,7 @@ class kolektiBase(object):
             self.syncMgr.move_resource(src, dest)
         except:
             logging.info('Synchro unavailable')
-            shutil.move(self._makepath(src), self._makepath(dst))
+            shutil.move(self.__makepath(src), self.__makepath(dst))
         try:
             self.indexMgr.move_resource(src, dest)
         except:
@@ -299,7 +299,7 @@ class kolektiBase(object):
             self.syncMgr.copy_resource(src, dest)
         except:
             logging.info('Synchro unavailable')
-            shutil.copy(self._makepath(src), self._makepath(dst))
+            shutil.copy(self.__makepath(src), self.__makepath(dst))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
@@ -308,12 +308,12 @@ class kolektiBase(object):
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            if os.path.isdir(self._makepath(path)):
-                shutil.rmtree(self._makepath(path))
+            if os.path.isdir(self.__makepath(path)):
+                shutil.rmtree(self.__makepath(path))
             else:
-                os.unlink(self._makepath(path))
+                os.unlink(self.__makepath(path))
         try:
             self.indexMgr.delete_resource(path)
         except:
