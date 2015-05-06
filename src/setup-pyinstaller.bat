@@ -2,7 +2,7 @@
 @rd build /s /q
 @rd dist /s /q
 @svn export --force --username=waloo http://beta.kolekti.net/svn/Exemple_PDFs dist\Exemple_PDFs
-@svn export --force --username=waloo http://beta.kolekti.net/svn/Exemple_WebhelpPersonalisable dist\Exemple_WebhelpPersonalisable
+@svn export --force --username=waloo http://beta.kolekti.net/svn/Exemple_WebhelpPersonnalisable dist\Exemple_WebhelpPersonnalisable
 @rem pyinstaller -w --name kolekti_server kolekti_server\server.py
 @pyinstaller -y -w  kolekti_server.spec
 @"C:\Program Files\Inno Setup 5\ISCC.exe" C:\Users\waloo\Desktop\kolekti\kolekti\src\setup.iss
