@@ -87,6 +87,14 @@ if __name__ == '__main__':
     defaults.update({'cmd':'publish'})
     parser_pub.set_defaults(**defaults)
     
+    # publication d'une release 
+    parser_diag = subparsers.add_parser('diagnostic', help="diagnostic on project or toc")
+    parser_diag.add_argument('-t', '--toc', action='store')
+    parser_diag.add_argument('-l', '--lang', action='store')
+    defaults=config.get("diagnostic",{})
+    defaults.update({'cmd':'diagnostic'})
+    parser_diag.set_defaults(**defaults)
+    
     # variables file conversion xml->ods 
     parser_varods = subparsers.add_parser('varods', help="convert variables from xml to ods")
     parser_varods.add_argument('varfile', action='store')
@@ -168,6 +176,19 @@ if __name__ == '__main__':
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Release ended with errors")
+                    
+    if args.cmd == 'diagnostic':
+        from kolekti import diagnostic
+        try:
+            d = diagnostic.Diagnostic(args.base)
+            if args.toc:
+                d.diag_toc(args.toc)
+            else:
+                d.diag_project()
+        except:
+            import traceback
+            logging.debug(traceback.format_exc())
+            logging.error("Diagnostics failed")
                     
     if args.cmd == 'publish':
         from kolekti import publish
