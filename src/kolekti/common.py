@@ -50,7 +50,7 @@ objpathes = {
 
  
 class kolektiBase(object):
-    def __init__(self, path):
+    def __init__(self, path, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
         try:
@@ -153,10 +153,6 @@ class kolektiBase(object):
         defs = os.path.join(self._appdir, 'pubscripts.xml')
         return ET.parse(defs).getroot()
 
-    def get_script(self, plugin):
-        # imports a script python module
-        import plugins
-        return plugins.getPlugin(plugin,self._path)
 
     def get_directory(self, root=None):
         res=[]
@@ -374,6 +370,20 @@ class kolektiBase(object):
             return 'file:' + upath
         else:
             return 'file://' + upath
+
+
+    def getUrlPath2(self, source):
+        path = self.__makepath(source)
+        # logging.debug(path)
+        
+        upath = path.replace(os.path.sep,"/")
+        print upath
+# upath = urllib.pathname2url(path.
+        if upath[:3]=='///':
+            return 'file:' + upath
+        if upath[0]=='/':
+            return 'file://' + upath
+        return 'file:///' + upath
 
 
     def getPathFromUrl(self, url):
