@@ -20,7 +20,8 @@ from django.utils.decorators import method_decorator
 
 # kolekti imports
 from kolekti.common import kolektiBase
-from kolekti.publish import PublisherExtensions
+from kolekti.publish_utils import PublisherExtensions
+from kolekti import publish
 from kolekti.searchindex import searcher
 from kolekti.exceptions import ExcSyncNoSync
 
@@ -104,7 +105,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         res = []
         for job in self.iterjobs:
             xj = self.parse(job['path'])
-            job.update({'profiles':[p.text for p in xj.xpath('/job/profiles/profile/label')],
+            job.update({'profiles':[(p.find('label').text,p.get('enabled')) for p in xj.xpath('/job/profiles/profile')],
                         'scripts':[s.get("name") for s in xj.xpath('/job/scripts/script[@enabled="1"]')],
                         })
             res.append(job)
@@ -304,7 +305,7 @@ class SettingsView(kolektiMixin, TemplateView):
 
     def get(self, request):
         context = self.get_context_data()
-        context.update({'jobs':self.get_jobs()})
+#        context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
 
 class JobCreateView(kolektiMixin, View):
@@ -329,7 +330,7 @@ class JobEditView(kolektiMixin, TemplateView):
 
     def get(self, request):
         context = self.get_context_data()
-        context.update({'jobs':self.get_jobs()})
+#        context.update({'jobs':self.get_jobs()})
         context.update({'job':self.get_job_edit(request.GET.get('path'))})
         context.update({'path':request.GET.get('path')})
         return self.render_to_response(context)
@@ -480,13 +481,14 @@ class PublicationView(kolektiMixin, View):
         self.loggerstream = StringIO.StringIO()
         import logging
         self.loghandler = logging.StreamHandler(stream = self.loggerstream)
-        self.loghandler.setLevel(logging.INFO)
+        self.loghandler.setLevel(logging.WARNING)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+        formatter = logging.Formatter('%(levelname)-8s ; %(message)s\n')
         # tell the handler to use this format
         self.loghandler.setFormatter(formatter)
         # add the handler to the root logger
-        logging.getLogger('').addHandler(self.loghandler)
+        rl = logging.getLogger('')
+        rl.addHandler(self.loghandler)
     
 class DraftView(PublicationView):
     def post(self,request):
@@ -505,19 +507,22 @@ class DraftView(PublicationView):
                 if not jscript.get('name') in scripts:
                     jscript.getparent().remove(jscript)
             # print ET.tostring(xjob)
-            from kolekti import publish
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             p = publish.DraftPublisher(projectpath, lang=self.user_settings.active_srclang)
-        
+#            print ET.tostring(xjob)
             pubres = p.publish_draft(tocpath, [xjob])
             context.update({'pubres':pubres})
             context.update({'success':True})
+            warnings = self.loggerstream.getvalue()
+            if len(warnings):
+                context.update({'logger':warnings})        
         except:
             import traceback
-            print traceback.format_exc()
             self.loghandler.flush()
+            print self.loggerstream
             context.update({'success':False})
             context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
 
         return self.render_to_response(context)
         
@@ -541,7 +546,6 @@ class ReleaseView(PublicationView):
                 if not jscript.get('name') in scripts:
                     jscript.getparent().remove(jscript)
 
-            from kolekti import publish
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
             pp = r.make_release(tocpath, [xjob])

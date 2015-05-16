@@ -99,14 +99,16 @@
 	      <h5>Profils</h5>
 	    </div>
 	    {% for profile in job.profiles %}
+	    {% if profile.1 == "1"%}
 	    <div class="col-sm-6 col-md-6">
 	      <div class="checkbox" checked>
 		<label>
-  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile }}" data-kolekti-profile="{{ profile }}" checked/>
-		  {{ profile }}
+  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}" checked/>
+		  {{ profile.0 }}
 		</label>
 	      </div>
 	    </div>
+	    {% endif %}
 	    {% endfor %}
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Sorties</h5>
