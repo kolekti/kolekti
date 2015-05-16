@@ -6,14 +6,17 @@ a = Analysis(['kolekti_server\\server.py'],
              hiddenimports=['htmlentitydefs',
                             'HTMLParser',
                             'markupbase',
+                            'PIL',
                             'django.contrib.sessions.serializers',
+#                            'kolekti.publish_utils',
+#                            'kolekti.plugins.pluginBase',                            
+#                            'kolekti.plugins.chm',
+#                            'kolekti.plugins.hlp',
+#                            'kolekti.plugins.WebHelp5',
+#                            'kolekti.plugins.WebHelp5.ac_index',
                             'kserver.templatetags.ostags',
                             'kserver.templatetags.difftags',
                             'kserver.templatetags.timetags',
-                            'kolekti',
-                            'kolekti.plugins',
-                            'kolekti.plugins.pluginBase',
-                            'kolekti.plugins.WebHelp5',
                             ],
              hookspath=None,
              runtime_hooks=None)
@@ -50,20 +53,24 @@ def extra_datas(mydir):
     return extra_datas
 
 def extra_plugins():
-    myplugins = ['WebHelp5','pluginBase']
+    myplugins = ['WebHelp5','chm','hlp','pluginBase']
     def rec_glob(p, files):
         import os
         import glob
         for d in glob.glob(p):
             if os.path.isfile(d):
+                if os.path.splitext(d)[1] == ".pyc":
+                    continue
+                if os.path.splitext(d)[1] == ".py":
+                    continue
                 files.append((d,d,'DATA'))
             rec_glob("%s/*" % d, files)
 
     res = []
     for plugin in myplugins:
         f = os.path.join('kolekti','plugins', plugin)
-        res.append((f+'.py', f+'.py','DATA'))
-        res.append((f+'.pyc', f+'.pyc','DATA'))
+#        res.append((f+'.py', f+'.py','DATA'))
+#        res.append((f+'.pyc', f+'.pyc','DATA'))
         if os.path.exists(os.path.join('kolekti','plugins', "_%s" % plugin)):
 
             rec_glob("kolekti/plugins/_%s/*"%plugin, res)  
