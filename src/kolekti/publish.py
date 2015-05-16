@@ -11,150 +11,11 @@ import os
 import copy
 import logging
 import json
-
 from lxml import etree as ET
 
+from publish_utils import PublisherMixin, PublisherExtensions
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
-
-
-
-class PublisherMixin(object):
-    nsmap={"h":"http://www.w3.org/1999/xhtml"}
-    def __init__(self, *args, **kwargs):
-        # intercept lang & draft parameters
-
-        self._publang = None
-        if kwargs.has_key('lang'):
-            self._publang = kwargs.get('lang')
-            kwargs.pop('lang')
-
-        self._draft = False
-    
-        super(PublisherMixin, self).__init__(*args, **kwargs)
-
-        if self._publang is None:
-            self._publang = self._config.get("sourcelang","en")
-            
-    def process_path(self, path):
-        return self.substitute_criteria(path, ET.XML('<criteria/>'))
-
-    def substitute_criteria(self, string, profile, extra={}):
-        extra.update({"LANG":self._publang})
-        return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
-
-    
-    def pubdir(self, assembly_dir, profile):
-        # calculates and creates the publication directory
-        pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
-        pubdir = self.substitute_criteria(pubdir, profile)
-        pubdir = assembly_dir + "/publications/" + pubdir
-        logging.debug('pubdir : %s'%pubdir)
-
-        try:
-            self.makedirs(pubdir)
-        except:
-            logging.debug("publication path %s already exists"%pubdir)
-        return pubdir
-    
-class PublisherExtensions(PublisherMixin, XSLExtensions):
-    """
-    Extensions functions for xslt that are applied during publishing process
-    """
-    ens = "kolekti:extensions:functions:publication"
-
-    def __init__(self, *args, **kwargs):
-        if kwargs.has_key('profile'):
-            self._profile = kwargs.get('profile')
-            kwargs.pop('profile')
-        super(PublisherExtensions,self).__init__(*args, **kwargs)
-        
-
-    def gettopic(self, _, *args):
-        modid = args[0]
-        path = self.process_path(modid)
-        upath = self.getUrlPath(path)
-        logging.debug("get topic %s -> %s"%(modid,upath))
-        return upath
-
-    def gettopic2(self, _, *args):
-        modid = args[0]
-        path = self.process_path(modid)
-        logging.debug("get topic path %s -> %s"%(modid,path))
-        return path
-
-    def criteria(self, _, *args):
-        logging.debug('xslt ext criteria')
-        return self._profile.xpath("criteria/criterion|/job/criteria/criterion")
-
-    def criteria_definitions(self, _, *args):
-        logging.debug('xslt ext criteria_definitions')
-        return self._project_settings.xpath("/settings/criteria/criterion")
-
-    def lang(self, _, *args):
-        logging.debug('lang criteria_definitions')
-        return self._publang
-    
-    def normpath(self, _, *args):
-        """Returns normalized path"""
-
-        path = args[0]
-        try:
-            src  = args[1]
-            ndir = src.split('/')[:-1]
-        except IndexError:
-            ndir=[]
-        ndir.extend(path.split('/'))
-        newdir=[]
-        for i in ndir :
-            if i=='':
-                pass
-            if i=='.':
-                pass
-            if i=='..':
-                newdir.pop()
-            else:
-                newdir.append(i)
-        r= '/'.join(newdir)
-        return r
-        
-    def replace_strvar(self, _, args):
-        srcstr = self.substitute_criteria(args, self._profile)
-        return self.substitute_variables(srcstr, self._profile)
-
-    def replace_criteria(self, _, args):
-        srcstr = args
-        r = self.substitute_criteria(srcstr, self._profile)
-        return r
-
-    def variable(self, _, *args):
-        sheet = self.substitute_criteria(args[0], self._profile)
-        variable = self.substitute_criteria(args[1], self._profile)
-        return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
-
-    def evaluate_condition(self, _, args):
-        conditions = args.replace(' ','')
-        list_conditions = conditions.split(";")
-        return ''
-    
-    def listdir(self, _, *args):
-        path = args[0]
-        ext = args[1]        
-        try:
-            return [os.path.splitext(f['name'])[0] for f in self.get_directory(path) if os.path.splitext(f['name'])[1][1:]==ext]
-        except:
-            return ["Error: path %s does not exist"%path]
-
-    def upper_case(self, _, *args):
-        path = args[0]
-        return path.upper()
-
-def test():
-    testprofile = """
-    <profile>
-    </profile>"""
-    profile = ET.XML(testprofile)
-    pe = PublisherExtensions(profile)
-    pe.listdir('/sources')
+from kolekti import plugins
 
 class Publisher(PublisherMixin, kolektiBase):
     """Manage all publication process functions, assembly tocs, filters assemblies, invoke scripts
@@ -184,6 +45,14 @@ class Publisher(PublisherMixin, kolektiBase):
         for k,v in subst.iteritems():
             s = s.replace('_%s_'%k,v)
         return self.substitute_variables(self.substitute_criteria(s,profile),profile)
+
+    def get_script(self, plugin):
+
+        # imports a script python module
+        pm = getattr(plugins,plugin)
+        pl  = getattr(pm, "plugin")
+        return pl(self._path)
+        #return plugins.getPlugin(plugin,self._path)
 
 
 		
@@ -246,7 +115,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    raise Exception
+                    raise
 
         return assembly, assembly_dir, pubname 
 
@@ -275,7 +144,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
                         logging.debug(traceback.format_exc())
-                        raise Exception
+                        raise
                 res.append({'profile':profile.find('label').text,
                             'scripts':resscripts,
                             'time':time.time(), #datetime.now(),
@@ -343,15 +212,17 @@ class Publisher(PublisherMixin, kolektiBase):
             
         except ET.XSLTApplyError, e:
             logging.debug(s.error_log)
-            logging.error("Error in publication process")
-            raise Exception
+            import traceback
+            logging.debug(traceback.format_exc())
+            logging.error("Error in publication process (xsl)")
+            raise
 
         except:
             logging.debug(s.error_log)
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Error in publication process")
-            raise Exception
+            raise
         
         # write pivot
         pivot = assembly
@@ -394,7 +265,7 @@ class Publisher(PublisherMixin, kolektiBase):
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
             logging.error("Script %s not found" %name)
-            raise Exception
+            raise
 
         # copy libs
         try:
@@ -408,7 +279,8 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.error('Unable to copy script libs')
             import traceback
             logging.debug(traceback.format_exc())
-            raise Exception
+            print traceback.format_exc()
+            raise
         
         params = {}
         try:
@@ -446,7 +318,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("[Script %s] could not copy resources"%name)
-            raise Exception
+            raise
         
         
     
@@ -472,7 +344,7 @@ class Publisher(PublisherMixin, kolektiBase):
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
             logging.error("Impossible de trouver le script: %s" %label)
-            raise Exception
+            raise
 
         
         # shall we filter the pivot before applying the script
@@ -504,7 +376,7 @@ class Publisher(PublisherMixin, kolektiBase):
         stype = scrdef.get('type')
         try:
             if stype=="plugin":
-                from kolekti.plugins import getPlugin
+#                from kolekti.plugins import getPlugin
                 
                 plugname=scrdef.find("plugin").text
                 try:
@@ -513,7 +385,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.error("Impossible de charger le script %(label)s"%{'label': plugname.encode('utf-8')})
                     import traceback
                     logging.debug(traceback.format_exc())
-                    raise Exception
+                    raise
 
                 res = plugin(script, profile, assembly_dir, fpivot, self._publang)
             
@@ -537,7 +409,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
-                logging.debug(cmd)
+                print cmd
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -576,7 +448,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     logging.debug(traceback.format_exc())
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
-                    raise Exception
+                    raise
 
                 finally:
                     exccmd.stderr.close()
@@ -607,7 +479,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         self.model.pubsave(str(docf),'/'.join((label,sout)))
                     except:
                         logging.error("Impossible d'exécuter le script %(label)s"%{'label': label.encode('utf-8')})
-                        raise Exception
+                        raise
                     errors = set()
                     for err in xslt.error_log:
                         if not err.message in errors:
@@ -645,13 +517,13 @@ class Publisher(PublisherMixin, kolektiBase):
             
                 except:
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
-                    raise Exception
+                    raise
             
         except:
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
-            raise Exception
+            raise
         return res
 
 
@@ -698,7 +570,7 @@ class Publisher(PublisherMixin, kolektiBase):
             if not exccmd.returncode == 0:
                 err=exccmd.stderr.read()
                 logging.debug(err)
-                raise Exception
+                raise
         except:
             dbgexc()
             
@@ -727,7 +599,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.error("Impossible de copier la ressource %s"%source)
             logging.debug(traceback.format_exc())
-            raise Exception
+            raise
         
         try:
             source=u"%s/%s.parts"%(srcdir,filer)
@@ -743,7 +615,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.error("Impossible de copier la ressource %s"%source)
             logging.debug(traceback.format_exc())
-            raise Exception
+            raise
 
 
 
@@ -760,7 +632,7 @@ class DraftPublisher(Publisher):
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        assembly_dir = "/drafts/" + assembly_dir
+        assembly_dir = "/publications/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
         return assembly_dir
