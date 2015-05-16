@@ -22,7 +22,7 @@ import shutil
 import logging
 from lxml import etree as ET
 from kolekti.common import kolektiBase
-from kolekti.publish import PublisherMixin, PublisherExtensions
+from kolekti.publish_utils import PublisherMixin, PublisherExtensions
 
 class PluginsExtensions(PublisherExtensions):
     def __init__(self, *args, **kwargs):
