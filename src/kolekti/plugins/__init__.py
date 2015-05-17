@@ -3,8 +3,7 @@
 #import sys
 #import logging
 
-import chm
-import hlp
+import pluginBase
 import WebHelp5
 
 #def getPlugin(plugin, path):
