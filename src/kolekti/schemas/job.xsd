@@ -71,15 +71,7 @@
       <xs:element name="script" minOccurs="0" maxOccurs="unbounded">
 	<xs:complexType>
 	  <xs:sequence>
-	    <xs:element name="suffix">
-	      <xs:complexType>        
-		<xs:simpleContent>
-		  <xs:extension base="xs:string">
-		    <xs:attribute name="enabled" type="xs:boolean"/>
-		  </xs:extension>
-		</xs:simpleContent>
-	      </xs:complexType>
-	    </xs:element>
+	    <xs:element name="filename" type="xsd:string"/>
 	    <xs:element name="parameters">	    
 	      <xs:complexType>
 		<xs:sequence minOccurs="0" maxOccurs="unbounded">
