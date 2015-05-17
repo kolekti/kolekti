@@ -64,28 +64,35 @@
 		 class='block-control'
 		 id='input_toc_title'
 		 value="{{ toctitle }}"/>
+	  <h5>
+	  Dossier de la publication/version
+	  </h5>	  
+	  <input type='text'
+		 class='block-control'
+		 id='input_toc_pubdir'
+		 value="{{ tocmeta.pubdir }}"/>
 
 
 	  <h5>
 	  Fichier de paramètres
 	  </h5>
 	  <span class="btn-group">
-	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-job-path="{{ tocjob }}">		  
-	      <span class="label_job">{{ tocjob|urlbasename }}</span>
+	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.jobpath }}">		  
+	      <span class="label_job">{{ tocmeta.job|urlbasename }}</span>
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 	      {% for job in jobs %}
 	      <li role="presentation">
 		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
-		   data-kolekti-job-path="{{ job.path }}">
+		   data-kolekti-jobpath="{{ job.path }}">
 		  {{ job.name }}
 		</a>
 	      </li>
 	      {% endfor %}
 	    </ul>
 	  </span>
-	  <a id="editjoblink" href="/settings/job?path={{ tocjob }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
+	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.jobpath }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
 
 
 	  
@@ -176,7 +183,12 @@
 
 {% block content %}
     <hr>
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}" data-kolekti-job-path="{{ tocjob }}">
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"  
+      {% for namemeta, valuemeta  in tocmeta.items %}
+      data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
+      {% endfor %}
+      >
+      
   {{ toccontent|safe}}
    </div>
 {% endblock %}

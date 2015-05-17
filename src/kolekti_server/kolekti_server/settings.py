@@ -102,7 +102,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.    
     "kolekti_server/kserver/templates",
 )
-RE_BROWSER_IGNORE=["~$","^\.svn$"]
+RE_BROWSER_IGNORE=["~$","^\.svn$", "^#.*#$"]
 
 # kolekti configuration
 

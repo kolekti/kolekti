@@ -154,7 +154,7 @@ class kolektiBase(object):
         return ET.parse(defs).getroot()
 
 
-    def get_directory(self, root=None):
+    def get_directory(self, root=None, filter=None):
         res=[]
         if root is None:
             root = self._path
@@ -162,17 +162,18 @@ class kolektiBase(object):
             root = self.__makepath(root)
         for f in os.listdir(root):
             pf = os.path.join(root, f)
-            d = datetime.fromtimestamp(os.path.getmtime(pf))
-            if os.path.isdir(pf):
-                t = "text/directory"
-                if os.path.exists(os.path.join(pf,'.manifest')):
-                    mf = ET.parse(os.path.join(pf,'.manifest'))
-                    t += "+" + mf.getroot().get('type')
-            else:
-                t = mimetypes.guess_type(pf)[0]
-                if t is None:
-                    t = "application/octet-stream"
-            res.append({'name':f, 'type':t, 'date':d})
+            if os.path.exists(pf) and (filter is None or filter(root,f)):
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                if os.path.isdir(pf):
+                    t = "text/directory"
+                    if os.path.exists(os.path.join(pf,'.manifest')):
+                        mf = ET.parse(os.path.join(pf,'.manifest'))
+                        t += "+" + mf.getroot().get('type')
+                else:
+                    t = mimetypes.guess_type(pf)[0]
+                    if t is None:
+                        t = "application/octet-stream"
+                res.append({'name':f, 'type':t, 'date':d})
         return res
 
     def get_tree(self, root=None):
@@ -473,11 +474,13 @@ class kolektiBase(object):
 
     @property
     def itertocs(self):
+        def filter(root,f):
+            return os.path.splitext(f)[1]==".html" 
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
             if 'tocs' in rootparts:
                 for file in files:
-                    if os.path.splitext(file)[-1] == '.html':
+                    if os.path.exists(file) and filter(file):
                         yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property

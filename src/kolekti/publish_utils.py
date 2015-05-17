@@ -47,7 +47,7 @@ class PublisherMixin(object):
         # calculates and creates the publication directory
         pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
         pubdir = self.substitute_criteria(pubdir, profile)
-        pubdir = assembly_dir + "/publications/" + pubdir
+        pubdir = assembly_dir + "/" + pubdir
         logging.debug('pubdir : %s'%pubdir)
 
         try:

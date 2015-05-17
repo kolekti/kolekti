@@ -57,12 +57,8 @@ $(document).ready(function() {
 		buf += "0"
 	    }
 	    buf += "'>"
-	    var suffix = $(e).find('.script-suffix').val();
-	    if (suffix.length) {
-		buf +='<suffix enabled="1">'+suffix+'</suffix>';
-	    } else {
-		buf +='<suffix enabled="0"/>';
-	    }
+	    var filename = $(e).find('.script-filename').val();
+	    buf +='<filename>' + filename + '</filename>';
 	    buf += "<parameters>";
 	    $(e).find(".script-parameter").each(function(i,s) {
 		var name=$(s).data('script-param-name');

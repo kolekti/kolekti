@@ -55,7 +55,6 @@ class Publisher(PublisherMixin, kolektiBase):
         #return plugins.getPlugin(plugin,self._path)
 
 
-		
 
     def publish_assemble(self, toc, xjob):
         """create and return an assembly from the toc using the xjob critria for filtering"""
@@ -161,7 +160,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-        
+        print "pubdir",pubdir
         try:
             # logging.debug(assembly)
             # criteria
@@ -328,11 +327,7 @@ class Publisher(PublisherMixin, kolektiBase):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
-        suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
-        if len(suffix):
-            pubname = "%s_%s"%(label, suffix)
-        else:
-            pubname = label
+        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename[@enabled='1'])")),profile), profile)
             
         name=script.get('name')
         params = {}
@@ -630,11 +625,12 @@ class DraftPublisher(Publisher):
         self._draft = True
 
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/publications/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
+        print assembly_dir,xjob.xpath('string(/job/@pubbdir)')
         return assembly_dir
 
     def cleanup_assembly_dir(self, xjob):
@@ -645,7 +641,7 @@ class DraftPublisher(Publisher):
 
     # publishes a list of jobs
     
-    def publish_draft(self, toc, jobs=None):
+    def publish_draft(self, toc, jobs=[], pubtitle=None):
         """ publishes a kolekti toc, using the profiles sets present in jobs list"""
         
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
@@ -655,14 +651,19 @@ class DraftPublisher(Publisher):
             xtoc = toc
         else:
             xtoc = self.parse(toc)
+
+        if pubtitle is not None:
+            xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = pubtitle
+
         publications = []
-        
+        print ET.tostring(xtoc)
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
             if isinstance(job,ET._ElementTree):
                 xjob = job
             else:
                 xjob = self.parse(job)
+            print ET.tostring(xjob)
             # assembly
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
@@ -684,12 +685,12 @@ class Releaser(Publisher):
         super(Releaser, self).__init__(*args, **kwargs)
         
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/releases/" + assembly_dir
         return assembly_dir
 
-    def make_release(self, toc, jobs):
+    def make_release(self, toc, jobs=[], pubtitle=None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
@@ -699,6 +700,8 @@ class Releaser(Publisher):
             xtoc = toc
         else:
             xtoc = self.parse(toc)
+        if pubtitle is not None:
+            xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = pubtitle
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
             if isinstance(job,ET._ElementTree):
@@ -739,7 +742,7 @@ class ReleasePublisher(Publisher):
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/releases/" + assembly_dir
         return assembly_dir
