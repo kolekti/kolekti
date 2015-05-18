@@ -259,6 +259,13 @@ class kolektiBase(object):
             f.write(content)
         self.post_save(filename)
         
+    def write_chunks(self, chunks, filename):
+        ospath = self.__makepath(filename)
+        with open(ospath, "w") as f:
+            for chunk in chunks():
+                f.write(chunk)
+        self.post_save(filename)
+        
     def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
 
         ospath = self.__makepath(filename)
@@ -476,11 +483,12 @@ class kolektiBase(object):
     def itertocs(self):
         def filter(root,f):
             return os.path.splitext(f)[1]==".html" 
+
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
             if 'tocs' in rootparts:
                 for file in files:
-                    if os.path.exists(file) and filter(file):
+                    if os.path.exists(os.path.join(root,file)) and filter(root,file):
                         yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
