@@ -50,7 +50,6 @@ $.ajaxSetup({
      } 
 });
 
-
 /* kolekti objects browser
    inserts a browsable view of the server files in the kolekti interface
    parmaters passed to the browser:
@@ -152,7 +151,7 @@ var kolekti_browser = function(args) {
 	    if (!create_actions) {
 		$(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('#newfile_collapse div'))
+		create_builder($(parent).find('.newfile_collapse div'))
 	    }
 
 	    if (!os_actions) 
@@ -284,7 +283,7 @@ var kolekti_browser = function(args) {
 	resfuncs['select'](get_browser_value());
     };	
     var closure_create = function() {
-	resfuncs['create'](path, update);
+	resfuncs['create']($(parent), path, update);
     };
 
 
@@ -313,10 +312,10 @@ var kolekti_browser = function(args) {
     // new folder/file accordion behavior
 
     $(parent).on('click', '.newfolder', function(){
-	$('#newfile_collapse.in').collapse('hide');
+	$(parent + ' .newfile_collapse.in').collapse('hide');
     });
     $(parent).on('click', '.newfile', function(){
-	$('#newfolder_collapse.in').collapse('hide');
+	$(parent + ' .newfolder_collapse.in').collapse('hide');
     });
 				
     // new folder

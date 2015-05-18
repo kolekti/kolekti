@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    var create_toc = function(folder, update_function) {
+    var create_toc = function(browser, folder, update_function) {
 	var filename = $('#new_name').val();
 	$.post('/tocs/create/',
 	       {

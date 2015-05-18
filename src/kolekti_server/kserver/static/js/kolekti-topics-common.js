@@ -1,15 +1,17 @@
 
     var topic_templates = ['default.xht'];
 
-    var create_topic = function(folder, update_function) {
-	var filename = $('#new_name').val();
+var create_topic = function(browser, folder, update_function) {
+    var filename = $(browser).find('#new_name').val();
 	$.post('/topics/create/',
 	       {
 		   'model': $('.label-tpl').data('tpl'),
 		   'topicpath': folder + "/" + filename
 	       })
-	    .success(
-		update_function()
+	    .done(
+		function() {
+		    update_function()
+		}
 	    )
     };
     

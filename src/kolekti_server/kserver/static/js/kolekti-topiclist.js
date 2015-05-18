@@ -6,8 +6,8 @@ $(document).ready(function() {
 		     'mode':"create",
 		     'modal':"no",
 		     'os_actions':'yes',
-		     'create_actions':'yes',
-		     'create_builder':create_builder
+		     'create_actions':'yes'
+//		     'create_builder':create_builder
 		    })
 		  .select(
 		      function(path) {

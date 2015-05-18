@@ -1,24 +1,24 @@
-<div class="browser">
+<div class="browser" id="{{ id }}">
   <div class="row">
     <div class="col-sm-12 col-md-12">
       <span class="pull-right kolekti-browser-create-actions">
 	<button type="button" 
 		class="btn btn-default btn-xs newfolder"
 		data-toggle="collapse"
-		data-target="#newfolder_collapse"
+		data-target="#newfolder_collapse{{ id }}"
 		aria-expanded="false"
 		title="Créer dossier..."
-		aria-controls="newfolder_collapse">
+		aria-controls="newfolder_collapse{{ id }}">
 	  +<i class="fa fa-folder-open-o"></i>
 	</button>
 
 	<button type="button" 
 		class="btn btn-default btn-xs newfile"
 		data-toggle="collapse"
-		data-target="#newfile_collapse"
+		data-target="#newfile_collapse{{ id }}"
 		aria-expanded="false"
 		title="Nouveau..."
-		aria-controls="newfile_collapse">
+		aria-controls="newfile_collapse{{ id }}">
 	  +<span class="fa fa-file-o"></i>
 	</button>
       </span>
@@ -28,14 +28,14 @@
 	
       </span>
 
-      <div class="panel panel-info collapse" id="newfolder_collapse" role="tabpanel">
+      <div class="panel panel-info collapse newfolder_collapse" id="newfolder_collapse{{ id }}" role="tabpanel">
 	<div class="panel-heading">
 	  Nouveau dossier : <input type="text" class="form-control foldername"/>
 	  <button class="btn btn-default btn-xs create-folder">ok</button>
 	  
 	</div>
       </div>
-      <div class="panel panel-info collapse" id="newfile_collapse" role="tabpanel">
+      <div class="panel panel-info collapse newfile_collapse" id="newfile_collapse{{ id }}" role="tabpanel">
 	<div class="panel-heading">
 	  <button class="btn btn-default btn-xs create-file">ok</button>
 	</div>
