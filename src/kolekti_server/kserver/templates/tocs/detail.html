@@ -99,7 +99,7 @@
 	  {% for job in jobs %}
 
 
-	  <div class="row {% if job.path != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+	  <div class="row {% if job.path != tocmeta.jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
 	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	    <div class="col-sm-12 col-md-12">
 
