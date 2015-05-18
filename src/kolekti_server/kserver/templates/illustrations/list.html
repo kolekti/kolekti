@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load ostags %}
+
+{% block current_images %}class="menu-current"{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-illustrations.css"></link>
+{% endblock %}
+
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-illustrationslist.js"></script>
+{% endblock %}
+
+{% block title %}Images{% endblock %}
+
+
+{% block menu %}
+{% endblock %}
+
+{% block content %}
+<div class="main">
+  <div class="title">
+  </div>
+  <div class="browser_lang" id="bs">
+  </div>
+  <div class="browser_share" id="bc">
+  </div>
+</div>
+{% endblock %}
+

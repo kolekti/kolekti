@@ -20,7 +20,9 @@ urlpatterns = patterns('',
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
     url(r'^topics/$', TopicsListView.as_view(), name='topiclist'),
+
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
+    url(r'^images/upload$', ImagesUploadView.as_view(), name='imageupload'),
 
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/start$', SyncStartView.as_view(), name='syncstart'),

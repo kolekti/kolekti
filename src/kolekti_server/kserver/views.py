@@ -2,10 +2,11 @@ import re
 import os
 from copy import copy
 import json
-
+import random
 from lxml import etree as ET
 
 from models import Settings
+from forms import UploadFileForm
 
 from django.http import Http404
 from django.http import HttpResponse, HttpResponseRedirect
@@ -292,8 +293,19 @@ class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"
 
 class ImagesListView(kolektiMixin, TemplateView):
-    template_name = "list.html"
+    template_name = "illustrations/list.html"
 
+class ImagesUploadView(kolektiMixin, TemplateView):
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES[u'upload_file']
+            path = request.POST['path']
+            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        else:
+            return HttpResponse(status=500)
+            
 class ImportView(kolektiMixin, TemplateView):
     template_name = "home.html"
 
@@ -483,6 +495,7 @@ class BrowserView(kolektiMixin, View):
         context.update({'files':files})
         context.update({'pathsteps':pathsteps})
         context.update({'mode':mode})
+        context.update({'id':'browser_%i'%random.randint(1, 10000)})
         return self.render_to_response(context)
         
 class PublicationView(kolektiMixin, View):
@@ -636,8 +649,10 @@ class TopicTemplatesView(kolektiMixin, View):
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
         pathes = request.GET.getlist('pathes[]',[])
+        print "usecases",pathes
         context={}
         for toc in self.itertocs:
+            print toc
             xtoc=self.parse(toc)
             for path in pathes:
                 if len(xtoc.xpath('//html:a[@href="%s"]'%path,namespaces={'html':'http://www.w3.org/1999/xhtml'})):
@@ -645,6 +660,7 @@ class TocUsecasesView(kolektiMixin, View):
                         context[path].append(toc)
                     except:
                         context[path]=[toc]
+        print context
         return HttpResponse(json.dumps(context),content_type="application/json")
 
 
