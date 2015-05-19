@@ -111,7 +111,7 @@ $(document).ready(function() {
     $('.script-param-menu-entry').on('click', function(e) {
 	var value = $(this).data('kolekti-param-value');
 	$(this).closest('.btn-group').find('.kolekti-param-value-menu').html($(this).html());
-	$(this).closest('.kolekti-crit').data('kolekti-param-value',$(this).data('kolekti-param-value'));
+	$(this).closest('.script-parameter').data('kolekti-param-value',value);
 	e.preventDefault();
 	enable_save();
     });
