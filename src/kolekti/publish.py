@@ -160,7 +160,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-        print "pubdir",pubdir
+
         try:
             # logging.debug(assembly)
             # criteria
@@ -630,7 +630,6 @@ class DraftPublisher(Publisher):
         assembly_dir = "/publications/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
-        print assembly_dir,xjob.xpath('string(/job/@pubbdir)')
         return assembly_dir
 
     def cleanup_assembly_dir(self, xjob):
@@ -656,14 +655,12 @@ class DraftPublisher(Publisher):
             xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = pubtitle
 
         publications = []
-        print ET.tostring(xtoc)
         for job in jobs:
             # path = self.get_base_job(job) + ".xml"
             if isinstance(job,ET._ElementTree):
                 xjob = job
             else:
                 xjob = self.parse(job)
-            print ET.tostring(xjob)
             # assembly
             logging.debug('********************************** CREATE ASSEMBLY')
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())

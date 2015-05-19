@@ -48,8 +48,6 @@ class PublisherMixin(object):
         pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
         pubdir = self.substitute_criteria(pubdir, profile)
         pubdir = assembly_dir + "/" + pubdir
-        logging.debug('pubdir : %s'%pubdir)
-
         try:
             self.makedirs(pubdir)
         except:
