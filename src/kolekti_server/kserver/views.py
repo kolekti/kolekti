@@ -4,6 +4,7 @@ from copy import copy
 import json
 import random
 from lxml import etree as ET
+from PIL import Image
 
 from models import Settings
 from forms import UploadFileForm
@@ -305,7 +306,24 @@ class ImagesUploadView(kolektiMixin, TemplateView):
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
-            
+
+class ImagesDetailsView(kolektiMixin, TemplateView):
+    template_name = "illustrations/details.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        name=path.rsplit('/',1)[1]
+        ospath = self.getOsPath(path)
+        im = Image.open(ospath)
+        context={
+            'name':name,
+            'path':path,
+            'format':im.format,
+            'mode':im.mode,
+            'size':im.size,
+            'info':im.info,
+            }
+        return self.render_to_response(context)
+
 class ImportView(kolektiMixin, TemplateView):
     template_name = "home.html"
 

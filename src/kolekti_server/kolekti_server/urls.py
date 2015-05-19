@@ -23,6 +23,7 @@ urlpatterns = patterns('',
 
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
     url(r'^images/upload$', ImagesUploadView.as_view(), name='imageupload'),
+    url(r'^images/details$', ImagesDetailsView.as_view(), name='imagedetails'),
 
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/start$', SyncStartView.as_view(), name='syncstart'),

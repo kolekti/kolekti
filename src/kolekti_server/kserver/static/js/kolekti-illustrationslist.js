@@ -67,7 +67,14 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		document.location.href = '/tocs/edit/?toc='+path
+		$.get('/images/details?path='+path)
+		    .done(
+			function(data) {
+			    $('.modal-title').html(displayname(path));
+			    $('.modal-body').html(data);
+			    $('.modal').modal();
+			}
+		    )
 	    })
 	.create(upload_image)
 
@@ -83,10 +90,15 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		var filename = diplayname(path)
-		$('.modal-title').html(filename);
-		$('.modal-title').attr('title',path);
-		$('.modal').show()
-	    })
+		$.get('/images/details?path='+path)
+		    .done(
+			function(data) {
+			    $('.modal-title').html(displayname(path));
+			    $('.modal-body').html(data);
+			    $('.modal').modal();
+			}
+		    )
+	    }
+	)
 	.create(upload_image)
 });
