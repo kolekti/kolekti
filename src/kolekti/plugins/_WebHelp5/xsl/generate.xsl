@@ -12,9 +12,7 @@
 
 
   <xsl:param name="pubdir" />
-  <xsl:param name="templatedir" />
   <xsl:param name="template" />
-  <xsl:param name="label" />
   <xsl:param name="css" />
 
   <xsl:variable name="helpname">WebHelp5</xsl:variable>
@@ -26,15 +24,11 @@
     <xsl:value-of select="/html:html/html:body/@lang" />
   </xsl:variable>
 
-  <xsl:variable name="templatefile">
-    <xsl:value-of select="$templatedir" />
-    <xsl:value-of select="$template" />
-  </xsl:variable>
 
   <xsl:variable name="translationfile">
     <xsl:choose>
-      <xsl:when test="document($templatefile)//html:span[@id='labels']">
-        <xsl:value-of select="document($templatefile)//html:span[@id='labels']" />
+      <xsl:when test="document($template)//html:span[@id='labels']">
+        <xsl:value-of select="document($template)//html:span[@id='labels']" />
       </xsl:when>
       <xsl:otherwise>
         <xsl:value-of select="$helpname" />
@@ -54,8 +48,8 @@
           <xsl:call-template name="modfile" />
         </xsl:for-each>
       </xsl:when>
-      <xsl:when test="document($templatefile)//html:span[@id='start_topic']!=''">
-        <xsl:value-of select="document($templatefile)//html:span[@id='start_topic']" />
+      <xsl:when test="document($template)//html:span[@id='start_topic']!=''">
+        <xsl:value-of select="document($template)//html:span[@id='start_topic']" />
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="modfile">
