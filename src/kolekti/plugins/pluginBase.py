@@ -57,23 +57,23 @@ class plugin(PublisherMixin,kolektiBase):
                                           **kwargs)
 
     def __call__(self, scriptdef, profile, assembly_dir, pivot, lang ):
+        self.scriptname = scriptdef.get('name')
+        logging.debug("calling script %s", self.scriptname)
         self.scriptdef = scriptdef
         self.profile = profile
         self.assembly_dir = assembly_dir
         self.pivot = pivot
         self.lang = lang
-        
-        scriptlabel = scriptdef.get('name')
-        profilelabel = profile.xpath('string(label)')
-        logging.debug("calling script %s", scriptlabel)
-                
-        self.publication_dir = self.pubdir(assembly_dir, profile) + "/" + scriptlabel
+        pubfile = scriptdef.xpath('string(filename)')
+        pubfile = self.substitute_variables(pubfile, profile)
+        self.publication_file = self.substitute_criteria(pubfile, profile)
 
+        self.publication_dir = self.pubdir(assembly_dir, profile)
+        self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file + "_" + self.scriptname
         try:
-            self.makedirs(self.publication_dir)
+            self.makedirs(self.publication_plugin_dir)
         except:
-            logging.debug("publication path %s already exists"%self.publication_dir)            
-        
+            pass
         return self.postpub()
 
     def copylibs(self, assembly_dir, label):
@@ -95,19 +95,19 @@ class plugin(PublisherMixin,kolektiBase):
             ref = med.get('src')
             ref = self.substitute_criteria(ref, self.profile)
             try:
-                refdir = "/".join([self.publication_dir]+ref.split('/')[:-1])
+                refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
                 self.makedirs(refdir)
             except OSError:
                 logging.debug('makedir failed')
                 import traceback
                 logging.debug(traceback.format_exc())
 
-            self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_dir,ref]) )
+            self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
 
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
         ass_libdir = '/'.join([self.assembly_dir,'kolekti','publication-templates',label,'lib'])
-        self.copyDirs(ass_libdir, self.publication_dir + '/lib')
+        self.copyDirs(ass_libdir, self.publication_plugin_dir + '/lib')
         
     def postpub(self):
         """
