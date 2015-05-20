@@ -273,7 +273,7 @@
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="row">
 	      <div class="col-sm-6 col-xs-12">
-		<label for="script_suffix_{generate-id()}">Nom des fichier publiés</label>
+		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
 	      </div>
 	      <div class="col-sm-6 col-xs-12">
 		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value="{filename}"/>
@@ -325,10 +325,11 @@
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="row">
 	      <div class="col-sm-6 col-xs-12">
-		<label for="script_suffix_{generate-id()}">Suffixe</label>
+		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
 	      </div>
 	      <div class="col-sm-6  col-xs-12">
-		<input type="text" name="script_suffix" class="script-suffix" id="script_suffix_{generate-id()}" value=""/>
+		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value=""/>
+	
 	      </div>
 	    </div>
 	  </div>
