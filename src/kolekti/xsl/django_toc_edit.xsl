@@ -104,6 +104,7 @@
   <xsl:template match="html:a[@rel='kolekti:topic']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="data-kolekti-topic-id"><xsl:value-of select="generate-id()"/></xsl:attribute>
       <xsl:attribute name="data-kolekti-topic-url">
 	<xsl:value-of select="kf:gettopic2(string(@href))"/>
       </xsl:attribute>

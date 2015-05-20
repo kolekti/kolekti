@@ -65,7 +65,7 @@ $(document).ready( function () {
     var topicmenu = function(topic) {
 	var parent=topic.hasClass('section')?
 	    topic.children('.panel-heading').find("a").parent():
-	    topic.find('h4');
+	    topic.find('h4.panel-title');
 	parent.append(
 	    $('<span>', {
 		'class':'pull-right kolekti-ui kolekti-ui-topic-actions',
@@ -320,12 +320,12 @@ $(document).ready( function () {
     var get_publish_params = function(params) {
 	params['profiles']=[]
 	$(".kolekti-job").find('.publish_job_profile').each(function(i, e) {
-	    if (e.checked)
+	    if ($(e).is(":checked"))
 		params['profiles'].push($(e).data('kolekti-profile'))
 	});
 	params['scripts']=[]
 	$(".kolekti-job").find('.publish_job_script').each(function(i, e) {
-	    if (e.checked)
+	    if ($(e).is(":checked"))
 		params['scripts'].push($(e).data('kolekti-script'))
 	});
 	params['pubdir']=$("#input_toc_pubdir").val();
@@ -964,10 +964,12 @@ $(document).ready( function () {
 	($(t).data('kolekti-topic-rel')=='kolekti:toc' || $(t).data('kolekti-topic-rel')=='kolekti:index')
 	    && topicmenu($(t));
     });
+    
 
     $('a').each(function(i,comp) {
 	if($(comp).attr('rel')=="kolekti:topic") {
 	    var path = $(this).data('kolekti-topic-url');
+	    var id = $(this).data('kolekti-topic-id');
 	    $.get(path)
 		.done(
 		    function(data){
@@ -975,7 +977,7 @@ $(document).ready( function () {
 			    var topic = data;
 			else
 			    var topic = $.parseXML( data );
-			var id = Math.round(new Date().getTime() + (Math.random() * 100));
+			
 			var topic_obj = create_topic_obj(path, id, topic);
 			$(comp).after(topic_obj)
 			usecases(topic_obj);
