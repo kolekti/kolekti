@@ -56,14 +56,15 @@ class plugin(PublisherMixin,kolektiBase):
                                           resdir = self.assembly_dir,
                                           **kwargs)
 
-    def __call__(self, scriptdef, profile, assembly_dir, pivot, lang ):
+    def __call__(self, scriptdef, profile, assembly_dir, pivot):
         self.scriptname = scriptdef.get('name')
         logging.debug("calling script %s", self.scriptname)
+
         self.scriptdef = scriptdef
         self.profile = profile
         self.assembly_dir = assembly_dir
         self.pivot = pivot
-        self.lang = lang
+        
         pubfile = scriptdef.xpath('string(filename)')
         pubfile = self.substitute_variables(pubfile, profile)
         self.publication_file = self.substitute_criteria(pubfile, profile)
@@ -107,7 +108,9 @@ class plugin(PublisherMixin,kolektiBase):
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
         ass_libdir = '/'.join([self.assembly_dir,'kolekti','publication-templates',label,'lib'])
-        self.copyDirs(ass_libdir, self.publication_plugin_dir + '/lib')
+        if (self.exists(ass_libdir)):
+            self.copyDirs(ass_libdir, self.publication_plugin_dir + '/lib')
+
         
     def postpub(self):
         """

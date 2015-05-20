@@ -51,7 +51,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # imports a script python module
         pm = getattr(plugins,plugin)
         pl  = getattr(pm, "plugin")
-        return pl(self._path)
+        return pl(self._path, lang = self._publang)
         #return plugins.getPlugin(plugin,self._path)
 
 
@@ -327,7 +327,7 @@ class Publisher(PublisherMixin, kolektiBase):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
-        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename[@enabled='1'])")),profile), profile)
+        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
             
         name=script.get('name')
         params = {}
@@ -382,7 +382,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise
 
-                res = plugin(script, profile, assembly_dir, fpivot, self._publang)
+                res = plugin(script, profile, assembly_dir, fpivot)
             
                 #logging.info("%(label)s ok"% {'label': plugname.encode('utf-8')})
 

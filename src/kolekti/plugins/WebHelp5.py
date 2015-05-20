@@ -95,7 +95,7 @@ class plugin(pluginBase.plugin):
         css=self.get_script_parameter('css')
 
         # générer les pages
-        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self.lang)
+        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self._publang)
         puburl=self.getUrlPath(self.publication_plugin_dir)
         templateurl=self.getUrlPath(templatepath)
         try:
