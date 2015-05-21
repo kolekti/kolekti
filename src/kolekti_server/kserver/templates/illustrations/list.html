@@ -16,15 +16,34 @@
 
 
 {% block menu %}
-{% endblock %}
+
+    <div class="row top-margin">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group" data-toggle="buttons">
+	  <label class="btn btn-primary active">
+	    <input type="radio" name="source" autocomplete="off" checked class="btn btn-primary" id="btn_img_lang">{{ active_srclang }}</input>
+	  </label>
+	  <label class="btn btn-primary">
+	    <input type="radio" name="source" autocomplete="off" class="btn btn-primary" id="btn_img_share">Partagées</input>
+	  </label>
+	</div>
+      </div>
+    </div>
+
+    <div class="row top-margin" id="preview">
+    </div>
+
+    {% endblock %}
 
 {% block content %}
 <div class="main">
   <div class="title">
   </div>
-  <div class="browser_lang" id="bs">
-  </div>
-  <div class="browser_share" id="bc">
+  <div id="browsers">
+    <div class="browser_lang collapse in" id="browser_lang">
+    </div>
+    <div class="browser_share collapse" id="browser_share">
+    </div>
   </div>
 </div>
 {% endblock %}
