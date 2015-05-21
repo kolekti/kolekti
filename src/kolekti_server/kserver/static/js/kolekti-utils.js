@@ -289,7 +289,8 @@ var kolekti_browser = function(args) {
 
     // click on file
 
-    $(parent).on('click', '.filelink', function() {
+    $(parent).on('click', '.filelink', function(e) {
+	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
 	    update();
@@ -301,7 +302,8 @@ var kolekti_browser = function(args) {
 
     // navigate into parent folders
 
-    $(parent).on('click', '.pathstep', function() {
+    $(parent).on('click', '.pathstep', function(e) {
+	e.preventDefault();
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
 	    path = newpath;

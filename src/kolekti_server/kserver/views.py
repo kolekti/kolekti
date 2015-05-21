@@ -66,6 +66,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def get_context_data(self, **kwargs):
         context = {}
         context['kolekti'] = self._config
+        context["active_srclang"] = self.user_settings.active_srclang
         return context
 
     def get_toc_edit(self, path):
@@ -513,6 +514,7 @@ class BrowserView(kolektiMixin, View):
         context.update({'files':files})
         context.update({'pathsteps':pathsteps})
         context.update({'mode':mode})
+        context.update({'path':path})
         context.update({'id':'browser_%i'%random.randint(1, 10000)})
         return self.render_to_response(context)
         
