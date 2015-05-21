@@ -317,14 +317,15 @@ $(document).ready( function () {
 
     // publish
 
-    var get_publish_params = function(params) {
+    var get_publish_params = function(job) {
+	var params={};
 	params['profiles']=[]
-	$(".kolekti-job").find('.publish_job_profile').each(function(i, e) {
+	$(".kolekti-job-"+job).find('.publish_job_profile').each(function(i, e) {
 	    if ($(e).is(":checked"))
 		params['profiles'].push($(e).data('kolekti-profile'))
 	});
 	params['scripts']=[]
-	$(".kolekti-job").find('.publish_job_script').each(function(i, e) {
+	$(".kolekti-job-"+job).find('.publish_job_script').each(function(i, e) {
 	    if ($(e).is(":checked"))
 		params['scripts'].push($(e).data('kolekti-script'))
 	});
@@ -341,7 +342,7 @@ $(document).ready( function () {
 
     $('.btn_publish').on('click', function() {
 	var url='/publish/'
-	var params = {}
+
 	if ($(this).attr('id') == 'btn_release') {
 	    url += 'release/'
 	} else {
@@ -362,7 +363,7 @@ $(document).ready( function () {
 	var jobpath =  $('#toc_root').data('kolekti-meta-jobpath');
 //	var idjob = $(e).attr('id');
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div id="pub_results"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
-	params = get_publish_params(params)
+	params = get_publish_params(job)
 		
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
 	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');

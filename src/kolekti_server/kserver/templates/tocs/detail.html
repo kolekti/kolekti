@@ -106,16 +106,16 @@
 	      <h5>Profils</h5>
 	    </div>
 	    {% for profile in job.profiles %}
-	    {% if profile.1 == "1"%}
+
 	    <div class="col-sm-6 col-md-6">
 	      <div class="checkbox" checked>
 		<label>
-  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}" checked/>
+  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
+			 {% if profile.1 == "1"%}checked{% endif %}/>
 		  {{ profile.0 }}
 		</label>
 	      </div>
 	    </div>
-	    {% endif %}
 	    {% endfor %}
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Sorties</h5>
@@ -124,8 +124,9 @@
 	    <div class="col-sm-6 col-md-6">
 	      <div class="checkbox">
 		<label>
-  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script }}" data-kolekti-script="{{ script }}" checked/>
-		  {{ script }}
+  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
+			 {% if script.1 == "1"%} checked{% endif %}/>
+		  {{ script.0 }}
 		</label>
 	      </div>
 	    </div>

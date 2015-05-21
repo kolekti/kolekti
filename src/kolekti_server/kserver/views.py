@@ -111,7 +111,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         for job in self.iterjobs:
             xj = self.parse(job['path'])
             job.update({'profiles':[(p.find('label').text,p.get('enabled')) for p in xj.xpath('/job/profiles/profile')],
-                        'scripts':[s.get("name") for s in xj.xpath('/job/scripts/script[@enabled="1"]')],
+                        'scripts':[(s.get("name"),s.get('enabled')) for s in xj.xpath('/job/scripts/script')],
                         })
             res.append(job)
         return res
