@@ -40,8 +40,8 @@ Source: "{#BuildDir}\dist\kolekti_server\*"; DestDir: "{app}";  Excludes: "db.sq
 
 Source: "{#BuildDir}\dist\kolekti_server\db.sqlite3"; DestDir: "{userappdata}\kolekti"; Flags: ignoreversion; Permissions: users-modify
 
-Source: "{#BuildDir}\dist\Exemple_PDFs\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_PDFs"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
-Source: "{#BuildDir}\dist\Exemple_WebhelpPersonnalisable\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_WebhelpPersonnalisable"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
+Source: "{#BuildDir}\dist\Exemple_PDF\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_PDF"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
+Source: "{#BuildDir}\dist\Exemple_Webhelp\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_Webhelp"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
