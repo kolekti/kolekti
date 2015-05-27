@@ -144,12 +144,16 @@ class SynchroManager(object):
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        logging.debug("post save synchro")
+        logging.debug("post save synchro : %s"%path)
+        if path[:14]=='/publications/':
+            logging.debug("skip")
+            return
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
         try:
             if self._client.info(ospath) is None:
+                logging.debug("add")
                 self._client.add(ospath)
         except pysvn.ClientError:
             self.post_save(path.rsplit('/',1)[0])
