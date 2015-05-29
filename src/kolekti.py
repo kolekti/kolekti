@@ -155,10 +155,26 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.DraftPublisher(args.base, lang=args.lang)
-            toc = p.get_base_toc(args.toc) + ".html"
-            jobs = [p.get_base_job(args.job) + ".xml"]
-            p.publish_draft(toc, jobs)
-            logging.info("Publication sucessful")
+            toc = p.get_base_toc(args.toc)
+            jobs = [p.get_base_job(args.job)]
+            for event in p.publish_draft(toc, jobs):
+                if event['event'] == "job":
+                    logging.info('Publishing Job %s'%event['label'])
+                if event['event'] == "profile":
+                    logging.info(' profile %s'%event['label'])
+                if event['event'] == "result":
+                    logging.info('%s complete'%event['script'])
+                    for doc in event['docs']:
+                        logging.info('[%s] %s'%(doc['type'],doc['url']))
+
+                if event['event'] == "error":
+                    logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
+                if event['event'] == "warning":
+                    logging.info(' [W] %s\n%s'%(msg) )
+
+            
+                
+            logging.info("Publication complete")
         except:
             import traceback
             logging.debug(traceback.format_exc())

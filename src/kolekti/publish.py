@@ -122,33 +122,59 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def publish_job(self, assembly, xjob):
         """publishes a an assembly for every profile in xjob
-           invoke publication scripts for every publication """ 
+           invoke publication scripts for every publication
+            iterator : yields a result for each selected profile / script 
+           """ 
         assembly_dir = self.assembly_dir(xjob)
         res=[]
-        
-        # logging.debug(ET.tostring(xjob))
+
+        yield {'event':'job', 'label':xjob.get('id')}
+
         for profile in xjob.xpath('/job/profiles/profile'):
-            #  logging.debug(profile)
             if profile.get('enabled','0') == '1':
-                resscripts = []
+                profilename = profile.find('label').text
+
+                yield {'event':'profile', 'label':profilename}
+
                 # creates the document (pivot) file
-                pivot = self.publish_profile(assembly, profile, assembly_dir)
-                
-                 # invoke scripts
+                try:
+                    pivot = self.publish_profile(assembly, profile, assembly_dir)
+                except:
+                    import traceback
+                    logging.error("Assembly Error")
+                    yield {
+                        'event':'error',
+                        'msg':"erreur lors de l'assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                    logging.debug(traceback.format_exc())
+                # invoke scripts
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
-                        resscripts.append({"script":script.get('name'),"docs":resscript})
                     except:
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
+                        yield {
+                            'event':'error',
+                            'msg':"Erreur d'execution du script %s"%script.get('name'),
+                            'stacktrace':traceback.format_exc(),
+                            'time':time.time(),
+                            }
                         logging.debug(traceback.format_exc())
-                        raise
-                res.append({'profile':profile.find('label').text,
-                            'scripts':resscripts,
-                            'time':time.time(), #datetime.now(),
-                            })
-        return res
+                    yield {
+                        'event':'result',
+                        'script':script.get('name'),
+                        'docs':resscript,
+                        'time':time.time(),
+                        }
+
+#                res.append({'profile':profile.find('label').text,
+#                            'scripts':resscripts,
+#                            'time':time.time(), #datetime.now(),
+#                            })
+        return 
 
 
     def publish_profile(self, assembly, profile, assembly_dir):
@@ -383,8 +409,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     raise
 
                 res = plugin(script, profile, assembly_dir, fpivot)
-            
-                #logging.info("%(label)s ok"% {'label': plugname.encode('utf-8')})
+                logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
             elif stype=="shell":
@@ -404,7 +429,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
-                print cmd
+                logging.debug(cmd)
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -666,16 +691,16 @@ class DraftPublisher(Publisher):
             assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
 
             logging.debug('********************************** PUBLISH ASSEMBLY')
-            pubres = self.publish_job(assembly, xjob.getroot())
-
-            publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
+            for pubres in self.publish_job(assembly, xjob.getroot()):
+#                pubres.update({"job":xjob.getroot().get('id')})
+                yield pubres
             try:
                 pass
                 #self.cleanup_assembly_dir(xjob.getroot())
             except:
                 logging.debug('Warning: could not remove tmp dir')
         # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
-        return publications
+        return
     
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
