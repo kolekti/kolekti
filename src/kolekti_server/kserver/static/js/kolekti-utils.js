@@ -26,8 +26,15 @@ Array.prototype.removevalue = function() {
     return this;
 };
 
-$.ajaxSetup({ 
-     beforeSend: function(xhr, settings) {
+var xhrSuccessStatus = {
+		// file protocol always yields status code 0, assume 200
+		0: 200,
+		// Support: IE9
+		// #1450: sometimes IE returns 1223 when it should be 204
+		1223: 204
+	}
+
+var ajaxBeforeSend = function(xhr, settings) {
          function getCookie(name) {
              var cookieValue = null;
              if (document.cookie && document.cookie != '') {
@@ -47,8 +54,123 @@ $.ajaxSetup({
              // Only send the token to relative URLs i.e. locally.
              xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
          }
-     } 
+    settings.converters["* streamed"]=true;
+} ;
+
+$.ajaxSetup({ 
+    beforeSend: ajaxBeforeSend
 });
+
+
+// define transport ajax function for streaming data
+
+var streamedTransport = function(streamCallback) {
+    return $.ajaxTransport("streamed", function( options, originalOptions, jqXHR ) {
+	return {
+	    send: function( headers, completeCallback ) {
+		var i,
+		    xhr = options.xhr();
+		
+		xhr.open(
+		    options.type,
+		    options.url,
+		    options.async,
+		    options.username,
+		    options.password
+		);
+
+		// Apply custom fields if provided
+		if ( options.xhrFields ) {
+		    for ( i in options.xhrFields ) {
+			xhr[ i ] = options.xhrFields[ i ];
+		    }
+		}
+
+		// Override mime type if needed
+		if ( options.mimeType && xhr.overrideMimeType ) {
+		    xhr.overrideMimeType( options.mimeType );
+		}
+
+		// X-Requested-With header
+		// For cross-domain requests, seeing as conditions for a preflight are
+		// akin to a jigsaw puzzle, we simply never set it to be sure.
+		// (it can always be set on a per-request basis or even using ajaxSetup)
+		// For same-domain requests, won't change header if already provided.
+		if ( !options.crossDomain && !headers["X-Requested-With"] ) {
+		    headers["X-Requested-With"] = "XMLHttpRequest";
+		}
+		
+		// Set headers
+		for ( i in headers ) {
+		    xhr.setRequestHeader( i, headers[ i ] );
+		}
+
+		// Callback
+		callback = function( type ) {
+		    return function() {
+			if ( type === "state" ) {
+			    streamCallback(xhr.responseText)
+			}
+			
+			else if ( callback ) {
+			    callback = xhr.onload = xhr.onerror = null;
+			    console.log(type)
+			    console.log(xhr.readyState)
+			    //console.log(xhr.responseText)
+			    if ( type === "abort" ) {
+				xhr.abort();
+			    }
+			    else if ( type === "error" ) {
+				completeCallback(
+				    // file: protocol always yields status 0; see #8605, #14207
+				    xhr.status,
+				    xhr.statusText
+				);
+			    } else {
+				completeCallback(
+				    xhrSuccessStatus[ xhr.status ] || xhr.status,
+				    xhr.statusText,
+				    // Support: IE9
+				    // Accessing binary-data responseText throws an exception
+				    // (#11426)
+				    typeof xhr.responseText === "string" ? {
+					text: xhr.responseText
+				    } : undefined,
+				    xhr.getAllResponseHeaders()
+				);
+			    }
+			}
+		    }
+		};
+
+		// Listen to events
+		xhr.onload = callback();
+		xhr.onreadystatechange = callback("state");
+		xhr.onerror = callback("error");
+		
+		// Create the abort callback
+		callback = callback("abort");
+		
+		try {
+		    // Do send the request (this may raise an exception)
+		    xhr.send( options.hasContent && options.data || null );
+		} catch ( e ) {
+		    // #14683: Only rethrow if this hasn't been notified as an error yet
+		    if ( callback ) {
+			throw e;
+		    }
+		}
+	    },
+	    
+	    abort: function() {
+		if ( callback ) {
+		    callback();
+		}
+	    }
+	}
+    });
+}
+
 
 /* kolekti objects browser
    inserts a browsable view of the server files in the kolekti interface
@@ -220,6 +342,7 @@ var kolekti_browser = function(args) {
 		    );
 		    $(this).closest('tr').find('input').focus();
 		});
+		
 		$(parent).find('.kolekti-action-move').click(function(e){
 		    $.post('/browse/move',
 			   {'from':path + "/" + $(this).closest('tr').data('name'),
@@ -231,9 +354,14 @@ var kolekti_browser = function(args) {
 			})
 
 		});
-	    }
+		$(parent).find('.dirlist tr.file').each(function(i,e){
+		    promise_setup_file(e)
+		});
 
+	    }
 	    set_browser_value(path + '/');
+
+
 	    if (modal)
 		$('.modal').modal();
 	});
@@ -275,15 +403,23 @@ var kolekti_browser = function(args) {
 	    resfuncs['create']=f;
 	    return return_functions;
 	},
+	'setup_file':function(f) {	
+	    resfuncs['setup_file']=f;
+	    return return_functions;
+	},
     };
 
     // calls register callback functions
 
     var closure_select = function() {
-	resfuncs['select'](get_browser_value());
+	resfuncs['select'] && resfuncs['select'](get_browser_value());
     };	
     var closure_create = function() {
-	resfuncs['create']($(parent), path, update);
+	resfuncs['create'] && resfuncs['create']($(parent), path, update);
+    };
+    var promise_setup_file = function(e) {
+	var f = $(e).data('name'); 
+	resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, path, f);
     };
 
 
@@ -316,6 +452,7 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.newfolder', function(){
 	$(parent + ' .newfile_collapse.in').collapse('hide');
     });
+
     $(parent).on('click', '.newfile', function(){
 	$(parent + ' .newfolder_collapse.in').collapse('hide');
     });
@@ -374,25 +511,6 @@ var kolekti_browser = function(args) {
 	$.each(listitems, function(idx, itm) { mylist.append(itm); });
     }
 
-    // activate Validate button
-
-/*
-    if (mode != "selectonly") {
-	if (!$(buttonsparent+'>button.browservalidate').length) {
-	    $('<button type="button" class="btn btn-default browservalidate">OK</button>').prependTo($(buttonsparent));
-	}
-
-	$(buttonsparent).off('click', '.browservalidate');
-	$(buttonsparent).on('click', '.browservalidate', function(event) {
-	    closure();
-	});
-    }
-*/
-    // set title
-
-/*
-    $(titleparent).html(title);
-*/    
     // fetch directory
 
     update()
@@ -400,11 +518,6 @@ var kolekti_browser = function(args) {
     // return functions
 
     return return_functions;
-/*{
-	"select":select,
-	"always":always
-    }
-  */  
 }
 
 
