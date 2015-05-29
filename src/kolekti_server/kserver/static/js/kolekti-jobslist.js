@@ -25,7 +25,7 @@ $(document).ready(function() {
 		location.assign('/settings/job?path='+path);
 	    }
 	)
-	.create(function(folder, update_function){
+	.create(function(browser,folder, update_function){
 	    var filename = $('.filename').val();
 	    $.post('/settings/jobs/create/',
 		   {'path':folder + "/" + filename})
