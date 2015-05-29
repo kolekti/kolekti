@@ -104,7 +104,7 @@ class kolektiBase(object):
         try:
             self.indexMgr = IndexManager(self._path)
         except:
-            logging.info('Search index could not be loaded')
+            logging.debug('Search index could not be loaded')
 
         
     def __getattribute__(self, name):
@@ -296,7 +296,7 @@ class kolektiBase(object):
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logging.info('Search index unavailable')
+            logging.debug('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
@@ -307,7 +307,7 @@ class kolektiBase(object):
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
-            logging.info('Search index unavailable')
+            logging.debug('Search index unavailable')
 
     def delete_resource(self, path):
         try:
@@ -321,17 +321,17 @@ class kolektiBase(object):
         try:
             self.indexMgr.delete_resource(path)
         except:
-            logging.info('Search index unavailable')
+            logging.debug('Search index unavailable')
 
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
         except:
-            logging.info('Synchro unavailable')
+            logging.debug('Synchro unavailable')
         try:
             self.indexMgr.post_save(path)
         except:
-            logging.info('Search index unavailable')
+            logging.debug('Search index unavailable')
 
     def makedirs(self, path):
         ospath = self.__makepath(path)
@@ -482,7 +482,7 @@ class kolektiBase(object):
     @property
     def itertocs(self):
         def filter(root,f):
-            return os.path.splitext(f)[1]==".html" 
+            return os.path.splitext(f)[1]==".html" or os.path.splitext(f)[1]==".xml" 
 
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
