@@ -362,21 +362,58 @@ $(document).ready( function () {
 	var job = $('#toc_root').data('kolekti-meta-job');
 	var jobpath =  $('#toc_root').data('kolekti-meta-jobpath');
 //	var idjob = $(e).attr('id');
-	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div id="pub_results"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
+	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
 	params = get_publish_params(job)
 		
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
+	    $('#pub_progress').remove();
 	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
 	} else {
 	    params['toc']=toc;
 	    params['job']=jobpath;
 	    
+	    var streamcallback = function(data) {
+//		console.log(data);
+		$("#pub_results").html(data);
+	    }
+	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
+	    streamedTransport(streamcallback);
 	    $.ajax({
 		url:url,
 		type:'POST',
 		data:params,
+		dataType:"streamed",
+		beforeSend:function(xhr, settings) {
+		    ajaxBeforeSend(xhr, settings);
+		    settings.xhr.onreadystatechange=function(){
+			console.log(xhr.responseText);
+		    }
+		}
 	    }).done(function(data) {
-		$('#pub_results').html(data);
+		$("#pub_results").html(data);
+	    }).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#pub_results').html([
+		    $('<div>',{'class':"alert alert-danger",
+			       'html':[$('<h5>',{'html':"Erreur"}),
+				       $('<p>',{'html':"Une erreur innatendue est survenue lors de la publication"})
+
+				      ]}),
+		    $('<a>',{
+			'class':"btn btn-primary btn-xs",
+			'data-toggle':"collapse",
+			'href':"#collapseStacktrace",
+			'aria-expanded':"false",
+			'aria-controls':"collapseStracktrace",
+			'html':'Détails'}),
+		    $('<div>',{'class':"well",
+			       'html':[
+				   $('<p>',{'html':textStatus}),
+				   $('<p>',{'html':errorThrown}),
+				   $('<pre>',{'html':jqXHR.responseText})]
+			      })
+		]);
+	    }).always(function() {
+		$('#pub_progress').remove();
 	    });
 	};
     })
@@ -494,7 +531,7 @@ $(document).ready( function () {
 	    } else if (comp.prev('.section').length) {
 		// precedent est une section
 		var section = comp.prev('.section');
-		comp.appendTo(section.find('.panel-body'));
+		comp.appendTo(section.find('.panel-body')[0]);
 		show_section(section);
 		enable_save();
 	    } else {
