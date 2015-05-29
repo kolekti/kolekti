@@ -21,6 +21,11 @@ urlpatterns = patterns('',
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
     url(r'^topics/$', TopicsListView.as_view(), name='topiclist'),
 
+    url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
+    url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
+    url(r'^variables/details$', VariablesDetailsView.as_view(), name='variabledetails'),
+    url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
+
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
     url(r'^images/upload$', ImagesUploadView.as_view(), name='imageupload'),
     url(r'^images/details$', ImagesDetailsView.as_view(), name='imagedetails'),

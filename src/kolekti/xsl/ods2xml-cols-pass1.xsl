@@ -8,7 +8,6 @@ xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
 xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" 
 xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
 
-  xmlns="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="office style text table fo"
   version="1.0">
 
@@ -88,7 +87,7 @@ xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
     <xsl:param name="content"/>
 
     <xsl:choose>
-      <xsl:when test="/office:document-content/office:automatic-styles/style:style[@style:name=$stylename]/style:text-properties[starts-with(@style:text-position,'super ')]">
+      <xsl:when test="/office:document-content/office:automatic-styles/style:style[@style:name=$stylename]/style:text-properties[starts-with(@style:text-position,'super')]">
 	<xsl:message>sup</xsl:message>
         <sup>
           <xsl:call-template name="checksub">
@@ -110,7 +109,7 @@ xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
     <xsl:param name="stylename"/>
     <xsl:param name="content"/>
     <xsl:choose>
-      <xsl:when test="/office:document-content/office:automatic-styles/style:style[@style:name=$stylename]/style:text-properties[starts-with(@style:text-position,'sub ')]">
+      <xsl:when test="/office:document-content/office:automatic-styles/style:style[@style:name=$stylename]/style:text-properties[starts-with(@style:text-position,'sub')]">
 	<xsl:message>sub</xsl:message>
         <sub>
           <xsl:call-template name="checkbold">

@@ -5,12 +5,16 @@ import json
 import random
 from lxml import etree as ET
 from PIL import Image
-
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+   
 from models import Settings
 from forms import UploadFileForm
 
 from django.http import Http404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.conf import settings
 from django.shortcuts import render, render_to_response
 from django.views.generic import View,TemplateView, ListView
@@ -18,7 +22,9 @@ from django.views.generic.base import TemplateResponseMixin
 from django.views.static import serve 
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-
+from django.views.decorators.http import condition
+from django.template.loader import get_template
+from django.template import Context
 
 # kolekti imports
 from kolekti.common import kolektiBase
@@ -26,6 +32,7 @@ from kolekti.publish_utils import PublisherExtensions
 from kolekti import publish
 from kolekti.searchindex import searcher
 from kolekti.exceptions import ExcSyncNoSync
+from kolekti.variables import OdsToXML, XMLToOds
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -316,6 +323,7 @@ class ImagesDetailsView(kolektiMixin, TemplateView):
         ospath = self.getOsPath(path)
         im = Image.open(ospath)
         context={
+            'fileweight':"%.2f"%(float(os.path.getsize(ospath)) / 1024),
             'name':name,
             'path':path,
             'format':im.format,
@@ -325,6 +333,55 @@ class ImagesDetailsView(kolektiMixin, TemplateView):
             }
         return self.render_to_response(context)
 
+
+class VariablesListView(kolektiMixin, TemplateView):
+    template_name = "variables/list.html"
+
+class VariablesDetailsView(kolektiMixin, TemplateView):
+    template_name = "variables/details.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        name=path.rsplit('/',1)[1]
+        ospath = self.getOsPath(path)
+
+        context={
+            'name':name,
+            'path':path,
+            }
+        return self.render_to_response(context)
+
+class VariablesUploadView(kolektiMixin, TemplateView):
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            
+            uploaded_file = request.FILES[u'upload_file']
+            path = request.POST['path']
+            projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+            converter = OdsToXML(projectpath)
+            varpath = path + "/" + uploaded_file.name.replace('.ods', '.xml')
+            converter.convert(uploaded_file, varpath)
+            # self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        else:
+            return HttpResponse(status=500)
+
+class VariablesODSView(kolektiMixin, View):
+    def get(self, request):
+        path = request.GET.get('path')
+        filename = path.rsplit('/',1)[1].replace('.xml','.ods')
+        odsfile = StringIO()
+        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+        converter = XMLToOds(projectpath)
+        converter.convert(odsfile, path)
+        response = HttpResponse(odsfile.getvalue(),
+                                content_type="application/vnd.oasis.opendocument.spreadsheet")
+        response['Content-Disposition']='attachement; filename="%s"'%filename
+        odsfile.close()
+        return response
+
+
+    
 class ImportView(kolektiMixin, TemplateView):
     template_name = "home.html"
 
@@ -522,8 +579,7 @@ class PublicationView(kolektiMixin, View):
     template_name = "publication.html"
     def __init__(self, *args, **kwargs):
         super(PublicationView, self).__init__(*args, **kwargs)
-        import StringIO
-        self.loggerstream = StringIO.StringIO()
+        self.loggerstream = StringIO()
         import logging
         self.loghandler = logging.StreamHandler(stream = self.loggerstream)
         self.loghandler.setLevel(logging.WARNING)
@@ -534,7 +590,21 @@ class PublicationView(kolektiMixin, View):
         # add the handler to the root logger
         rl = logging.getLogger('')
         rl.addHandler(self.loghandler)
-    
+
+    def format_iterator(self, sourceiter):
+        template = get_template('publication-iterator.html')
+        nbchunck = 0
+        for chunck in sourceiter:
+            nbchunck += 1
+            chunck.update({'id':nbchunck})
+            print template.render(Context(chunck))
+            yield template.render(Context(chunck))
+        
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(PublicationView, cls).as_view(**initkwargs)
+        return condition(etag_func=None)(view)
+
 class DraftView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
@@ -559,13 +629,8 @@ class DraftView(PublicationView):
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
 
             p = publish.DraftPublisher(projectpath, lang=self.user_settings.active_srclang)
-            pubres = p.publish_draft(tocpath, [xjob], pubtitle)
+            return StreamingHttpResponse(self.format_iterator(p.publish_draft(tocpath, [xjob], pubtitle)), content_type="text/html")
 
-            context.update({'pubres':pubres})
-            context.update({'success':True})
-            warnings = self.loggerstream.getvalue()
-            if len(warnings):
-                context.update({'logger':warnings})        
         except:
             import traceback
             self.loghandler.flush()
