@@ -31,8 +31,8 @@ urlpatterns = patterns('',
     url(r'^images/details$', ImagesDetailsView.as_view(), name='imagedetails'),
 
     url(r'^sync/$', SyncView.as_view(), name='sync'),
-    url(r'^sync/start$', SyncStartView.as_view(), name='syncstart'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
+    url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
 
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
     url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),

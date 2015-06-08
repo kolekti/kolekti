@@ -241,14 +241,15 @@ if __name__ == '__main__':
 
     if args.cmd == 'sync':
         from kolekti import synchro
-        sync = synchro.synchro(args.base)
+        sync = synchro.SynchroManager(args.base)
         if args.cmdsync == "status":
             changes = sync.statuses()
             for s,l in changes.iteritems():
                 print s,len(l)
-                for item in l:
-                    logging.debug(item)
-            
+                
+#                for item in l:
+#                    logging.debug("%s : %s"%(item['path'],item['rstatus']))
+                                           
             # print 'files to be added:'
             # print changes['added']
             # print 'files to be removed:'

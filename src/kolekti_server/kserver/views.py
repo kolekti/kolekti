@@ -1,6 +1,7 @@
 import re
 import os
 from copy import copy
+import shutil
 import json
 import random
 from lxml import etree as ET
@@ -167,7 +168,7 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-    def get(self, request):
+    def get(self, request, require_svn_auth="False"):
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
             project={'name':projectname}
@@ -192,6 +193,7 @@ class ProjectsView(kolektiMixin, View):
         context = {"projects" : projects,
                    "active_project" :self.user_settings.active_project.encode('utf-8'),
                    "active_srclang":self.user_settings.active_srclang,
+                   "require_svn_auth":require_svn_auth,
                    }
             
         return self.render_to_response(context)
@@ -199,14 +201,18 @@ class ProjectsView(kolektiMixin, View):
     def post(self, request):
         project_folder = request.POST.get('projectfolder')
         project_url = request.POST.get('projecturl')
+        username = request.POST.get('username',None)
+        password = request.POST.get('password',None)
         from kolekti.synchro import SVNProjectManager
         sync = SVNProjectManager(settings.KOLEKTI_BASE)
         if project_url=="":
-            # create local project
+        # create local project
             sync.export_project(project_folder)
         else:
-            sync.checkout_project(project_folder, project_url)
-
+            try:
+                sync.checkout_project(project_folder, project_url)
+            except pysvn.ClientError:
+                pass
         return self.get(request)
 
 
@@ -771,43 +777,66 @@ class SyncView(kolektiMixin, View):
             from kolekti.synchro import SynchroManager
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             sync = SynchroManager(projectpath)
-            changes = sync.statuses()
-            newmerge = []
-            newconflict = []
-            for change in changes['merge']:
-                mergeinfo = sync.merge_dryrun(change['path'])
-                if len(mergeinfo['conflict']):
-                    newconflict.append(change)
-                else:
-                    newmerge.append(change)
-            changes.update({
-                    "merge":newmerge,
-                    "conflict":newconflict
-                    })
             context.update({
                     "history": sync.history(),
-                    "changes": changes,
-                    "ok":len(changes['error'])==0
+                    "changes": sync.statuses(),
                     })
         except ExcSyncNoSync:
             
             context = {'status':'nosync'}
         return self.render_to_response(context)
 
-class SyncStartView(kolektiMixin, View):
-    template_name = "synchro/sync.html"
     def post(self, request):
-        message = request.POST.get("syncromsg")
         from kolekti.synchro import SynchroManager
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
         sync = SynchroManager(projectpath)
-        
+        action = request.POST.get('action')
+        commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
+        if len(commitmsg) == 0:
+            commitmsg = "unspecified"
+        if action == "conflict":
+            resolve = request.POST.get('resolve')
+            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            if resolve == "local":
+                sync.update(files)
+                for file in files:
+                    if os.path.exists(file+'.mine'):
+                        shutil.copy(file+'.mine', file)
+                        sync.resolved(file)
+                sync.commit(files, commitmsg)
+            if resolve == "remote":
+                sync.revert(files)
+
+        elif action == "merge":
+            files = request.POST.getlist('fileselect',[])
+            sync.update(files)
+                
+        elif action == "update":
+            sync.update_all()
+            
+        elif action == "commit":
+            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            sync.commit(files,commitmsg)
+            
+            
+        return self.get(request)
+                    
+class SyncRevisionView(kolektiMixin, View):
+    template_name = "synchro/revision.html"
+    def get(self, request, rev):
+        from kolekti.synchro import SynchroManager
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        sync = SynchroManager(projectpath)
+        revsumm, revinfo, difftext = sync.revision_info(rev)
         context = {
-            'update':sync.update_all(),
-            'commit':sync.commit_all(message)
+            "history": sync.history(),
+            'revsumm':revsumm,
+            'revinfo':revinfo,
+            'difftext':difftext,
             }
         
         return self.render_to_response(context)
+
 
 
 
