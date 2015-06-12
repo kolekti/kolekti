@@ -6,6 +6,13 @@ $(document).ready( function () {
 	extraPlugins : 'codemirror,textselection,conditions',
 	extraAllowedContent : 'span *(*)',
 	entities : false,
+
+	filebrowserBrowseUrl: '/browse/ckbrowser',
+	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
+	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
+//	filebrowserUploadUrl: '/browse/ckupload',
+//	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
+	
 	toolbar_Full : [
 	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
 	    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },

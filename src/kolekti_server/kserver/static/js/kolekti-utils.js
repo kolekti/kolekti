@@ -218,6 +218,9 @@ var kolekti_browser = function(args) {
         root = args.root;
 	params['root']=root
     }
+    if (args && args.path) {
+	path = args.path;
+    }
     if (args && args.parent)
 	parent = args.parent;
     if (args && args.buttonsparent)

@@ -54,9 +54,9 @@ urlpatterns = patterns('',
     url(r'^browse/move$', BrowserMoveView.as_view(),name="kolekti_browser_move"),
     url(r'^browse/copy$', BrowserCopyView.as_view(),name="kolekti_browser_copy"),
     url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
-    url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
     url(r'^browse/ckbrowser$', BrowserCKView.as_view(),name="kolekti_ckbrowser"),
     url(r'^browse/ckupload$', BrowserCKUploadView.as_view(),name="kolekti_ckupload"),
+    url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 
     
     url(r'^publish/draft/', DraftView.as_view(),name="publish_draft"),

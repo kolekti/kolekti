@@ -455,7 +455,8 @@ class CriteriaView(kolektiMixin, View):
 class CriteriaCssView(kolektiMixin, TemplateView):
     template_name = "settings/criteria-css.html"
     def get(self, request):
-        try:            settings = self.parse('/kolekti/settings.xml')
+        try:
+            settings = self.parse('/kolekti/settings.xml')
             xsl = self.get_xsl('django_criteria_css')
             #print xsl(settings)
             return HttpResponse(str(xsl(settings)), "text/css")
@@ -581,7 +582,7 @@ class BrowserView(kolektiMixin, View):
         return self.render_to_response(context)
 
 class BrowserCKView(kolektiMixin, View):
-    template_name = "browser/main.html"
+    template_name = "browser/browser.html"
     def __browserfilter(self, entry):
         for exc in settings.RE_BROWSER_IGNORE:
             if re.search(exc, entry.get('name','')):
@@ -589,6 +590,7 @@ class BrowserCKView(kolektiMixin, View):
         return True
                          
     def get(self,request):
+        print "browser get"
         context={}
         path = request.GET.get('path','/')
         mode = request.GET.get('mode','select')
@@ -611,9 +613,15 @@ class BrowserCKView(kolektiMixin, View):
         context.update({'pathsteps':pathsteps})
         context.update({'mode':mode})
         context.update({'path':path})
+        context.update({'editor':request.GET.get('CKEditor','_')})
+        context.update({'funcnum':request.GET.get('CKEditorFuncNum','_')})
+        
         context.update({'id':'browser_%i'%random.randint(1, 10000)})
+        print context
         return self.render_to_response(context)
 
+class BrowserCKUploadView(kolektiMixin, View):
+    template_name = "browser/main.html"
 
 
 
