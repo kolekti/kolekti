@@ -455,8 +455,7 @@ class CriteriaView(kolektiMixin, View):
 class CriteriaCssView(kolektiMixin, TemplateView):
     template_name = "settings/criteria-css.html"
     def get(self, request):
-        try:
-            settings = self.parse('/kolekti/settings.xml')
+        try:            settings = self.parse('/kolekti/settings.xml')
             xsl = self.get_xsl('django_criteria_css')
             #print xsl(settings)
             return HttpResponse(str(xsl(settings)), "text/css")
@@ -580,7 +579,45 @@ class BrowserView(kolektiMixin, View):
         context.update({'path':path})
         context.update({'id':'browser_%i'%random.randint(1, 10000)})
         return self.render_to_response(context)
-        
+
+class BrowserCKView(kolektiMixin, View):
+    template_name = "browser/main.html"
+    def __browserfilter(self, entry):
+        for exc in settings.RE_BROWSER_IGNORE:
+            if re.search(exc, entry.get('name','')):
+                return False
+        return True
+                         
+    def get(self,request):
+        context={}
+        path = request.GET.get('path','/')
+        mode = request.GET.get('mode','select')
+        client_filter_name = request.GET.get('filter',None)
+        client_filter = None
+        if client_filter_name is not None:
+            client_filter = getattr(self, client_filter_name)
+            
+        files = filter(self.__browserfilter, self.get_directory(path,client_filter))
+
+        for f in files:
+            # print f.get('type')
+            f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
+        pathsteps = []
+        startpath = ""
+        for step in path.split("/")[1:]:
+            startpath = startpath + "/" + step
+            pathsteps.append({'label':step, 'path': startpath})
+        context.update({'files':files})
+        context.update({'pathsteps':pathsteps})
+        context.update({'mode':mode})
+        context.update({'path':path})
+        context.update({'id':'browser_%i'%random.randint(1, 10000)})
+        return self.render_to_response(context)
+
+
+
+
+    
 class PublicationView(kolektiMixin, View):
     template_name = "publication.html"
     def __init__(self, *args, **kwargs):
