@@ -4,7 +4,7 @@ $(document).ready( function () {
 	autoGrow_onStartup : true,
 	contentsCss : '/criteria.css',
 	extraPlugins : 'codemirror,textselection,conditions',
-	extraAllowedContent : 'span *(*)',
+	extraAllowedContent : 'var ins span *(*)',
 	entities : false,
 
 	filebrowserBrowseUrl: '/browse/ckbrowser',
