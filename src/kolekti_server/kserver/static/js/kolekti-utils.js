@@ -221,6 +221,9 @@ var kolekti_browser = function(args) {
     if (args && args.path) {
 	path = args.path;
     }
+    if (args && args.url) {
+	url = args.url;
+    }
     if (args && args.parent)
 	parent = args.parent;
     if (args && args.buttonsparent)

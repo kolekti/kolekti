@@ -71,9 +71,66 @@
 	  </form>
 	</div>
       </div>
+<!--
+      <div class="collapse navbar-collapse" id="navbar2">
+	<ul class="nav navbar-nav">
+	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncinfo.revision.number }}]</span></a></li>
+	</ul>
+      </div>
+-->
     </div> <!-- navbar -->
+    <div class="navbar"  id="navbar2">
+      <div class="container-fluid">
+	<div class="row">
+	  <div class="col-sm-12">
+	    <div class="btn-toolbar" role="toolbar">
+	      
+	    <div class="btn-group" role="group">
+	      {% block infobuttons %}
+	      <div class="btn-group" role="group">
+		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+		  {{ active_project }}
+		  <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+		  {% for project in projects %}
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.name }}&redirect={{ location }}">{{project.name}}</a></li>
+		  {% endfor %}
+		</ul>
+	      </div>
+	    </div>
+	    <div class="btn-group" role="group">
+	      <button class="btn btn-xs btn-default dropdown-toggle" type="button" >
+		rev {{ syncinfo.revision.number }}
+	      </button>
+	    </div>
+	    {% block infobuttons_lang %}
+	    <div class="btn-group" role="group">
 
-    
+	      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
+		{{ active_srclang }}
+		<span class="caret"></span>
+	      </button>
+	      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
+		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
+		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
+		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
+		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
+	      </ul>
+	    </div>
+	    {% endblock %}
+
+	    <div class="btn-group" role="group">
+	    <button class="btn btn-xs btn-default" type="button" >
+		  Aide
+	    </button>
+	    </div>
+	      {% endblock %}
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
     {% block page-content %}{% endblock %}
 
 

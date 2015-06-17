@@ -156,8 +156,8 @@ if __name__ == '__main__':
         try:
             p = publish.DraftPublisher(args.base, lang=args.lang)
             toc = p.get_base_toc(args.toc)
-            jobs = [p.get_base_job(args.job)]
-            for event in p.publish_draft(toc, jobs):
+            job = p.get_base_job(args.job)
+            for event in p.publish_draft(toc, job):
                 if event['event'] == "job":
                     logging.info('Publishing Job %s'%event['label'])
                 if event['event'] == "profile":
@@ -170,10 +170,7 @@ if __name__ == '__main__':
                 if event['event'] == "error":
                     logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                 if event['event'] == "warning":
-                    logging.info(' [W] %s\n%s'%(msg) )
-
-            
-                
+                    logging.info(' [W] %s\n%s'%(msg) 
             logging.info("Publication complete")
         except:
             import traceback
@@ -183,10 +180,10 @@ if __name__ == '__main__':
     if args.cmd == 'release':
         from kolekti import publish
         try:
-            p = publish.Releaser(args.base)
-            toc = p.get_base_toc(args.toc) + ".html"
-            jobs = [p.get_base_job(args.job) + ".xml"]
-            p.make_release(toc, jobs)
+            p = publish.Releaser(args.base, lang=args.lang)
+            toc = p.get_base_toc(args.toc)
+            job = p.get_base_job(args.job)
+            p.make_release(toc, job)
             logging.info("Release sucessful")
         except:
             import traceback
@@ -210,8 +207,23 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             p = publish.ReleasePublisher(args.base, lang=args.lang)
-            p.publish_assembly(args.release, args.assembly)
-            logging.info("Publication sucessful")
+
+            for event in p.publish_assembly(args.release, args.assembly)
+                if event['event'] == "job":
+                    logging.info('Publishing Job %s'%event['label'])
+                if event['event'] == "profile":
+                    logging.info(' profile %s'%event['label'])
+                if event['event'] == "result":
+                    logging.info('%s complete'%event['script'])
+                    for doc in event['docs']:
+                        logging.info('[%s] %s'%(doc['type'],doc['url']))
+
+                if event['event'] == "error":
+                    logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
+                if event['event'] == "warning":
+                    logging.info(' [W] %s\n%s'%(msg) )
+
+            logging.info("Publication complete")
         except:
             import traceback
             logging.debug(traceback.format_exc())
