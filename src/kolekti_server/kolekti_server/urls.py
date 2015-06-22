@@ -20,7 +20,8 @@ urlpatterns = patterns('',
 
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
-    url(r'^releases/state/$', ReleaseStateView.as_view(), name='releasestate'),
+    url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
+    url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
 
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),

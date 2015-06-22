@@ -315,20 +315,36 @@ class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
 class ReleaseStateView(kolektiMixin, TemplateView):
+    def get(self, request):
+        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        return HttpResponse(state)
+
+    def post(self,request):
+        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        state = request.POST.get('state')
+        lang = request.POST.get('targetlang')
+        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        return HttpResponse(state)
+        
+class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
+    def post(self,request):
+        state = request.POST.get('state')
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
-        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        lang = request.GET.get('language', self.user_settings.active_srclang)
         assembly_path = os.path.join(path,"sources",lang,"assembly",assembly_name+".html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(path, lang),
             'success':True,
-            'assembly':assembly_name,
-            
+            'assembly_path':path,
+            'assembly_name':assembly_name,
             'lang':lang,
             'content':self.get_assembly_edit(assembly_path),
         })
