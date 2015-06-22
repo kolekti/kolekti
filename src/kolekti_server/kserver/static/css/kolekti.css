@@ -122,4 +122,12 @@ label {
     font-weight:bold;
 }
 
+
+/* project info bar */
+
+#navbar2 {
+    min-height:25px;
+    margin-bottom:-10px;
+}
+
 .top-margin { margin-top:10px; }

@@ -99,6 +99,7 @@ class kolektiBase(object):
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
+            self._syncstate = self.syncMgr.state()
         except ExcSyncNoSync:
             pass
         try:
@@ -198,6 +199,14 @@ class kolektiBase(object):
 
         return dir
 
+    def get_release_assemblies(self, path):
+        ospath= self.__makepath(path)
+        for f in os.listdir(os.path.join(ospath,'kolekti',"publication-parameters")):
+            if f.endswith(".json"):
+                pf = os.path.join(os.path.join(ospath,'kolekti',"publication-parameters",f))
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                yield (f[:-5], d)
+    
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
@@ -540,7 +549,7 @@ class kolektiBase(object):
                 # print release_params
                 
                 for job_params in release_params:
-                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_'+ lang +'_publications.json'))
+                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
                     resjob = {
                         'lang': lang,
                         'release':release_params,

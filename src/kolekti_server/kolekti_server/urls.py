@@ -17,9 +17,11 @@ urlpatterns = patterns('',
     url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
 
     url(r'^import/$', ImportView.as_view(), name='import'),
+
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
-    url(r'^topics/$', TopicsListView.as_view(), name='topiclist'),
+    url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
+    url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
 
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
@@ -56,12 +58,14 @@ urlpatterns = patterns('',
     url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
     url(r'^browse/ckbrowser$', BrowserCKView.as_view(),name="kolekti_ckbrowser"),
     url(r'^browse/ckupload$', BrowserCKUploadView.as_view(),name="kolekti_ckupload"),
+    url(r'^browse/releases/', BrowserReleasesView.as_view(),name="kolekti_browser_releases"),
     url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 
     
     url(r'^publish/draft/', DraftView.as_view(),name="publish_draft"),
     url(r'^publish/release/', ReleaseView.as_view(),name="publish_release"),
 
+    url(r'^topics/$', TopicsListView.as_view(), name='topiclist'),
     url(r'^topics/templates/', TopicTemplatesView.as_view(),name="topic_templates"),
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),

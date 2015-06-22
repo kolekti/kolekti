@@ -4,15 +4,46 @@
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-releases.css"></script>
     <link rel="stylesheet" type="text/css"  href="/criteria.css"></script>
+    <script src="/static/ckeditor/ckeditor.js"></script>
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-releases.js"></script>
+    <script src="/static/js/kolekti-release.js"></script>
 {% endblock %}
 
 {% block title %}
- [RELEASE]
-{% endblock %}
+{{ assembly_name }}
+    {% endblock %}
+
+{% block infobuttons_lang %}
+      {% for rlang, state in langstates %}
+    <div class="btn-group" role="group">
+      <button class="btn btn-xs {% if rlang == lang %}btn-primary{% else %}btn-default{% endif %} btn-lang-{{ rlang }}" type="button">
+	{{ rlang }}
+      </button>
+      {% if  state == "unknown" %}
+      <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-copy" type="button" data-state="{{ state }}" data-lang="{{ rlang }}" title="Créer la version {{ rlang }}">
+	<span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+      </button>
+      {% else %}
+      <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-menu dropdown-toggle" type="button"
+	      title="{{ state }}"
+	      data-state="{{ state }}" 
+	      data-toggle="dropdown" aria-expanded="true">
+	<span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+	<span class="caret"/>
+      </button>
+      <ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
+	<li><a class="release-state" data-state="edition" href="#" >Mise à jour</a></li>
+	<li><a class="release-state" data-state="translation" href="#"><span class="text-primary">Traduction en cours</span></a></li>
+	<li><a class="release-state" data-state="validation" href="#"><span class="text-warning">Controle</a></li>
+	<li><a class="release-state" data-state="publication" href="#"><span class="text-success">Bon pour publication</a></li>
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% endblock %}	      
 
 {% block menu %}
     <div class="row">
@@ -134,15 +165,32 @@
 {% endblock %}
 
 {% block content %}
+<div id="main" class="release">
 
-
-
-<div class="release">
-  {% for l in kolekti.languages %}
-  <button class="btn btn-default btn-xs {% if l == lang  %}active{% endif %}">{{ l }}</button>
-  {% endfor %}
+    <form method="POST">
+      <textarea name="editor1" id="editor1" rows="100" cols="80">
+	{{ content |safe }}
+      </textarea>
+    </form>
+ 
+  
 </div>
 {% endblock %}
 
 
 
+{% block modal-body %}
+<p>Cette version n'existe pas pour cette langues, veuillez sélectionner la langue à partir de laquelle la nouvelle version doit être créée</p>
+<select name="release_copy_from_lang">
+     {% for rlang, state in langstates %}
+     <option value="{{ rlang }}">{{ rlang }}</option>
+     {% endfor %}
+</select>
+<input type="hidden" name="release_lang" value="{{ lang }}"/>
+{% endblock %}
+
+{% block modal-title %}Dupliquer une version{% endblock %}
+
+{% block modal-footer %}
+<button type="submit"  class="btn btn-primary">Valider</button>
+{% endblock %}

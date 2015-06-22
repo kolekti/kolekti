@@ -56,29 +56,26 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
 
-    def publish_assemble(self, toc, xjob):
+    def publish_assemble(self, xtoc, xjob):
         """create and return an assembly from the toc using the xjob critria for filtering"""
         assembly_dir = self.assembly_dir(xjob)
 
-        logging.debug('********************************** process toc')
-
+        # produce assembly document from toc and topics
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
-        assembly = xsassembly(toc, lang="'%s'"%self._publang)
+        assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
 
-        logging.debug('********************************** filter assembly')
-        # criteria
+        
+        # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
                         
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
-        assembly = s(assembly,action="'assemble'")
+        assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
 
-        # logging.debug("after cond! %s"%str([ET.tostring(c) for c in assembly.xpath('//*[local-name() = "cond"]')
-            
-
+        # calculate the publication name
         pubname = xjob.get('id','')
         pubname = self.substitute_criteria(pubname, xjob)
         
@@ -663,10 +660,10 @@ class DraftPublisher(Publisher):
         self.rmtree(assembly_dir + "/kolekti")
         
 
-    # publishes a list of jobs
+    # publishes a list of job toc
     
-    def publish_draft(self, toc, jobs=[], pubtitle=None):
-        """ publishes a kolekti toc, using the profiles sets present in jobs list"""
+    def publish_draft(self, toc, job, pubtitle=None):
+        """ publishes a kolekti toc, with a job"""
         
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
@@ -677,42 +674,43 @@ class DraftPublisher(Publisher):
             xtoc = self.parse(toc)
 
         if pubtitle is not None:
-            xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = pubtitle
+            xtoc.xpath("/h:html/h:head/h:title", namespaces=self.nsmap)[0].text = pubtitle
 
         publications = []
-        for job in jobs:
-            # path = self.get_base_job(job) + ".xml"
-            if isinstance(job,ET._ElementTree):
-                xjob = job
-            else:
-                xjob = self.parse(job)
-            # assembly
-            logging.debug('********************************** CREATE ASSEMBLY')
-            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+        # path = self.get_base_job(job) + ".xml"
+        if isinstance(job,ET._ElementTree):
+            xjob = job
+        else:
+            xjob = self.parse(job)
 
-            logging.debug('********************************** PUBLISH ASSEMBLY')
-            for pubres in self.publish_job(assembly, xjob.getroot()):
-#                pubres.update({"job":xjob.getroot().get('id')})
-                yield pubres
-            try:
-                pass
-                #self.cleanup_assembly_dir(xjob.getroot())
-            except:
-                logging.debug('Warning: could not remove tmp dir')
-        # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
+        # assembly
+        logging.debug('********************************** CREATE ASSEMBLY')
+        assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+        
+        logging.debug('********************************** PUBLISH ASSEMBLY')
+        for pubres in self.publish_job(assembly, xjob.getroot()):
+            yield pubres
+        try:
+            pass
+        # self.cleanup_assembly_dir(xjob.getroot())
+        except:
+            logging.debug('Warning: could not remove tmp dir')
+
         return
     
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
-        
+
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/releases/" + assembly_dir
+        if assembly_dir[-1] != "/":
+            assembly_dir += "/"
         return assembly_dir
 
-    def make_release(self, toc, jobs=[], pubtitle=None):
+    def make_release(self, toc, job, release_name=None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
@@ -720,28 +718,34 @@ class Releaser(Publisher):
         logging.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
+            if release_name is None:
+                raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
-        if pubtitle is not None:
-            xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = pubtitle
-        for job in jobs:
-            # path = self.get_base_job(job) + ".xml"
-            if isinstance(job,ET._ElementTree):
-                xjob = job
-            else:
-                xjob = self.parse(job)
-            # assembly
-            logging.debug('********************************** CREATE ASSEMBLY')
-            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
-            res.append({"assembly_dir":assembly_dir,
-                        "pubname":pubname,
-                        "datetime":time.time(), #datetime.now(),
-                        "job":unicode(xjob.getroot().get('id')),
-                        "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
-                })
+            release_name = os.path.splitext(toc.rsplit("/", 1)[1])[0]
+        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
 
-        self.write('<publication type="release"/>', assembly_dir+"/.manifest")
-        self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+pubname+"_"+self._publang+"_parameters.json")
+        if isinstance(job,ET._ElementTree):
+            xjob = job.getroot()
+        else:
+            xjob = self.parse(job).getroot()
+        xjob.set('id',release_name)
+        # assembly
+        logging.debug('********************************** CREATE ASSEMBLY')
+        assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob)
+        res.append({"assembly_dir":assembly_dir,
+                    "pubname":pubname,
+                    "releasename":release_name,
+                    "datetime":time.time(), #datetime.now(),
+                    "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
+                    })
+
+        # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
+        self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
+        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
+        if self.syncMgr is not None :
+            self.syncMgr.propset("release_state","edition",assembly_path)
         return res
 
     # copies the job in release directory
@@ -783,7 +787,7 @@ class ReleasePublisher(Publisher):
             logging.debug(traceback.format_exc())
             
         xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
-        xjob=xjob.getroot()
-        publications = self.publish_job(xassembly,xjob)
-        self.write(json.dumps(publications), assembly_dir+'/kolekti/publication-parameters/'+ assembly + '_' + self._publang + '_publications.json')
-        return [{"job":xjob.get('id'), "publications":publications}]
+        
+        for pubres in self.publish_job(xassembly, xjob.getroot()):
+            yield pubres
+        return 

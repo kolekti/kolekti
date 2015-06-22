@@ -67,6 +67,10 @@ class SynchroManager(object):
     def history(self):
         return self._client.log(self._base)
 
+    def state(self):
+        headrev = self._client.info(self._base)
+        return headrev
+    
     def revision_info(self, revision):
         rev = int(revision)
         rev_summ = self._client.diff_summarize(self._base,
@@ -188,7 +192,9 @@ class SynchroManager(object):
         self._client.resolved(file)
 
     def update_all(self):
+        print "update_all"
         update_revision = self._client.update(self._base, recurse = True)
+        print "update revision", update_revision
         return update_revision
 
     def update(self, files):
@@ -241,6 +247,21 @@ class SynchroManager(object):
         ospath = self.__makepath(path)
         self._client.remove(ospath,force=True)
 
+    def propset(self, name, value, path):
+        ospath = self.__makepath(path)
+        self._client.propset(name, value, ospath)
+        
+    def propget(self, name, path):
+        ospath = self.__makepath(path)
+        try:
+            props = self._client.propget(name, ospath)
+            print props
+            return props.get(ospath,'unversionned')
+        except:
+            import traceback
+            print traceback.format_exc()
+            return 'unversionned'
+        
 class SVNProjectManager(object):
     def __init__(self, projectsroot, username=None, password=None):
         self._projectsroot = projectsroot
