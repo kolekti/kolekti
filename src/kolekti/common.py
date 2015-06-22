@@ -206,6 +206,14 @@ class kolektiBase(object):
                 pf = os.path.join(os.path.join(ospath,'kolekti',"publication-parameters",f))
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
                 yield (f[:-5], d)
+
+    def iter_release_assembly(self, path, assembly, lang, callback):
+        assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
+        job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
+        xassembly = self.parse( assembly_path)
+
+        
+        # iteration 
     
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
