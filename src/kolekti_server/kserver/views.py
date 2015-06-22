@@ -334,7 +334,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         srclang = request.POST.get('release_copy_from_lang')
         lang = request.POST.get('release_lang')
-        self.copy(path + 
+#        self.copy(path + 
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
