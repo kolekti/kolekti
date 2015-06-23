@@ -199,7 +199,10 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         # get userdir
         self.user_settings.active_srclang = language
         self.user_settings.save()
-        
+
+
+
+                
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
@@ -241,11 +244,13 @@ class ProjectsView(kolektiMixin, View):
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect = request.GET.get('redirect', None)
+        redirect = ''
+        #        redirect = request.META.get('HTTP_REFERER', '')
         self.project_activate(project)
-        if redirect is None:
+        if redirect == '':
             return super(ProjectsActivateView, self).get(request)
         else:
+            
             return HttpResponseRedirect(redirect)
 
 
@@ -333,14 +338,15 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     def post(self,request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         srclang = request.POST.get('release_copy_from_lang')
-        lang = request.POST.get('release_lang')
-#        self.copy(path + 
+        dstlang = request.POST.get('release_lang')
+        self.copy_release(path, assembly_name, srclang, dstlang)
+        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
-        lang = request.GET.get('language', self.user_settings.active_srclang)
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_path = os.path.join(path,"sources",lang,"assembly",assembly_name+".html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({

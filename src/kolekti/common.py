@@ -207,12 +207,62 @@ class kolektiBase(object):
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
                 yield (f[:-5], d)
 
+
+    def resolve_var_path(self, path, job_path):
+        criteria = re.findall('\{.*?\}', path)
+        if len(criteria) == 0:
+            yield path
+        seen = set()
+        xjob = self.parse(job_path)
+        for profile in xjob.xpath("/job/profiles/profile"):
+            ppath = copy(path)
+            for pcriterion in profile.findall('criteria/criterion'):
+                if pcriterion.get('code') in criteria:
+                    ppath.replace('{%s}'%pcriterion.get('code'), pcriterion.get('value'))
+            if not ppath in seen:
+                seen.add(ppath)
+                yield ppath
+
+                
+                
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xassembly = self.parse( assembly_path)
-
+        for elt_img in xassembly.xpath('//h:img',namespaces={"html":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            for imgfile in self.resolve_var_path(src_img, job_path):
+                t = mimetypes.guess_type(imgfile)[0]
+                if t is None:
+                    t = "application/octet-stream"
+                callback(imgfile, t)
+        for elt_var in xassembly.xpath('//h:var',namespaces={"html":"http://www.w3.org/1999/xhtml"}):
+            attr_class = elt_var.get('class')
+            if "=" in attr_class:
+                if attr_class[0] == '/':
+                    varfilepath = '/'.join(path, attr_class)
+                else:
+                    varfilepath = '/'.join(path, "sources", lang, "variables", attr_class)
+                for varfile in self.resolve_var_path(varfilepath, job_path):
+                    t = mimetypes.guess_type(varfile)[0]
+                    if t is None:
+                        t = "application/octet-stream"
+                    yield callback(varfile, t)
+                    
+                    
+    def copy_release(self, path, assembly_name, srclang, dstlang):
+        def copy_callback(path, restype):
+            splitpath = path.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang 
+                self.copy_resource(path, '/'.join(dstsplitpath))
+            return "ok"
         
+        self.iter_release_assembly(path, assembly_name, srclang, copy_callback)
+        
+                
+        
+                
         # iteration 
     
     def get_extensions(self, extclass, **kwargs):
