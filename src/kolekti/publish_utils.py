@@ -65,7 +65,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
             self._profile = kwargs.get('profile')
             kwargs.pop('profile')
         super(PublisherExtensions,self).__init__(*args, **kwargs)
-        
+
 
     def gettopic(self, _, *args):
         modid = args[0]
@@ -82,7 +82,10 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
 
     def criteria(self, _, *args):
         logging.debug('xslt ext criteria')
-        return self._profile.xpath("criteria/criterion|/job/criteria/criterion")
+        print "criteria"
+        criteria = self._profile.xpath("criteria/criterion|/job/criteria/criterion")
+        criteria.append(ET.XML('<criteria code="LANG" value="%s"/>'%(self._publang)))
+        return criteria
 
     def criteria_definitions(self, _, *args):
         logging.debug('xslt ext criteria_definitions')
