@@ -6,6 +6,7 @@
 import os
 import sys
 import re
+from copy import copy
 from datetime import datetime
 import ConfigParser
 import urllib2
@@ -229,14 +230,15 @@ class kolektiBase(object):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"html":"http://www.w3.org/1999/xhtml"}):
+        print assembly_path
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
             src_img = elt_img.get('src')
             for imgfile in self.resolve_var_path(src_img, job_path):
                 t = mimetypes.guess_type(imgfile)[0]
                 if t is None:
                     t = "application/octet-stream"
                 callback(imgfile, t)
-        for elt_var in xassembly.xpath('//h:var',namespaces={"html":"http://www.w3.org/1999/xhtml"}):
+        for elt_var in xassembly.xpath('//h:var',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
             attr_class = elt_var.get('class')
             if "=" in attr_class:
                 if attr_class[0] == '/':
@@ -251,18 +253,31 @@ class kolektiBase(object):
                     
                     
     def copy_release(self, path, assembly_name, srclang, dstlang):
-        def copy_callback(path, restype):
-            splitpath = path.split('/')
+        def copy_callback(respath, restype):
+            splitpath = respath.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang
+                splitpath = [path]+splitpath
+                respath = path + respath
+                self.copy_resource(respath, '/'.join(splitpath))
+            return '/'.join(splitpath)
+
+        for copiedfile in self.iter_release_assembly(path, assembly_name, srclang, copy_callback):
+            yield copiedfile
+            print copiedfile
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly+'.html'])
+        xassembly = self.parse( assembly_path)
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
                 splitpath[2] = dstlang 
-                self.copy_resource(path, '/'.join(dstsplitpath))
-            return "ok"
-        
-        self.iter_release_assembly(path, assembly_name, srclang, copy_callback)
-        
-                
-        
-                
+                elt_img.set('src','/'.join(splipath))
+        self.xwrite(xassembly, assembly_path)
+        print assembly_path
+        yield assembly_path
+        return
+    
         # iteration 
     
     def get_extensions(self, extclass, **kwargs):
@@ -359,7 +374,7 @@ class kolektiBase(object):
             self.syncMgr.move_resource(src, dest)
         except:
             logging.info('Synchro unavailable')
-            shutil.move(self.__makepath(src), self.__makepath(dst))
+            shutil.move(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.move_resource(src, dest)
         except:
@@ -369,8 +384,10 @@ class kolektiBase(object):
         try:
             self.syncMgr.copy_resource(src, dest)
         except:
+            import traceback
+            print traceback.format_exc
             logging.info('Synchro unavailable')
-            shutil.copy(self.__makepath(src), self.__makepath(dst))
+            shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
