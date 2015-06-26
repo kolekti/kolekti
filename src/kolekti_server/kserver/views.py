@@ -342,12 +342,14 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             srclang = request.POST.get('release_copy_from_lang')
             dstlang = request.POST.get('release_lang')
             print path, assembly_name, srclang, dstlang
-            return StreamingHttpResponse(self.copy_release(path, assembly_name, srclang, dstlang), content_type="text/html")
+            #            return StreamingHttpResponse(
+            for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
+                pass
         except:
             import traceback
             print traceback.format_exc()
-        return HttpResponse("ok")
-    #  HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
+    #    return HttpResponse("ok")
+        HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
