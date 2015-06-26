@@ -1,4 +1,10 @@
 $(document).ready( function () {
+
+    $('.btn-lang').click(function() {
+	var lang = $(this).data('lang')
+	var release = $('#main').data('release')
+	window.location.href = "/releases/detail/?release="+release+"&lang="+lang;
+    })
     
     /*
 
