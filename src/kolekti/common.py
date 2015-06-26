@@ -209,19 +209,19 @@ class kolektiBase(object):
                 yield (f[:-5], d)
 
 
-    def resolve_var_path(self, path, job_path):
+    def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
         if len(criteria) == 0:
             yield path
         seen = set()
-        xjob = self.parse(job_path)
-        for profile in xjob.xpath("/job/profiles/profile"):
+        for profile in xjob.xpath("/job/profiles/profile|/"):
             ppath = copy(path)
             for pcriterion in profile.findall('criteria/criterion'):
                 if pcriterion.get('code') in criteria:
                     ppath.replace('{%s}'%pcriterion.get('code'), pcriterion.get('value'))
             if not ppath in seen:
                 seen.add(ppath)
+                print ppath
                 yield ppath
 
                 
@@ -229,11 +229,13 @@ class kolektiBase(object):
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
+        xjob = self.parse(job_path)
         xassembly = self.parse( assembly_path)
         print assembly_path
         for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            print elt_img
             src_img = elt_img.get('src')
-            for imgfile in self.resolve_var_path(src_img, job_path):
+            for imgfile in self.resolve_var_path(src_img, xjob):
                 t = mimetypes.guess_type(imgfile)[0]
                 if t is None:
                     t = "application/octet-stream"
@@ -245,27 +247,76 @@ class kolektiBase(object):
                     varfilepath = '/'.join(path, attr_class)
                 else:
                     varfilepath = '/'.join(path, "sources", lang, "variables", attr_class)
-                for varfile in self.resolve_var_path(varfilepath, job_path):
+                for varfile in self.resolve_var_path(varfilepath, xjob):
                     t = mimetypes.guess_type(varfile)[0]
                     if t is None:
                         t = "application/octet-stream"
                     yield callback(varfile, t)
                     
-                    
+
     def copy_release(self, path, assembly_name, srclang, dstlang):
+        # copy images & variables
+        srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
+        for subdir in srcsubdirs:
+            srcpath = '%s/sources/%s/%s'%(path, srclang, subdir)
+            dstpath = '%s/sources/%s/%s'%(path, dstlang, subdir)
+            self.copyDirs(srcpath,dstpath)            
+            self.syncMgr.post_save(dstpath)
+            
+
+        # copy assembly / change language in references to images
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        try:
+            refdir = "/".join([path,'sources',dstlang,'assembly'])
+            self.makedirs(refdir)
+        except OSError:
+            logging.debug('makedir failed')
+        self.copy_resource(src_assembly_path, assembly_path)
+        xassembly = self.parse( assembly_path)
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang 
+                elt_img.set('src','/'.join(splipath))
+        self.xwrite(xassembly, assembly_path)
+
+
+        self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+
+        print assembly_path
+        yield assembly_path
+        return
+
+                                        
+    def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
         def copy_callback(respath, restype):
             splitpath = respath.split('/')
             if splitpath[1:3] == ["sources",srclang]:
                 splitpath[2] = dstlang
                 splitpath = [path]+splitpath
+                try:
+                    refdir = "/".join(splitpath.split('/')[:-1])
+                    self.makedirs(refdir)
+                except OSError:
+                    logging.debug('makedir failed')
+
                 respath = path + respath
                 self.copy_resource(respath, '/'.join(splitpath))
             return '/'.join(splitpath)
 
         for copiedfile in self.iter_release_assembly(path, assembly_name, srclang, copy_callback):
             yield copiedfile
-            print copiedfile
-        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly+'.html'])
+            print "copied",copiedfile
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        try:
+            refdir = "/".join([path,'sources',dstlang,'assembly'])
+            self.makedirs(refdir)
+        except OSError:
+            logging.debug('makedir failed')
+        self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
         for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
             src_img = elt_img.get('src')
