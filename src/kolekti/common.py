@@ -101,7 +101,7 @@ class kolektiBase(object):
             self.syncMgr = SynchroManager(self._path)
             self._syncstate = self.syncMgr.state()
         except ExcSyncNoSync:
-            pass
+            self._syncstate = None
         try:
             self.indexMgr = IndexManager(self._path)
         except:
