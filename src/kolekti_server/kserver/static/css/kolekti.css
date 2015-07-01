@@ -99,12 +99,35 @@ label {
     font-weight:100;
 }
 
-/* current menubar item */
-.navbar-inverse .navbar-nav>li>a {
-color: white;
+
+.navbar-inverse {
+ background-color: #428BCA;   
 }
-.menu-current {
-    /* color:#428bca !important;*/
+
+
+/* current menubar item */
+
+
+.navbar-inverse .navbar-nav>li>a {
+    color: #E0E0E0;
     font-weight:bold;
 }
 
+.menu-current {
+    background-color:#225BAA;
+}
+
+.menu-current>a {
+    color:white !important;
+    font-weight:bold;
+}
+
+
+/* project info bar */
+
+#navbar2 {
+    min-height:25px;
+    margin-bottom:-10px;
+}
+
+.top-margin { margin-top:10px; }

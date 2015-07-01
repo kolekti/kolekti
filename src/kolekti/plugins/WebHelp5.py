@@ -38,18 +38,17 @@ class plugin(pluginBase.plugin):
         main publication function
         """
         res = []
-        label = self.scriptdef.get('name')
         logging.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
 
         # copy libs from assembly space to publication directory
         
-        libsdir = os.path.join(self.getOsPath('/'.join([self.assembly_dir,self.get_base_template(label)])), 'lib')
-        libpdir = os.path.join(self.getOsPath(self.publication_dir), 'lib')
-        try:
-            shutil.rmtree(libpdir)
-        except:            
-            pass
-        shutil.copytree(libsdir, libpdir)
+#        libsdir = os.path.join(self.getOsPath('/'.join([self.assembly_dir,self.get_base_template(label)])), 'lib')
+#        libpdir = os.path.join(self.getOsPath(self.publication_dir), 'lib')
+#        try:
+#            shutil.rmtree(libpdir)
+#        except:            
+#            pass
+#        shutil.copytree(libsdir, libpdir)
 
 
         # ouvrir le fichier template
@@ -59,14 +58,14 @@ class plugin(pluginBase.plugin):
             tfile="%s.xht"%templatename
         else:
             tfile="%s.xht"%self._plugin
-            
-        template=self.parse('/'.join([self.assembly_dir,self.get_base_template(label),tfile]))
+        templatepath = '/'.join([self.assembly_dir,self.get_base_template(self.scriptname),tfile])
+        template=self.parse(templatepath)
 
         # copier les illustration et css
         # copier le logo
         try:
             logo=template.xpath("//html:span[@id='logo_visuel']",namespaces={'html':htmlns})[0].text
-            self.copy_file('/'.join(['medias',logo]),self.publication_dir)
+            self.copy_file('/'.join(['medias',logo]), self.publication_dir)
         except:
             pass
 
@@ -74,40 +73,38 @@ class plugin(pluginBase.plugin):
         self.copymedias()
         
 
-        pivot = self.filter_pivot(self.pivot)
+        # pivot = self.filter_pivot(self.pivot)
         
-        try:
-            filterfile="%s.xsl"%self.get_script_parameter('template')
-            filter=self.parse('/'.join([self.assembly_dir,self.get_base_template(label),filterfile]))
-            f=ET.XSLT(filter)
-            pivot=f(pivot)
-        except:
-            logging.debug("warning: Filter file not found: %s"%filterfile)
+        #try:
+        #    filterfile="%s.xsl"%self.get_script_parameter('template')
+        #    filter=self.parse('/'.join([self.assembly_dir,self.get_base_template(label),filterfile]))
+        #    f=ET.XSLT(filter)
+        #    pivot=f(pivot)
+        #except:
+        #    logging.debug("warning: Filter file not found: %s"%filterfile)
 
         # generer l'index pour recherche
         try:
-            self.makedirs('/'.join([self.publication_dir,'js']))
+            self.makedirs('/'.join([self.publication_plugin_dir,'js']))
         except:
             pass
-        idxx=self.index(pivot)
-        with open(self.getOsPath('/'.join([self.publication_dir,'js','index.js'])),'w') as iff:
+        idxx=self.index(self.pivot)
+        with open(self.getOsPath('/'.join([self.publication_plugin_dir,'js','index.js'])),'w') as iff:
             iff.write(idxx)
 
         css=self.get_script_parameter('css')
 
         # générer les pages
-        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self.lang)
-        templdir=self.getUrlPath('/'.join(['design','publication',self._plugin,'config']))+'/'
-        puburl=self.getUrlPath(self.publication_dir)
+        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self._publang)
+        puburl=self.getUrlPath(self.publication_plugin_dir)
+        templateurl=self.getUrlPath(templatepath)
         try:
-            doc=xslt(pivot,
+            doc=xslt(self.pivot,
                      pubdir=u"'%s'"%puburl,
                      css=u"'%s'"%css,
-                     templatedir=u"'%s'"%templdir,
-                     template=u"'%s'"%template,
-                     label=u"'%s'"%label,
+                     template=u"'%s'"%templateurl,
                      )
-            res.append({'type':"html", "label":label, "url": "%s/index.html"%self.publication_dir})
+            res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/index.html"%self.publication_plugin_dir})
         except:
             logging.error('WebHelp5: pages generation failed')
             import traceback
@@ -123,9 +120,9 @@ class plugin(pluginBase.plugin):
             if self.get_script_parameter('zip'):
                 from zipfile import ZipFile
                 #produire un zip
-                zipname="%s_%s.zip" %(self.profile.find('label').text, label)
-                top = self.getOsPath(self.publication_dir)
-                zf=os.path.join(top, zipname)
+                zipname="%s_%s.zip" %(self.publication_file, self.scriptname)
+                top = self.getOsPath(self.publication_plugin_dir)
+                zf=os.path.join(self.getOsPath(self.publication_dir), zipname)
                 with ZipFile(zf,"w") as zippy:
                     for root, dirs, files in os.walk(top):
                         for name in files:
@@ -134,7 +131,7 @@ class plugin(pluginBase.plugin):
                             rt=root[len(top) + 1:]
                             zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
 
-                res.append({'type':"zip", "label":label, "url": "%s/%s"%(self.publication_dir,zipname)})
+                res.append({'type':"zip", "label":zipname, "url": "%s/%s"%(self.publication_dir,zipname)})
                 #yield(self.publisher.view.publink('Zip', self.label, '%s/%s' %(linkurl, zipname)))
         except:
             logging.error('WebHelp5: zip archive generation failed')

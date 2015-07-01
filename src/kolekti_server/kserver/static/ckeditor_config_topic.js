@@ -1,8 +1,8 @@
 CKEDITOR.editorConfig = function( config ) {
-    config.autoGrow_onStartup = true;
-    config.contentsCss = '/criteria.css';
-    config.extraPlugins = 'codemirror,textselection';
-    config.entities = false;
+//    config.autoGrow_onStartup = true;
+//    config.contentsCss = '/criteria.css';
+//    config.extraPlugins = 'codemirror,textselection';
+//    config.entities = false;
 /*
 config.toolbarGroups = [
     { name: 'document',    groups: [ 'mode', 'document', 'doctools' ] },
@@ -22,6 +22,7 @@ config.toolbarGroups = [
     { name: 'about' }
 ];
 */
+/*
 config.toolbar_Full = [
 //    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Source', 'Save', 'NewPage', 'DocProps', 'Preview', 'Print', 'Templates', 'document' ] },
     { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
@@ -38,7 +39,7 @@ config.toolbar_Full = [
     { name: 'styles', items: [ 'Format' ] },
     { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat' ] },
 //    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', 'CreateDiv', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', 'BidiLtr', 'BidiRtl' ] }
-    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv' ] }
+    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv']} // , 'conditions'] }
 //    '/',
 //    { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 
@@ -46,4 +47,5 @@ config.toolbar_Full = [
   ];
 
   config.toolbar = "Full";
+*/
 };

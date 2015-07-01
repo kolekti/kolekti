@@ -33,13 +33,7 @@
 
   <xsl:template match="/">
     <h4>Paramètres de publication</h4>
-    <h2><span id="job_id"><xsl:value-of select='job/@id'/></span>
-    <span class="pull-right">
-      <button type="button" class="btn btn-default disabled hidden" id="btn_save" data-path="{$path}">
-	Enregistrer
-      </button>
-    </span>
-    </h2>
+    <h2><span id="job_id"><xsl:value-of select='job/@id'/></span></h2>
     <div id="job_body">
       <xsl:apply-templates select="/job/criteria"/>
       <xsl:apply-templates select="/job/profiles"/>
@@ -279,10 +273,10 @@
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="row">
 	      <div class="col-sm-6 col-xs-12">
-		<label for="script_suffix_{generate-id()}">Suffixe</label>
+		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
 	      </div>
 	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="script_suffix" class="script-suffix" id="script_suffix_{generate-id()}" value="{suffix}"/>
+		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value="{filename}"/>
 	      </div>
 	    </div>
 	  </div>
@@ -331,10 +325,11 @@
 	  <div class="col-sm-6 col-xs-12">
 	    <div class="row">
 	      <div class="col-sm-6 col-xs-12">
-		<label for="script_suffix_{generate-id()}">Suffixe</label>
+		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
 	      </div>
 	      <div class="col-sm-6  col-xs-12">
-		<input type="text" name="script_suffix" class="script-suffix" id="script_suffix_{generate-id()}" value=""/>
+		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value=""/>
+	
 	      </div>
 	    </div>
 	  </div>

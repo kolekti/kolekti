@@ -19,6 +19,7 @@ mimetypes.init()
 from lxml import etree as ET
 
 from exceptions import *
+from settings import settings
 from synchro import SynchroManager
 from searchindex import IndexManager
 
@@ -49,15 +50,15 @@ objpathes = {
 
  
 class kolektiBase(object):
-    def __init__(self, path):
+    def __init__(self, path, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
         try:
-            Config = ConfigParser.ConfigParser()
-            Config.read("kolekti.ini")
-            self._appdir = Config.get('InstallSettings','installdir')
+            Config = settings()
+            self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+
         # logging.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
@@ -67,7 +68,7 @@ class kolektiBase(object):
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
-        projectdir = os.path.basename(path)
+        projectdir = os.path.basename(self._path[:-1])
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
@@ -98,12 +99,14 @@ class kolektiBase(object):
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
+            self._syncstate = self.syncMgr.state()
         except ExcSyncNoSync:
             pass
         try:
             self.indexMgr = IndexManager(self._path)
         except:
-            pass
+            logging.debug('Search index could not be loaded')
+
         
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
@@ -141,7 +144,7 @@ class kolektiBase(object):
 
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
         
@@ -151,12 +154,8 @@ class kolektiBase(object):
         defs = os.path.join(self._appdir, 'pubscripts.xml')
         return ET.parse(defs).getroot()
 
-    def get_script(self, plugin):
-        # imports a script python module
-        import plugins
-        return plugins.getPlugin(plugin,self._path)
 
-    def get_directory(self, root=None):
+    def get_directory(self, root=None, filter=None):
         res=[]
         if root is None:
             root = self._path
@@ -164,17 +163,18 @@ class kolektiBase(object):
             root = self.__makepath(root)
         for f in os.listdir(root):
             pf = os.path.join(root, f)
-            d = datetime.fromtimestamp(os.path.getmtime(pf))
-            if os.path.isdir(pf):
-                t = "text/directory"
-                if os.path.exists(os.path.join(pf,'.manifest')):
-                    mf = ET.parse(os.path.join(pf,'.manifest'))
-                    t += "+" + mf.getroot().get('type')
-            else:
-                t = mimetypes.guess_type(pf)[0]
-                if t is None:
-                    t = "application/octet-stream"
-            res.append({'name':f, 'type':t, 'date':d})
+            if os.path.exists(pf) and (filter is None or filter(root,f)):
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                if os.path.isdir(pf):
+                    t = "text/directory"
+                    if os.path.exists(os.path.join(pf,'.manifest')):
+                        mf = ET.parse(os.path.join(pf,'.manifest'))
+                        t += "+" + mf.getroot().get('type')
+                else:
+                    t = mimetypes.guess_type(pf)[0]
+                    if t is None:
+                        t = "application/octet-stream"
+                res.append({'name':f, 'type':t, 'date':d})
         return res
 
     def get_tree(self, root=None):
@@ -199,6 +199,14 @@ class kolektiBase(object):
 
         return dir
 
+    def get_release_assemblies(self, path):
+        ospath= self.__makepath(path)
+        for f in os.listdir(os.path.join(ospath,'kolekti',"publication-parameters")):
+            if f.endswith(".json"):
+                pf = os.path.join(os.path.join(ospath,'kolekti',"publication-parameters",f))
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                yield (f[:-5], d)
+    
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
@@ -260,6 +268,13 @@ class kolektiBase(object):
             f.write(content)
         self.post_save(filename)
         
+    def write_chunks(self, chunks, filename):
+        ospath = self.__makepath(filename)
+        with open(ospath, "w") as f:
+            for chunk in chunks():
+                f.write(chunk)
+        self.post_save(filename)
+        
     def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
 
         ospath = self.__makepath(filename)
@@ -284,38 +299,49 @@ class kolektiBase(object):
     def move_resource(self, src, dest):
         try:
             self.syncMgr.move_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            shutil.move(self._makepath(src), self._makepath(dst))
-        self.indexMgr.move_resource(src, dest)
+            shutil.move(self.__makepath(src), self.__makepath(dst))
+        try:
+            self.indexMgr.move_resource(src, dest)
+        except:
+            logging.debug('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            shutil.copy(self._makepath(src), self._makepath(dst))
-        self.indexMgr.copy_resource(src, dest)
+            shutil.copy(self.__makepath(src), self.__makepath(dst))
+        try:
+            self.indexMgr.copy_resource(src, dest)
+        except:
+            logging.debug('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            if os.path.isdir(self._makepath(path)):
-                shutil.rmtree(self._makepath(path))
+            if os.path.isdir(self.__makepath(path)):
+                shutil.rmtree(self.__makepath(path))
             else:
-                os.unlink(self._makepath(path))
-            
-        self.indexMgr.delete_resource(path)
-        
+                os.unlink(self.__makepath(path))
+        try:
+            self.indexMgr.delete_resource(path)
+        except:
+            logging.debug('Search index unavailable')
+
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
-        except ExcSyncNoSync:
-            logging.info('Synchro unavailable')
-        self.indexMgr.post_save(path)
-        
+        except:
+            logging.debug('Synchro unavailable')
+        try:
+            self.indexMgr.post_save(path)
+        except:
+            logging.debug('Search index unavailable')
+
     def makedirs(self, path):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
@@ -363,6 +389,20 @@ class kolektiBase(object):
             return 'file://' + upath
 
 
+    def getUrlPath2(self, source):
+        path = self.__makepath(source)
+        # logging.debug(path)
+        
+        upath = path.replace(os.path.sep,"/")
+        print upath
+# upath = urllib.pathname2url(path.
+        if upath[:3]=='///':
+            return 'file:' + upath
+        if upath[0]=='/':
+            return 'file://' + upath
+        return 'file:///' + upath
+
+
     def getPathFromUrl(self, url):
         return os.path.join(url.split('/')[3:])
 
@@ -376,7 +416,7 @@ class kolektiBase(object):
             return aurl
 
     def _get_criteria_dict(self, profile):
-        criteria = profile.xpath("criteria/criterion")
+        criteria = profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):c.get('value',None)})
@@ -390,7 +430,7 @@ class kolektiBase(object):
         return criteria_dict
 
 
-    def substitute_criteria(self,string, profile, extra={}):
+    def substitute_criteria(self, string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
         #logging.debug(criteria_dict)
@@ -450,11 +490,14 @@ class kolektiBase(object):
 
     @property
     def itertocs(self):
+        def filter(root,f):
+            return os.path.splitext(f)[1]==".html" or os.path.splitext(f)[1]==".xml" 
+
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
             if 'tocs' in rootparts:
                 for file in files:
-                    if os.path.splitext(file)[-1] == '.html':
+                    if os.path.exists(os.path.join(root,file)) and filter(root,file):
                         yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
@@ -506,7 +549,7 @@ class kolektiBase(object):
                 # print release_params
                 
                 for job_params in release_params:
-                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_'+ lang +'_publications.json'))
+                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
                     resjob = {
                         'lang': lang,
                         'release':release_params,

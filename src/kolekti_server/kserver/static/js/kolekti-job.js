@@ -3,7 +3,6 @@ $(document).ready(function() {
     var enable_save = function() {
 	$('#btn_save').removeClass('disabled');
 	$('#btn_save').removeClass('btn-default');
-	$('#btn_save').removeClass('hidden');
 	$('#btn_save').addClass('btn-warning');
     }
 
@@ -58,12 +57,8 @@ $(document).ready(function() {
 		buf += "0"
 	    }
 	    buf += "'>"
-	    var suffix = $(e).find('.script-suffix').val();
-	    if (suffix.length) {
-		buf +='<suffix enabled="1">'+suffix+'</suffix>';
-	    } else {
-		buf +='<suffix enabled="0"/>';
-	    }
+	    var filename = $(e).find('.script-filename').val();
+	    buf +='<filename>' + filename + '</filename>';
 	    buf += "<parameters>";
 	    $(e).find(".script-parameter").each(function(i,s) {
 		var name=$(s).data('script-param-name');
@@ -98,7 +93,6 @@ $(document).ready(function() {
 	}).success(function(data) {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').addClass('hidden');
 	    $('#btn_save').removeClass('btn-warning');
 	});
     });
@@ -117,7 +111,7 @@ $(document).ready(function() {
     $('.script-param-menu-entry').on('click', function(e) {
 	var value = $(this).data('kolekti-param-value');
 	$(this).closest('.btn-group').find('.kolekti-param-value-menu').html($(this).html());
-	$(this).closest('.kolekti-crit').data('kolekti-param-value',$(this).data('kolekti-param-value'));
+	$(this).closest('.script-parameter').data('kolekti-param-value',value);
 	e.preventDefault();
 	enable_save();
     });

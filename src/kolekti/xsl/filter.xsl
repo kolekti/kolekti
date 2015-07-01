@@ -88,6 +88,7 @@
         <xsl:with-param name="listcond" select="$classcond"/>
       </xsl:call-template>
     </xsl:variable>
+
 <!--
     <xsl:message>condition : <xsl:value-of select="@class"/> [<xsl:value-of select="$cond"/>]</xsl:message>
 -->
@@ -228,10 +229,7 @@
     <xsl:choose>
       
      <xsl:when test="$criteria[@code=$predicat][@value]">
-<!--
-     <xsl:when test="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]">
--->
-        <!-- le critère est spécifié dans le profil et a une valeur -->
+       <!-- le critère est spécifié dans le profil et a une valeur -->
         <xsl:variable name="found">
 	  <xsl:choose>
 	    <xsl:when test="starts-with($values,'[')">
@@ -287,7 +285,7 @@
   <xsl:template name="value_in_list">
     <xsl:param name="value"/>
     <xsl:param name="list"/>
-    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>
+<!--    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>-->
     <xsl:choose>
       <xsl:when test="contains($list,',')">
         <xsl:choose>

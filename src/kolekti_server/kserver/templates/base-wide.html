@@ -1,0 +1,14 @@
+{% extends "page.html" %}
+
+{% block page-content %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 main">
+          <h1>{% block title %}{% endblock %}</h1>
+	  {% block content %}generic template{% endblock %}
+	</div>
+      </div>
+    </div>
+{% endblock %}
+
+

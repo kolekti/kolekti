@@ -46,12 +46,12 @@
   <xsl:template match="html:div[@class='section']">
     <div class="section panel panel-info">
       <div class="panel-heading">
-	<xsl:apply-templates select="*[not(self::html:a)]" mode="collapse"/>
+	<xsl:apply-templates select="*[not(self::html:a) and not(self::html:div[@class='section'])]" mode="collapse"/>
       </div>
 
       <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
 	<div class="panel-body">
-	  <xsl:apply-templates select="html:a"/>
+	  <xsl:apply-templates select="html:a|html:div[@class='section']"/>
 	</div>
       </div>
     </div>
@@ -104,6 +104,7 @@
   <xsl:template match="html:a[@rel='kolekti:topic']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="data-kolekti-topic-id"><xsl:value-of select="generate-id()"/></xsl:attribute>
       <xsl:attribute name="data-kolekti-topic-url">
 	<xsl:value-of select="kf:gettopic2(string(@href))"/>
       </xsl:attribute>

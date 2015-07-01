@@ -1,0 +1,27 @@
+{% extends "window.html" %}
+
+
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-browser.js"></script>
+{% endblock %}
+
+
+{% block page-content %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 main">
+	  <div class="main">
+	    <div class="title">
+	    </div>
+	    <div class="browserparent"
+		 data-editor="{{ editor }}"
+		 data-path="{{ path }}"
+		 data-funcnum="{{ funcnum }}">
+	    </div>
+	  </div>
+	  
+	</div>
+      </div>
+    </div>
+{% endblock %}

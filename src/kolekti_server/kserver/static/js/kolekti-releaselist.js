@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
     kolekti_browser({'root':'/releases',
+		     'url':"/browse/releases/",
 		     'parent':".browser",
 		     'title':" ",
 		     'titleparent':".title",
@@ -9,7 +10,8 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		document.location.href = '/releases/detail/?release='+path
+		document.location.href = '/releases/detail/?release='+path+'&lang='+kolekti.lang
+		
 /*
 		$.get('/releases/detail/',{'path':path})
 		    .success(function(data) {
