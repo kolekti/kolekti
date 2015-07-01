@@ -349,7 +349,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
     #    return HttpResponse("ok")
-        HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
+        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
@@ -380,8 +380,22 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
     def post(self, request):
-        pass
-    
+        release, assembly = request.GET.get('release',"").rsplit('/',1)
+         
+        lang=request.GET['lang']
+        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'.html'])
+        xassembly = self.parse(assembly_path)
+        xbody = self.parse_html_string(request.body)
+        body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
+        for e in xassembly.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
+            body.remove(e)
+        for e in xbody.xpath('/html/body/*'):
+            body.append(e)
+        xsl = self.get_xsl('django_assembly_save')
+        xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
+        self.xwrite(xassembly, assembly_path)
+        return HttpResponse(json.dumps({'status':'ok'}))
+
 
 
 class TopicsListView(kolektiMixin, TemplateView):
