@@ -83,13 +83,13 @@
       <div class="container-fluid">
 	<div class="row">
 	  <div class="col-sm-12">
-	    <div class="btn-toolbar" role="toolbar">
+	    <div class="btn-toolbar pull-right" role="toolbar">
 	      
 	    <div class="btn-group" role="group">
 	      {% block infobuttons %}
 	      <div class="btn-group" role="group">
 		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		  {{ active_project }}
+		  {{ active_project }} ({{ active_srclang }})
 		  <span class="caret"></span>
 		</button>
 		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
@@ -100,11 +100,12 @@
 	      </div>
 	    </div>
 	    <div class="btn-group" role="group">
-	      <button class="btn btn-xs btn-default dropdown-toggle" type="button" >
+	      <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
 		rev {{ syncinfo.revision.number }}
 	      </button>
 	    </div>
 	    {% block infobuttons_lang %}
+	    {% comment %}
 	    <div class="btn-group" role="group">
 
 	      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
@@ -118,6 +119,7 @@
 		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
 	      </ul>
 	    </div>
+	    {% endcomment %}
 	    {% endblock %}
 
 	    <div class="btn-group" role="group">
@@ -160,6 +162,7 @@
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/settings.js"></script>
     <script src="/static/js/kolekti-utils.js"></script>
+    <script src="/static/js/kolekti-common.js"></script>
     {% block extrascripts %}{% endblock %}
   </body>
 </html>
