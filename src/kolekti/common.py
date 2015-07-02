@@ -394,7 +394,6 @@ class kolektiBase(object):
         # logging.debug(path)
         
         upath = path.replace(os.path.sep,"/")
-        print upath
 # upath = urllib.pathname2url(path.
         if upath[:3]=='///':
             return 'file:' + upath
