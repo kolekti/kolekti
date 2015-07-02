@@ -163,14 +163,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     events.append({
                         'event':'error',
-                        'msg':"Impossible de copier les parametres du script",
+                        'msg':"Impossible de copier les parametres du script %s"%script.get('name'),
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         })
 
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    raise
+                    
 
         return assembly, assembly_dir, pubname, events 
 
