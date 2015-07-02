@@ -475,7 +475,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise
 
-                res, events = plugin(script, profile, assembly_dir, fpivot)
+                res = plugin(script, profile, assembly_dir, fpivot)
                 logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
