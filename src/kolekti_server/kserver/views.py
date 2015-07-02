@@ -95,18 +95,26 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         return projects
 
     def project_langs(self, project):
-        projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
-        return ([l.text for l in projectsettings.xpath('/settings/languages/lang')],
-                projectsettings.xpath('string(/settings/@sourcelang)'))
-            
+        try:
+            projectsettings  = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
+            return ([l.text for l in projectsettings.xpath('/settings/languages/lang')],
+                        projectsettings.xpath('string(/settings/@sourcelang)'))
+        except IOError:
+            return ['fr'],'fr'
     
     def get_context_data(self, data={}, **kwargs):
+        prj = self.user_settings.active_project
+        try:
+            ET.parse(os.path.join(settings.KOLEKTI_BASE, prj, 'kolekti', 'settings.xml'))
+        except IOError:
+            prj = None
+                     
         languages, default_lang = self.project_langs(self.user_settings.active_project)
         context = {}
         context['kolekti'] = self._config
         context['projects'] = self.projects()
         context['srclangs'] = languages
-        context["active_project"] = self.user_settings.active_project
+        context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
         context['syncinfo'] = self._syncstate
         context.update(data) 
@@ -205,6 +213,8 @@ class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
         context = self.get_context_data()
+        if context.get('active_project') is None:
+            return HttpResponseRedirect('/projects/') 
         return self.render_to_response(context)
 
 
