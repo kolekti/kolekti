@@ -1,5 +1,11 @@
 $(document).ready( function () {
 
+    $('.btn-lang').click(function() {
+	var lang = $(this).data('lang')
+	var release = $('#main').data('release')
+	window.location.href = "/releases/detail/?release="+release+"&lang="+lang;
+    })
+    
     /*
 
 Initialize ck editor for assembly editing 
@@ -9,11 +15,11 @@ Defines events for languages and release state in toolbar
     
     var editor = CKEDITOR.replace( 'editor1', {
 	autoGrow_onStartup : true,
+	height:"600px",
 	contentsCss : '/criteria.css',
 	extraPlugins : 'codemirror,textselection,conditions',
 	extraAllowedContent : 'var ins span *(*)',
 	entities : false,
-
 	filebrowserBrowseUrl: '/browse/ckbrowser',
 	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
 	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',

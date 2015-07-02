@@ -51,57 +51,22 @@
   </xsl:template>
 
 
-
-  <xsl:template match="/html">
-    <html xmlns="http://www.w3.org/1999/xhtml" >
-      <head>
-	<xsl:apply-templates select="body/div/div[@id='kolekti_meta']/ul/li" mode="meta"/>
-      </head>
-      <body>
-	<xsl:apply-templates select="body/div/div[@id='kolekti_body']/*"/>
-      </body>
-    </html>
+  <xsl:template match="html:img">
+    <xsl:choose>
+      <xsl:when test="starts-with(@src,$prefixrelease)">
+	<xsl:copy>
+	  <xsl:apply-templates select="@*"/>
+	  <xsl:attribute name="src">
+	    <xsl:value-of select="substring(@src, length($prefixrelease))"/>
+	  </xsl:attribute>
+	</xsl:copy>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:copy>
+	  <xsl:apply-templates select="node()|@*"/>
+	</xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
-
-  <xsl:template match="li[@data-tag='meta']" mode="meta">
-    <meta>
-      <xsl:if test="@data-name != 'None'">
-	<xsl:attribute name="name">
-	  <xsl:value-of select="@data-name"/>
-	</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@data-content != 'None'">
-	<xsl:attribute name="content">
-	  <xsl:value-of select="@data-content"/>
-	</xsl:attribute>
-      </xsl:if>
-    </meta>
-  </xsl:template>
-
-  <xsl:template match="li[@data-tag='title']" mode="meta">
-    <title>
-      <xsl:value-of select="@data-title"/>
-    </title>
-  </xsl:template>
-
-  <xsl:template match="li[@data-tag='link']" mode="meta">
-    <link>
-      <xsl:if test="@data-rel != 'None'">
-	<xsl:attribute name="rel">
-	  <xsl:value-of select="@data-rel"/>
-	</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@data-type != 'None'">
-	<xsl:attribute name="type">
-	  <xsl:value-of select="@data-type"/>
-	</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@data-href != 'None'">
-	<xsl:attribute name="href">
-	  <xsl:value-of select="@data-href"/>
-	</xsl:attribute>
-      </xsl:if>
-    </link>
-  </xsl:template>
-
+  
 </xsl:stylesheet>

@@ -18,14 +18,14 @@
 {% block infobuttons_lang %}
       {% for rlang, state in langstates %}
     <div class="btn-group" role="group">
-      <button class="btn btn-xs {% if rlang == lang %}btn-primary{% else %}btn-default{% endif %} btn-lang-{{ rlang }}" type="button">
-	{{ rlang }}
-      </button>
       {% if  state == "unknown" %}
       <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-copy" type="button" data-state="{{ state }}" data-lang="{{ rlang }}" title="Créer la version {{ rlang }}">
-	<span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+	<span class="state">{{ rlang }}</span>
       </button>
       {% else %}
+      <button class="btn btn-xs {% if rlang == lang %}btn-primary{% else %}btn-default btn-lang{% endif %} btn-lang-{{ rlang }}" data-lang="{{ rlang }}" type="button">
+	<strong>{{ rlang }}</strong
+      </button>
       <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-menu dropdown-toggle" type="button"
 	      title="{{ state }}"
 	      data-state="{{ state }}" 
@@ -165,7 +165,7 @@
 {% endblock %}
 
 {% block content %}
-<div id="main" class="release">
+<div id="main" class="release" data-release="{{release_path}}/{{assembly_name}}">
 
     <form method="POST">
       <textarea name="editor1" id="editor1" rows="100" cols="80">

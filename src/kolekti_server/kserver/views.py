@@ -155,12 +155,12 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         topiccontent = ''.join([str(xsl(t)) for t in topicbody])
         return topictitle, topicmetalist, topiccontent
 
-    def get_assembly_edit(self, path):
+    def get_assembly_edit(self, path, release_path=""):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        xsl = self.get_xsl('django_topic_edit')
+        xsl = self.get_xsl('django_assembly_edit')
         
-        content = ''.join([str(xsl(t)) for t in body])
+        content = ''.join([str(xsl(t, path="'%s'"%release_path)) for t in body])
         return content
     
     def get_tocs(self):
@@ -207,7 +207,10 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         # get userdir
         self.user_settings.active_srclang = language
         self.user_settings.save()
-        
+
+
+
+                
         
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
@@ -251,11 +254,13 @@ class ProjectsView(kolektiMixin, View):
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect = request.GET.get('redirect', None)
+        redirect = ''
+        #        redirect = request.META.get('HTTP_REFERER', '')
         self.project_activate(project)
-        if redirect is None:
+        if redirect == '':
             return super(ProjectsActivateView, self).get(request)
         else:
+            
             return HttpResponseRedirect(redirect)
 
 
@@ -341,28 +346,41 @@ class ReleaseStateView(kolektiMixin, TemplateView):
 class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
-        state = request.POST.get('state')
+        print "copy release"
+        try:
+            path, assembly_name = request.GET.get('release').rsplit('/',1)
+            srclang = request.POST.get('release_copy_from_lang')
+            dstlang = request.POST.get('release_lang')
+            print path, assembly_name, srclang, dstlang
+            #            return StreamingHttpResponse(
+            for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
+                pass
+        except:
+            import traceback
+            print traceback.format_exc()
+    #    return HttpResponse("ok")
+        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
     
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
-        path, assembly_name = request.GET.get('release').rsplit('/',1)
-        lang = request.GET.get('language', self.user_settings.active_srclang)
-        assembly_path = os.path.join(path,"sources",lang,"assembly",assembly_name+".html")
+        release_path, assembly_name = request.GET.get('release').rsplit('/',1)
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
-            'releasesinfo':self.release_details(path, lang),
+            'releasesinfo':self.release_details(release_path, lang),
             'success':True,
-            'assembly_path':path,
+            'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
-            'content':self.get_assembly_edit(assembly_path),
+            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
         })
         states = []
         for lang in context.get('srclangs',[]):
-            assembly_path = path+"/sources/"+lang+"/assembly/"+assembly_name+'.html'
-            if self.path_exists(assembly_path):
-                states.append(self.syncMgr.propget('release_state',assembly_path))
+            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'.html'
+            if self.path_exists(tr_assembly_path):
+                states.append(self.syncMgr.propget('release_state',tr_assembly_path))
             else:
                 states.append("unknown")
         print zip(context.get('srclangs',[]),states)
@@ -372,8 +390,22 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
     def post(self, request):
-        pass
-    
+        release, assembly = request.GET.get('release',"").rsplit('/',1)
+         
+        lang=request.GET['lang']
+        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'.html'])
+        xassembly = self.parse(assembly_path)
+        xbody = self.parse_html_string(request.body)
+        body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
+        for e in xassembly.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
+            body.remove(e)
+        for e in xbody.xpath('/html/body/*'):
+            body.append(e)
+        xsl = self.get_xsl('django_assembly_save')
+        xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
+        self.xwrite(xassembly, assembly_path)
+        return HttpResponse(json.dumps({'status':'ok'}))
+
 
 
 class TopicsListView(kolektiMixin, TemplateView):

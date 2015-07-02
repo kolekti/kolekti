@@ -45,9 +45,11 @@
     tr[class~="="] td{
        border: 2px solid purple;
        }
-       .=:before {
-           color:blue}
-       <xsl:apply-templates/>
+<!--
+    .=:before {
+       color:blue
+       }-->
+       <!-- <xsl:apply-templates/> -->
   </xsl:template>
 
   <xsl:template match="criterion">
