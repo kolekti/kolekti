@@ -102,8 +102,12 @@ class plugin(PublisherMixin,kolektiBase):
                 logging.debug('makedir failed')
                 import traceback
                 logging.debug(traceback.format_exc())
-
-            self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
+            try:
+                self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
+            except:
+                logging.debug('unable to copy media')
+                import traceback
+                logging.debug(traceback.format_exc())
 
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
