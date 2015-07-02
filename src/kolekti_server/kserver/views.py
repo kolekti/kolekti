@@ -743,7 +743,6 @@ class PublicationView(kolektiMixin, View):
         for chunck in sourceiter:
             nbchunck += 1
             chunck.update({'id':nbchunck})
-            print template.render(Context(chunck))
             yield template.render(Context(chunck))
         
     @classmethod
@@ -880,10 +879,8 @@ class TopicTemplatesView(kolektiMixin, View):
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
         pathes = request.GET.getlist('pathes[]',[])
-        print "usecases",pathes
         context={}
         for toc in self.itertocs:
-            print toc
             xtoc=self.parse(toc)
             for path in pathes:
                 if len(xtoc.xpath('//html:a[@href="%s"]'%path,namespaces={'html':'http://www.w3.org/1999/xhtml'})):
@@ -891,7 +888,6 @@ class TocUsecasesView(kolektiMixin, View):
                         context[path].append(toc)
                     except:
                         context[path]=[toc]
-        print context
         return HttpResponse(json.dumps(context),content_type="application/json")
 
 
