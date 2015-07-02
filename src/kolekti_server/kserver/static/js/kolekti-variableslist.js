@@ -62,6 +62,7 @@ $(document).ready(function() {
     var setup_varfile = function(browser, file_element, dir, filename){
 	$(file_element).find('.kolekti-browser-item-action').append(
 	    $('<a>', {'href':"/variables/ods?path="+dir+'/'+filename,
+		      'title':'générer fichier ods',
 		      'class':'btn btn-xs btn-primary',
 		      'html':[
 		      $('<span>', {'class':"glyphicon glyphicon-download-alt",
