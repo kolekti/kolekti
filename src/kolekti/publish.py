@@ -417,7 +417,6 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
-        events= []
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
@@ -475,7 +474,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise
 
-                res, events = plugin(script, profile, assembly_dir, fpivot)
+                res = plugin(script, profile, assembly_dir, fpivot)
                 logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
@@ -611,7 +610,7 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.debug(traceback.format_exc())
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
             raise
-        return res, events
+        return res
 
 
 
