@@ -98,7 +98,8 @@ class SynchroManager(object):
                                        get_all = True,
                                        update = True)
         for status in statuses:
-            item = {"path":status.path,
+            path = status.path[len(self._base):]
+            item = {"path":path,
                     "rstatus":status.repos_text_status,
                     "wstatus":status.text_status,
                     }
@@ -207,7 +208,10 @@ class SynchroManager(object):
 
     def commit(self, files, log_message):
         print files,log_message
-        commit_revision = self._client.checkin(files, log_message, recurse = True)
+        osfiles = []
+        for f in files:
+            osfiles.append(self.__makepath(f))
+        commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
 
     def diff(self, path):
@@ -242,6 +246,10 @@ class SynchroManager(object):
         ossrc = self.__makepath(src)
         osdst = self.__makepath(dst)
         self._client.copy(ossrc, osdst)
+
+    def add_resource(self,path):
+        ospath = self.__makepath(path)
+        self._client.add(ospath)
 
     def delete_resource(self,path):
         ospath = self.__makepath(path)

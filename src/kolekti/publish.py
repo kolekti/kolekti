@@ -163,14 +163,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     events.append({
                         'event':'error',
-                        'msg':"Impossible de copier les parametres du script",
+                        'msg':"Impossible de copier les parametres du script %s"%script.get('name'),
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         })
 
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    raise
+                    
 
         return assembly, assembly_dir, pubname, events 
 
@@ -837,6 +837,9 @@ class Releaser(Publisher):
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
         if self.syncMgr is not None :
             self.syncMgr.propset("release_state","edition",assembly_path)
+            self.syncMgr.add(assembly_path)
+            self.syncMgr.commit(assembly_path, "Release Creation")
+#            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
         return res
 
     # copies the job in release directory
