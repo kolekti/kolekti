@@ -31,6 +31,7 @@ class Publisher(PublisherMixin, kolektiBase):
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
         
+        
     def _variable(self, varfile, name):
         """returns the actual value for a variable in a given xml variable file"""
         fvar = self.get_base_variable(varfile)
@@ -61,7 +62,6 @@ class Publisher(PublisherMixin, kolektiBase):
                 path = self.process_path(refmod)
                 self.parse(path)
             except IOError:
-                print path
                 import traceback
                 yield  {
                         'event':'error',
@@ -80,6 +80,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
         
     def publish_assemble(self, xtoc, xjob):
+        events = []
         """create and return an assembly from the toc using the xjob critria for filtering"""
         assembly_dir = self.assembly_dir(xjob)
 
@@ -87,7 +88,6 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-
         
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
@@ -108,16 +108,43 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le dossier destination",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
             logging.debug("W: unable to create assembly directory")
             import traceback
             logging.debug(traceback.format_exc())
-            raise
-        
-        self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
+            return assembly, assembly_dir, pubname, events
+
+        try:
+            self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
+        except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le fichier assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
+            return assembly, assembly_dir, pubname, events
 
 
         logging.debug('********************************** create settings')
-        self.create_settings(xjob, pubname, assembly_dir)
+        try:
+            self.create_settings(xjob, pubname, assembly_dir)
+        except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le fichier de parametres",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
+            return assembly, assembly_dir, pubname, events
 
         logging.debug('********************************** copy scripts resources')
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
@@ -125,7 +152,8 @@ class Publisher(PublisherMixin, kolektiBase):
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             fassembly = s(assembly)
             logging.debug('********************************** copy media')
-            self.copy_media(fassembly, profile, assembly_dir)
+            for event in self.copy_media(fassembly, profile, assembly_dir):
+                events.append(event)
 
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
@@ -133,11 +161,18 @@ class Publisher(PublisherMixin, kolektiBase):
                     self.copy_script_params(script, profile, assembly_dir)
                 except:
                     import traceback
+                    events.append({
+                        'event':'error',
+                        'msg':"Impossible de copier les parametres du script",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
                     raise
 
-        return assembly, assembly_dir, pubname 
+        return assembly, assembly_dir, pubname, events 
 
 
 
@@ -162,7 +197,6 @@ class Publisher(PublisherMixin, kolektiBase):
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
                     import traceback
-                    print "Assembly Error"
                     logging.error("Assembly Error")
                     yield {
                         'event':'error',
@@ -302,9 +336,20 @@ class Publisher(PublisherMixin, kolektiBase):
                 logging.debug('makedir failed')
                 import traceback
                 logging.debug(traceback.format_exc())
+            try:
+                self.copyFile(ref, assembly_dir + '/' + ref)
+            except:
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"fichier introuvable %s"%(ref.encode('utf-8'),),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                
+        return
 
-            self.copyFile(ref, assembly_dir + '/' + ref)
-
+                
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
         name=script.get('name')
@@ -326,7 +371,6 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.error('Unable to copy script libs')
             import traceback
             logging.debug(traceback.format_exc())
-            print traceback.format_exc()
             raise
         
         params = {}
@@ -373,6 +417,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
+        events= []
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
@@ -430,7 +475,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.debug(traceback.format_exc())
                     raise
 
-                res = plugin(script, profile, assembly_dir, fpivot)
+                res, events = plugin(script, profile, assembly_dir, fpivot)
                 logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
@@ -566,7 +611,7 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.debug(traceback.format_exc())
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
             raise
-        return res
+        return res, events
 
 
 
@@ -719,7 +764,7 @@ class DraftPublisher(Publisher):
             return
         
         try:
-            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+            assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
         except:
             import traceback
             yield {
@@ -729,7 +774,10 @@ class DraftPublisher(Publisher):
                 'time':time.time(),
             }
             return
-        
+
+        for event in events:
+            yield event
+            
         logging.debug('********************************** PUBLISH ASSEMBLY')
         for pubres in self.publish_job(assembly, xjob.getroot()):
             yield pubres
@@ -776,7 +824,7 @@ class Releaser(Publisher):
         xjob.set('id',release_name)
         # assembly
         logging.debug('********************************** CREATE ASSEMBLY')
-        assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob)
+        assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
         res.append({"assembly_dir":assembly_dir,
                     "pubname":pubname,
                     "releasename":release_name,
