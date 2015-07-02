@@ -395,7 +395,7 @@ $(document).ready( function () {
 		$('#pub_results').html([
 		    $('<div>',{'class':"alert alert-danger",
 			       'html':[$('<h5>',{'html':"Erreur"}),
-				       $('<p>',{'html':"Une erreur innatendue est survenue lors de la publication"})
+				       $('<p>',{'html':"Une erreur inattendue est survenue lors de la publication"})
 
 				      ]}),
 		    $('<a>',{
@@ -669,7 +669,8 @@ $(document).ready( function () {
 	return topic_obj;
     } 
 
-    var create_topic_error_obj = function(path, id) {
+    var create_topic_error_obj = function(path, id, reason) {
+	reason = reason || "Module has errors"
 	var topicfile = displayname(path);
 
 	var topic_obj = $('<div>', {
@@ -686,7 +687,7 @@ $(document).ready( function () {
 			    'html':[
 				$('<span>',{
 				    'class':"glyphicon glyphicon-warning-sign",
-				    'title':"Impossible de charger le module",
+				    'title':reason,
 				    'html':" "}),
 				" ",
 				$('<span>',{
@@ -1007,24 +1008,32 @@ $(document).ready( function () {
     $('a').each(function(i,comp) {
 	if($(comp).attr('rel')=="kolekti:topic") {
 	    var path = $(this).data('kolekti-topic-url');
-	    var id = $(this).data('kolekti-topic-id');
+	    var idtopic = $(this).data('kolekti-topic-id');
+	    var topic;
 	    $.get(path)
 		.done(
 		    function(data){
 			if (data instanceof Document)
-			    var topic = data;
+			    topic = data;
 			else
-			    var topic = $.parseXML( data );
-			
-			var topic_obj = create_topic_obj(path, id, topic);
-			$(comp).after(topic_obj)
-			usecases(topic_obj);
-			$(comp).detach();
+			    try {
+				topic = $.parseXML( data );
+				var topic_obj = create_topic_obj(path, idtopic, topic);
+				$(comp).after(topic_obj)
+				usecases(topic_obj);
+				$(comp).detach();
+			    } catch (err) {
+				// was not XML
+				var id = Math.round(new Date().getTime() + (Math.random() * 100));
+				var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
+				$(comp).after(topic_obj)
+				$(comp).detach();
+			    }
 		    })
 		.fail(
 		    function(data){
 			var id = Math.round(new Date().getTime() + (Math.random() * 100));
-			var topic_obj = create_topic_error_obj(path, id);
+			var topic_obj = create_topic_error_obj(path, idtopic, "Module non trouvé");
 			$(comp).after(topic_obj)
 			$(comp).detach();
 		    });
