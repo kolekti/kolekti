@@ -55,7 +55,30 @@ class Publisher(PublisherMixin, kolektiBase):
         #return plugins.getPlugin(plugin,self._path)
 
 
+    def check_modules(self, xtoc):
+        for refmod in xtoc.xpath("//h:a[@rel = 'kolekti:topic']/@href",namespaces=self.nsmap):
+            try:
+                path = self.process_path(refmod)
+                self.parse(path)
+            except IOError:
+                print path
+                import traceback
+                yield  {
+                        'event':'error',
+                        'msg':"module %s non trouvé"%path.encode('utf-8'),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }  
+            except ET.XMLSyntaxError, e:
+                import traceback
+                yield  {
+                        'event':'error',
+                        'msg':"erreur dans %s : %s"%(path.encode('utf-8'), str(e)),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }  
 
+        
     def publish_assemble(self, xtoc, xjob):
         """create and return an assembly from the toc using the xjob critria for filtering"""
         assembly_dir = self.assembly_dir(xjob)
@@ -88,7 +111,8 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.debug("W: unable to create assembly directory")
             import traceback
             logging.debug(traceback.format_exc())
-            
+            raise
+        
         self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
 
 
@@ -138,6 +162,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
                     import traceback
+                    print "Assembly Error"
                     logging.error("Assembly Error")
                     yield {
                         'event':'error',
@@ -664,7 +689,7 @@ class DraftPublisher(Publisher):
     
     def publish_draft(self, toc, job, pubtitle=None):
         """ publishes a kolekti toc, with a job"""
-        
+        status = True
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("publish toc %s",toc)
@@ -685,7 +710,25 @@ class DraftPublisher(Publisher):
 
         # assembly
         logging.debug('********************************** CREATE ASSEMBLY')
-        assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+
+        for ev in self.check_modules(xtoc):
+            yield ev
+            status = (ev.get('event','') != 'error')
+
+        if not status:
+            return
+        
+        try:
+            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+        except:
+            import traceback
+            yield {
+                'event':'error',
+                'msg':"erreur lors de l'assemblage",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            return
         
         logging.debug('********************************** PUBLISH ASSEMBLY')
         for pubres in self.publish_job(assembly, xjob.getroot()):
