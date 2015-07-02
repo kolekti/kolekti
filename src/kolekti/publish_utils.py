@@ -33,7 +33,7 @@ class PublisherMixin(object):
 
         if self._publang is None:
             self._publang = self._config.get("sourcelang","en")
-
+        
                         
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
@@ -82,7 +82,6 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
 
     def criteria(self, _, *args):
         logging.debug('xslt ext criteria')
-        print "criteria"
         criteria = self._profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria.append(ET.XML('<criteria code="LANG" value="%s"/>'%(self._publang)))
         return criteria
