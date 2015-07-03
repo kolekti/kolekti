@@ -200,7 +200,7 @@ var kolekti_browser = function(args) {
     var titlepath = false
     var os_actions = false
     var create_actions = false
-    var create_builder = function(e){
+    var create_builder = function(e, path){
 	e.prepend(
 	    ['Nouveau fichier : ',
 	     $('<input>',{ 'type':"text",
@@ -279,7 +279,7 @@ var kolekti_browser = function(args) {
 	    if (!create_actions) {
 		$(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('.newfile_collapse div'))
+		create_builder($(parent).find('.newfile_collapse div'), path)
 	    }
 
 	    if (!os_actions) 

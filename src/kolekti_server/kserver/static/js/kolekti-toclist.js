@@ -10,7 +10,7 @@ $(document).ready(function() {
 	    )
     };
 
-    var create_builder = function(e) {
+    var create_builder = function(e, path) {
 	e.prepend(   
 	    ['Nouvelle trame : ',
 	     $('<input>',{ 'type':"text",
