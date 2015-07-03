@@ -36,10 +36,11 @@
 		     <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
 		     {{ e.path }} 
 		   </label>
+		   {% comment %}
 		   {% if e.kind == "file" %}
 		   <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
 		   {% endif %}
-		   
+		   {% endcomment %}
 		   <br>
 		 </div>
 		 {% endfor %}
@@ -94,9 +95,11 @@
 	       {% for e in changes.merge %}
 	       <li>
 		 {{ e.path }}
+		 {% comment %}
 		 {% if e.kind == "file" %}
 		 <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
 		 {% endif %}
+		 {% endcomment %}
 		 <br>
 	       </li>
 	       {% endfor %}
@@ -120,8 +123,12 @@
 	 <div class="panel-collapse collapse in" id="collapseSynchro">
 	   <div class="panel-body">
 	     <ul>
+	       
 	       {% for e in changes.update %}
-	       <li>{{ e.path }} {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}</li>
+	       <li>{{ e.path }}
+		 {% comment %}
+		 {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}		   {% endcomment %}
+	       </li>
 	       {% endfor %}
 	     </ul>
 	   </div>
@@ -147,12 +154,35 @@
 		     <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
 		     {{ e.path }} 
 		   </label>
-
+		   {% comment %}
 		   {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}
+		   {% endcomment %}
 		 </div>
 		 {% endfor %}
 	       </div>
 	     </div>
+
+	     <div class="form-group">
+	       <div class="col-sm-12">
+		 <div class="checkbox">
+		   <label>
+		     <input id="selectall" type="checkbox" value="">
+		     <small><em>Tout sélectionner / déselectionner</em></small>
+		   </label>
+		 </div>
+	       </div>
+	     </div>
+	     <hr/>
+		     
+
+	     <div class="form-group" id="commitmsg">
+	       <label class="col-sm-2 control-label">Description des changements</label>
+	       <div class="col-sm-10">
+		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+	       </div>
+	     </div>
+
+	     
 	   </div>
 	 </div>
 	 <button type="submit"  class="btn btn-success btn-block">Valider</button>
