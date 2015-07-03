@@ -36,8 +36,8 @@ $(document).ready(function() {
 
 
 
-    var upload_builder_builder = function(path) {
-	return upload_builder = function(e) {
+    var upload_builder_builder = function() {
+	return upload_builder = function(e, path) {
 	    e.prepend(   
 		['Transférer un fichier de variables ods : ',
 		 $('<form>', {'class':"upload_form",
@@ -94,7 +94,7 @@ $(document).ready(function() {
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder('/sources/'+kolekti.lang+'/variables')
+		     'create_builder':upload_builder_builder()
 		    })
 	.select(
 	    function(path) {
@@ -127,7 +127,7 @@ $(document).ready(function() {
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder('/sources/share/pictures')
+		     'create_builder':upload_builder_builder()
 		    })
 	.select(
 	    function(path) {
