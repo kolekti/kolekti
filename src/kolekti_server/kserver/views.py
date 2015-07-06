@@ -797,9 +797,13 @@ class DraftView(PublicationView):
             for jprofile in xjob.xpath('/job/profiles/profile'):
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
+                else:
+                    jprofile.set('enabled',"1")
             for jscript in xjob.xpath('/job/scripts/script'):
                 if not jscript.get('name') in scripts:
                     jscript.getparent().remove(jscript)
+                else:
+                    jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
             # print ET.tostring(xjob)
