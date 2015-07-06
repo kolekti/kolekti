@@ -202,12 +202,17 @@ class SynchroManager(object):
         update_revision = self._client.update(files, recurse = True)
         return update_revision
 
+    def revert(self, files):
+        osfiles = []
+        for f in files:
+            osfiles.append(self.__makepath(f))
+        self._client.revert(osfiles, recurse = True)
+
     def commit_all(self, log_message):
         commit_revision = self._client.checkin(self._base, log_message, recurse = True)
         return commit_revision 
 
     def commit(self, files, log_message):
-        print files,log_message
         osfiles = []
         for f in files:
             osfiles.append(self.__makepath(f))
