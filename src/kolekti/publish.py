@@ -836,7 +836,7 @@ class Releaser(Publisher):
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
         if self.syncMgr is not None :
             self.syncMgr.propset("release_state","edition",assembly_path)
-            self.syncMgr.add(assembly_path)
+#            self.syncMgr.add_resource(assembly_path)
             self.syncMgr.commit(assembly_path, "Release Creation")
 #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
         return res
