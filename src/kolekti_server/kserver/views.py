@@ -223,12 +223,14 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-    def get(self, request, require_svn_auth="False"):
-
+    def get(self, request, require_svn_auth=False, project_folder=None, project_url=None):
+        
         context = self.get_context_data({
                     "active_project" :self.user_settings.active_project.encode('utf-8'),
                     "active_srclang":self.user_settings.active_srclang,
                     "require_svn_auth":require_svn_auth,
+                    "projectfolder":project_folder,
+                    "projecturl":project_url,
                     })
             
         return self.render_to_response(context)
@@ -239,17 +241,17 @@ class ProjectsView(kolektiMixin, View):
         username = request.POST.get('username',None)
         password = request.POST.get('password',None)
         from kolekti.synchro import SVNProjectManager
-        sync = SVNProjectManager(settings.KOLEKTI_BASE)
+        sync = SVNProjectManager(settings.KOLEKTI_BASE,username,password)
         if project_url=="":
         # create local project
             sync.export_project(project_folder)
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
-            except pysvn.ClientError:
-                pass
-        return self.get(request)
-
+                return self.get(request)
+            except ExcSyncNoSync:
+                return self.get(request, True, project_folder, project_url)
+            
 
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
