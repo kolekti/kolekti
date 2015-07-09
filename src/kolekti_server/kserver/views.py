@@ -406,7 +406,27 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         self.xwrite(xassembly, assembly_path)
         return HttpResponse(json.dumps({'status':'ok'}))
 
+class ReleasePublishView(kolektiMixin, TemplateView):
+    def post (self, request):
+        release, assembly = request.GET.get('release',"/").rsplit('/',1)
+        langs = request.POST.getlist('langs[]',[])
+        context={}
+        
+        xjob = self.parse(jobpath)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        try:
+            p = publish.ReleasePublisher(projectpath, langs=langs)
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release, assembly)), content_type="text/html")
 
+        except:
+            import traceback
+            self.loghandler.flush()
+            print self.loggerstream
+            context.update({'success':False})
+            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
 
 class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"

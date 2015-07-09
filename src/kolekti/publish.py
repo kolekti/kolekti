@@ -858,6 +858,9 @@ class Releaser(Publisher):
 
 class ReleasePublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        if kwargs.has_key('langs'):
+            self._publangs = kwargs.get('langs')
+            kwargs.pop('langs')
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
     def assembly_dir(self, xjob):
@@ -871,16 +874,18 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
-        assembly_dir = 'releases/' + release
-        try:
-            xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
-        except:
-            logging.error("unable to read assembly %s"%assembly)
-            import traceback
-            logging.debug(traceback.format_exc())
+        for lang in self._publangs:
+            self._publang = lang
+            assembly_dir = 'releases/' + release
+            try:
+                xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+            except:
+                logging.error("unable to read assembly %s"%assembly)
+                import traceback
+                logging.debug(traceback.format_exc())
             
-        xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+            xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
-        for pubres in self.publish_job(xassembly, xjob.getroot()):
-            yield pubres
+            for pubres in self.publish_job(xassembly, xjob.getroot()):
+                yield pubres
         return 
