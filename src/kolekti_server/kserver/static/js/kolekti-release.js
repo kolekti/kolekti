@@ -6,7 +6,7 @@ $(document).ready( function () {
 	window.location.href = "/releases/detail/?release="+release+"&lang="+lang;
     })
     
-    /*
+/*
 
 Initialize ck editor for assembly editing 
 Defines events for languages and release state in toolbar
@@ -111,6 +111,8 @@ Defines events for languages and release state in toolbar
 
     $('.release-state').on('click', function() {
 	var targetlang = $(this).closest('ul').data('target-lang');
+	var oldstate = $('.btn-lang-menu-'+targetlang).data('state')
+	$('.btn-lang-menu-'+targetlang).removeClass('btn-lang-menu-'+oldstate)
 	$.ajax({
 	    url:"/releases/state/"+window.location.search,
 	    method:'POST',
@@ -120,14 +122,22 @@ Defines events for languages and release state in toolbar
 	    })
 	}).done(function(data) {
 	    $('.btn-lang-menu-'+targetlang+' img').attr('src','/static/img/release_status_'+data+'.png')
+	    $('.btn-lang-menu-'+targetlang).addClass('btn-lang-menu-'+data)
+	    $('.btn-lang-menu-'+targetlang).data('state', data)
+	    $('.btn-lang-menu-'+targetlang).attr('data-state', data)
 	})
 	
     })
 
-    var get_publish_langs = function(what) {
-	if (what == "all") {
+    var get_publish_languages = function(all_languages) {
+	if (all_languages) {
+	    var langs = []
+	    $('#kolekti_tools .btn-lang-menu-publication').each( function() {
+		langs.push($(this).prev().first().data('lang'));
+	    });
+	    return langs;
 	} else {
-	    
+	    return [ $('#kolekti_tools .btn-primary').first().data('lang') ]
 	}
     }
 
@@ -139,13 +149,13 @@ Defines events for languages and release state in toolbar
 	$('.modal-title').html('Publication');
 	$('.modal-footer button').html('fermer');
 	$('.modal').modal();
-	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
+	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
 	//params = get_publish_params(job)
-	
+	var params = {}
 	var release = $('#main').data('release')
 	params['release']=release;
-	params['langs']= ??;
-	    
+	var alllang = ($(this).attr('id') == "btn_publish_all")
+	params['langs']= get_publish_languages(alllang);
 	var streamcallback = function(data) {
 	    $("#pub_results").html(data);
 	}

@@ -114,8 +114,6 @@ var streamedTransport = function(streamCallback) {
 			
 			else if ( callback ) {
 			    callback = xhr.onload = xhr.onerror = null;
-			    console.log(type)
-			    console.log(xhr.readyState)
 			    //console.log(xhr.responseText)
 			    if ( type === "abort" ) {
 				xhr.abort();
