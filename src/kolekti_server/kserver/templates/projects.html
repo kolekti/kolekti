@@ -3,10 +3,6 @@
 
 {% block current_tools %}menu-current{% endblock %}
 
-
-
-
-
 {% block title %}Gestion des projets{% endblock %}
 
 
@@ -84,12 +80,22 @@
     <form method="POST">
       <div class="form-group">
 	<label for="project">Dossier projet</label>
-	<input type="text" class="form-control" id="project" name="projectfolder" placeholder="Entrez le nom du dossier projet">
+	<input type="text" class="form-control" id="project" name="projectfolder" placeholder="Entrez le nom du dossier projet" value="{{ projectfolder }}">
       </div>
       <div class="form-group">
 	<label for="project">URL du dépot svn <br/>(laisser vide pour un projet local)</label>
-	<input type="url" class="form-control" id="svn" name="projecturl" placeholder="Entrez une URL">
+	<input type="url" class="form-control" id="svn" name="projecturl" placeholder="Entrez une URL" value="{{ projecturl }}">
       </div>
+      {% if require_svn_auth %}
+      <div class="form-group">
+	<label for="project">Utlisateur</label>
+	<input type="text" class="form-control" id="username" name="username" placeholder="Utilisateur">
+      </div>
+      <div class="form-group">
+	<label for="project">Mot de passe</label>
+	<input type="password" class="form-control" id="password" name="password">
+      </div>
+      {% endif %}
       <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-10">
 	  <button type="submit" class="btn btn-default">Créer</button>

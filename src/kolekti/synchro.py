@@ -280,7 +280,7 @@ class SVNProjectManager(object):
         self._projectsroot = projectsroot
         self._client = pysvn.Client()
         self.__username = username
-        self.__password = passward
+        self.__password = password
         #self._client.callback_get_log_message = get_log_message
         def get_login( realm, username, may_save ):
             if username == self.__username:
@@ -294,4 +294,9 @@ class SVNProjectManager(object):
         
     def checkout_project(self, folder, url):
         ospath = os.path.join(self._projectsroot, folder)
-        self._client.checkout(url, ospath)
+        try:
+            self._client.checkout(url, ospath)
+        except pysvn.ClientError:
+            import traceback
+            print traceback.format_exc()
+            raise ExcSyncNoSync
