@@ -209,6 +209,12 @@ class Publisher(PublisherMixin, kolektiBase):
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
+                        yield {
+                            'event':'result',
+                            'script':script.get('name'),
+                            'docs':resscript,
+                            'time':time.time(),
+                            }
                     except:
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
@@ -219,12 +225,6 @@ class Publisher(PublisherMixin, kolektiBase):
                             'time':time.time(),
                             }
                         logging.debug(traceback.format_exc())
-                    yield {
-                        'event':'result',
-                        'script':script.get('name'),
-                        'docs':resscript,
-                        'time':time.time(),
-                        }
 
 #                res.append({'profile':profile.find('label').text,
 #                            'scripts':resscripts,
