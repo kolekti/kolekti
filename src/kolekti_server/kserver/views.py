@@ -209,6 +209,14 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         self.user_settings.save()
 
 
+    def format_iterator(self, sourceiter):
+        template = get_template('publication-iterator.html')
+        nbchunck = 0
+        for chunck in sourceiter:
+            nbchunck += 1
+            chunck.update({'id':nbchunck})
+            yield template.render(Context(chunck))
+        
 
                 
         
@@ -410,11 +418,13 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
 class ReleasePublishView(kolektiMixin, TemplateView):
     def post (self, request):
-        release, assembly = request.GET.get('release',"/").rsplit('/',1)
+        release, assembly = request.POST.get('release',"/").rsplit('/',1)
         langs = request.POST.getlist('langs[]',[])
         context={}
         
-        xjob = self.parse(jobpath)
+#        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
+#        print jobpath
+#        xjob = self.parse(jobpath)
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
         try:
             p = publish.ReleasePublisher(projectpath, langs=langs)
@@ -422,8 +432,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
 
         except:
             import traceback
-            self.loghandler.flush()
-            print self.loggerstream
+            print traceback.format_exc()
             context.update({'success':False})
             context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
@@ -791,14 +800,6 @@ class PublicationView(kolektiMixin, View):
         rl = logging.getLogger('')
         rl.addHandler(self.loghandler)
 
-    def format_iterator(self, sourceiter):
-        template = get_template('publication-iterator.html')
-        nbchunck = 0
-        for chunck in sourceiter:
-            nbchunck += 1
-            chunck.update({'id':nbchunck})
-            yield template.render(Context(chunck))
-        
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(PublicationView, cls).as_view(**initkwargs)

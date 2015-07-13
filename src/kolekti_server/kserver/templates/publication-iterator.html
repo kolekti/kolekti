@@ -1,6 +1,8 @@
 {% load timetags %}
 <div class="publication_msg">
-  {% if event == "job" %}
+  {% if event == "lang" %}
+  <h3>Langue {{ label }}</h3>
+  {% elif event == "job" %}
   <h4>Job {{ label }}</h4>
   {% elif event == "profile" %}
   <h5>Profile {{ label }}</h5>
