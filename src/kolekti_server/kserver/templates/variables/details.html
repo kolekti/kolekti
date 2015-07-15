@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block current_settings %}class="menu-current"{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-variables.css"></script>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-variables.js"></script>
+{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+<h2>{{ name }}</h2>
+<div id="main">
+  <table class="table ">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+    
+{% endblock %}
+{% block menu %}
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save"
+		data-path = "{{ path }}">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+    <hr/>
+
+    <div class="sidebtns">
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default" id="btn_add_var">
+	  Ajouter Variable
+	</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default" id="btn_add_col">
+	  Ajouter Colonne
+	</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-block">
+	  <button type="button" class="btn btn-block btn-default dropdown-toggle" data-toggle="dropdown" id="btn_add_crit">
+	    Ajouter Critère
+	    <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu" role="menu" id="list_add_crit">
+	  </ul>
+	</div>
+      </div>
+    </div>
+
+    </div>
+{% endblock %}

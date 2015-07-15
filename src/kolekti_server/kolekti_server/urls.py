@@ -25,7 +25,7 @@ urlpatterns = patterns('',
 
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
-    url(r'^variables/details$', VariablesDetailsView.as_view(), name='variabledetails'),
+    url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
     url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
 
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
@@ -41,6 +41,7 @@ urlpatterns = patterns('',
     url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
+    url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
     url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
     url(r'^settings/jobs/create/', JobCreateView.as_view(), name='jobcreate'),

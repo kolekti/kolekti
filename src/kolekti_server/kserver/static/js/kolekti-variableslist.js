@@ -98,22 +98,7 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		$.get('/variable/details?path='+path)
-		    .done(
-			function(data) {
-/*
-			    $('.modal-title').html(displayname(path));
-			    $('.modal-body').html(data);
-			    $('.modal').modal();
-*/
-			    $('#preview').html([
-				$('<h4>',{'html':displayname(path)}),
-				data
-			    ]);
-			    $('#preview img').attr('src',path);
-
-			}
-		    )
+		window.location.href = "/variables/detail/?path="+path;
 	    })
 	.create(upload_varfile)
 	.setup_file(setup_varfile);
@@ -131,20 +116,7 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		$.get('/varaibles/edit?path='+path)
-		    .done(
-			function(data) {
-/*
-			    $('.modal-title').html(displayname(path));
-			    $('.modal-body').html(data);
-			    $('.modal').modal();
-*/
-			    $('#preview').html([
-				$('<h4>',{'html':displayname(path)}),
-				data
-			    ]);
-			}
-		    )
+		window.location.href = "/variables/detail/?path="+path;
 	    }
 	)
 	.create(upload_varfile)

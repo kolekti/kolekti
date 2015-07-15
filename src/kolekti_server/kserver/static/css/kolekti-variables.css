@@ -1,0 +1,10 @@
+.table td,
+.table th {
+    border: 1px solid #ddd;
+}
+
+.table>thead>tr.colheaders,
+.table>thead>tr.colheaders>td {
+    border:none;
+    padding:0;
+}
