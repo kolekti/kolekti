@@ -491,6 +491,19 @@ class VariablesDetailsView(kolektiMixin, TemplateView):
             })
         return self.render_to_response(context)
 
+    def post(self, request):
+        try:
+            xvar = self.parse_string(request.body)
+            varpath = request.GET.get('path')
+            self.xwrite(xvar, varpath)
+            return HttpResponse('ok')
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+
+
+    
 class VariablesUploadView(kolektiMixin, TemplateView):
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
@@ -536,12 +549,19 @@ class SettingsJsView(kolektiMixin, TemplateView):
         """%(self.user_settings.active_srclang,)
         return HttpResponse(settings_js,content_type="text/javascript")
     
+class SettingsJsonView(kolektiMixin, TemplateView):
+    template_name = "settings/list.html"
+    def get(self, request):
+        context = self.get_context_data()
+        context.pop('syncinfo')
+        return HttpResponse(json.dumps(context),content_type="application/json")
+        
+
 class SettingsView(kolektiMixin, TemplateView):
     template_name = "settings/list.html"
 
     def get(self, request):
         context = self.get_context_data()
-#        context.update({'jobs':self.get_jobs()})
         return self.render_to_response(context)
 
 class JobCreateView(kolektiMixin, View):
