@@ -128,7 +128,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         if len(toctitle) == 0:
             toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         for meta in xtoc.xpath('/html:html/html:head/html:meta', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
-            tocmeta.update({meta.get('name').replace('.','_'):meta.get('content')})
+            if meta.get('name',False):
+                tocmeta.update({meta.get('name').replace('.','_'):meta.get('content')})
         tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
