@@ -13,6 +13,7 @@ Defines events for languages and release state in toolbar
 
 */
     
+/*
     var editor = CKEDITOR.replace( 'editor1', {
 	autoGrow_onStartup : true,
 	height:"600px",
@@ -88,7 +89,7 @@ Defines events for languages and release state in toolbar
             e.message = 'le document a été modifié, voulez vous réélement quitter sans enregistrer ?';
 	}
     });
-
+*/
 /*
 
 	if (savestate) {
@@ -104,12 +105,11 @@ Defines events for languages and release state in toolbar
     $('.btn-lang-copy').on('click', function() {
 	var state = $(this).data('state');
 	var lang  = $(this).data('lang');
-	$('#modalform').attr('action','/releases/copy/'+window.location.search);
-	$('#modalform input[name=release_lang]').attr('value',lang);
-	$('.modal').modal();
     });
 
+    
     $('.release-state').on('click', function() {
+	
 	var targetlang = $(this).closest('ul').data('target-lang');
 	var oldstate = $('.btn-lang-menu-'+targetlang).data('state')
 	$('.btn-lang-menu-'+targetlang).removeClass('btn-lang-menu-'+oldstate)
@@ -141,7 +141,38 @@ Defines events for languages and release state in toolbar
 	}
     }
 
+
+    $('#release_tabs a').click(function (e) {
+	e.preventDefault()
+	var lang  = $(this).data('lang');
+	var state = $(this).data('state');
+	if (state == "unknown") {
+	    $('#modalform').attr('action','/releases/copy/'+window.location.search);
+	    $('#modalform input[name=release_lang]').attr('value',lang);
+	    $('.modal').modal();
+	} else {
+	    $('#main').data('lang', lang)
+	    load_assembly();
+	}
+    })
+
+    // content loading function
+    var load_assembly = function() {
+	$.get('/releases/assembly',{
+	    'release':$('#main').data('release'),
+	    'lang':$('#main').data('lang')
+	}).success(function(data) {
+	    $('#content_'+$('#main').data('lang')).html(data)
+	})
+    }
+    load_assembly();
+
+
+
+
+    
     // publication button
+
     $('.btn_publish').on('click', function() {
 	var url='/releases/publish/'
 
