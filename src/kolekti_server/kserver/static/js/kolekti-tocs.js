@@ -57,7 +57,7 @@ $(document).ready( function () {
 		buf += domelt.nodeValue;
 	    }
 	}
-	return buf;			    
+	return buf;		    
     }
 
     // builds the contaxtual menu for any topic entry in the toc
@@ -359,8 +359,8 @@ $(document).ready( function () {
 //	    if (!$(e).hasClass('hidden')) {
 //		nojob = false;
 
-	var job = $('#toc_root').data('kolekti-meta-job');
-	var jobpath =  $('#toc_root').data('kolekti-meta-jobpath');
+	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
+	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
 //	var idjob = $(e).attr('id');
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
 	params = get_publish_params(job)
@@ -459,10 +459,11 @@ $(document).ready( function () {
 	enable_save()
     })
 
+
     $('body').on('change','#input_toc_pubdir', function(e) {
 	var title = $.trim($(this).val());
-	$('#toc_root').data('kolekti-meta-pubdir',title)
-	$('#toc_root').attr('data-kolekti-meta-pubdir',title)
+	$('#toc_root').data('kolekti-meta-kolekti_pubdir',title)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_pubdir',title)
 	enable_save()
     })
 
@@ -470,10 +471,10 @@ $(document).ready( function () {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
 
-	$('#toc_root').data('kolekti-meta-job',name)
-	$('#toc_root').attr('data-kolekti-meta-job',name)
-	$('#toc_root').data('kolekti-meta-jobpath',path)
-	$('#toc_root').attr('data-kolekti-meta-jobpath',path)
+	$('#toc_root').data('kolekti-meta-kolekti_job',name)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_job',name)
+	$('#toc_root').data('kolekti-meta-kolekti_jobpath',path)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_jobpath',path)
 	$('#editjoblink').attr('href','/settings/job?path='+path)
 	$('.label_job').each(function(i,e) {
 	    $(e).html(name)}

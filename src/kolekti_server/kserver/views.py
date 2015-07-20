@@ -11,7 +11,7 @@ try:
 except ImportError:
     from StringIO import StringIO
    
-from models import Settings
+from models import Settings, ReleaseFocus
 from forms import UploadFileForm
 
 from django.http import Http404
@@ -123,9 +123,12 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def get_toc_edit(self, path):
         xtoc = self.parse(path)
         tocmeta = {}
-        toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        for meta in xtoc.xpath('/html:html/html:head/html:meta[starts-with(@name, "kolekti.")]', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
-            tocmeta.update({meta.get('name')[8:]:meta.get('content')})
+        toctitle = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.title"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+
+        if len(toctitle) == 0:
+            toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        for meta in xtoc.xpath('/html:html/html:head/html:meta', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+            tocmeta.update({meta.get('name').replace('.','_'):meta.get('content')})
         tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
@@ -371,6 +374,15 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     #    return HttpResponse("ok")
         return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
     
+class ReleaseAssemblyView(kolektiMixin, TemplateView):
+    def get(self, request):
+        release_path, assembly_name = request.GET.get('release').rsplit('/',1)
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
+        content = self.get_assembly_edit(assembly_path, release_path=release_path),
+        return HttpResponse(content)
+    
+        
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
     def get(self, request):
@@ -384,17 +396,24 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
-            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
+#            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
         })
         states = []
+        focus = []
         for lang in context.get('srclangs',[]):
             tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'.html'
             if self.path_exists(tr_assembly_path):
                 states.append(self.syncMgr.propget('release_state',tr_assembly_path))
             else:
                 states.append("unknown")
-        print zip(context.get('srclangs',[]),states)
-        context.update({'langstates':zip(context.get('srclangs',[]),states)})
+            try:
+                focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang))
+            except:
+                import traceback
+                print traceback.format_exc()
+                focus.append(False)
+                
+        context.update({'langstates':zip(context.get('srclangs',[]),states,focus)})
         #print json.dumps(context, indent=2)
         return self.render_to_response(context)
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
@@ -894,9 +913,9 @@ class ReleaseView(PublicationView):
             pp = r.make_release(tocpath, xjob)
 
 
-            release_dir = pp[0]['assembly_dir'].replace('/releases/','')
+            release_dir = pp[0]['assembly_dir']
             
-            p = publish.ReleasePublisher(projectpath, lang=self.user_settings.active_srclang)
+            p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
             return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
 
         except:
