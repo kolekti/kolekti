@@ -73,12 +73,12 @@
 		 id='input_toc_pubdir'
 		 value="{{ tocmeta.kolekti_pubdir }}"/>
 
-
-	  <h5>
-	  Fichier de paramètres
-	  </h5>
-	  <span class="btn-group">
-	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
+<hr/>
+	  
+	  Paramètres :
+	  
+	  <span class="btn-group align-right">
+	    <button type="button" class="btn btn-xs btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
 	      <span class="label_job">{{ tocmeta.kolekti_job|urlbasename }}</span>
 	      <span class="caret"></span>
 	    </button>
@@ -93,6 +93,7 @@
 	      {% endfor %}
 	    </ul>
 	  </span>
+	  
 	  {% comment %}
 	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
 	  {% endcomment %}
