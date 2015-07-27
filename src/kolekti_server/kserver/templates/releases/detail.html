@@ -205,7 +205,24 @@
       <div class="tab-content ">
 	{% for rlang, state, focus in langstates %}
 	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
-	  <div class="panel">
+	  {% if state == "unknown" %}
+
+	  <div class="panel panel-info">
+	    <div class="panel-heading">
+	      
+	      <p>Cette version n'existe pas pour cette langue, veuillez sélectionner la langue à partir de laquelle la nouvelle version doit être créée</p>
+	      <select name="release_copy_from_lang">
+		{% for mrlang, mstate in langstates %}
+		<option value="{{ mrlang }}">{{ mrlang }}</option>
+		{% endfor %}
+	      </select>
+	      <input type="hidden" name="release_lang" value="{{ lang }}"/>
+	    </div>
+	  </div>
+	  
+	  {% else %}
+	  
+	  <div class="panel panel-infodefault">
 	    <div class="panel-body">
 	      Statut :
 	      <div class="btn-group">
@@ -225,16 +242,17 @@
 		  <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
 		</ul>
 	      </div>
-
-	      <input type="checkbox" id="focus_{{ lang }}">Focus</input>
 	      
+	      <input type="checkbox" id="focus_{{ lang }}">Focus</input>
 	    </div>
 	  </div>
 	  
-
 	  <div id="content_{{ rlang }}">
 	  </div>
+	  {% endif %}
+	  
 	</div>
+
  	{% endfor %}
    </div>
 
@@ -294,13 +312,6 @@
 
 
 {% block modal-body %}
-<p>Cette version n'existe pas pour cette langues, veuillez sélectionner la langue à partir de laquelle la nouvelle version doit être créée</p>
-<select name="release_copy_from_lang">
-     {% for rlang, state in langstates %}
-     <option value="{{ rlang }}">{{ rlang }}</option>
-     {% endfor %}
-</select>
-<input type="hidden" name="release_lang" value="{{ lang }}"/>
 {% endblock %}
 
 {% block modal-title %}Dupliquer une version{% endblock %}
