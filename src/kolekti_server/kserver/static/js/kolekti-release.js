@@ -146,11 +146,7 @@ Defines events for languages and release state in toolbar
 	e.preventDefault()
 	var lang  = $(this).data('lang');
 	var state = $(this).data('state');
-	if (state == "unknown") {
-	    $('#modalform').attr('action','/releases/copy/'+window.location.search);
-	    $('#modalform input[name=release_lang]').attr('value',lang);
-	    $('.modal').modal();
-	} else {
+	if (state != "unknown") {
 	    $('#main').data('lang', lang)
 	    load_assembly();
 	}
