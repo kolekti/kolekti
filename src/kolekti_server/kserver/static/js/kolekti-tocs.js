@@ -339,41 +339,48 @@ $(document).ready( function () {
 	
     })
 
-
+    
     $('.btn_publish').on('click', function() {
 	var url='/publish/'
 
-	if ($(this).attr('id') == 'btn_release') {
-	    url += 'release/'
-	} else {
-	    url += 'draft/'
-	}
-	$('.modal-body').html('<div id="pubresult"></div>');
-	$('.modal-title').html('Publication');
-	$('.modal-footer button').html('fermer');
-	$('.modal').modal();
 	var toc = $('#toc_root').data('kolekti-path');
-
-	//    $('.publish_job').each(function(i,e){
-//	$('.kolekti-job').each(function(i,e){
-//	    if (!$(e).hasClass('hidden')) {
-//		nojob = false;
-
 	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
 	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
-//	var idjob = $(e).attr('id');
-	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
+
 	params = get_publish_params(job)
-		
+	params['toc']=toc;
+	params['job']=jobpath;
+
+	$('.modal-body').html('<div id="pubresult"></div>');
+
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
-	    $('#pub_progress').remove();
+		$('#pub_progress').remove();
 	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
-	} else {
-	    params['toc']=toc;
-	    params['job']=jobpath;
+	    return;
+	} 
+	
+	
+	var check_release = function(action) {
+	    var toc = $('#toc_root').data('kolekti-path');
+	    var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + basename(toc)
+	    $.get(assembly)
+		.success(function() {
+		    if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
+			do_publish()
+		})
+		.error(function() {
+		    do_publish()
+		})
+	}
+
+	var do_publish = function() {
+	    $('.modal-footer button').html('fermer');
+	    $('.modal').modal();
+	    $('#pubresult').html('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>');
 	    
+		
 	    var streamcallback = function(data) {
-//		console.log(data);
+		//		console.log(data);
 		$("#pub_results").html(data);
 	    }
 	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
@@ -396,7 +403,7 @@ $(document).ready( function () {
 		    $('<div>',{'class':"alert alert-danger",
 			       'html':[$('<h5>',{'html':"Erreur"}),
 				       $('<p>',{'html':"Une erreur inattendue est survenue lors de la publication"})
-
+				       
 				      ]}),
 		    $('<a>',{
 			'class':"btn btn-primary btn-xs",
@@ -404,7 +411,7 @@ $(document).ready( function () {
 			'href':"#collapseStacktrace",
 			'aria-expanded':"false",
 			'aria-controls':"collapseStracktrace",
-			'html':'Détails'}),
+			    'html':'Détails'}),
 		    $('<div>',{'class':"well",
 			       'html':[
 				   $('<p>',{'html':textStatus}),
@@ -416,7 +423,18 @@ $(document).ready( function () {
 		$('#pub_progress').remove();
 	    });
 	};
-    })
+	
+	if ($(this).attr('id') == 'btn_release') {
+	    url += 'release/'
+	    $('.modal-title').html('Création de version');
+	    check_release(params, do_publish)
+	} else {
+	    url += 'draft/'
+	    $('.modal-title').html('Publication');
+	    do_publish()
+	}
+
+    });
 
     // display
 
