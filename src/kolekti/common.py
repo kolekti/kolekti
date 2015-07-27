@@ -202,11 +202,11 @@ class kolektiBase(object):
 
     def get_release_assemblies(self, path):
         ospath= self.__makepath(path)
-        for f in os.listdir(os.path.join(ospath,'kolekti',"publication-parameters")):
-            if f.endswith(".json"):
-                pf = os.path.join(os.path.join(ospath,'kolekti',"publication-parameters",f))
+        for f in os.listdir(ospath):
+            if os.path.exists(os.path.join(ospath,f,'kolekti',"publication-parameters")):
+                pf = os.path.join(os.path.join(ospath,f))
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
-                yield (f[:-5], d)
+                yield (f, d)
 
 
     def resolve_var_path(self, path, xjob):
