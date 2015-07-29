@@ -235,7 +235,7 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-    def get(self, request, require_svn_auth=False, project_folder=None, project_url=None):
+    def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
         
         context = self.get_context_data({
                     "active_project" :self.user_settings.active_project.encode('utf-8'),
@@ -257,6 +257,7 @@ class ProjectsView(kolektiMixin, View):
         if project_url=="":
         # create local project
             sync.export_project(project_folder)
+            return self.get(request, False, project_folder)
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
@@ -351,18 +352,18 @@ class ReleaseStateView(kolektiMixin, TemplateView):
         return HttpResponse(state)
 
     def post(self,request):
-        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        path, assembly_name = request.POST.get('release').rsplit('/',1)
         state = request.POST.get('state')
-        lang = request.POST.get('targetlang')
+        lang = request.POST.get('lang')
         self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
         return HttpResponse(state)
         
 class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
-        print "copy release"
         try:
-            path, assembly_name = request.GET.get('release').rsplit('/',1)
+            release = request.POST.get('release').rsplit('/',1)
+            path, assembly_name = release.rsplit('/',1) 
             srclang = request.POST.get('release_copy_from_lang')
             dstlang = request.POST.get('release_lang')
             print path, assembly_name, srclang, dstlang
@@ -373,7 +374,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
     #    return HttpResponse("ok")
-        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
+        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(path,dstlang))
     
 class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
