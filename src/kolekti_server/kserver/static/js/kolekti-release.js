@@ -102,29 +102,29 @@ Defines events for languages and release state in toolbar
 
     // Kolekti Release toolbar
 
-    $('.btn-lang-copy').on('click', function() {
-	var state = $(this).data('state');
-	var lang  = $(this).data('lang');
-    });
-
     
     $('.release-state').on('click', function() {
 	
-	var targetlang = $(this).closest('ul').data('target-lang');
-	var oldstate = $('.btn-lang-menu-'+targetlang).data('state')
-	$('.btn-lang-menu-'+targetlang).removeClass('btn-lang-menu-'+oldstate)
+	var lang = $(this).closest('ul').data('target-lang');
+	var oldstate = $('.btn-lang-menu-'+lang).data('state')
+	var labelstate = $(this).find('span').html()
+	console.log(labelstate)
+	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
 	$.ajax({
-	    url:"/releases/state/"+window.location.search,
+	    url:"/releases/state/",
 	    method:'POST',
 	    data:$.param({
+		'release' :$(this).closest('#main').first().data('release'),
 		'state' : $(this).data('state'),
-		'targetlang'  : targetlang
+		'lang'  : lang
 	    })
 	}).done(function(data) {
-	    $('.btn-lang-menu-'+targetlang+' img').attr('src','/static/img/release_status_'+data+'.png')
-	    $('.btn-lang-menu-'+targetlang).addClass('btn-lang-menu-'+data)
-	    $('.btn-lang-menu-'+targetlang).data('state', data)
-	    $('.btn-lang-menu-'+targetlang).attr('data-state', data)
+///	    $('.btn-lang-menu-'+lang+' img').attr('src','/static/img/release_status_'+data+'.png')
+	    $('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+data)
+	    $('.btn-lang-menu-'+lang).data('state', data)
+	    $('.btn-lang-menu-'+lang).attr('data-state', data)
+	    $('.btn-lang-menu-'+lang+' .state').html(labelstate);
+	    
 	})
 	
     })

@@ -16,44 +16,7 @@
     {% endblock %}
 
 
-{% block infobuttons_lang %}
-    {% comment %}
-    {% for rlang, state in langstates %}
-    <div class="btn-group" role="group">
-      {% if  state == "unknown" %}
-      <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }}  btn-lang-copy"
-	      type="button"
-	      data-state="{{ state }}"
-	      data-lang="{{ rlang }}"
-	      title="Créer la version {{ rlang }}">
-	
-	<span class="state">{{ rlang }}</span>
-      </button>
-      {% else %}
-      <button class="btn btn-xs {% if rlang == lang %}btn-primary{% else %}btn-default btn-lang{% endif %} btn-lang-{{ rlang }}"
-	      data-lang="{{ rlang }}"
-	      type="button">
-	<strong>{{ rlang }}</strong
-      </button>
-      <button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-menu-{{ state }} btn-lang-menu dropdown-toggle" type="button"
-	      title="{{ state }}"
-	      data-lang="{{ rlang }}"
-	      data-state="{{ state }}" 
-	      data-toggle="dropdown"
-	      aria-expanded="true">
-	<span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
-	<span class="caret"/>
-      </button>
-      <ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
-	<li><a class="release-state" data-state="edition" href="#" >Mise à jour</a></li>
-	<li><a class="release-state" data-state="translation" href="#"><span class="text-primary">Traduction en cours</span></a></li>
-	<li><a class="release-state" data-state="validation" href="#"><span class="text-warning">Controle</a></li>
-	<li><a class="release-state" data-state="publication" href="#"><span class="text-success">Bon pour publication</a></li>
-      </ul>
-      {% endif %}
-    </div>
-    {% endfor %}
-{% endcomment %}
+    {% block infobuttons_lang %}
     {% endblock %}	      
 
 {% block menu %}
@@ -175,9 +138,8 @@
 	</div>
       </div>
     </div>
-
-
 {% endblock %}
+
 
 {% block content %}
     <div id="main" class="release" data-release="{{release_path}}/{{assembly_name}}" data-lang="{{ lang }}">
@@ -189,6 +151,7 @@
 	     data-toggle="tab"
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
+	     class=""
 	     {% if  state == "unknown" %}
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
@@ -209,104 +172,72 @@
 
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
-	      
-	      <p>Cette version n'existe pas pour cette langue, veuillez sélectionner la langue à partir de laquelle la nouvelle version doit être créée</p>
-	      <select name="release_copy_from_lang">
-		{% for mrlang, mstate in langstates %}
-		<option value="{{ mrlang }}">{{ mrlang }}</option>
-		{% endfor %}
-	      </select>
-	      <input type="hidden" name="release_lang" value="{{ lang }}"/>
+	      <form action="/releases/copy/" method="POST">
+		<div class="form-group">
+		  <p><strong>Cette version n'existe pas en langue <em> {{ rlang }}</em></strong></p>
+		  <div class="form-group">
+		    <label for="release_copy_from_lang">Sélectionnez la langue source à partir de laquelle doit être crée la version <em>{{ rlang }}</em> : </label>
+		    <select name="release_copy_from_lang">
+		      {% for mrlang, mstate in langstates %}
+		      {% if mstate != 'unknown' %} 
+		      <option value="{{ mrlang }}">{{ mrlang }}</option>
+		      {% endif %}
+		      {% endfor %}
+		    </select>
+		  </div>
+		  <input type="hidden" name="release_lang" value="{{ rlang }}"/>
+		  <input type="hidden" name="release" value="{{ release_path }}/{{assembly_name}}"/>
+		<button type="submit" class="btn btn-default">Créer</button>
+		</div>
+	      </form>
 	    </div>
 	  </div>
 	  
 	  {% else %}
 	  
-	  <div class="panel panel-infodefault">
-	    <div class="panel-body">
-	      Statut :
-	      <div class="btn-group">
-	      	<button class="btn btn-default btn-lang-menu-{{ rlang }} btn-lang-menu-{{ state }} btn-lang-menu dropdown-toggle" type="button"
-			title="{{ state }}"
-			data-lang="{{ rlang }}"
-			data-state="{{ state }}" 
-			data-toggle="dropdown"
-			aria-expanded="true">
-		  <span class="state">{{state|statustext}}</span>
-		  <span class="caret"/>
-		</button>
-		<ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
-		  <li><a class="release-state" data-state="edition" href="#" >Nouveau</a></li>
-		  <li><a class="release-state" data-state="translation" href="#"><span class="text-primary">En traduction</span></a></li>
-		  <li><a class="release-state" data-state="validation" href="#"><span class="text-warning">En relecture</a></li>
-		  <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
-		</ul>
-	      </div>
-	      
-	      <input type="checkbox" id="focus_{{ lang }}">Focus</input>
+	  <div class="panel panel-info">
+	    <div class="panel-heading">
+	      <form>
+		<div class="form-group">
+
+	      	  <label for="statemenu">Statut :</label>
+		  <div class="btn-group">
+	      	    <button class="btn btn-default btn-sm btn-lang-menu-{{ rlang }} btn-lang-menu-{{ state }} btn-lang-menu dropdown-toggle" type="button"
+			  name="statemenu"
+			    title="{{ state }}"
+			    data-lang="{{ rlang }}"
+			    data-state="{{ state }}" 
+			    data-toggle="dropdown"
+			    aria-expanded="true">
+		      <span class="state">{{state|statustext}}</span>
+		      <span class="caret"/>
+		    </button>
+		    <ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
+		      <li><a class="release-state" data-state="edition" href="#" >Nouveau</a></li>
+		      <li><a class="release-state" data-state="translation" href="#"><span class="text-primary">En traduction</span></a></li>
+		      <li><a class="release-state" data-state="validation" href="#"><span class="text-warning">En relecture</a></li>
+		      <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
+		    </ul>
+		  </div>
+		</div>
+		<div class="checkbox">
+		  <label>
+		    <input type="checkbox" id="focus_{{ lang }}"/>Focus
+		  </label>
+		</div>
+	      </form>
 	    </div>
+	    <div class="panel-body">
+	      <div id="content_{{ rlang }}">
+	      </div>
+	    </div>
+	    
 	  </div>
-	  
-	  <div id="content_{{ rlang }}">
-	  </div>
-	  {% endif %}
-	  
+	  {% endif %}	  
 	</div>
-
  	{% endfor %}
-   </div>
-
-
-
-    {% comment %}
-	  {% if  state == "unknown" %}
-	<button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }}  btn-lang-copy"
-		type="button"
-		data-state="{{ state }}"
-		data-lang="{{ rlang }}"
-		title="Créer la version {{ rlang }}">
-	  
-	  <span class="state">{{ rlang }}</span>
-	</button>
-	{% else %}
-	<button class="btn btn-xs {% if rlang == lang %}btn-primary{% else %}btn-default btn-lang{% endif %} btn-lang-{{ rlang }}"
-		data-lang="{{ rlang }}"
-		type="button">
-	  <strong>{{ rlang }}</strong
-				</button>
-	<button class="btn btn-xs btn-default btn-lang-menu-{{ rlang }} btn-lang-menu-{{ state }} btn-lang-menu dropdown-toggle" type="button"
-		title="{{ state }}"
-		data-lang="{{ rlang }}"
-		data-state="{{ state }}" 
-		data-toggle="dropdown"
-		aria-expanded="true">
-	  <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
-	  <span class="caret"/>
-	</button>
-	<ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
-	  <li><a class="release-state" data-state="edition" href="#" >Mise à jour</a></li>
-	  <li><a class="release-state" data-state="translation" href="#"><span class="text-primary">Traduction en cours</span></a></li>
-	  <li><a class="release-state" data-state="validation" href="#"><span class="text-warning">Controle</a></li>
-	  <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Bon pour publication</a></li>
-	</ul>
-	{% endif %}
-
-</div>
-
-      {% endfor %}
-{% endcomment %}
-
-{% comment %}
-	{{ content |safe }}
-  <!--
-    <form method="POST">
-      <textarea name="editor1" id="editor1" rows="100" cols="80">
-	{{ content |safe }}
-      </textarea>
-    </form>
- -->
-  {% endcomment %}
-</div>
+      </div>
+    </div>
 {% endblock %}
 
 
