@@ -34,6 +34,7 @@ from kolekti import publish
 from kolekti.searchindex import searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
+from kolekti.import_sheets import Importer
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -560,8 +561,21 @@ class VariablesODSView(kolektiMixin, View):
 
     
 class ImportView(kolektiMixin, TemplateView):
-    template_name = "home.html"
+    template_name = "import.html"
+    def get(self, request):
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+            uploaded_file = request.FILES[u'upload_file']
+            importer = Importer(projectpath, lang=self.user_settings.active_srclang)
+            events =  importer.importOds(uploaded_file)
+            context = self.get_context_data({'events':events})
+        return self.render_to_response(context)
+            
 
 class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):

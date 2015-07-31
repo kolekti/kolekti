@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Variables{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-import.css"></link>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-import.js"></script>
+{% endblock %}
+
+{% block menu %}
+
+{% endblock %}
+
+
+{% block content %}
+    <div class="main">
+  <div class="title">
+  </div>
+  <div id="importform" class="panel panel-info">
+    <div class="panel-heading">
+      Transférer un fichier de variables ods :
+      <form method="POST"  class="upload_form" enctype="multipart/form-data">
+	<input type="file" id="upload_file" name="upload_file" class="form-control upload">
+	<input type="hidden" name="path" value="/sources/fr/variables">
+	<br>
+	<button type="submit" class="btn btn-default btn-xs create-file">Valider</button>
+      </form>
+    </div>
+    <div class="panel-body">
+      <ul>
+	{% for event in events %}
+	{% if event.event == "result" %}
+	<li>{{ event.file }}</a></li>
+       {% elif event.event == "warning" %}
+       <li class="alert alert-warning">
+	<p>{{ event.msg }}</p>
+      </li>
+      {% elif event.event == "error" %}
+      <li>
+	<div class="alert alert-danger error">
+	  <p>{{ event.msg }}</p>
+	</div>
+	<a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseStacktrace{{ id }}" aria-expanded="false" aria-controls="collapseStracktrace{{ id }}">Détails</a>
+	<div class="collapse" id="collapseStacktrace{{ id }}">
+	  <div class="well">
+	    <pre>
+	      {{ event.stacktrace }}
+	    </pre>
+	  </div>
+	</div>
+      </li>
+      {% endif %}
+      {% endfor %}
+      </ul>
+  </div>
+</div>
+{% endblock %}
