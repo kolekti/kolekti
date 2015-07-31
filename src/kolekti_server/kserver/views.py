@@ -74,7 +74,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def projects(self):
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
-            project={'name':projectname}
+            project={'name':projectname, 'id':projectname.replace(' ','_')}
             try:
                 projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, projectname, 'kolekti', 'settings.xml'))
                 if projectsettings.xpath('string(/settings/@version)') != '0.7':
@@ -257,13 +257,13 @@ class ProjectsView(kolektiMixin, View):
         if project_url=="":
         # create local project
             sync.export_project(project_folder)
-            return self.get(request, False, project_folder)
+            return self.get(request, require_svn_auth=False, project_folder=project_folder)
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
                 return self.get(request)
             except ExcSyncNoSync:
-                return self.get(request, True, project_folder, project_url)
+                return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
             
 
 class ProjectsActivateView(ProjectsView):
