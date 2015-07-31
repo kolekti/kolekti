@@ -1032,22 +1032,22 @@ $(document).ready( function () {
 	    $.get(path)
 		.done(
 		    function(data){
-			if (data instanceof Document)
-			    topic = data;
-			else
-			    try {
+			try {
+			    if (data instanceof Document)
+				topic = data;
+			    else
 				topic = $.parseXML( data );
-				var topic_obj = create_topic_obj(path, idtopic, topic);
-				$(comp).after(topic_obj)
-				usecases(topic_obj);
-				$(comp).detach();
-			    } catch (err) {
-				// was not XML
-				var id = Math.round(new Date().getTime() + (Math.random() * 100));
-				var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
-				$(comp).after(topic_obj)
-				$(comp).detach();
-			    }
+			    var topic_obj = create_topic_obj(path, idtopic, topic);
+			    $(comp).after(topic_obj)
+			    usecases(topic_obj);
+			    $(comp).detach();
+			} catch (err) {
+			    // was not XML
+			    var id = Math.round(new Date().getTime() + (Math.random() * 100));
+			    var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
+			    $(comp).after(topic_obj)
+			    $(comp).detach();
+			}
 		    })
 		.fail(
 		    function(data){
