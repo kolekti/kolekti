@@ -569,10 +569,23 @@ class ImportView(kolektiMixin, TemplateView):
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            print form
             projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
             uploaded_file = request.FILES[u'upload_file']
+            filename = str(uploaded_file)
+            print filename
             importer = Importer(projectpath, lang=self.user_settings.active_srclang)
-            events =  importer.importOds(uploaded_file)
+            if(os.path.splitext(filename)[1] == '.ods'):
+                events =  importer.importOds(uploaded_file)
+            elif(os.path.splitext(filename)[1] == '.xlsx'):
+                events =  importer.importXlsx(uploaded_file)
+            else:
+                events = [{
+                'event':'error',
+                'msg':"Erreur lors de l'import : extension de fichier non reconnue",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }]    
             context = self.get_context_data({'events':events})
         return self.render_to_response(context)
             

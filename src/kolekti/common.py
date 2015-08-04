@@ -156,6 +156,10 @@ class kolektiBase(object):
         return ET.parse(defs).getroot()
 
 
+
+    def dirname(self, path):
+        return "/".join(path.split('/')[:-1])
+    
     def get_directory(self, root=None, filter=None):
         res=[]
         if root is None:

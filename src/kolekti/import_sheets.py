@@ -7,6 +7,7 @@ import os
 from zipfile import ZipFile
 from lxml import etree as ET
 import time
+import traceback
 
 import common
 
@@ -38,15 +39,60 @@ class Importer(common.kolektiBase):
                 yield(line.format(**params))  
     
     def importOds(self, odsfile):
-        with ZipFile(odsfile, 'r') as zip:
-            foffx=zip.read('content.xml')
-            xcontent=ET.XML(foffx)
-            conflines = self._ods_getlines(xcontent.xpath('/office:document-content/office:body/office:spreadsheet/table:table[1]',namespaces=self.__nsods)[0])
+        try:
+            with ZipFile(odsfile, 'r') as zip:
+                foffx=zip.read('content.xml')
+                xcontent=ET.XML(foffx)
+        except:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : fichier ods invalide",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
+        
+        if len(xcontent.xpath('/office:document-content/office:body/office:spreadsheet/table:table', namespaces=self.__nsods)) < 2:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : onglets non trouvés",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
+        
+        conflines = self._ods_getlines(xcontent.xpath('/office:document-content/office:body/office:spreadsheet/table:table[1]', namespaces=self.__nsods)[0])
+            
+        try:
             template = conflines[0][1]
             path     = conflines[1][1]
-            lines = self._ods_getlines(xcontent.xpath('/office:document-content/office:body/office:spreadsheet/table:table[2]',namespaces=self.__nsods)[0])
-            return self._generate_topics(lines, template, path)
+            tocpath  = conflines[2][1]
+            job      = conflines[3][1]
+        except IndexError:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : parametres non spécifiés",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
         
+        lines = self._ods_getlines(xcontent.xpath('/office:document-content/office:body/office:spreadsheet/table:table[2]',namespaces=self.__nsods)[0])
+        if len(lines) == 0:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : aucun topic défini",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
+        
+        for e in  self._generate_topics(lines, template, path):
+            yield e
+    
+        for e in  self._generate_toc(lines, tocpath, path, job):
+            yield e
+    
     def _ods_getlines(self, xtable):
         lines = []
         for line in xtable.xpath('table:table-row',namespaces=self.__nsods):
@@ -59,33 +105,74 @@ class Importer(common.kolektiBase):
                 
     def importXlsx (self, xlsxfile):
         
-        dz = zipfile.ZipFile(doc,'r')
+        try:
+            dz = ZipFile(xlsxfile,'r')
 
-        # read shared strings file
-        szf = dz.open('xl/sharedStrings.xml', 'rU')
-        sx = ET.XML(szf.read())
-        strings=[]
-        for s in sx:        
-            strings.append(unicode(s.xpath("normalize-space(.//n:t)",namespaces=self.__nsxlsx)))
+            # read shared strings file
+            szf = dz.open('xl/sharedStrings.xml', 'rU')
+            sx = ET.XML(szf.read())
+            strings=[]
+            for s in sx:        
+                strings.append(unicode(s.xpath("normalize-space(.//n:t)",namespaces=self.__nsxlsx)))
 
-        # read genration parameters
-        dzf = dz.open('xl/worksheets/sheet1.xml', 'rU')
-        dx = ET.XML(dzf.read())
-        conflines = self._xslx_getlines(dx, strings)
-        template = conflines[0][1]
-        path     = conflines[1][1]
+            # read genration parameters
+            dzf = dz.open('xl/worksheets/sheet1.xml', 'rU')
+            dx = ET.XML(dzf.read())
+            conflines = self._xslx_getlines(dx, strings)
+        except:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : fichier xlsx invalide",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
+            
+        try:
+            template = conflines[0][1]
+            path     = conflines[1][1]
+            tocpath  = conflines[2][1]
+            job      = conflines[3][1]
+        except IndexError:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : parametres non spécifiés",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
+        try:
+            dzf = dz.open('xl/worksheets/sheet2.xml', 'rU')
+            dx = ET.XML(dzf.read())
+            lines = self._xslx_getlines(dx, strings)
+            if len(lines) == 0:
+                yield {
+                    'event':'error',
+                    'msg':"Erreur lors de l'import : aucun topic défini",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    }
+                return
+        except:
+            yield {
+                'event':'error',
+                'msg':"Erreur lors de l'import : fichier xlsx invalide (topics)",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
+            return
 
-        
-        dzf = dz.open('xl/worksheets/sheet2.xml', 'rU')
-        dx = ET.XML(dzf.read())
-        lines = self._xslx_getlines(dx, strings)
 
-        return self._generate_topics(lines, template, path)
-
+        for e in self._generate_topics(lines, template, path):
+            yield e
+    
+        for e in  self._generate_toc(lines, tocpath, path, job):
+            yield e
+    
     def _xslx_getlines(self, xsheet, strings):
         coln = [chr(v + 65) for v in range(26)] + ['A' + chr(v + 65) for v in range(26)]
         lines = []
-        for line in dx.xpath('/n:worksheet/n:sheetData/n:row',namespaces=self.__nsxlsx):
+        for line in xsheet.xpath('/n:worksheet/n:sheetData/n:row',namespaces=self.__nsxlsx):
             l = []
             for col in xrange(len(coln)):
                 cnum = coln[col] + line.get('r')
@@ -100,7 +187,39 @@ class Importer(common.kolektiBase):
 
             lines.append(l)
         return lines
+
+
+    def _generate_toc(self, lines, path, topicspath, job):
+        outpath = '/sources/'+ self._lang + '/tocs/' + path
+        topicspath = '/sources/'+ self._lang + '/topics/' + topicspath
+        self.makedirs(self.dirname(outpath))
         
+        buf = """<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>imported toc</title>
+    <meta name="DC.title" content="imported toc"/>
+    <meta name="kolekti.job" content="%s"/>
+    <meta name="kolekti.jobpath" content="/kolekti/publication-parameters/%s.xml"/>
+    <meta name="kolekti.pubdir" content=""/>
+  </head>
+  <body><a rel="kolekti:toc"/>
+"""%(job, job)
+        nl = 0
+        for l in lines[1:]:
+            nl +=1
+            topicfile = l[0]
+            if topicfile is not None and len(topicfile):
+                buf += """<a href="%s/%s" rel="kolekti:topic"/>"""%(topicspath, topicfile)
+        buf += "</body></html>"
+        
+        self.write(buf, outpath)
+        yield { 'event':'result',
+                'file':outpath,
+                'url':'/tocs/edit/?toc='+outpath,
+                'time':time.time(),
+                }
+
     def _generate_topics(self, lines, template, path):
 
         outpath = '/sources/'+ self._lang + '/topics/' + path + "/"
@@ -119,7 +238,6 @@ class Importer(common.kolektiBase):
                     sheet_params[lines[0][nc]] = repl(col)
                     nc += 1
                 topicfile = l[0]
-                print sheet_params
                 if topicfile is not None and len(topicfile):
                     buf = ""
                     for l in self.substitute(tplpath, **sheet_params):
@@ -127,15 +245,23 @@ class Importer(common.kolektiBase):
                     self.write(buf, outpath + topicfile)
                     yield { 'event':'result',
                             'file':outpath + topicfile,
+                            'url':outpath + topicfile,
                             'time':time.time(),
-                            }
-                                       
+                }
+# TODO : if line is not empty
+#                else:
+#                    yield {
+#                        'event':'error',
+#                        'msg':"Erreur lors de l'import : fichier module non spécifié",
+#                        'stacktrace':traceback.format_exc(),
+#                        'time':time.time(),
+#                        }
+
             except:
-                import traceback
                 print traceback.format_exc()
                 yield {
                         'event':'error',
-                        'msg':"Erreur lors de l'import",
+                        'msg':"Erreur lors de l'import :impossible de créer les modules",
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
