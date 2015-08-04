@@ -45,7 +45,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePublier" class="collapsed">
+	  <a data-toggle="collapse" href="#collapsePublier" class="">
 	    <small>
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
@@ -54,7 +54,7 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapsePublier" class="panel-collapse collapse">
+      <div id="collapsePublier" class="panel-collapse collapse in">
 	<div class="panel-body">
 {% comment %}
 	  <h5>
@@ -66,19 +66,18 @@
 		 value="{{ toctitle }}"/>
 {% endcomment %}
 	  <h5>
-	  Dossier de la publication / nom de la version
+	  Dossier de la publication
 	  </h5>	  
 	  <input type='text'
 		 class='block-control'
 		 id='input_toc_pubdir'
 		 value="{{ tocmeta.kolekti_pubdir }}"/>
-
-<hr/>
 	  
-	  Paramètres :
-	  
-	  <span class="btn-group align-right">
-	    <button type="button" class="btn btn-xs btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
+	  <h5>
+	  Fichier de paramètres
+	  </h5>
+	  <span class="btn-group">
+	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
 	      <span class="label_job">{{ tocmeta.kolekti_job|urlbasename }}</span>
 	      <span class="caret"></span>
 	    </button>
@@ -94,11 +93,13 @@
 	    </ul>
 	  </span>
 	  
-	  {% comment %}
-	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
-	  {% endcomment %}
+	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"><span class="glyphicon glyphicon-cog"> </span></a>
 
 	  
+	  <h5>
+	  Sélection rapide
+	  </h5>
+
 	  {% for job in jobs %}
 
 
@@ -106,7 +107,7 @@
 	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	    <div class="col-sm-12 col-md-12">
 
-	      <h5>Profils</h5>
+	      <h6>Profils</h6>
 	    </div>
 	    {% for profile in job.profiles %}
 
@@ -121,7 +122,7 @@
 	    </div>
 	    {% endfor %}
 	    <div class="col-sm-12 col-md-12">
-	      <h5>Sorties</h5>
+	      <h6>Sorties</h6>
 	    </div>
 	    {% for script in job.scripts %}
 	    <div class="col-sm-6 col-md-6">
@@ -134,9 +135,11 @@
 	      </div>
 	    </div>
 	    {% endfor %}
+	    {% comment %}
 	    <div class="col-sm-12 col-md-12 top-margin">
 	      <a id="editjoblink" class="btn btn-default btn-block" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres">Paramètres avancés...</a>
 	    </div>
+	    {% endcomment %}
 	  </div>
 	  {% endfor %}
 	</div>
