@@ -313,6 +313,7 @@ class TocView(kolektiMixin, View):
     
     def post(self, request):
         try:
+            print request.body
             xtoc=self.parse_string(request.body)
             tocpath = xtoc.get('data-kolekti-path')
             xtoc_save = self.get_xsl('django_toc_save')
@@ -939,15 +940,15 @@ class ReleaseView(PublicationView):
 
             xjob.getroot().set('pubdir',pubdir)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
-
-            r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
-            pp = r.make_release(tocpath, xjob)
-
-
-            release_dir = pp[0]['assembly_dir']
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(projectpath, tocpath, xjob)))
+#            r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
+#            pp = r.make_release(tocpath, xjob)
             
-            p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
+
+#            release_dir = pp[0]['assembly_dir']
+            
+#            p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
+#            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
 
         except:
             import traceback
@@ -959,6 +960,22 @@ class ReleaseView(PublicationView):
             
             return self.render_to_response(context)
 
+    def release_iter(self, projectpath, tocpath, xjob):
+        r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
+        pp = r.make_release(tocpath, xjob)
+        release_dir = pp[0]['assembly_dir']
+        yield {
+            'event':'release',
+            'ref':release_dir,
+            'time':pp[0]['datetime'],
+        }
+
+            
+        p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
+        for e in p.publish_assembly(release_dir, pp[0]['pubname']):
+            yield e
+            
+            
 class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit-ckeditor.html"
     def get(self, request):

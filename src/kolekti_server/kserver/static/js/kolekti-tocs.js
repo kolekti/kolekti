@@ -351,26 +351,37 @@ $(document).ready( function () {
 	params['toc']=toc;
 	params['job']=jobpath;
 
-	$('.modal-body').html('<div id="pubresult"></div>');
+	$('.modal-body').html('<div id="releasename"></div><div id="pubresult"></div>');
+	$('.modal-title').html('Publication');
 
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
 		$('#pub_progress').remove();
-	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
+	    $('#pubresult').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
+	    $('.modal').modal();
 	    return;
 	} 
 	
 	
 	var check_release = function(action) {
 	    var toc = $('#toc_root').data('kolekti-path');
-	    var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + basename(toc)
-	    $.get(assembly)
-		.success(function() {
-		    if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
+	    $('.modal-footer button').html('fermer');
+	    $('.modal-title').html('Création de version');
+	    $('.modal').modal();
+	    $('#releasename').html('<div class="panel panel-default"><div class="panel-body"><div class="form"><div class="form-group"><label for="release_name">Nom de la version</label><input type="text" class="form-control" id="release_name"/></div><div class="form-group"><button class="btn btn-default" id="confirm_version">Créer la version</button></div></div></div></div>');
+	    $('#modalform').submit( function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		params['pubdir'] = $('#release_name').val()
+		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + basename(toc)
+		$.get(assembly)
+		    .success(function() {
+			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
+			    do_publish()
+		    })
+		    .error(function() {
 			do_publish()
-		})
-		.error(function() {
-		    do_publish()
-		})
+		    })
+	    })
 	}
 
 	var do_publish = function() {
