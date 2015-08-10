@@ -364,11 +364,11 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
         try:
-            release = request.POST.get('release').rsplit('/',1)
+            release = request.POST.get('release')
             path, assembly_name = release.rsplit('/',1) 
             srclang = request.POST.get('release_copy_from_lang')
             dstlang = request.POST.get('release_lang')
-            print path, assembly_name, srclang, dstlang
+
             #            return StreamingHttpResponse(
             for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
                 pass
@@ -427,7 +427,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
     def post(self, request):
         release, assembly = request.GET.get('release',"").rsplit('/',1)
          
-        lang=request.GET['lang']
+        lang=request.GET.get('lang',self.user_settings.active_srclang)
         assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'.html'])
         xassembly = self.parse(assembly_path)
         xbody = self.parse_html_string(request.body)
@@ -446,7 +446,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         release, assembly = request.POST.get('release',"/").rsplit('/',1)
         langs = request.POST.getlist('langs[]',[])
         context={}
-        
+
 #        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
 #        print jobpath
 #        xjob = self.parse(jobpath)
@@ -570,11 +570,11 @@ class ImportView(kolektiMixin, TemplateView):
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            print form
+
             projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
             uploaded_file = request.FILES[u'upload_file']
             filename = str(uploaded_file)
-            print filename
+
             importer = Importer(projectpath, lang=self.user_settings.active_srclang)
             if(os.path.splitext(filename)[1] == '.ods'):
                 events =  importer.importOds(uploaded_file)
@@ -771,7 +771,7 @@ class BrowserView(kolektiMixin, View):
             context = self.get_context_data()
             path = request.GET.get('path','/')
             mode = request.GET.get('mode','select')
-            print self
+
             files = filter(self.__browserfilter, self.get_directory(path))
         
             for f in files:
@@ -795,14 +795,14 @@ class BrowserView(kolektiMixin, View):
 
 class BrowserReleasesView(BrowserView):
     def get_directory(self, path):
-        print "get directory",path
+
         try:
             res = []
             for assembly, date in self.get_release_assemblies(path):
                 res.append({'name':assembly,
                             'type':"text/xml",
                             'date':date})
-            print res
+
             return res
         except:
             import traceback
@@ -819,7 +819,6 @@ class BrowserCKView(kolektiMixin, View):
         return True
                          
     def get(self,request):
-        print "browser get"
         context={}
         path = request.GET.get('path','/')
         mode = request.GET.get('mode','select')
@@ -831,7 +830,6 @@ class BrowserCKView(kolektiMixin, View):
         files = filter(self.__browserfilter, self.get_directory(path,client_filter))
 
         for f in files:
-            # print f.get('type')
             f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
         pathsteps = []
         startpath = ""
@@ -846,7 +844,6 @@ class BrowserCKView(kolektiMixin, View):
         context.update({'funcnum':request.GET.get('CKEditorFuncNum','_')})
         
         context.update({'id':'browser_%i'%random.randint(1, 10000)})
-        print context
         return self.render_to_response(context)
 
 class BrowserCKUploadView(kolektiMixin, View):
@@ -886,7 +883,6 @@ class DraftView(PublicationView):
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
-        # print ET.tostring(xjob), profiles, scripts ,request.POST
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
                 if not jprofile.find('label').text in profiles:
@@ -900,7 +896,6 @@ class DraftView(PublicationView):
                     jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
-            # print ET.tostring(xjob)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
 
             p = publish.DraftPublisher(projectpath, lang=self.user_settings.active_srclang)
