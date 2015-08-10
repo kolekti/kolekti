@@ -226,7 +226,11 @@ $(document).ready( function () {
 	$.get('/tocs/usecases/',{"pathes":[topicref]}).
 	    success(function(data){ 
 		$(topic).find('.kolekti-shared-topic').remove();
-		var v = data[topicref].removevalue(tocref)
+		var v;
+		if (topicref in data)
+		    v = data[topicref].removevalue(tocref)
+		else
+		    v = []
 		if(v.length)
 		    $('<span>', {
 			'class':"btn-group kolekti-shared-topic",
@@ -269,7 +273,7 @@ $(document).ready( function () {
 		    'type':"button",
 		    'class':"btn btn-default kolekti-ui",
 		    'html':"Insérer"
-		}).one('click', function(e) {newcomp($(this),false, false)}))
+		}).on('click', function(e) {newcomp($(this),false, false)}))
 	}
     }
 
@@ -867,6 +871,7 @@ $(document).ready( function () {
 
 	    $('.insert-main').on('click', '.tpl-item',function(e){
 		e.preventDefault();
+		e.stopImmediatePropagation();
 		$('.label-tpl').html($(this).data('tpl'))
 		$('.label-tpl').data('tpl',$(this).data('tpl'));
 	    })
@@ -882,6 +887,7 @@ $(document).ready( function () {
 
 	$('.modal').on('click','.btn-insert-section', function(e) {
 	    e.preventDefault();
+	    e.stopImmediatePropagation();
 	    $('.insert-buttons a').removeClass('active');
 	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
