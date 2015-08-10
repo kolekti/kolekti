@@ -108,7 +108,6 @@ Defines events for languages and release state in toolbar
 	var lang = $(this).closest('ul').data('target-lang');
 	var oldstate = $('.btn-lang-menu-'+lang).data('state')
 	var labelstate = $(this).find('span').html()
-	console.log(labelstate)
 	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
 	$.ajax({
 	    url:"/releases/state/",
@@ -119,7 +118,7 @@ Defines events for languages and release state in toolbar
 		'lang'  : lang
 	    })
 	}).done(function(data) {
-///	    $('.btn-lang-menu-'+lang+' img').attr('src','/static/img/release_status_'+data+'.png')
+	    $('#release_tabs .active img').attr('src','/static/img/release_status_'+data+'.png')
 	    $('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+data)
 	    $('.btn-lang-menu-'+lang).data('state', data)
 	    $('.btn-lang-menu-'+lang).attr('data-state', data)
@@ -137,7 +136,7 @@ Defines events for languages and release state in toolbar
 	    });
 	    return langs;
 	} else {
-	    return [ $('#kolekti_tools .btn-primary').first().data('lang') ]
+	    return [ $('#release_tabs .active a').first().data('lang') ]
 	}
     }
 

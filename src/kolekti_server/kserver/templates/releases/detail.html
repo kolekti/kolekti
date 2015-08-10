@@ -24,11 +24,13 @@
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
 	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier {{lang}}</button>
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
 	  </div>
+	  <!--
 	  <div class="btn-group" role="group">
 	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish_all">Publier BAT </button>
 	  </div>
+	  -->
 	</div>
       </div>
     </div>
@@ -47,7 +49,7 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapsePL" class="panel-collapse collapse on">
+      <div id="collapsePL" class="panel-collapse collapse on ">
 	<div class="panel-body">
 	  <div class="row">
 	    <div class="col-sm-6 col-md-6">
@@ -90,7 +92,7 @@
 
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-default hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapseAS" class="collapsed">
@@ -118,7 +120,7 @@
 
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-default hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
@@ -146,12 +148,13 @@
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 	{% for rlang, state,focus in langstates %}
 	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
-	  <a href="#release_content_{{ rlang }}" aria-controls="release_content_ {{ rlang }}"
+	  <a href="#release_content_{{ rlang }}"
+	     aria-controls="release_content_ {{ rlang }}"
 	     role="tab"
 	     data-toggle="tab"
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
-	     class=""
+	     class="text-center"
 	     {% if  state == "unknown" %}
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
@@ -213,7 +216,7 @@
 		      <span class="caret"/>
 		    </button>
 		    <ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
-		      <li><a class="release-state" data-state="edition" href="#" >Nouveau</a></li>
+		      <li><a class="release-state" data-state="edition" href="#" ><span>Nouveau</span></a></li>
 		      <li><a class="release-state" data-state="translation" href="#"><span class="text-primary">En traduction</span></a></li>
 		      <li><a class="release-state" data-state="validation" href="#"><span class="text-warning">En relecture</a></li>
 		      <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
@@ -245,8 +248,5 @@
 {% block modal-body %}
 {% endblock %}
 
-{% block modal-title %}Dupliquer une version{% endblock %}
 
-{% block modal-footer %}
-<button type="submit"  class="btn btn-primary">Valider</button>
-{% endblock %}
+
