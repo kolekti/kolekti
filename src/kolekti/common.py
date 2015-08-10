@@ -225,7 +225,6 @@ class kolektiBase(object):
                     ppath.replace('{%s}'%pcriterion.get('code'), pcriterion.get('value'))
             if not ppath in seen:
                 seen.add(ppath)
-                print ppath
                 yield ppath
 
                 
@@ -235,9 +234,7 @@ class kolektiBase(object):
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xjob = self.parse(job_path)
         xassembly = self.parse( assembly_path)
-        print assembly_path
         for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
-            print elt_img
             src_img = elt_img.get('src')
             for imgfile in self.resolve_var_path(src_img, xjob):
                 t = mimetypes.guess_type(imgfile)[0]
@@ -289,7 +286,6 @@ class kolektiBase(object):
 
         self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 
-        print assembly_path
         yield assembly_path
         return
 
@@ -312,7 +308,6 @@ class kolektiBase(object):
 
         for copiedfile in self.iter_release_assembly(path, assembly_name, srclang, copy_callback):
             yield copiedfile
-            print "copied",copiedfile
         src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
         assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
         try:
@@ -329,7 +324,6 @@ class kolektiBase(object):
                 splitpath[2] = dstlang 
                 elt_img.set('src','/'.join(splipath))
         self.xwrite(xassembly, assembly_path)
-        print assembly_path
         yield assembly_path
         return
     

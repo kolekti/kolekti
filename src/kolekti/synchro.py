@@ -155,10 +155,10 @@ class SynchroManager(object):
         merge_client.callback_notify = callback_notification_merge
         info = merge_client.info(path)
         rurl = info.get('url')
-        print  'dry run '+str(dict(info))
+#        print  'dry run '+str(dict(info))
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
-        print "merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path)
+#        print "merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path)
         merge_client.merge(path, workrev, path, headrev, path, recurse = False, dry_run=True)
         for notif in notifications:
             if notif.get('content_state',None) == pysvn.wc_notify_state.merged:
@@ -193,9 +193,9 @@ class SynchroManager(object):
         self._client.resolved(file)
 
     def update_all(self):
-        print "update_all"
+#        print "update_all"
         update_revision = self._client.update(self._base, recurse = True)
-        print "update revision", update_revision
+#        print "update revision", update_revision
         return update_revision
 
     def update(self, files):
@@ -268,7 +268,7 @@ class SynchroManager(object):
         ospath = self.__makepath(path)
         try:
             props = self._client.propget(name, ospath)
-            print props
+#            print props
             return props.get(ospath,'unversionned')
         except:
             import traceback

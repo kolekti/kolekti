@@ -496,7 +496,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
-                print cmd
+#                print cmd
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
