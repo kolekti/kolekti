@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
 import re
 import os
 from copy import copy
 import shutil
 import json
 import random
+from datetime import datetime
+import time
 from lxml import etree as ET
 from PIL import Image
 try:
@@ -581,13 +587,22 @@ class ImportView(kolektiMixin, TemplateView):
             elif(os.path.splitext(filename)[1] == '.xlsx'):
                 events =  importer.importXlsx(uploaded_file)
             else:
+                import traceback
                 events = [{
                 'event':'error',
-                'msg':"Erreur lors de l'import : extension de fichier non reconnue",
+                'msg':"Erreur lors de l'import : type de fichier non supporté %s"%filename,
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
-                }]    
-            context = self.get_context_data({'events':events})
+                }]
+        else:
+            import traceback
+            events = [{
+                'event':'error',
+                'msg':"Erreur lors de l'import : pas de tableur",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }]
+        context = self.get_context_data({'events':events})
         return self.render_to_response(context)
             
 
