@@ -522,13 +522,18 @@ $(document).ready( function () {
     // modify topic / section
 
     $('body').on('click', '.btn_topic_edit', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	var url = topic.data('kolekti-topic-href');
 	window.open('/topics/edit/?topic='+url);
-	e.preventDefault();
+
     }) 
 
     $('body').on('click', '.btn_section_rename', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
+
 	// get section title
 	var title_elt = $(this).closest('.section')
 	    .children('.panel-heading')
@@ -549,13 +554,14 @@ $(document).ready( function () {
 	    })
 	);
 	title_elt.children('span').html('');
-	e.preventDefault();
     });	
     
 
     // move topic
 
     $('body').on('click', '.btn_topic_up', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	var comp = $(this).closest('.topic, .section');
 	if (comp.length) {
 	    if (comp.prev('.topic').length) {
@@ -577,11 +583,13 @@ $(document).ready( function () {
 		}
 	    }
 	}
-	e.preventDefault();
+
     });
 
 
     $('body').on('click','.btn_topic_down', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	var comp = $(this).closest('.topic, .section');
 	if (comp.length) {
 	    if (comp.next('.topic').length) {
@@ -603,32 +611,38 @@ $(document).ready( function () {
 		}
 	    }
 	}
-	e.preventDefault();
     });
 
     $('body').on('click', '.btn_topic_insert_before', function(e) {
-	var topic = $(this).closest('.topic');
-	newcomp(topic, false, false);
 	e.preventDefault();
+	e.stopImmediatePropagation();
+	var topic = $(this).closest('.topic');
+	if (topic.length == 0)
+	    topic = $(this).closest('.section');
+	newcomp(topic, false, false);
     });
 
     $('body').on('click', '.btn_topic_insert_after', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	if (topic.length == 0)
 	    topic = $(this).closest('.section');
 	newcomp(topic,true, false);
-	e.preventDefault();
     });
     
     $('body').on('click', '.btn_topic_insert_inside', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	topic = $(this).closest('.section');
 	newcomp(topic,false, true);
-	e.preventDefault();
     });
     
     // remove topic
 
     $('body').on('click', '.btn_topic_delete', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	if (topic.length) {
 	    topic.remove();
@@ -640,7 +654,6 @@ $(document).ready( function () {
 	    }
 	}
 	check_empty();
-	e.preventDefault();
     });
 
     
@@ -789,12 +802,14 @@ $(document).ready( function () {
  
     var show_section = function(section_obj) {
 	section_obj.find('a[data-toggle=collapse]').first().removeClass('collapsed');
-	section_obj.find('.collapse').first().collapse('show');
+	if (! section_obj.find('.panel-collapse.collapse').first().hasClass('in'))
+	    section_obj.find('.panel-collapse').first().collapse('toggle');
     }
 
     // handles dialog for insertion of topics & sections
 
-    var newcomp = function(comp, isafter, isinside) {
+    var newcomp = function(refcomp, isafter, isinside) {
+//	$('.modal').data('refcomp', refcomp);
 	$('.modal-title').html('Insertion');
 	
 	// builds dialog
@@ -833,8 +848,10 @@ $(document).ready( function () {
 	    })
 	);
 
-	var select_topic_browser = function(e) {
-	    e.preventDefault();
+	var select_topic_browser = function() {
+	    //e.preventDefault();
+	    //e.stopImmediatePropagation();
+	    
 	    $('.insert-buttons a').removeClass('active');
 	    $('.modal .btn-insert-module').addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
@@ -852,13 +869,13 @@ $(document).ready( function () {
 			    id = Math.round(new Date().getTime() + (Math.random() * 100)),
 			    topic_obj = create_topic_obj(path, id, topic);
 			    if (isafter) { 
-				comp.after(topic_obj);
+				refcomp.after(topic_obj);
 			    } else {
 				if (isinside) {
-				    comp.find('.panel-body').prepend(topic_obj);
-				    show_section(comp);
+				    refcomp.find('.panel-body').prepend(topic_obj);
+				    show_section(refcomp);
 			        } else {
-				    comp.before(topic_obj);
+				    refcomp.before(topic_obj);
 				}
 			    }
 			    $("#toc_root>button").remove();
@@ -880,11 +897,37 @@ $(document).ready( function () {
 
 	// handle add  topic : select topic
 
-	// $('.modal').on('click','.btn-insert-module', select_topic_browser);
+	$('.modal').on('click','.btn-insert-module', function(e) {
+	    e.preventDefault();
+	    e.stopImmediatePropagation();
 
+	    select_topic_browser();
+	});
+
+	$('.modal').off('click','.btn-add-section');
+	$('.modal').on('click', '.btn-add-section',function(e) {
+	    e.preventDefault();
+	    e.stopImmediatePropagation();
+	    var id = Math.round(new Date().getTime() + (Math.random() * 100)),
+		title = $('.modal #input_section_title').val()
+	    section_obj = create_section_obj(id, title);
+	    if (isafter) 
+		refcomp.after(section_obj);
+	    else 
+		if (isinside) {
+		    refcomp.find('.panel-body').prepend(section_obj);
+		    show_section(refcomp);
+		} else {
+		    refcomp.before(section_obj)
+		}
+	    $("#toc_root>button").remove();
+	    enable_save();
+	    $('.modal').modal('hide');
+	});
 
 	// handles add section : get section title & update structure
 
+	$('.modal').off('click','.btn-insert-section')
 	$('.modal').on('click','.btn-insert-section', function(e) {
 	    e.preventDefault();
 	    e.stopImmediatePropagation();
@@ -901,24 +944,8 @@ $(document).ready( function () {
 		}),
 		$('<button>',{
 		    'type':"button",
-		    'class':"btn btn-default",
+		    'class':"btn btn-default btn-add-section",
 		    'html':"Insérer"
-		}).one('click', function(e) {
-		    var id = Math.round(new Date().getTime() + (Math.random() * 100)),
-		    title = $('.modal #input_section_title').val()
-		    section_obj = create_section_obj(id, title);
-		    if (isafter) 
-			comp.after(section_obj);
-		    else 
-			if (isinside) {
-			    comp.find('.panel-body').prepend(section_obj);
-			    show_section(comp);
-			} else {
-			    comp.before(section_obj)
-			}
-		    $("#toc_root>button").remove();
-		    enable_save();
-		    $('.modal').modal('hide');
 		})
 	    ]);
 	    
@@ -930,7 +957,7 @@ $(document).ready( function () {
 	})
 
 	// handles add toc (if not already exists)
-	
+	$('.modal').off('click','.btn-insert-toc')
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:toc"]').length) {
 	    $('.modal .btn-insert-toc').addClass('disabled');
 	} else {
@@ -960,13 +987,13 @@ $(document).ready( function () {
 		});
 		topicmenu(topic_obj);
 		if (isafter) 
-		    comp.after(topic_obj)
+		    refcomp.after(topic_obj)
 		else 
 		    if (isinside) {
-			comp.find('.panel-body').prepend(topic_obj);
-			show_section(comp);
+			refcomp.find('.panel-body').prepend(topic_obj);
+			show_section(refcomp);
 		    } else {
-			comp.before(topic_obj)
+			refcomp.before(topic_obj)
 		    }
 		$("#toc_root>button").remove();
 		enable_save();
@@ -975,7 +1002,7 @@ $(document).ready( function () {
 	}
 
 	// handles add index (if not already exists)
-
+	$('.modal').off('click','.btn-insert-idx')
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:index"]').length) {
 	    $('.modal .btn-insert-idx').addClass('disabled');
 	} else {
@@ -1007,13 +1034,13 @@ $(document).ready( function () {
 
 		topicmenu(topic_obj);
 		if (isafter) 
-		    comp.after(topic_obj)
+		    refcomp.after(topic_obj)
 		else 
 		    if (isinside) {
-			comp.find('.panel-body').prepend(topic_obj);
-			show_section(comp);
+			refcomp.find('.panel-body').prepend(topic_obj);
+			show_section(refcomp);
 		    } else {
-			comp.before(topic_obj)
+			refcomp.before(topic_obj)
 		    }
 		$("#toc_root>button").remove();
 		enable_save();
@@ -1024,11 +1051,11 @@ $(document).ready( function () {
 	if (!$('.modal-footer>button.browservalidate').length)
 	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
 	*/
-	select_topic_browser({'preventDefault':function(){}});
+	select_topic_browser()
 
 	// display dialog
 	$('.modal').modal();
-    }
+    }  // newcomp
 
     // end insert dialog
 
@@ -1041,8 +1068,8 @@ $(document).ready( function () {
     });
     
 
-    $('a').each(function(i,comp) {
-	if($(comp).attr('rel')=="kolekti:topic") {
+    $('a').each(function(i,refcomp) {
+	if($(refcomp).attr('rel')=="kolekti:topic") {
 	    var path = $(this).data('kolekti-topic-url');
 	    var idtopic = $(this).data('kolekti-topic-id');
 	    var topic;
@@ -1055,23 +1082,23 @@ $(document).ready( function () {
 			    else
 				topic = $.parseXML( data );
 			    var topic_obj = create_topic_obj(path, idtopic, topic);
-			    $(comp).after(topic_obj)
+			    $(refcomp).after(topic_obj)
 			    usecases(topic_obj);
-			    $(comp).detach();
+			    $(refcomp).detach();
 			} catch (err) {
 			    // was not XML
 			    var id = Math.round(new Date().getTime() + (Math.random() * 100));
 			    var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
-			    $(comp).after(topic_obj)
-			    $(comp).detach();
+			    $(refcomp).after(topic_obj)
+			    $(refcomp).detach();
 			}
 		    })
 		.fail(
 		    function(data){
 			var id = Math.round(new Date().getTime() + (Math.random() * 100));
 			var topic_obj = create_topic_error_obj(path, idtopic, "Module non trouvé");
-			$(comp).after(topic_obj)
-			$(comp).detach();
+			$(refcomp).after(topic_obj)
+			$(refcomp).detach();
 		    });
 	}
     });
