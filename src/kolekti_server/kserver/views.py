@@ -991,7 +991,10 @@ class TopicEditorView(kolektiMixin, View):
     def get(self, request):
         topicpath = request.GET.get('topic')
         topictitle, topicmeta, topiccontent = self.get_topic_edit(topicpath)
-        context = self.get_context_data({"body":topiccontent, "title": topictitle, "meta":topicmeta})
+        context = self.get_context_data({"body":topiccontent,
+                                         "title": self.basename(topicpath),
+                                         "meta":topicmeta
+                                         })
         return self.render_to_response(context)
 
     def post(self,request):
