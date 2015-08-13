@@ -195,7 +195,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         #    f.write(ET.tostring(xjob, pretty_print=True))
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
-            ejob = xsl(xjob, path="'%s'"%path)
+            ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
         except:
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log

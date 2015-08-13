@@ -156,6 +156,8 @@ class kolektiBase(object):
         return ET.parse(defs).getroot()
 
 
+    def basename(self, path):
+        return path.split('/')[-1]
 
     def dirname(self, path):
         return "/".join(path.split('/')[:-1])
