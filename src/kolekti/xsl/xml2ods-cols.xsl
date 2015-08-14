@@ -89,7 +89,7 @@ version="1.0"
       </table:calculation-settings>
       <table:table table:name="Variables" table:style-name="ta1">
 	<xsl:apply-templates select="variable[1]" mode="table-column"/>
-	<xsl:apply-templates select="critlist" mode="table-rowcrits"/>
+	<xsl:apply-templates select="critlist/crit" mode="table-rowcrits"/>
 	<xsl:apply-templates select="variable" mode="table-rowvalues"/>
       </table:table>	  
       <table:named-expressions/>
@@ -102,12 +102,12 @@ version="1.0"
   <table:table-column table:style-name="co1" table:default-cell-style-name="ce1"/>
 </xsl:template>
 
-<xsl:template match="critlist" mode="table-rowcrits">
+<xsl:template match="critlist/crit" mode="table-rowcrits">
   <table:table-row table:style-name="ro1">
     <table:table-cell table:style-name="ce2" office:value-type="string">
       <text:p><xsl:value-of select="."/></text:p>
     </table:table-cell>
-    <xsl:apply-templates select="following-sibling::variable[1]/value/crit[concat(':',@name) = current()]" mode="table-rowcrits"/>
+    <xsl:apply-templates select="/variables/variable[1]/value/crit[concat(':',@name) = current()]" mode="table-rowcrits"/>
   </table:table-row>
 </xsl:template>
 
