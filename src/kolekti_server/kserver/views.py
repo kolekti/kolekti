@@ -242,11 +242,7 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-<<<<<<< HEAD
-    def get(self, request, require_svn_auth=False, project_folder=None, project_url=None):
-=======
     def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
->>>>>>> e2dd76827500b90910955037fba74cafd96bf3cb
         
         context = self.get_context_data({
                     "active_project" :self.user_settings.active_project.encode('utf-8'),
@@ -274,11 +270,7 @@ class ProjectsView(kolektiMixin, View):
                 sync.checkout_project(project_folder, project_url)
                 return self.get(request)
             except ExcSyncNoSync:
-<<<<<<< HEAD
-                return self.get(request, True, project_folder, project_url)
-=======
                 return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
->>>>>>> e2dd76827500b90910955037fba74cafd96bf3cb
             
 
 class ProjectsActivateView(ProjectsView):
