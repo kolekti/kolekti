@@ -22,6 +22,8 @@ $(document).ready(function() {
     var nbvar = 0;
     
     var serialize = function() {
+	buf = "<variables><critlist>";
+	
 	var conditions = [];
 	$('#main thead tr[data-crit]').first().find('th.critval').each(function(i,cell) {
 	    valconds = "";
@@ -29,11 +31,14 @@ $(document).ready(function() {
 		var critname = $(row).data('crit')
 		var critval = $($(row).find('th.critval')[i]).find('span').first().html();
 		valconds += '<crit name="'+ critname +'" value="' + critval + '"/>';
+		if(i==0)
+		    buf += '<crit>:'+critname+'</crit>';
 	    });
 	    conditions.push(valconds)
 	});
+	buf += '</critlist>';
+	
 
-	buf = "<variables>";
 	$('#main tbody tr').each(function(i, row) {
 	    var varname = $(row).find('th').first().find('span').first().html();
 	    buf +='<variable code="' + varname + '">';

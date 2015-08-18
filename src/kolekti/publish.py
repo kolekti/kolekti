@@ -496,6 +496,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
+#                print cmd
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -836,7 +837,7 @@ class Releaser(Publisher):
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
         if self.syncMgr is not None :
             self.syncMgr.propset("release_state","edition",assembly_path)
-            self.syncMgr.add(assembly_path)
+#            self.syncMgr.add_resource(assembly_path)
             self.syncMgr.commit(assembly_path, "Release Creation")
 #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
         return res
@@ -858,6 +859,9 @@ class Releaser(Publisher):
 
 class ReleasePublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        if kwargs.has_key('langs'):
+            self._publangs = kwargs.get('langs')
+            kwargs.pop('langs')
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
     def assembly_dir(self, xjob):
@@ -871,16 +875,19 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
-        assembly_dir = 'releases/' + release
-        try:
-            xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
-        except:
-            logging.error("unable to read assembly %s"%assembly)
-            import traceback
-            logging.debug(traceback.format_exc())
+        for lang in self._publangs:
+            yield {'event':'lang', 'label':lang}
+            self._publang = lang
+            assembly_dir = 'releases/' + release
+            try:
+                xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+            except:
+                logging.error("unable to read assembly %s"%assembly)
+                import traceback
+                logging.debug(traceback.format_exc())
             
-        xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+            xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
-        for pubres in self.publish_job(xassembly, xjob.getroot()):
-            yield pubres
+            for pubres in self.publish_job(xassembly, xjob.getroot()):
+                yield pubres
         return 

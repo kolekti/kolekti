@@ -2,13 +2,13 @@
 from glob import glob
 
 a = Analysis(['kolekti_server\\server.py'],
-             pathex=['C:\\Users\\waloo\\Desktop\\kolekti\\kolekti\\src'],
+             pathex=['F:\\Bureau\\kolekti\\sources\\0.7\\kolekti\\src'],
              hiddenimports=['htmlentitydefs',
                             'HTMLParser',
                             'markupbase',
                             'PIL',
                             'django.contrib.sessions.serializers',
-#                            'kolekti.publish_utils',
+                            'kolekti.publish_utils',
 #                            'kolekti.plugins.pluginBase',                            
 #                            'kolekti.plugins.chm',
 #                            'kolekti.plugins.hlp',
@@ -17,6 +17,7 @@ a = Analysis(['kolekti_server\\server.py'],
                             'kserver.templatetags.ostags',
                             'kserver.templatetags.difftags',
                             'kserver.templatetags.timetags',
+                            'kserver.templatetags.statustags',
                             ],
              hookspath=None,
              runtime_hooks=None)

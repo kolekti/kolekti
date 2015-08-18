@@ -30,10 +30,10 @@
                indent="yes"/>
 
   <xsl:param name="path"/>
+  <xsl:param name="jobname"/>
 
   <xsl:template match="/">
-    <h4>Paramètres de publication</h4>
-    <h2><span id="job_id"><xsl:value-of select='job/@id'/></span></h2>
+    <h2><span id="job_id"><xsl:value-of select='$jobname'/></span></h2>
     <div id="job_body">
       <xsl:apply-templates select="/job/criteria"/>
       <xsl:apply-templates select="/job/profiles"/>

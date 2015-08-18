@@ -80,10 +80,12 @@
   <xsl:template match="html:section|html:div[@class='section']" mode="aggreg">
     <xsl:param name="section_depth"/>
     <div class="section">
-      <xsl:comment>
+      <!--
+	  <xsl:comment>
         <xsl:text>depth </xsl:text>
         <xsl:value-of select="$section_depth"/>
-      </xsl:comment>
+	</xsl:comment>
+      -->
       <xsl:apply-templates mode="aggreg">
         <xsl:with-param name="section_depth" select="$section_depth+1"/>
       </xsl:apply-templates>

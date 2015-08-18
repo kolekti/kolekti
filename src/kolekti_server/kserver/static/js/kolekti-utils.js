@@ -114,8 +114,6 @@ var streamedTransport = function(streamCallback) {
 			
 			else if ( callback ) {
 			    callback = xhr.onload = xhr.onerror = null;
-			    console.log(type)
-			    console.log(xhr.readyState)
 			    //console.log(xhr.responseText)
 			    if ( type === "abort" ) {
 				xhr.abort();
@@ -455,23 +453,27 @@ var kolekti_browser = function(args) {
 
     // new folder/file accordion behavior
 
-    $(parent).on('click', '.newfolder', function(){
+    $(parent).on('click', '.newfolder', function(e){
 	$(parent + ' .newfile_collapse.in').collapse('hide');
     });
 
-    $(parent).on('click', '.newfile', function(){
+    $(parent).on('click', '.newfile', function(e){
 	$(parent + ' .newfolder_collapse.in').collapse('hide');
     });
 				
     // new folder
 
-    $(parent).on('click', '.create-folder', function() {
+    $(parent).on('click', '.create-folder', function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
 	folderpath = path + "/" + $(parent).find(".foldername").val();
 	$.post("/browse/mkdir",{path : folderpath}, function(data) {
 	    update();
 	})
     })
-    $(parent).on('click', '.create-file', function() {
+    $(parent).on('click', '.create-file', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
 	closure_create();
     })
 

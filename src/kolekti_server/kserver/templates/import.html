@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Importer un fichier tableur{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-import.css"></link>
+{% endblock %}
+
+{% block extrascripts %}
+    <script src="/static/js/kolekti-import.js"></script>
+{% endblock %}
+
+{% block menu %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapsePL" >
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    <strong>Modèle de fichier tableur</strong>
+	  </a>
+	</h4>
+      </div>
+      
+      <div id="collapsePL" class="panel-collapse collapse in">
+	<div class="panel-body">
+	  <form action="/import/template" method="GET">
+	  <div class="row">
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="publangs" name="pl_lang" value ="all" id="pl_all"/>
+		  Toutes
+		</label>
+	      </div>
+	    </div>
+	    <div class="col-sm-6 col-md-6">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="publangs" name="pl_lang" value ="none" id="pl_none"/>
+		  Aucune
+		</label>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified" role="group">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier {{lang}}</button>
+	  </div>
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish_all">Publier BAT </button>
+	  </div>
+	</div>
+      </div>
+    </div>
+
+{% endblock %}
+
+
+{% block content %}
+ <div class="main">
+  <div id="importform" class="panel panel-info">
+    <div class="panel-heading">
+      Transférer un fichier de définition de modules au format ods ou xlsx:
+      <form method="POST"  class="upload_form" enctype="multipart/form-data">
+	<input type="file" id="upload_file" name="upload_file" class="form-control upload">
+	<input type="hidden" name="path" value="/sources/fr/variables">
+	<br>
+	<button type="submit" class="btn btn-default btn-xs create-file">Valider</button>
+      </form>
+    </div>
+    <div class="panel-body">
+      <ul>
+	{% for event in events %}
+	{% if event.event == "result" %}
+	<li><a href="{{ event.url }}">{{ event.file }}</a></li>
+       {% elif event.event == "warning" %}
+       <li class="alert alert-warning">
+	<p>{{ event.msg }}</p>
+      </li>
+      {% elif event.event == "error" %}
+      <li>
+	<div class="alert alert-danger error">
+	  <p>{{ event.msg }}</p>
+	</div>
+	<a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseStacktrace{{ id }}" aria-expanded="false" aria-controls="collapseStracktrace{{ id }}">Détails</a>
+	<div class="collapse" id="collapseStacktrace{{ id }}">
+	  <div class="well">
+	    <pre>
+	      {{ event.stacktrace }}
+	    </pre>
+	  </div>
+	</div>
+      </li>
+      {% endif %}
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+ </div>
+{% endblock %}
