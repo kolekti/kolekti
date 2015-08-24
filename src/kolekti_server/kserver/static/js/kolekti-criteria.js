@@ -140,7 +140,7 @@ $(document).ready( function () {
     });
 
     $('body').on('click','.crit-del-crit', function(e) {
-	$(this).closest('div.panel').remove();
+	$(this).closest('div.criterion').remove();
 	enable_save();
     });
 
