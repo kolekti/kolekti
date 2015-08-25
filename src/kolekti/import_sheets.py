@@ -51,12 +51,16 @@ class Templater(common.kolektiBase):
                 for f in zipin.infolist():
                     data = zipin.read(f.filename)
                     if f.filename == "content.xml":                        
-                        data=self.gen_cols(data, vars)
+                        data=self.gen_cols(data, vars, self.basename(topictpl))
                     zipout.writestr(f, data)
 
-    def gen_cols(self, data, vars):
+    def gen_cols(self, data, vars, topictpl):
         x = ET.XML(data)
         n = 0
+        print x.xpath('//table:table[1]//table:table-row[1]//table:table-cell',namespaces=self.__nsods)
+        t = x.xpath('//table:table[1]//table:table-row[1]//table:table-cell[2]/text:p',namespaces=self.__nsods)[0]
+        t.text = topictpl
+        
         print "variables", vars
         for var in vars:
             print var
