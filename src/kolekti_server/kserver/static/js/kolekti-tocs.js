@@ -846,13 +846,7 @@ $(document).ready( function () {
 	    $('.modal .btn-insert-module').addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 
-	    kolekti_browser(
-		{'root':'/sources/'+kolekti.lang+'/topics',
-		 'parent':".insert-main",
-		 'titleparent':".new-module-title",
-		 'create_actions':'yes',
-		 'create_builder':create_builder
-		}).select(function(path) {
+	    var insert_topic = function(path) {
 		    $.get(path).success(
 			function(data){
 			    var topic = $.parseXML( data ),
@@ -873,8 +867,27 @@ $(document).ready( function () {
 			    enable_save();
 			    $('.modal').modal('hide');
 			})
+	    };
+	    
+	    kolekti_browser(
+		{'root':'/sources/'+kolekti.lang+'/topics',
+		 'parent':".insert-main",
+		 'titleparent':".new-module-title",
+		 'create_actions':'yes',
+		 'create_builder':create_builder
 		})
-		.create(create_topic)
+		.select(insert_topic)
+		.create(function(browser, folder, update_function) {
+		    var filename = $(browser).find('#new_name').val();
+		    $.post('/topics/create/',
+			   {
+			       'model': $('.label-tpl').data('tpl'),
+			       'topicpath': folder + "/" + filename
+			   })
+			.done(
+			    insert_topic(folder + "/" + filename)
+			)
+		})
 
 	    $('.insert-main').on('click', '.tpl-item',function(e){
 		$('.label-tpl').html($(this).data('tpl'))
