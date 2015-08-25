@@ -40,7 +40,7 @@ from kolekti import publish
 from kolekti.searchindex import searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
-from kolekti.import_sheets import Importer
+from kolekti.import_sheets import Importer, Templater
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -570,7 +570,11 @@ class VariablesODSView(kolektiMixin, View):
 class ImportView(kolektiMixin, TemplateView):
     template_name = "import.html"
     def get(self, request):
-        context = self.get_context_data()
+        lang = self.user_settings.active_srclang
+        tpls = self.get_directory(root = "/sources/"+lang+"/templates")
+        tnames = [t['name'] for t in tpls]
+        
+        context = self.get_context_data({'templates':tnames})
         return self.render_to_response(context)
 
     def post(self, request):
@@ -605,7 +609,21 @@ class ImportView(kolektiMixin, TemplateView):
         context = self.get_context_data({'events':events})
         return self.render_to_response(context)
             
+class ImportTemplateView(kolektiMixin, TemplateView):
+    def get(self, request):
+        template = request.GET.get('template')
+        filename = "import_template.ods"
+        odsfile = StringIO()
+        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+        tplter = Templater(projectpath)
+        tplter.generate("/sources/"+self.user_settings.active_srclang+"/templates/"+template, odsfile)
+        response = HttpResponse(odsfile.getvalue(),                            
+                                content_type="application/vnd.oasis.opendocument.spreadsheet")
+        response['Content-Disposition']='attachement; filename="%s"'%filename
+        odsfile.close()
+        return response
 
+    
 class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
         settings_js="""

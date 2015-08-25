@@ -4,10 +4,15 @@
 #     Copyright (C) 2007-2014 Stéphane Bonhomme (stephane@exselt.com)
 
 import os
+import re
 from zipfile import ZipFile
 from lxml import etree as ET
 import time
 import traceback
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 import common
 
@@ -18,6 +23,60 @@ def repl(s):
         s = s.encode('utf-8')
     return s
 
+
+class Templater(common.kolektiBase):
+    __nsods  = {"office": "urn:oasis:names:tc:opendocument:xmlns:office:1.0" ,
+                "table" : "urn:oasis:names:tc:opendocument:xmlns:table:1.0",
+                "text"  : "urn:oasis:names:tc:opendocument:xmlns:text:1.0",
+                }
+    def __init__(self, *args, **kwargs):
+        if kwargs.has_key('lang'):
+            self._lang = kwargs.get('lang')
+            kwargs.pop('lang')
+        super(Templater, self).__init__(*args, **kwargs)
+
+    def generate(self, topictpl, odsfile):
+        vars = set()
+        p = self.getOsPath(topictpl)
+        with open(p) as f:
+            for line in f.readlines():
+                for match in re.findall('\{\s*\w+\s*\}',line):
+                    t = match[1:-1].strip()
+                    if t != 'topicname':
+                        vars.add(match[1:-1].strip())
+                     
+        tpl = os.path.join(self._appdir,"templates","import.ods")
+        with ZipFile(tpl,'r') as zipin:
+            with ZipFile(odsfile,'w') as zipout:
+                for f in zipin.infolist():
+                    data = zipin.read(f.filename)
+                    if f.filename == "content.xml":                        
+                        data=self.gen_cols(data, vars)
+                    zipout.writestr(f, data)
+
+    def gen_cols(self, data, vars):
+        x = ET.XML(data)
+        n = 0
+        print "variables", vars
+        for var in vars:
+            print var
+            n = n+1
+            t = x.xpath('//table:table[@table:name="Ecrans"]',namespaces=self.__nsods)[0]
+            tc = ET.Element("{%s}table-column"%self.__nsods["table"])
+            tc.set("{%s}style-name"%self.__nsods["table"],"co3")
+            tc.set("{%s}default-cell-style-name"%self.__nsods["table"],"Default")
+            t.insert(n, tc)
+            
+            tc = ET.Element("{%s}table-cell"%self.__nsods["table"])
+            tc.set("{%s}style-name"%self.__nsods["table"],"ce1")
+            p = ET.SubElement(tc,'{%s}p'%self.__nsods["text"])
+            p.text = var
+            tc.set("{%s}value-type"%self.__nsods["office"],"string")
+            t.find('{%s}table-row'%self.__nsods["table"]).append(tc)
+        print ET.tostring(t,pretty_print=True)
+        return ET.tostring(x)
+            
+    
 class Importer(common.kolektiBase):
 
     __nsxlsx = {"n":"http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
