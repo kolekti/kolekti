@@ -522,8 +522,6 @@ $(document).ready( function () {
     // modify topic / section
 
     $('body').on('click', '.btn_topic_edit', function(e) {
-	e.preventDefault();
-	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	var url = topic.data('kolekti-topic-href');
 	window.open('/topics/edit/?topic='+url);
@@ -531,9 +529,6 @@ $(document).ready( function () {
     }) 
 
     $('body').on('click', '.btn_section_rename', function(e) {
-	e.preventDefault();
-	e.stopImmediatePropagation();
-
 	// get section title
 	var title_elt = $(this).closest('.section')
 	    .children('.panel-heading')
@@ -561,7 +556,6 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_up', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	var comp = $(this).closest('.topic, .section');
 	if (comp.length) {
 	    if (comp.prev('.topic').length) {
@@ -576,9 +570,10 @@ $(document).ready( function () {
 		enable_save();
 	    } else {
 		// pas de précédent, on regarde si on est dans un section
-		var section = comp.closest('.section');
-		if (section.length) {
-		    comp.insertBefore(section);
+		var sections = comp.parents('.section');
+		if (sections.length) {
+		    // section.insertBefore(comp);
+		    comp.insertBefore(sections.first());
 		    enable_save();
 		}
 	    }
@@ -589,7 +584,6 @@ $(document).ready( function () {
 
     $('body').on('click','.btn_topic_down', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	var comp = $(this).closest('.topic, .section');
 	if (comp.length) {
 	    if (comp.next('.topic').length) {
@@ -604,9 +598,9 @@ $(document).ready( function () {
 		enable_save();
 	    } else {
 		// pas de suivant, on regarde si on est dans un section
-		var section = comp.closest('.section');
-		if (section.length) {
-		    comp.insertAfter(section);
+		var sections = comp.parents('.section');
+		if (sections.length) {
+		    comp.insertAfter(sections.first());
 		    enable_save();
 		}
 	    }
@@ -615,7 +609,6 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_insert_before', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	if (topic.length == 0)
 	    topic = $(this).closest('.section');
@@ -624,7 +617,6 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_insert_after', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	if (topic.length == 0)
 	    topic = $(this).closest('.section');
@@ -633,7 +625,6 @@ $(document).ready( function () {
     
     $('body').on('click', '.btn_topic_insert_inside', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	topic = $(this).closest('.section');
 	newcomp(topic,false, true);
     });
@@ -642,7 +633,6 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_delete', function(e) {
 	e.preventDefault();
-	e.stopImmediatePropagation();
 	var topic = $(this).closest('.topic');
 	if (topic.length) {
 	    topic.remove();
@@ -887,8 +877,6 @@ $(document).ready( function () {
 		.create(create_topic)
 
 	    $('.insert-main').on('click', '.tpl-item',function(e){
-		e.preventDefault();
-		e.stopImmediatePropagation();
 		$('.label-tpl').html($(this).data('tpl'))
 		$('.label-tpl').data('tpl',$(this).data('tpl'));
 	    })
@@ -898,16 +886,11 @@ $(document).ready( function () {
 	// handle add  topic : select topic
 
 	$('.modal').on('click','.btn-insert-module', function(e) {
-	    e.preventDefault();
-	    e.stopImmediatePropagation();
-
 	    select_topic_browser();
 	});
 
 	$('.modal').off('click','.btn-add-section');
 	$('.modal').on('click', '.btn-add-section',function(e) {
-	    e.preventDefault();
-	    e.stopImmediatePropagation();
 	    var id = Math.round(new Date().getTime() + (Math.random() * 100)),
 		title = $('.modal #input_section_title').val()
 	    section_obj = create_section_obj(id, title);
@@ -929,8 +912,6 @@ $(document).ready( function () {
 
 	$('.modal').off('click','.btn-insert-section')
 	$('.modal').on('click','.btn-insert-section', function(e) {
-	    e.preventDefault();
-	    e.stopImmediatePropagation();
 	    $('.insert-buttons a').removeClass('active');
 	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
