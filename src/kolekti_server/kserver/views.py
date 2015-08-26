@@ -482,7 +482,7 @@ class ImagesUploadView(kolektiMixin, TemplateView):
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
-            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
+            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)

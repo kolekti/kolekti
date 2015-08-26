@@ -394,9 +394,9 @@ class kolektiBase(object):
             f.write(content)
         self.post_save(filename)
         
-    def write_chunks(self, chunks, filename):
+    def write_chunks(self, chunks, filename, mode="w"):
         ospath = self.__makepath(filename)
-        with open(ospath, "w") as f:
+        with open(ospath, mode) as f:
             for chunk in chunks():
                 f.write(chunk)
         self.post_save(filename)
