@@ -575,7 +575,7 @@ class kolektiBase(object):
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
             # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
-            value = self.variable_value(sheet, sheet_variable, profile)
+            value = self.variable_value(sheet, sheet_variable, profile).text
             string = string.replace(variable, value)
         return string
 
@@ -602,9 +602,9 @@ class kolektiBase(object):
                 else:
                     accept = False
             if accept:
-                return value.find('content').text
+                return value.find('content')
         logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return "[??]"
+        return ET.XML("<content>[??]</content>")
 
 
     @property

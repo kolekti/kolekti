@@ -129,7 +129,10 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def variable(self, _, *args):
         sheet = self.substitute_criteria(args[0], self._profile)
         variable = self.substitute_criteria(args[1], self._profile)
-        return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
+
+        print self.variable_value(sheet, variable, self._profile, {"LANG":self._publang})
+        
+        return self.variable_value(sheet, variable, self._profile, {"LANG":self._publang})
 
     def evaluate_condition(self, _, args):
         conditions = args.replace(' ','')
