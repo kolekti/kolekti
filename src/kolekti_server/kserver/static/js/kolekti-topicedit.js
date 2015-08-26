@@ -7,7 +7,7 @@ $(document).ready( function () {
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	entities : false,
-
+	fillEmptyBlocks: false,
 	filebrowserBrowseUrl: '/browse/ckbrowser',
 	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
 	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
