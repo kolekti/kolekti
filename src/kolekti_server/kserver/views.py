@@ -1018,6 +1018,11 @@ class TopicEditorView(kolektiMixin, View):
     def post(self,request):
         try:
             path=request.GET['topic']
+            try:
+                s = request.META['HTTP_METADATA']
+                meta = dict([m.split(':') for m in s.split(';')])
+            except KeyError:
+                meta = {}
             xbody = self.parse_html_string(request.body)
             
             xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
@@ -1026,12 +1031,28 @@ class TopicEditorView(kolektiMixin, View):
                 body.remove(e)
             for e in xbody.xpath('/html/body/*'):
                 body.append(e)
+            for metaname, metavalue in meta.iteritems():
+                print metaname, metavalue
+                if len(xtopic.xpath('/h:html/h:head/h:meta[@name="%s"][@content]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})):
+                    xtopic.xpath('/h:html/h:head/h:meta[@name="%s"]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})[0].set('content', metavalue)
+                else:
+                    ET.SubElement(xtopic.xpath('/h:html/h:head',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0], "{http://www.w3.org/1999/xhtml}meta", {"name":metaname,"content":metacontent})
+                    
+                    
             self.xwrite(xtopic, path)
             return HttpResponse(json.dumps({'status':'ok'}))
         except:
             import  traceback
             print traceback.format_exc()
             return HttpResponse(json.dumps({'status':'error'}))
+
+class TopicMetaJsonView(kolektiMixin, View):
+    def get(self, request):
+        path=request.GET['topic']
+        xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
+        metaelts = xtopic.xpath('/h:html/h:head/h:meta[@name][@content]',namespaces={'h':'http://www.w3.org/1999/xhtml'})
+        meta = [{'name':m.get('name'),'content':m.get('content')} for m in metaelts]
+        return HttpResponse(json.dumps(meta))
     
 class TopicCreateView(kolektiMixin, View):
     template_name = "home.html"

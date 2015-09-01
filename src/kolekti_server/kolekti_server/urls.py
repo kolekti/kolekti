@@ -74,6 +74,8 @@ urlpatterns = patterns('',
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
 
+    url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
+
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
