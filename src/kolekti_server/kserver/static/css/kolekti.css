@@ -131,3 +131,11 @@ label {
 }
 
 .top-margin { margin-top:10px; }
+
+
+/* browser */
+
+/* set color on folder lines */
+.browser tr.dir {
+    background-color: #f9f9f9;
+}
