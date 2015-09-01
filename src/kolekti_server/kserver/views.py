@@ -229,8 +229,11 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             yield template.render(Context(chunck))
         
 
-                
-        
+    def set_extension(self, path, default):
+        if os.path.splitext(path)[1] == "":
+            path = path + default
+        return path
+    
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
@@ -337,6 +340,7 @@ class TocCreateView(kolektiMixin, View):
     def post(self, request):
         try:
             tocpath = request.POST.get('tocpath')
+            tocpath = self.set_extension(tocpath, ".html")
             toc = self.parse_html_string("""<?xml version="1.0"?>
 <!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
   <head><title>toc</title></head>
@@ -652,6 +656,7 @@ class JobCreateView(kolektiMixin, View):
     def post(self, request):        
         try:
             path = request.POST.get('path')
+            path = self.set_extension(path, ".xml")
             ospath = self.getOsPath(path)
             jobid, ext = os.path.splitext(os.path.basename(path))
             if not len(ext):
@@ -1060,6 +1065,7 @@ class TopicCreateView(kolektiMixin, View):
         try:
             modelpath = '/sources/'+ self.user_settings.active_srclang + "/templates/" + request.POST.get('model')
             topicpath = request.POST.get('topicpath')
+            topicpath = self.set_extension(topicpath, ".html")
             topic = self.parse(modelpath)
             self.xwrite(topic, topicpath)
         except:
