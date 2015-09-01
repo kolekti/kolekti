@@ -242,7 +242,7 @@ var kolekti_browser = function(args) {
 	create_actions= true;
     if (args && args.create_builder)
 	create_builder = args.create_builder;
-
+    
     params['mode']=mode;
 
     var get_browser_value = function() {
@@ -460,8 +460,16 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.newfile', function(e){
 	$(parent + ' .newfolder_collapse.in').collapse('hide');
     });
-				
-    // new folder
+
+    $(parent).on('shown.bs.collapse', '.newfile_collapse', function () {
+	$(parent + ' .newfile_collapse input').focus();
+    })
+    
+    $(parent).on('shown.bs.collapse', '.newfolder_collapse', function () {
+	$(parent + ' .newfolder_collapse input').focus();
+    })
+    
+   // new folder
 
     $(parent).on('click', '.create-folder', function(e) {
 		e.preventDefault();
