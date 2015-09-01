@@ -1,6 +1,0 @@
-( function() {
-        CKEDITOR.dialog.add( 'editmetadata', function(editor) {
-	return condDialog(editor,'insert')
-    });
-
-})
