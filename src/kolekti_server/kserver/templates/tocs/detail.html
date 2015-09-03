@@ -215,7 +215,8 @@
     </div>
 
     <hr>
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"  
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"
+	 data-kolekti-tocname="{{ tocdisplay }}"
       {% for namemeta, valuemeta  in tocmeta.items %}
       data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
       {% endfor %}
