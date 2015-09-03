@@ -268,8 +268,8 @@ class kolektiBase(object):
             
 
         # copy assembly / change language in references to images
-        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
-        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
         try:
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
@@ -282,7 +282,7 @@ class kolektiBase(object):
             splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
                 splitpath[2] = dstlang 
-                elt_img.set('src','/'.join(splipath))
+                elt_img.set('src','/'.join(splitpath))
         self.xwrite(xassembly, assembly_path)
 
 

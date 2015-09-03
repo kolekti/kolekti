@@ -360,14 +360,14 @@ class ReleaseStateView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
 
     def post(self,request):
         path, assembly_name = request.POST.get('release').rsplit('/',1)
         state = request.POST.get('state')
         lang = request.POST.get('lang')
-        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
         
 class ReleaseCopyView(kolektiMixin, TemplateView):
@@ -392,7 +392,7 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
         release_path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
         content = self.get_assembly_edit(assembly_path, release_path=release_path),
         return HttpResponse(content)
     
@@ -405,7 +405,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 #        assembly_name = [f['name'] for f in self.get_directory('%s/sources/%s/assembly'%(release_path, lang)) if f['name'][-5:] == '.html'][0][:-5]
         
         assembly_name = self.basename(release_path)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
@@ -418,7 +418,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         states = []
         focus = []
         for lang in context.get('srclangs',[]):
-            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'.html'
+            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
                 states.append(self.syncMgr.propget('release_state',tr_assembly_path))
             else:
@@ -439,7 +439,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         release, assembly = request.GET.get('release',"").rsplit('/',1)
          
         lang=request.GET.get('lang',self.user_settings.active_srclang)
-        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'.html'])
+        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'_asm.html'])
         xassembly = self.parse(assembly_path)
         xbody = self.parse_html_string(request.body)
         body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
@@ -464,7 +464,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
         try:
             p = publish.ReleasePublisher(projectpath, langs=langs)
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release, assembly)), content_type="text/html")
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release, assembly + "_asm")), content_type="text/html")
 
         except:
             import traceback
