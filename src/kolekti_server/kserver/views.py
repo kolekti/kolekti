@@ -404,6 +404,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_name = [f['name'] for f in self.get_directory('%s/sources/%s/assembly'%(release_path, lang)) if f['name'][-5:] == '.html'][0][:-5]
         
+#        assembly_name = self.basename(release_path)
         assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
