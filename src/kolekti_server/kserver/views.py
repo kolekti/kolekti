@@ -322,7 +322,7 @@ class TocView(kolektiMixin, View):
     
     def post(self, request):
         try:
-            print request.body
+#            print request.body
             xtoc=self.parse_string(request.body)
             tocpath = xtoc.get('data-kolekti-path')
             xtoc_save = self.get_xsl('django_toc_save')
@@ -1037,7 +1037,6 @@ class TopicEditorView(kolektiMixin, View):
             for e in xbody.xpath('/html/body/*'):
                 body.append(e)
             for metaname, metavalue in meta.iteritems():
-                print metaname, metavalue
                 if len(xtopic.xpath('/h:html/h:head/h:meta[@name="%s"][@content]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})):
                     xtopic.xpath('/h:html/h:head/h:meta[@name="%s"]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})[0].set('content', metavalue)
                 else:
