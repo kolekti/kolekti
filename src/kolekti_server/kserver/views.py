@@ -1071,7 +1071,7 @@ class TopicCreateView(kolektiMixin, View):
         except:
             import  traceback
             print traceback.format_exc()
-        return HttpResponse(json.dumps(self.path_exists(topicpath)),content_type="application/json")
+        return HttpResponse(json.dumps(topicpath), content_type="application/json")
 
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request):

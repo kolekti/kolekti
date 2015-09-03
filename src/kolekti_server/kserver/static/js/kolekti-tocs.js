@@ -655,7 +655,7 @@ $(document).ready( function () {
     
     var create_topic_obj = function(path, id, topic) {
 
-	var topicfile = displayname(path);
+	var topicfile = basename(path);
 
 	var topic_obj = $('<div>', {
 	    'class':"topic",
@@ -690,7 +690,7 @@ $(document).ready( function () {
 					'data-toggle':"tooltip", 
 					'data-placement':"top",
 					'title':path,
-					'html':topicfile
+					'html':$('<small>',{'html':topicfile})
 				    })
 				]
 			    })
@@ -734,10 +734,10 @@ $(document).ready( function () {
 				    'html':" "}),
 				" ",
 				$('<span>',{
-					'data-toggle':"tooltip", 
-					'data-placement':"top",
-					'title':path,
-					'html':topicfile
+				    'data-toggle':"tooltip", 
+				    'data-placement':"top",
+				    'title':path,
+				    'html':$("<small>",{"html":topicfile})
 			    })]
 			})
 		    })
@@ -889,10 +889,13 @@ $(document).ready( function () {
 			   {
 			       'model': $('.label-tpl').data('tpl'),
 			       'topicpath': folder + "/" + filename
-			   })
-			.done(
-			    insert_topic(folder + "/" + filename)
-			)
+			   }).done(function(data) {
+			       insert_topic(data);
+			   }).fail(function() {
+			       console.log("error")
+			   }).always(function() {
+			       console.log("fter")
+			   });
 		})
 
 	    $('.insert-main').on('click', '.tpl-item',function(e){
