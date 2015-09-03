@@ -364,7 +364,6 @@ class kolektiBase(object):
         return xsl
 
     def log_xsl(self, error_log):
-        print "log xsl"
         for entry in error_log:
             logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
             print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
@@ -401,12 +400,13 @@ class kolektiBase(object):
                 f.write(chunk)
         self.post_save(filename)
         
-    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
 
             
     # for demo
@@ -474,8 +474,9 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
-            # svn add if file did not exist
-            self.post_save(path)
+            if hasattr(self, "_draft") and self._draft is False:
+                # svn add if file did not exist
+                self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
@@ -485,13 +486,17 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         return os.path.exists(ospath)
 
-    def copyFile(self, source, path):
+    def copyFile(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
         # logging.debug("copyFile %s -> %s"%(ossource, ospath))
                
-        return shutil.copy(ossource, ospath)
-
+        cp = shutil.copy(ossource, ospath)
+        if hasattr(self, "_draft") and self._draft is False:
+            print "post save on copy"
+            self.post_save(path)
+        return cp
+            
     def copyDirs(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
