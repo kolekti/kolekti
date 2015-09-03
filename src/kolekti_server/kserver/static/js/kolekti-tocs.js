@@ -373,7 +373,7 @@ $(document).ready( function () {
 	    $('#releasename').html('<div class="panel panel-default"><div class="panel-body"><div class="form"><div class="form-group"><label for="release_name">Nom de la version</label><input type="text" class="form-control" id="release_name"/></div><div class="form-group"><button class="btn btn-default" id="confirm_version">Créer la version</button></div></div></div></div>');
 	    $('.modal').modal('show');
 	    $('.modal').on('shown.bs.modal', function() {
-		$("#release_name").val($('#toc_root').data('kolekti-tocname'));
+		$("#release_name").val($('#toc_root').data('kolekti-tocname')+'_');
 		$("#release_name").focus();
 	    })
 
