@@ -829,15 +829,18 @@ class Releaser(Publisher):
                 raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
-            release_name = os.path.splitext(toc.rsplit("/", 1)[1])[0]
-        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
-        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
+        #        release_name = os.path.splitext(pubdir.rsplit("/", 1)[1])[0]
 
         if isinstance(job,ET._ElementTree):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        xjob.set('id',release_name)
+        release_name = xjob.get('pubdir')
+        xjob.set('id',release_name + '_asm')
+
+        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
+
         # assembly
         logging.debug('********************************** CREATE ASSEMBLY')
         assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)

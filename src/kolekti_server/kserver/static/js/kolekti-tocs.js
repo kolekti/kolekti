@@ -381,7 +381,7 @@ $(document).ready( function () {
 		e.preventDefault();
 		e.stopImmediatePropagation();
 		params['pubdir'] = $('#release_name').val()
-		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + basename(toc)
+		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
 		$.get(assembly)
 		    .success(function() {
 			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
