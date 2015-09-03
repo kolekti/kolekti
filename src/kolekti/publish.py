@@ -308,8 +308,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # write pivot
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
-
-        self.xwrite(pivot, pivfile)
+        self.xwrite(pivot, pivfile, sync = False)
         return pivot
 
     # create settings.xml file in assembly directory
@@ -738,6 +737,7 @@ class DraftPublisher(Publisher):
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("publish toc %s",toc)
+        
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
         else:
@@ -760,33 +760,49 @@ class DraftPublisher(Publisher):
             yield ev
             status = (ev.get('event','') != 'error')
 
-        if not status:
-            return
+            if not status:
+                return
         
         try:
             assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
+            manifest = self.getOsPath(assembly_dir + '/manifest.json')
+
+        except:
+            import traceback
+            yield {
+                    'event':'error',
+                    'msg':"erreur lors de l'assemblage",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                }
+            return
+        try:
+            with open(manifest, 'a') as mf:
+                mf.write('{"event":"publication", "pubname":"%s", "pubtitle":"%s", "content":[{"event":"toc","file":"%s"}"'%(pubname, pubtitle,str(toc)))
+
+                for event in events:
+                    mf.write(",\n" + json.dumps(event))
+                    yield event
+            
+                logging.debug('********************************** PUBLISH ASSEMBLY')
+                for pubres in self.publish_job(assembly, xjob.getroot()):
+                    mf.write(",\n" + json.dumps(pubres))
+                    yield pubres
+                try:
+                    pass
+                # self.cleanup_assembly_dir(xjob.getroot())
+                except:
+                    logging.debug('Warning: could not remove tmp dir')
+                mf.write("]}\n")
         except:
             import traceback
             yield {
                 'event':'error',
-                'msg':"erreur lors de l'assemblage",
+                'msg':"impossible d'ouvrir le fichier manifeste",
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
             }
-            return
-
-        for event in events:
-            yield event
             
-        logging.debug('********************************** PUBLISH ASSEMBLY')
-        for pubres in self.publish_job(assembly, xjob.getroot()):
-            yield pubres
-        try:
-            pass
-        # self.cleanup_assembly_dir(xjob.getroot())
-        except:
-            logging.debug('Warning: could not remove tmp dir')
-
         return
     
 class Releaser(Publisher):
@@ -836,10 +852,20 @@ class Releaser(Publisher):
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
         if self.syncMgr is not None :
-            self.syncMgr.propset("release_state","edition",assembly_path)
-#            self.syncMgr.add_resource(assembly_path)
-            self.syncMgr.commit(assembly_path, "Release Creation")
-#            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
+            try:
+                self.syncMgr.propset("release_state","edition",assembly_path)
+        #            self.syncMgr.add_resource(assembly_path)
+                self.syncMgr.commit(assembly_path, "Release Creation")
+        #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
+            except:
+                import traceback
+                res.append({
+                    'event':'error',
+                    'msg':"Erreur de synchronisation",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    })
+                   
         return res
 
     # copies the job in release directory
