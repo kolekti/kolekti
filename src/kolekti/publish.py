@@ -853,7 +853,7 @@ class Releaser(Publisher):
 
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
-        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
+        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         if self.syncMgr is not None :
             try:
                 self.syncMgr.propset("release_state","edition",assembly_path)

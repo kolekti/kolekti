@@ -4,9 +4,9 @@
   <hr/>
   <h4><em>Langue {{ label }}</em></h4>
   {% elif event == "job" %}
-  {# <h4>Job {{ label }}</h4> #}
+  {#  <h4>Publications</h4> #}
   {% elif event == "profile" %}
-  <h5>{{ label }}</h5>
+  <h6>{{ label }}</h6>
   {% elif event == "result" %}
   <ul class="result">
     {% for doc in docs %}
@@ -14,9 +14,10 @@
     {% endfor %}
   </ul>
   {% elif event == "release" %}
-  <h4><em>Version :</em></h4>
+  <h4><em>Version</em></h4>
   <ul class="result">
     <li><a href="/releases/detail/?release={{ref}}" target="_blank">{{ ref }}</a></li>
+    <li>Assemblage : <a href="{{ref}}/sources/{{ lang }}/assembly/{{ releasename }}_asm.html" target="_blank">{{ releasename }}_asm.html</a> [{{ lang }}]</li>
   </ul>
   {% elif event == "warning" %}
   <div class="alert alert-warning">

@@ -1001,7 +1001,9 @@ class ReleaseView(PublicationView):
         yield {
             'event':'release',
             'ref':release_dir[:-1],
+            'releasename':pp[0]['releasename'],
             'time':pp[0]['datetime'],
+            'lang':self.user_settings.active_srclang,
         }
 
             
