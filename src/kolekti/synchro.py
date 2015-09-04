@@ -68,8 +68,10 @@ class SynchroManager(object):
         return self._client.log(self._base)
 
     def state(self):
-        headrev = self._client.info(self._base)
-        return headrev
+        #headrev = self._client.info(self._base)
+        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        return {"revision":{"number":headrev}}
+
     
     def revision_info(self, revision):
         rev = int(revision)
