@@ -98,46 +98,46 @@ class plugin(pluginBase.plugin):
         xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self._publang)
         puburl=self.getUrlPath(self.publication_plugin_dir)
         templateurl=self.getUrlPath(templatepath)
-        try:
-            doc=xslt(self.pivot,
-                     pubdir=u"'%s'"%puburl,
-                     css=u"'%s'"%css,
-                     template=u"'%s'"%templateurl,
-                     )
-            res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/index.html"%self.publication_plugin_dir})
-        except:
-            logging.error('WebHelp5: pages generation failed')
-            import traceback
-            logging.debug(traceback.format_exc())
-            logging.debug(xslt.error_log)
-            logging.debug('--')
-            raise Exception
+        # try:
+        doc=xslt(self.pivot,
+                pubdir=u"'%s'"%puburl,
+                css=u"'%s'"%css,
+                template=u"'%s'"%templateurl,
+            )
+        res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/index.html"%self.publication_plugin_dir})
+        # except:
+        #    logging.error('WebHelp5: pages generation failed')
+        #    import traceback
+        #    logging.debug(traceback.format_exc())
+        #    logging.debug(xslt.error_log)
+        #    logging.debug('--')
+        #    raise Exception(xslt.error_log)
 
 #        linkurl = self.publisher.model.local2url(self.publisher.model.pubpath)
 #        yield(self.publisher.view.publink('index.html', self.label, '/'.join((linkurl, self.label, 'index.html'))))
 
-        try:
-            if self.get_script_parameter('zip'):
-                from zipfile import ZipFile
-                #produire un zip
-                zipname="%s_%s.zip" %(self.publication_file, self.scriptname)
-                top = self.getOsPath(self.publication_plugin_dir)
-                zf=os.path.join(self.getOsPath(self.publication_dir), zipname)
-                with ZipFile(zf,"w") as zippy:
-                    for root, dirs, files in os.walk(top):
-                        for name in files:
-                            if name == zipname:
-                                continue
-                            rt=root[len(top) + 1:]
-                            zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+        #try:
+        if self.get_script_parameter('zip'):
+            from zipfile import ZipFile
+            #produire un zip
+            zipname="%s_%s.zip" %(self.publication_file, self.scriptname)
+            top = self.getOsPath(self.publication_plugin_dir)
+            zf=os.path.join(self.getOsPath(self.publication_dir), zipname)
+            with ZipFile(zf,"w") as zippy:
+                for root, dirs, files in os.walk(top):
+                    for name in files:
+                        if name == zipname:
+                            continue
+                        rt=root[len(top) + 1:]
+                        zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
 
-                res.append({'type':"zip", "label":zipname, "url": "%s/%s"%(self.publication_dir,zipname)})
+            res.append({'type':"zip", "label":zipname, "url": "%s/%s"%(self.publication_dir,zipname)})
                 #yield(self.publisher.view.publink('Zip', self.label, '%s/%s' %(linkurl, zipname)))
-        except:
-            logging.error('WebHelp5: zip archive generation failed')
-            import traceback
-            logging.debug(traceback.format_exc())
-            print traceback.format_exc()
+        #except:
+        #    logging.error('WebHelp5: zip archive generation failed')
+        #    import traceback
+        #    logging.debug(traceback.format_exc())
+        #    print traceback.format_exc()
         logging.debug( "generation complete")
         return res
     

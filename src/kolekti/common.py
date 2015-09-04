@@ -156,6 +156,12 @@ class kolektiBase(object):
         return ET.parse(defs).getroot()
 
 
+    def basename(self, path):
+        return path.split('/')[-1]
+
+    def dirname(self, path):
+        return "/".join(path.split('/')[:-1])
+    
     def get_directory(self, root=None, filter=None):
         res=[]
         if root is None:
@@ -202,11 +208,11 @@ class kolektiBase(object):
 
     def get_release_assemblies(self, path):
         ospath= self.__makepath(path)
-        for f in os.listdir(os.path.join(ospath,'kolekti',"publication-parameters")):
-            if f.endswith(".json"):
-                pf = os.path.join(os.path.join(ospath,'kolekti',"publication-parameters",f))
+        for f in os.listdir(ospath):
+            if os.path.exists(os.path.join(ospath,f,'kolekti',"publication-parameters")):
+                pf = os.path.join(os.path.join(ospath,f))
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
-                yield (f[:-5], d)
+                yield (f, d)
 
 
     def resolve_var_path(self, path, xjob):
@@ -221,7 +227,6 @@ class kolektiBase(object):
                     ppath.replace('{%s}'%pcriterion.get('code'), pcriterion.get('value'))
             if not ppath in seen:
                 seen.add(ppath)
-                print ppath
                 yield ppath
 
                 
@@ -231,9 +236,7 @@ class kolektiBase(object):
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xjob = self.parse(job_path)
         xassembly = self.parse( assembly_path)
-        print assembly_path
         for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
-            print elt_img
             src_img = elt_img.get('src')
             for imgfile in self.resolve_var_path(src_img, xjob):
                 t = mimetypes.guess_type(imgfile)[0]
@@ -265,8 +268,8 @@ class kolektiBase(object):
             
 
         # copy assembly / change language in references to images
-        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
-        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
         try:
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
@@ -279,13 +282,12 @@ class kolektiBase(object):
             splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
                 splitpath[2] = dstlang 
-                elt_img.set('src','/'.join(splipath))
+                elt_img.set('src','/'.join(splitpath))
         self.xwrite(xassembly, assembly_path)
 
 
         self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 
-        print assembly_path
         yield assembly_path
         return
 
@@ -308,7 +310,6 @@ class kolektiBase(object):
 
         for copiedfile in self.iter_release_assembly(path, assembly_name, srclang, copy_callback):
             yield copiedfile
-            print "copied",copiedfile
         src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
         assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
         try:
@@ -325,7 +326,6 @@ class kolektiBase(object):
                 splitpath[2] = dstlang 
                 elt_img.set('src','/'.join(splipath))
         self.xwrite(xassembly, assembly_path)
-        print assembly_path
         yield assembly_path
         return
     
@@ -394,19 +394,20 @@ class kolektiBase(object):
             f.write(content)
         self.post_save(filename)
         
-    def write_chunks(self, chunks, filename):
+    def write_chunks(self, chunks, filename, mode="w"):
         ospath = self.__makepath(filename)
-        with open(ospath, "w") as f:
+        with open(ospath, mode) as f:
             for chunk in chunks():
                 f.write(chunk)
         self.post_save(filename)
         
-    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
 
             
     # for demo
@@ -474,8 +475,9 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
-            # svn add if file did not exist
-            self.post_save(path)
+            if hasattr(self, "_draft") and self._draft is False:
+                # svn add if file did not exist
+                self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
@@ -485,13 +487,17 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         return os.path.exists(ospath)
 
-    def copyFile(self, source, path):
+    def copyFile(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
         # logging.debug("copyFile %s -> %s"%(ossource, ospath))
                
-        return shutil.copy(ossource, ospath)
-
+        cp = shutil.copy(ossource, ospath)
+        if hasattr(self, "_draft") and self._draft is False:
+            print "post save on copy"
+            self.post_save(path)
+        return cp
+            
     def copyDirs(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
@@ -575,7 +581,7 @@ class kolektiBase(object):
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
             # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
-            value = self.variable_value(sheet, sheet_variable, profile)
+            value = self.variable_value(sheet, sheet_variable, profile).text
             string = string.replace(variable, value)
         return string
 
@@ -602,9 +608,9 @@ class kolektiBase(object):
                 else:
                     accept = False
             if accept:
-                return value.find('content').text
+                return value.find('content')
         logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return "[??]"
+        return ET.XML("<content>[??]</content>")
 
 
     @property

@@ -43,6 +43,10 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match = "html:div[@class='topicinfo']">
+      <hr/>
+  </xsl:template>
+  
   <xsl:template match="*[namespace-uri(self::*)='http://www.w3.org/1999/xhtml']">
     <xsl:element name="{local-name()}" namespace="">
       <xsl:apply-templates select="node()|@*"/>

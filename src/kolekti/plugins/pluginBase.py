@@ -40,13 +40,14 @@ class PluginsExtensions(PublisherExtensions):
 class plugin(PublisherMixin,kolektiBase):
     _plugin="dummy"
     LOCAL_ENCODING=sys.getfilesystemencoding()
-    
+
     def __init__(self, *args, **kwargs):
         super(plugin, self).__init__(*args, **kwargs)
         self._plugin = self.__module__.split('.')[-1]
         self._plugindir = os.path.join(self._appdir,'plugins',"_%s"%self._plugin)
         self.__ext = PluginsExtensions
         logging.debug("*********** init plugin with extension %s"%self.__ext)
+        self._draft = True
         
     def get_xsl(self,xslfile, **kwargs):
         logging.debug("get xsl from plugin %s"%self._plugindir)

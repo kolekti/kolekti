@@ -1,0 +1,1 @@
+﻿CKEDITOR.plugins.setLang("metadata","fr",{titleEditMetadata:"Editer mes metadonnées"});

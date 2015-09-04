@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
 import re
 import os
 from copy import copy
 import shutil
 import json
 import random
+from datetime import datetime
+import time
 from lxml import etree as ET
 from PIL import Image
 try:
@@ -11,7 +17,7 @@ try:
 except ImportError:
     from StringIO import StringIO
    
-from models import Settings
+from models import Settings, ReleaseFocus
 from forms import UploadFileForm
 
 from django.http import Http404
@@ -34,6 +40,7 @@ from kolekti import publish
 from kolekti.searchindex import searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
+from kolekti.import_sheets import Importer, Templater
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -74,7 +81,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def projects(self):
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
-            project={'name':projectname}
+            project={'name':projectname, 'id':projectname.replace(' ','_')}
             try:
                 projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, projectname, 'kolekti', 'settings.xml'))
                 if projectsettings.xpath('string(/settings/@version)') != '0.7':
@@ -123,9 +130,13 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
     def get_toc_edit(self, path):
         xtoc = self.parse(path)
         tocmeta = {}
-        toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        for meta in xtoc.xpath('/html:html/html:head/html:meta[starts-with(@name, "kolekti.")]', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
-            tocmeta.update({meta.get('name')[8:]:meta.get('content')})
+        toctitle = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.title"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+
+        if len(toctitle) == 0:
+            toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        for meta in xtoc.xpath('/html:html/html:head/html:meta', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+            if meta.get('name',False):
+                tocmeta.update({meta.get('name').replace('.','_'):meta.get('content')})
         tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
@@ -184,7 +195,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         #    f.write(ET.tostring(xjob, pretty_print=True))
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
-            ejob = xsl(xjob, path="'%s'"%path)
+            ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
         except:
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
@@ -209,9 +220,20 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         self.user_settings.save()
 
 
-
-                
+    def format_iterator(self, sourceiter):
+        template = get_template('publication-iterator.html')
+        nbchunck = 0
+        for chunck in sourceiter:
+            nbchunck += 1
+            chunck.update({'id':nbchunck})
+            yield template.render(Context(chunck))
         
+
+    def set_extension(self, path, default):
+        if os.path.splitext(path)[1] == "":
+            path = path + default
+        return path
+    
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
@@ -223,7 +245,7 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-    def get(self, request, require_svn_auth=False, project_folder=None, project_url=None):
+    def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
         
         context = self.get_context_data({
                     "active_project" :self.user_settings.active_project.encode('utf-8'),
@@ -245,12 +267,14 @@ class ProjectsView(kolektiMixin, View):
         if project_url=="":
         # create local project
             sync.export_project(project_folder)
+            return self.get(request, require_svn_auth=False, project_folder=project_folder)
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
                 return self.get(request)
             except ExcSyncNoSync:
-                return self.get(request, True, project_folder, project_url)
+                return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
+
             
 
 class ProjectsActivateView(ProjectsView):
@@ -299,6 +323,7 @@ class TocView(kolektiMixin, View):
     
     def post(self, request):
         try:
+#            print request.body
             xtoc=self.parse_string(request.body)
             tocpath = xtoc.get('data-kolekti-path')
             xtoc_save = self.get_xsl('django_toc_save')
@@ -316,6 +341,7 @@ class TocCreateView(kolektiMixin, View):
     def post(self, request):
         try:
             tocpath = request.POST.get('tocpath')
+            tocpath = self.set_extension(tocpath, ".html")
             toc = self.parse_html_string("""<?xml version="1.0"?>
 <!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
   <head><title>toc</title></head>
@@ -335,25 +361,25 @@ class ReleaseStateView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
 
     def post(self,request):
-        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        path, assembly_name = request.POST.get('release').rsplit('/',1)
         state = request.POST.get('state')
-        lang = request.POST.get('targetlang')
-        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'.html']))
+        lang = request.POST.get('lang')
+        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
         
 class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
-        print "copy release"
         try:
-            path, assembly_name = request.GET.get('release').rsplit('/',1)
+            release = request.POST.get('release')
+            path, assembly_name = release.rsplit('/',1) 
             srclang = request.POST.get('release_copy_from_lang')
             dstlang = request.POST.get('release_lang')
-            print path, assembly_name, srclang, dstlang
+
             #            return StreamingHttpResponse(
             for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
                 pass
@@ -361,14 +387,26 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
     #    return HttpResponse("ok")
-        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(request.GET.get('release'),dstlang))
+        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(path,dstlang))
     
-class ReleaseDetailsView(kolektiMixin, TemplateView):
-    template_name = "releases/detail.html"
+class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
         release_path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+".html")
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+        content = self.get_assembly_edit(assembly_path, release_path=release_path),
+        return HttpResponse(content)
+    
+        
+class ReleaseDetailsView(kolektiMixin, TemplateView):
+    template_name = "releases/detail.html"
+    def get(self, request):
+        release_path = request.GET.get('release')
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+#        assembly_name = [f['name'] for f in self.get_directory('%s/sources/%s/assembly'%(release_path, lang)) if f['name'][-5:] == '.html'][0][:-5]
+        
+        assembly_name = self.basename(release_path)
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
@@ -376,17 +414,24 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
-            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
+#            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
         })
         states = []
+        focus = []
         for lang in context.get('srclangs',[]):
-            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'.html'
+            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
                 states.append(self.syncMgr.propget('release_state',tr_assembly_path))
             else:
                 states.append("unknown")
-        print zip(context.get('srclangs',[]),states)
-        context.update({'langstates':zip(context.get('srclangs',[]),states)})
+            try:
+                focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang))
+            except:
+                import traceback
+                print traceback.format_exc()
+                focus.append(False)
+                
+        context.update({'langstates':zip(context.get('srclangs',[]),states,focus)})
         #print json.dumps(context, indent=2)
         return self.render_to_response(context)
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
@@ -394,8 +439,8 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
     def post(self, request):
         release, assembly = request.GET.get('release',"").rsplit('/',1)
          
-        lang=request.GET['lang']
-        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'.html'])
+        lang=request.GET.get('lang',self.user_settings.active_srclang)
+        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'_asm.html'])
         xassembly = self.parse(assembly_path)
         xbody = self.parse_html_string(request.body)
         body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
@@ -408,7 +453,28 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         self.xwrite(xassembly, assembly_path)
         return HttpResponse(json.dumps({'status':'ok'}))
 
+class ReleasePublishView(kolektiMixin, TemplateView):
+    def post (self, request):
+        release, assembly = request.POST.get('release',"/").rsplit('/',1)
+        langs = request.POST.getlist('langs[]',[])
+        context={}
 
+#        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
+#        print jobpath
+#        xjob = self.parse(jobpath)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        try:
+            p = publish.ReleasePublisher(projectpath, langs=langs)
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release, assembly + "_asm")), content_type="text/html")
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            context.update({'success':False})
+            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
 
 class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"
@@ -422,7 +488,7 @@ class ImagesUploadView(kolektiMixin, TemplateView):
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
-            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
+            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
@@ -508,9 +574,62 @@ class VariablesODSView(kolektiMixin, View):
 
     
 class ImportView(kolektiMixin, TemplateView):
-    template_name = "home.html"
+    template_name = "import.html"
+    def get(self, request):
+        lang = self.user_settings.active_srclang
+        tpls = self.get_directory(root = "/sources/"+lang+"/templates")
+        tnames = [t['name'] for t in tpls]
+        
+        context = self.get_context_data({'templates':tnames})
+        return self.render_to_response(context)
 
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
 
+            projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+            uploaded_file = request.FILES[u'upload_file']
+            filename = str(uploaded_file)
+
+            importer = Importer(projectpath, lang=self.user_settings.active_srclang)
+            if(os.path.splitext(filename)[1] == '.ods'):
+                events =  importer.importOds(uploaded_file)
+            elif(os.path.splitext(filename)[1] == '.xlsx'):
+                events =  importer.importXlsx(uploaded_file)
+            else:
+                import traceback
+                events = [{
+                'event':'error',
+                'msg':"Erreur lors de l'import : type de fichier non supporté %s"%filename,
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }]
+        else:
+            import traceback
+            events = [{
+                'event':'error',
+                'msg':"Erreur lors de l'import : pas de tableur",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }]
+        context = self.get_context_data({'events':events})
+        return self.render_to_response(context)
+            
+class ImportTemplateView(kolektiMixin, TemplateView):
+    def get(self, request):
+        template = request.GET.get('template')
+        filename = "import_template.ods"
+        odsfile = StringIO()
+        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+        tplter = Templater(projectpath)
+        tplter.generate("/sources/"+self.user_settings.active_srclang+"/templates/"+template, odsfile)
+        response = HttpResponse(odsfile.getvalue(),                            
+                                content_type="application/vnd.oasis.opendocument.spreadsheet")
+        response['Content-Disposition']='attachement; filename="%s"'%filename
+        odsfile.close()
+        return response
+
+    
 class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
         settings_js="""
@@ -539,6 +658,7 @@ class JobCreateView(kolektiMixin, View):
     def post(self, request):        
         try:
             path = request.POST.get('path')
+            path = self.set_extension(path, ".xml")
             ospath = self.getOsPath(path)
             jobid, ext = os.path.splitext(os.path.basename(path))
             if not len(ext):
@@ -691,7 +811,7 @@ class BrowserView(kolektiMixin, View):
             context = self.get_context_data()
             path = request.GET.get('path','/')
             mode = request.GET.get('mode','select')
-            print self
+
             files = filter(self.__browserfilter, self.get_directory(path))
         
             for f in files:
@@ -715,14 +835,14 @@ class BrowserView(kolektiMixin, View):
 
 class BrowserReleasesView(BrowserView):
     def get_directory(self, path):
-        print "get directory",path
+
         try:
             res = []
             for assembly, date in self.get_release_assemblies(path):
                 res.append({'name':assembly,
                             'type':"text/xml",
                             'date':date})
-            print res
+
             return res
         except:
             import traceback
@@ -739,7 +859,6 @@ class BrowserCKView(kolektiMixin, View):
         return True
                          
     def get(self,request):
-        print "browser get"
         context={}
         path = request.GET.get('path','/')
         mode = request.GET.get('mode','select')
@@ -751,7 +870,6 @@ class BrowserCKView(kolektiMixin, View):
         files = filter(self.__browserfilter, self.get_directory(path,client_filter))
 
         for f in files:
-            # print f.get('type')
             f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
         pathsteps = []
         startpath = ""
@@ -766,7 +884,6 @@ class BrowserCKView(kolektiMixin, View):
         context.update({'funcnum':request.GET.get('CKEditorFuncNum','_')})
         
         context.update({'id':'browser_%i'%random.randint(1, 10000)})
-        print context
         return self.render_to_response(context)
 
 class BrowserCKUploadView(kolektiMixin, View):
@@ -791,14 +908,6 @@ class PublicationView(kolektiMixin, View):
         rl = logging.getLogger('')
         rl.addHandler(self.loghandler)
 
-    def format_iterator(self, sourceiter):
-        template = get_template('publication-iterator.html')
-        nbchunck = 0
-        for chunck in sourceiter:
-            nbchunck += 1
-            chunck.update({'id':nbchunck})
-            yield template.render(Context(chunck))
-        
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(PublicationView, cls).as_view(**initkwargs)
@@ -814,7 +923,6 @@ class DraftView(PublicationView):
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
-        # print ET.tostring(xjob), profiles, scripts ,request.POST
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
                 if not jprofile.find('label').text in profiles:
@@ -828,7 +936,6 @@ class DraftView(PublicationView):
                     jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
-            # print ET.tostring(xjob)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
 
             p = publish.DraftPublisher(projectpath, lang=self.user_settings.active_srclang)
@@ -868,15 +975,15 @@ class ReleaseView(PublicationView):
 
             xjob.getroot().set('pubdir',pubdir)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
-
-            r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
-            pp = r.make_release(tocpath, xjob)
-
-
-            release_dir = pp[0]['assembly_dir'].replace('/releases/','')
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(projectpath, tocpath, xjob)))
+#            r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
+#            pp = r.make_release(tocpath, xjob)
             
-            p = publish.ReleasePublisher(projectpath, lang=self.user_settings.active_srclang)
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
+
+#            release_dir = pp[0]['assembly_dir']
+            
+#            p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
+#            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
 
         except:
             import traceback
@@ -888,17 +995,43 @@ class ReleaseView(PublicationView):
             
             return self.render_to_response(context)
 
+    def release_iter(self, projectpath, tocpath, xjob):
+        r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
+        pp = r.make_release(tocpath, xjob)
+        release_dir = pp[0]['assembly_dir']
+        yield {
+            'event':'release',
+            'ref':release_dir[:-1],
+            'releasename':pp[0]['releasename'],
+            'time':pp[0]['datetime'],
+            'lang':self.user_settings.active_srclang,
+        }
+
+            
+        p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
+        for e in p.publish_assembly(release_dir, pp[0]['pubname']):
+            yield e
+            
+            
 class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit-ckeditor.html"
     def get(self, request):
         topicpath = request.GET.get('topic')
         topictitle, topicmeta, topiccontent = self.get_topic_edit(topicpath)
-        context = self.get_context_data({"body":topiccontent, "title": topictitle, "meta":topicmeta})
+        context = self.get_context_data({"body":topiccontent,
+                                         "title": self.basename(topicpath),
+                                         "meta":topicmeta
+                                         })
         return self.render_to_response(context)
 
     def post(self,request):
         try:
             path=request.GET['topic']
+            try:
+                s = request.META['HTTP_METADATA']
+                meta = dict([m.split(':') for m in s.split(';')])
+            except KeyError:
+                meta = {}
             xbody = self.parse_html_string(request.body)
             
             xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
@@ -907,12 +1040,27 @@ class TopicEditorView(kolektiMixin, View):
                 body.remove(e)
             for e in xbody.xpath('/html/body/*'):
                 body.append(e)
+            for metaname, metavalue in meta.iteritems():
+                if len(xtopic.xpath('/h:html/h:head/h:meta[@name="%s"][@content]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})):
+                    xtopic.xpath('/h:html/h:head/h:meta[@name="%s"]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})[0].set('content', metavalue)
+                else:
+                    ET.SubElement(xtopic.xpath('/h:html/h:head',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0], "{http://www.w3.org/1999/xhtml}meta", {"name":metaname,"content":metacontent})
+                    
+                    
             self.xwrite(xtopic, path)
             return HttpResponse(json.dumps({'status':'ok'}))
         except:
             import  traceback
             print traceback.format_exc()
             return HttpResponse(json.dumps({'status':'error'}))
+
+class TopicMetaJsonView(kolektiMixin, View):
+    def get(self, request):
+        path=request.GET['topic']
+        xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
+        metaelts = xtopic.xpath('/h:html/h:head/h:meta[@name][@content]',namespaces={'h':'http://www.w3.org/1999/xhtml'})
+        meta = [{'name':m.get('name'),'content':m.get('content')} for m in metaelts]
+        return HttpResponse(json.dumps(meta))
     
 class TopicCreateView(kolektiMixin, View):
     template_name = "home.html"
@@ -920,12 +1068,13 @@ class TopicCreateView(kolektiMixin, View):
         try:
             modelpath = '/sources/'+ self.user_settings.active_srclang + "/templates/" + request.POST.get('model')
             topicpath = request.POST.get('topicpath')
+            topicpath = self.set_extension(topicpath, ".html")
             topic = self.parse(modelpath)
             self.xwrite(topic, topicpath)
         except:
             import  traceback
             print traceback.format_exc()
-        return HttpResponse(json.dumps(self.path_exists(topicpath)),content_type="application/json")
+        return HttpResponse(json.dumps(topicpath), content_type="application/json")
 
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request):

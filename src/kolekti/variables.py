@@ -30,7 +30,6 @@ class XMLToOds(common.kolektiBase):
         varxml = self.parse(varpath)
         tpl = os.path.join(self._appdir,"templates","variables.ods")
         with ZipFile(tpl,'r') as zipin:
-            print odsfile
             with ZipFile(odsfile,'w') as zipout:
                 for f in zipin.infolist():
                     if f.filename == "content.xml":

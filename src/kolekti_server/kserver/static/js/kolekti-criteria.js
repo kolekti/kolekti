@@ -60,7 +60,7 @@ $(document).ready( function () {
 
     var new_criterion = function() {
 	var id = $('.criterion').length + 1
-	$('.criterion').last().after(
+	var critelt = 
 	    $('<div>',{ 
 		'class':"criterion",
 		'html':
@@ -116,7 +116,10 @@ $(document).ready( function () {
 			})
 		    ]})
 	    })
-	);
+	if ($('.criterion').length)
+	    $('.criterion').last().after(critelt);
+	else
+	    $('.crit-add-crit').closest('div').prepend(critelt);
 	new_value($('.criterion .crit-add-value').closest('div.row').last())
     }
 
@@ -137,7 +140,7 @@ $(document).ready( function () {
     });
 
     $('body').on('click','.crit-del-crit', function(e) {
-	$(this).closest('div.panel').remove();
+	$(this).closest('div.criterion').remove();
 	enable_save();
     });
 

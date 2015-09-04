@@ -42,7 +42,7 @@
   
     <xsl:choose>
       <xsl:when test="$res!=''">
-        <xsl:copy-of select="$res"/>
+        <xsl:apply-templates select="$res/node()" mode="varcontent"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>[?? Undefined </xsl:text>
@@ -54,6 +54,13 @@
     </xsl:choose>
   </xsl:template>
 
+
+  <xsl:template match="*" mode="varcontent">
+    <xsl:element name="{local-name()}">
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:element>
+  </xsl:template>
+  
 <!-- substitution des éléments var par la valeur d'un texte automatique -->
 
   <xsl:template match="html:var">

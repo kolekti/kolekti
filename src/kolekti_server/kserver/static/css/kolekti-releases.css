@@ -1,0 +1,8 @@
+
+.nav#release_tabs>li>a {
+    padding: 10px 5px;
+}
+
+.nav#release_tabs>li img {
+    margin:0 5px;
+}

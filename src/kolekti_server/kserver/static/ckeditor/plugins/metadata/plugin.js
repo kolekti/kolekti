@@ -1,0 +1,1 @@
+﻿(function(){CKEDITOR.plugins.add("metadata",{icons:"editMetadata",requires:"dialog",lang:"en,fr",init:function(a){CKEDITOR.dialog.add("editMetadata",this.path+"dialogs/metadata.js");a.addCommand("editMetadata",new CKEDITOR.dialogCommand("editMetadata"));a.ui.addButton("editMetadata",{label:"titleEditMetadata",command:"editMetadata",toolbar:"document"})}})})();

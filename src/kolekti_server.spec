@@ -2,13 +2,13 @@
 from glob import glob
 
 a = Analysis(['kolekti_server\\server.py'],
-             pathex=['C:\\Users\\waloo\\Desktop\\kolekti\\kolekti\\src'],
+             pathex=['F:\\Bureau\\kolekti\\sources\\0.7\\kolekti\\src'],
              hiddenimports=['htmlentitydefs',
                             'HTMLParser',
                             'markupbase',
                             'PIL',
                             'django.contrib.sessions.serializers',
-#                            'kolekti.publish_utils',
+                            'kolekti.publish_utils',
 #                            'kolekti.plugins.pluginBase',                            
 #                            'kolekti.plugins.chm',
 #                            'kolekti.plugins.hlp',
@@ -17,6 +17,7 @@ a = Analysis(['kolekti_server\\server.py'],
                             'kserver.templatetags.ostags',
                             'kserver.templatetags.difftags',
                             'kserver.templatetags.timetags',
+                            'kserver.templatetags.statustags',
                             ],
              hookspath=None,
              runtime_hooks=None)
@@ -81,7 +82,7 @@ data_files = [('LICENSE','LICENCE','DATA'),
               ('kolekti.ico','kolekti.ico','DATA'),
               ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3.ref'),'DATA'),
               (os.path.join('kolekti','pubscripts.xml'),os.path.join('kolekti','pubscripts.xml'),'DATA'),
-              ] + extra_datas('kolekti/xsl') + extra_plugins()
+              ] + extra_datas('kolekti/templates') + extra_datas('kolekti/xsl') + extra_plugins()
 
 coll = COLLECT(exe,
                a.binaries,

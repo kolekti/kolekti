@@ -39,9 +39,12 @@
   </xsl:template>
 
   <xsl:template match="/">
-     <xsl:apply-templates select="html:html/html:body/*"/>
+    <xsl:apply-templates select="html:html_/html:head"/>
+    <xsl:apply-templates select="html:html/html:body/*"/>
   </xsl:template>
 
+  <xsl:template match="html:head">  
+  </xsl:template>
 
   <xsl:template match="html:div[@class='section']">
     <div class="section panel panel-info">

@@ -17,12 +17,15 @@ urlpatterns = patterns('',
     url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
 
     url(r'^import/$', ImportView.as_view(), name='import'),
+    url(r'^import/template/$', ImportTemplateView.as_view(), name='importtemplate'),
 
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
     url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
     url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
-
+    url(r'^releases/publish', ReleasePublishView.as_view(),name="releasepublish"),
+    url(r'^releases/assembly', ReleaseAssemblyView.as_view(),name="releaseassembly"),
+    
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
     url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
@@ -70,6 +73,8 @@ urlpatterns = patterns('',
     url(r'^topics/templates/', TopicTemplatesView.as_view(),name="topic_templates"),
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
+
+    url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),

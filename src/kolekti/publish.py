@@ -308,8 +308,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # write pivot
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
-
-        self.xwrite(pivot, pivfile)
+        self.xwrite(pivot, pivfile, sync = False)
         return pivot
 
     # create settings.xml file in assembly directory
@@ -496,6 +495,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
+#                print cmd
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -737,6 +737,7 @@ class DraftPublisher(Publisher):
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("publish toc %s",toc)
+        
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
         else:
@@ -759,33 +760,49 @@ class DraftPublisher(Publisher):
             yield ev
             status = (ev.get('event','') != 'error')
 
-        if not status:
-            return
+            if not status:
+                return
         
         try:
             assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
+            manifest = self.getOsPath(assembly_dir + '/manifest.json')
+
+        except:
+            import traceback
+            yield {
+                    'event':'error',
+                    'msg':"erreur lors de l'assemblage",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                }
+            return
+        try:
+            with open(manifest, 'a') as mf:
+                mf.write('{"event":"publication", "pubname":"%s", "pubtitle":"%s", "content":[{"event":"toc","file":"%s"}"'%(pubname, pubtitle,str(toc)))
+
+                for event in events:
+                    mf.write(",\n" + json.dumps(event))
+                    yield event
+            
+                logging.debug('********************************** PUBLISH ASSEMBLY')
+                for pubres in self.publish_job(assembly, xjob.getroot()):
+                    mf.write(",\n" + json.dumps(pubres))
+                    yield pubres
+                try:
+                    pass
+                # self.cleanup_assembly_dir(xjob.getroot())
+                except:
+                    logging.debug('Warning: could not remove tmp dir')
+                mf.write("]}\n")
         except:
             import traceback
             yield {
                 'event':'error',
-                'msg':"erreur lors de l'assemblage",
+                'msg':"impossible d'ouvrir le fichier manifeste",
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
             }
-            return
-
-        for event in events:
-            yield event
             
-        logging.debug('********************************** PUBLISH ASSEMBLY')
-        for pubres in self.publish_job(assembly, xjob.getroot()):
-            yield pubres
-        try:
-            pass
-        # self.cleanup_assembly_dir(xjob.getroot())
-        except:
-            logging.debug('Warning: could not remove tmp dir')
-
         return
     
 class Releaser(Publisher):
@@ -812,15 +829,18 @@ class Releaser(Publisher):
                 raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
-            release_name = os.path.splitext(toc.rsplit("/", 1)[1])[0]
-        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
-        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
+        #        release_name = os.path.splitext(pubdir.rsplit("/", 1)[1])[0]
 
         if isinstance(job,ET._ElementTree):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        xjob.set('id',release_name)
+        release_name = xjob.get('pubdir')
+        xjob.set('id',release_name + '_asm')
+
+        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
+
         # assembly
         logging.debug('********************************** CREATE ASSEMBLY')
         assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
@@ -833,12 +853,22 @@ class Releaser(Publisher):
 
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
-        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'.html'])
+        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         if self.syncMgr is not None :
-            self.syncMgr.propset("release_state","edition",assembly_path)
-            self.syncMgr.add(assembly_path)
-            self.syncMgr.commit(assembly_path, "Release Creation")
-#            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
+            try:
+                self.syncMgr.propset("release_state","edition",assembly_path)
+        #            self.syncMgr.add_resource(assembly_path)
+                self.syncMgr.commit(assembly_path, "Release Creation")
+        #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
+            except:
+                import traceback
+                res.append({
+                    'event':'error',
+                    'msg':"Erreur de synchronisation",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    })
+                   
         return res
 
     # copies the job in release directory
@@ -858,6 +888,9 @@ class Releaser(Publisher):
 
 class ReleasePublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        if kwargs.has_key('langs'):
+            self._publangs = kwargs.get('langs')
+            kwargs.pop('langs')
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
     def assembly_dir(self, xjob):
@@ -871,16 +904,19 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
-        assembly_dir = 'releases/' + release
-        try:
-            xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
-        except:
-            logging.error("unable to read assembly %s"%assembly)
-            import traceback
-            logging.debug(traceback.format_exc())
+        for lang in self._publangs:
+            yield {'event':'lang', 'label':lang}
+            self._publang = lang
+            assembly_dir = 'releases/' + release
+            try:
+                xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+            except:
+                logging.error("unable to read assembly %s"%assembly)
+                import traceback
+                logging.debug(traceback.format_exc())
             
-        xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+            xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
-        for pubres in self.publish_job(xassembly, xjob.getroot()):
-            yield pubres
+            for pubres in self.publish_job(xassembly, xjob.getroot()):
+                yield pubres
         return 

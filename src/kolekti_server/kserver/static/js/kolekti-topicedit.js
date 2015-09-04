@@ -3,11 +3,11 @@ $(document).ready( function () {
     var editor = CKEDITOR.replace( 'editor1', {
 	autoGrow_onStartup : true,
 	contentsCss : '/criteria.css',
-	extraPlugins : 'codemirror,textselection,conditions',
+	extraPlugins : 'codemirror,textselection,conditions,metadata',
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	entities : false,
-
+	fillEmptyBlocks: false,
 	filebrowserBrowseUrl: '/browse/ckbrowser',
 	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
 	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
@@ -15,7 +15,7 @@ $(document).ready( function () {
 //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
 	
 	toolbar_Full : [
-	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
+	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' , 'editMetadata'] },
 	    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },
 	    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ], items: [ 'Find', 'Replace', 'SelectAll', 'Scayt' ] },
 	    { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
@@ -25,7 +25,7 @@ $(document).ready( function () {
 	    { name: 'tools', items: [ 'ShowBlocks' ] },
 	    { name: 'styles', items: [ 'Format' ] },
 	    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat' ] },
-	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv', 'conditions'] }
+	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv'] }
 	],
 	toolbar:"Full"
 
@@ -42,9 +42,21 @@ $(document).ready( function () {
     });
     
     editor.on( 'save', function(event){ 
+	var doc = editor.document;
+
+	var nkeys = doc.getCustomData('nbmeta')
+	var meta = []
+	for (var index = 0; index < nkeys; index++) {
+	    var n = doc.getCustomData( 'metaname'+index);
+	    var v = doc.getCustomData( 'metavalue'+index);
+	    meta.push(n+':'+v)
+	}
+	headers= {'METADATA':meta.join(';')}
+
 	$.ajax({
 	    url:window.location.pathname+window.location.search,
 	    type:'POST',
+	    headers:headers,
 	    data:event.editor.getData(),
 	    contentType:'text/plain'
 	}).success(function(data) {
