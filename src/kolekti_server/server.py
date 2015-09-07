@@ -25,9 +25,9 @@ class KolektiHttp(Thread):
         from kolekti_server.wsgi import application
 
         cp_config = {'global': {
-                'log.screen': False,
-                'log.error_file': '',
-                'log.access_file': ''
+                'log.screen': True,
+                'log.error_file': 'kolekti.err',
+                'log.access_file': 'kolekti.log'
                 }}
 
         cherrypy.config.update(cp_config)

@@ -100,15 +100,21 @@ class kolektiBase(object):
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
-            self._syncstate = self.syncMgr.state()
         except ExcSyncNoSync:
-            self._syncstate = None
+            self.syncMgr = None
         try:
             self.indexMgr = IndexManager(self._path)
         except:
             logging.debug('Search index could not be loaded')
 
-        
+
+    @property
+    def _syncstate(self):
+        try:
+            return self.syncMgr.state()
+        except:
+            return "?"
+            
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
         # import traceback
@@ -264,8 +270,10 @@ class kolektiBase(object):
             srcpath = '%s/sources/%s/%s'%(path, srclang, subdir)
             dstpath = '%s/sources/%s/%s'%(path, dstlang, subdir)
             self.copyDirs(srcpath,dstpath)            
-            self.syncMgr.post_save(dstpath)
-            
+            try:
+                self.syncMgr.post_save(dstpath)
+            except:
+                pass
 
         # copy assembly / change language in references to images
         src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
@@ -285,9 +293,10 @@ class kolektiBase(object):
                 elt_img.set('src','/'.join(splitpath))
         self.xwrite(xassembly, assembly_path)
 
-
-        self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
-
+        try:
+            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+        except:
+            pass
         yield assembly_path
         return
 
@@ -693,7 +702,12 @@ class kolektiBase(object):
                     
         return res
                 
-                
+    def create_project(self, project_dir, projects_path):
+        tpl = os.path.join(self._appdir, 'project_template')
+        target = os.path.join(projects_path, project_dir)
+        shutil.copytree(tpl, target)
+
+                    
                 
 class XSLExtensions(kolektiBase):
     """

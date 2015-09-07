@@ -237,6 +237,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
+        print "home"
         context = self.get_context_data()
         if context.get('active_project') is None:
             return HttpResponseRedirect('/projects/') 
@@ -266,8 +267,10 @@ class ProjectsView(kolektiMixin, View):
         sync = SVNProjectManager(settings.KOLEKTI_BASE,username,password)
         if project_url=="":
         # create local project
-            sync.export_project(project_folder)
-            return self.get(request, require_svn_auth=False, project_folder=project_folder)
+            #sync.export_project(project_folder)
+            self.create_project(project_folder, settings.KOLEKTI_BASE)
+            self.project_activate(project_folder)
+            return self.get(request)
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
