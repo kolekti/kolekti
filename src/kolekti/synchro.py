@@ -285,9 +285,9 @@ class SVNProjectManager(object):
         self.__password = password
         #self._client.callback_get_log_message = get_log_message
         def get_login( realm, username, may_save ):
-            if username == self.__username:
-                return True, username, password, True
-            return False, "","", False
+#            if username == self.__username:
+            return True, self.__username, self.__password, True
+#            return False, "","", False
         self._client.callback_get_login = get_login
         
     def export_project(self, folder, url="http://beta.kolekti.net/svn/quickstart07"):

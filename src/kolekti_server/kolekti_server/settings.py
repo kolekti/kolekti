@@ -24,10 +24,10 @@ SECRET_KEY = '47+&9*yikq4^1_fpxaf32!u^5&m(tw7dssr+h-%4sq&3uzz7q9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = False
 
-TEMPLATE_DEBUG = True
 HOSTNAME='0.0.0.0'
-ALLOWED_HOSTS = ['192.168.1.234']
+ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
 
 # Application definition
