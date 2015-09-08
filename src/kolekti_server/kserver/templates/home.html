@@ -5,11 +5,16 @@
 
 {% block content %}
 
-<div class="main">
+<div id="widgets">
+<!--
   <p>Projet : {{ kolekti.project }}
     <a id="editprojects" href="/projects/" title="Gestionnaire de projets"><span class="glyphicon glyphicon-cog"> </span></a>
 
   </p>
+-->
 </div>
 {% endblock %}
 
+{% block extrascripts %}
+<script src="/static/js/kolekti-home.js"></script>
+{% endblock %}
