@@ -782,7 +782,11 @@ class DraftPublisher(Publisher):
                 first_sep = ","
             with open(manifest, 'a') as mf:
                 mf.write(first_sep)
+<<<<<<< HEAD
                 mf.write('{"event":"publication", "name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}"'%(pubname, pubtitle,time.time(),str(toc)))
+=======
+                mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
+>>>>>>> ad15733... adds publication directory in manifest file
 
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
