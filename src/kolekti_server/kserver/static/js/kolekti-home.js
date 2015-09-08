@@ -22,25 +22,63 @@ $(document).ready(function() {
     var widgets_definitions = {
 	'publications':{'title':'Dernières publications',
 			'content':function() {
+			    var wdiv =
 			    $('<div>', {
-				"class":"col-sm",
+				"class":"", //col-xs-12 col-sm-6 col-md-4",
 				"html":
 				$('<ul>', {
 				    "class":"list-group",
-				    "html":
-				    $.getJSON('/publications/list.json', function(data) {
-					$.each(data.publications, function( i, pub ) {
-					    console.log(pub);
-					    $('<li>', {
-						"class":"list-group-item",
-						"html":$.each(pub, function(iev, ev) {
-						    if (ev.type == "error")
-						});
-					    });
-					});
-				    })
 				})
 			    })
+			    $.getJSON('/publications/list.json', function(data) {
+				$.each(data.publications, function( i, pub ) {
+				    console.log(pub);
+				    wdiv.find('.list-group').append($('<li>', {
+					"class":"list-group-item",
+					"html":[
+					    $('<h4>',{'html':pub.path}),
+					    $('<p>',{html:formatTime(pub.time)}),
+					    $('<div>',{
+						html:
+						$.map(pub.content, function(ev, iev) {
+						    if (ev.event == "error")
+							return $('<div>', {
+							    "class" : "panel panel-alert",
+								  "html": ev.msg
+							});
+						    if (ev.event == "lang") 
+							return $('<hr>',{'html':$('<h4>', {
+							    "html":$('<em>',{
+								"html":ev.label
+							    })
+							})});
+						    if (ev.event == "toc") 
+							return $('<p>', {"html": "Trame : " + ev.file});
+						    if (ev.event == "job") 
+							return $('<p>', {"html": "Parametres : " + ev.label});
+						    if (ev.event == "profile")
+							return $('<h6>', {"html": ev.label});
+				    		    if (ev.event == "result") 
+							return $('<ul>', {
+							    "html":$.map(ev.docs, function(doc) {
+								return $('<li>', {
+								    'html': [$('<span>', {'html':doc.type}),
+									     $('<a>', {
+										 'href': doc.url,
+										 'target':"_blank",
+										 'html': doc.label
+									     })
+									    ]
+								})
+							    })
+							})
+						})
+					    })
+					]
+				    }));
+				})
+			    })
+			    return wdiv;
 			}
 		       }
     }
