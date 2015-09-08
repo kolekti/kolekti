@@ -782,7 +782,7 @@ class DraftPublisher(Publisher):
                 first_sep = ","
             with open(manifest, 'a') as mf:
                 mf.write(first_sep)
-                mf.write('{"event":"publication", "name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(pubname, pubtitle,time.time(),str(toc)))
+                mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
 
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
