@@ -1040,6 +1040,8 @@ class TopicEditorView(kolektiMixin, View):
             try:
                 s = request.META['HTTP_METADATA']
                 meta = dict([m.split(':') for m in s.split(';')])
+            except KeyError:
+                meta = {}
             except ValueError:
                 meta = {}
             xbody = self.parse_html_string(request.body)
