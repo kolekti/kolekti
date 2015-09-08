@@ -299,6 +299,14 @@ class ProjectsLanguageView(ProjectsView):
         return super(ProjectsLanguageView, self).get(request)
 
         
+class PublicationsListJsonView(kolektiMixin, View):
+    def get(self, request):
+        context = {
+            "publications": [p for p in self.get_publications()]
+        }
+        return HttpResponse(json.dumps(context),content_type="application/json")
+
+
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
     
