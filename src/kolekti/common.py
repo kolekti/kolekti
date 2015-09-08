@@ -220,7 +220,11 @@ class kolektiBase(object):
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
                 yield (f, d)
 
-
+    def get_publications(self):
+        publications = []
+        for manifest in self.iterpublications:
+            yield manifest[-1]
+        
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
         if len(criteria) == 0:
