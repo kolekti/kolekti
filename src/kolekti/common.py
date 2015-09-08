@@ -223,7 +223,6 @@ class kolektiBase(object):
     def get_publications(self):
         publications = []
         for manifest in self.iterpublications:
-            print manifest
             yield manifest[-1]
         
     def resolve_var_path(self, path, xjob):
