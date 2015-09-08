@@ -42,7 +42,7 @@ Source: "{#BuildDir}\dist\kolekti_server\db.sqlite3"; DestDir: "{userappdata}\ko
 
 Source: "{#BuildDir}\dist\Exemple_PDF\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_PDF"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
 Source: "{#BuildDir}\dist\Exemple_Webhelp\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_Webhelp"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
-Source: "{#BuildDir}\dist\Project_template\*"; DestDir: "{app}\project_template"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "{#BuildDir}\dist\Project_template\*"; DestDir: "{app}\kolekti\project_template"; Flags: ignoreversion recursesubdirs createallsubdirs;
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
