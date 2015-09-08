@@ -220,7 +220,12 @@ class kolektiBase(object):
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
                 yield (f, d)
 
-
+    def get_publications(self):
+        publications = []
+        for manifest in self.iterpublications:
+            print manifest
+            yield manifest[-1]
+        
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
         if len(criteria) == 0:
@@ -373,6 +378,7 @@ class kolektiBase(object):
         return xsl
 
     def log_xsl(self, error_log):
+        print "log xsl"
         for entry in error_log:
             logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
             print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
@@ -680,6 +686,25 @@ class kolektiBase(object):
                         yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
                                "name":os.path.splitext(file)[0]}
         
+    @property
+    def iterpublications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file  == 'manifest.json':
+                    print root
+                    with open(os.path.join(root,file)) as f:
+
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield {'event':'error',
+                                   'file':os.path.join(root,file),
+                                   'msg':'cannot read manifest file',
+                                   }
+                        
     def release_details(self, path, lang):
         res=[]
         root = self.__makepath(path)
