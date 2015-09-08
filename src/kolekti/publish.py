@@ -765,7 +765,7 @@ class DraftPublisher(Publisher):
         
         try:
             assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
-            manifest = self.getOsPath(assembly_dir + '/manifest.json')
+            manifest = self.getOsPath(assembly_dir + '/kolekti/manifest.json')
 
         except:
             import traceback
@@ -777,8 +777,12 @@ class DraftPublisher(Publisher):
                 }
             return
         try:
+            first_sep = ""
+            if os.path.exists(manifest):
+                first_sep = ","
             with open(manifest, 'a') as mf:
-                mf.write('{"event":"publication", "pubname":"%s", "pubtitle":"%s", "content":[{"event":"toc","file":"%s"}"'%(pubname, pubtitle,str(toc)))
+                mf.write(first_sep)
+                mf.write('{"event":"publication", "name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(pubname, pubtitle,time.time(),str(toc)))
 
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
