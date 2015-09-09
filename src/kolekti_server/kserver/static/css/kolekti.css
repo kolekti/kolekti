@@ -3,6 +3,10 @@ body {
     padding-top:50px;
 }
 
+div.main>h1 {
+    font-size:160%
+}
+
 /*
 .side .affix {
     width:100%;

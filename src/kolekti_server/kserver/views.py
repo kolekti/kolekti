@@ -699,6 +699,7 @@ class JobEditView(kolektiMixin, TemplateView):
 #        context.update({'jobs':self.get_jobs()})
         context.update({'job':self.get_job_edit(request.GET.get('path'))})
         context.update({'path':request.GET.get('path')})
+        context.update({'name':self.basename(request.GET.get('path'))})
         return self.render_to_response(context)
 
     def post(self, request):

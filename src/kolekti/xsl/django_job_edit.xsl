@@ -33,7 +33,6 @@
   <xsl:param name="jobname"/>
 
   <xsl:template match="/">
-    <h2><span id="job_id"><xsl:value-of select='$jobname'/></span></h2>
     <div id="job_body">
       <xsl:apply-templates select="/job/criteria"/>
       <xsl:apply-templates select="/job/profiles"/>
