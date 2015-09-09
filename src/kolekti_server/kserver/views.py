@@ -152,19 +152,28 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         return re.sub('\{[^\}]+\}','',e.tag)
     
     def get_topic_edit(self, path):
-        xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
-        topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        topicmeta = xtopic.xpath('/html:html/html:head/html:meta[@name]', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        topicmetalist = [{'tag':self.localname(m),'name':m.get('name',None),'content':m.get('content',None)} for m in topicmeta]
-        topicmeta = xtopic.xpath('/html:html/html:head/html:title', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        topicmetalist += [{'tag':self.localname(m),'title':m.text} for m in topicmeta]
-        topicmeta = xtopic.xpath('/html:html/html:head/html:link', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        topicmetalist += [{'tag':self.localname(m),'rel':m.get('rel',None),'type':m.get('type',None),'href':m.get('href',None)} for m in topicmeta]
-        topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        xsl = self.get_xsl('django_topic_edit')
-        #print [str(xsl(t)) for t in topicbody]
-        topiccontent = ''.join([str(xsl(t)) for t in topicbody])
-        return topictitle, topicmetalist, topiccontent
+        return self.read(path.replace('{LANG}',self.user_settings.active_srclang))
+#        xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
+#        head = xtopic.xpath('/html:html/html:head', namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+#        ET.SubElement(head, 'script', {"src":"/static/jquery.js"})
+#        ET.SubElement(head, 'script', {"src":"/static/ckeditor/ckeditor.js"})
+#        ET.SubElement(head, 'script', {"src":"/static/js/kolekti-topicedit.js"})
+#        ET.SubElement(head, 'script', {"src":"/settings.js"})
+#        print xtopic
+#        return ET.tostring(xtopic, xml_declaration=True, encoding="utf-8")
+        
+        # topictitle = xtopic.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        # topicmeta = xtopic.xpath('/html:html/html:head/html:meta[@name]', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        # topicmetalist = [{'tag':self.localname(m),'name':m.get('name',None),'content':m.get('content',None)} for m in topicmeta]
+        # topicmeta = xtopic.xpath('/html:html/html:head/html:title', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        # topicmetalist += [{'tag':self.localname(m),'title':m.text} for m in topicmeta]
+        # topicmeta = xtopic.xpath('/html:html/html:head/html:link', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        # topicmetalist += [{'tag':self.localname(m),'rel':m.get('rel',None),'type':m.get('type',None),'href':m.get('href',None)} for m in topicmeta]
+        # topicbody = xtopic.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        # xsl = self.get_xsl('django_topic_edit')
+        # #print [str(xsl(t)) for t in topicbody]
+        # topiccontent = ''.join([str(xsl(t)) for t in topicbody])
+        # return topictitle, topicmetalist, topiccontent
 
     def get_assembly_edit(self, path, release_path=""):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
@@ -1027,39 +1036,38 @@ class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit-ckeditor.html"
     def get(self, request):
         topicpath = request.GET.get('topic')
-        topictitle, topicmeta, topiccontent = self.get_topic_edit(topicpath)
-        context = self.get_context_data({"body":topiccontent,
+        topic = self.get_topic_edit(topicpath)
+        print topic
+        context = self.get_context_data({"body":topic,
                                          "title": self.basename(topicpath),
-                                         "meta":topicmeta
+#                                         "meta":topicmeta
                                          })
         return self.render_to_response(context)
 
     def post(self,request):
         try:
-            path=request.GET['topic']
-            try:
-                s = request.META['HTTP_METADATA']
-                meta = dict([m.split(':') for m in s.split(';')])
-            except KeyError:
-                meta = {}
-            except ValueError:
-                meta = {}
-            xbody = self.parse_html_string(request.body)
+            path = request.GET['topic']
+            topic = request.body
+            self.write(topic, path)
+            #print topic[:100]
+            #xtopic = self.parse_html_string(topic)
+            #print dir(xtopic)
+            #print xtopic[0]
             
-            xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
-            body = xtopic.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
-            for e in xtopic.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
-                body.remove(e)
-            for e in xbody.xpath('/html/body/*'):
-                body.append(e)
-            for metaname, metavalue in meta.iteritems():
-                if len(xtopic.xpath('/h:html/h:head/h:meta[@name="%s"][@content]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})):
-                    xtopic.xpath('/h:html/h:head/h:meta[@name="%s"]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})[0].set('content', metavalue)
-                else:
-                    ET.SubElement(xtopic.xpath('/h:html/h:head',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0], "{http://www.w3.org/1999/xhtml}meta", {"name":metaname,"content":metacontent})
+            # xtopic = self.parse(path.replace('{LANG}',self.user_settings.active_srclang))
+            # body = xtopic.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
+            # for e in xtopic.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
+            #     body.remove(e)
+
+            # for e in xbody.xpath('/html/body/*'):
+            #     body.append(e)
+            # for metaname, metavalue in meta.iteritems():
+            #     if len(xtopic.xpath('/h:html/h:head/h:meta[@name="%s"][@content]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})):
+            #         xtopic.xpath('/h:html/h:head/h:meta[@name="%s"]'%metaname,namespaces={'h':'http://www.w3.org/1999/xhtml'})[0].set('content', metavalue)
+            #     else:
+            #         ET.SubElement(xtopic.xpath('/h:html/h:head',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0], "{http://www.w3.org/1999/xhtml}meta", {"name":metaname,"content":metacontent})                    
                     
-                    
-            self.xwrite(xtopic, path)
+            #self.xwrite(xtopic, path)
             return HttpResponse(json.dumps({'status':'ok'}))
         except:
             import  traceback
