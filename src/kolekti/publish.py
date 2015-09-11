@@ -908,19 +908,34 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
-        for lang in self._publangs:
-            yield {'event':'lang', 'label':lang}
-            self._publang = lang
-            assembly_dir = 'releases/' + release
-            try:
-                xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
-            except:
-                logging.error("unable to read assembly %s"%assembly)
-                import traceback
-                logging.debug(traceback.format_exc())
-            
-            xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        manifest = self.getOsPath(release + '/kolekti/manifest.json')
+        first_sep = ""
+        if os.path.exists(manifest):
+            first_sep = ","
+        with open(manifest, 'a') as mf:
+            mf.write(first_sep)
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(release,int(time.time())))
+            for lang in self._publangs:
+                yield {'event':'lang', 'label':lang}
+                self._publang = lang
+                try:
+                    xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                except:
+                    yield {
+                        'event':'error',
+                        'msg':"impossible de lire l'assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                    logging.error("unable to read assembly %s"%assembly)
+                    import traceback
+                    logging.debug(traceback.format_exc())
+                    return
+
+                xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
-            for pubres in self.publish_job(xassembly, xjob.getroot()):
-                yield pubres
+                for pubres in self.publish_job(xassembly, xjob.getroot()):
+                    mf.write(",\n" + json.dumps(pubres))
+                    yield pubres
+            mf.write("]}")
         return 
