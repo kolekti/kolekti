@@ -315,6 +315,13 @@ class PublicationsListJsonView(kolektiMixin, View):
         }
         return HttpResponse(json.dumps(context),content_type="application/json")
 
+class ReleasesPublicationsListJsonView(kolektiMixin, View):
+    def get(self, request):
+        context = {
+            "publications": [p for p in self.get_releases_publications()]
+        }
+        return HttpResponse(json.dumps(context),content_type="application/json")
+
 
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'

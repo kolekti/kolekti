@@ -77,6 +77,7 @@ urlpatterns = patterns('',
     url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
     url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),
+    url(r'^releases/publications/list.json', ReleasesPublicationsListJsonView.as_view(),name="releases_publications_list_json"),
 
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
