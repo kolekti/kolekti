@@ -918,6 +918,7 @@ class ReleasePublisher(Publisher):
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang
+                mf.write(',{"event":"lang", "label":"%s"}'%(lang,))
                 try:
                     xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
                 except:
