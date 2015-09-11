@@ -225,6 +225,11 @@ class kolektiBase(object):
         for manifest in self.iterpublications:
             yield manifest[-1]
         
+    def get_releases_publications(self):
+        publications = []
+        for manifest in self.iter_releases_publications:
+            yield manifest[-1]
+        
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
         if len(criteria) == 0:
@@ -688,6 +693,24 @@ class kolektiBase(object):
     @property
     def iterpublications(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file  == 'manifest.json':
+                    print root
+                    with open(os.path.join(root,file)) as f:
+
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield {'event':'error',
+                                   'file':os.path.join(root,file),
+                                   'msg':'cannot read manifest file',
+                                   }
+    @property
+    def iter_releases_publications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
             rootparts = root.split(os.path.sep)
             for file in files:
                 if file  == 'manifest.json':
