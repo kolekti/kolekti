@@ -507,6 +507,12 @@ class TopicsListView(kolektiMixin, TemplateView):
 
 class ImagesListView(kolektiMixin, TemplateView):
     template_name = "illustrations/list.html"
+    def get(self, request):
+        context = self.get_context_data({
+            'root':request.GET.get('path','')
+            })
+        return self.render_to_response(context)
+
 
 class ImagesUploadView(kolektiMixin, TemplateView):
     def post(self, request):
