@@ -1,5 +1,6 @@
 import os
 import tempfile
+import shutil
 import logging
 import urllib2
 import pysvn
@@ -85,12 +86,14 @@ class SynchroManager(object):
         # rev_info = self._client.info2(self._base,
         #                         revision = pysvn.Revision(pysvn.opt_revision_kind.number,rev)
         #                         )
-        diff_text = self._client.diff('/tmp',
+        tmpdir = tempfile.mkdtemp()
+        diff_text = self._client.diff(tmpdir,
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
                                )
+        shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         
     def statuses(self):
@@ -224,6 +227,7 @@ class SynchroManager(object):
     def diff(self, path):
         tmpdir = tempfile.mkdtemp()
         diff = self._client.diff(tmpdir, path)
+        shutil.rmtree(tmpdir)
         with open(path) as f:
             workdata = f.read()
         headdata = self._client.cat(path)

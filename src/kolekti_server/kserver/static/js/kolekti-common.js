@@ -4,3 +4,9 @@ $(function() {
 	window.location.href = url;
     })
 })
+
+var formatTime = function(unixTimestamp) {
+    var dt = new Date(unixTimestamp * 1000);
+
+    return dt.toLocaleString();
+}

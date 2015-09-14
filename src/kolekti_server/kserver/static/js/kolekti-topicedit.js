@@ -2,8 +2,9 @@ $(document).ready( function () {
     
     var editor = CKEDITOR.replace( 'editor1', {
 	autoGrow_onStartup : true,
+	fullPage:true,
 	contentsCss : '/criteria.css',
-	extraPlugins : 'codemirror,textselection,conditions,metadata',
+	extraPlugins : 'codemirror,textselection,conditions,docprops',
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	entities : false,
@@ -15,7 +16,7 @@ $(document).ready( function () {
 //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
 	
 	toolbar_Full : [
-	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' , 'editMetadata'] },
+	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' , 'DocProps'] },
 	    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },
 	    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ], items: [ 'Find', 'Replace', 'SelectAll', 'Scayt' ] },
 	    { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
@@ -43,7 +44,7 @@ $(document).ready( function () {
     
     editor.on( 'save', function(event){ 
 	var doc = editor.document;
-
+/*
 	var nkeys = doc.getCustomData('nbmeta')
 	var meta = []
 	for (var index = 0; index < nkeys; index++) {
@@ -52,11 +53,11 @@ $(document).ready( function () {
 	    meta.push(n+':'+v)
 	}
 	headers= {'METADATA':meta.join(';')}
-
+*/
 	$.ajax({
 	    url:window.location.pathname+window.location.search,
 	    type:'POST',
-	    headers:headers,
+//	    headers:headers,
 	    data:event.editor.getData(),
 	    contentType:'text/plain'
 	}).success(function(data) {
