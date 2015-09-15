@@ -382,7 +382,6 @@ class kolektiBase(object):
         return xsl
 
     def log_xsl(self, error_log):
-        print "log xsl"
         for entry in error_log:
             logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
             print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
