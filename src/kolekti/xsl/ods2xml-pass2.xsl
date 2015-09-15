@@ -9,15 +9,15 @@
   <xsl:template match="/">
     <variables>
       <critlist>
-	<xsl:apply-templates select="variables/critlist/row/hcell"/>
+	<xsl:apply-templates select="variables/critlist/row/hcell" mode="critlist"/>
       </critlist>
       <xsl:apply-templates select="variables/values/row"/>
     </variables>
   </xsl:template>
 
 
-  <xsl:template match="hcell" mode="listcrits">
-    <crit name="{substring-after(.,':')}"/>
+  <xsl:template match="hcell" mode="critlist">
+    <crit><xsl:value-of select="."/></crit>
   </xsl:template>
   
   <xsl:template match="row">
