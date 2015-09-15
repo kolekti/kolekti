@@ -64,9 +64,15 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         if kwargs.has_key('profile'):
             self._profile = kwargs.get('profile')
             kwargs.pop('profile')
+        self.__cache = {}
         super(PublisherExtensions,self).__init__(*args, **kwargs)
 
 
+    def parse(self, path):
+        if not self.__cache.has_key(path):
+            self.__cache[path] =  super(PublisherExtensions, self).parse(path)
+        return self.__cache[path]
+        
     def gettopic(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
