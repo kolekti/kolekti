@@ -42,11 +42,13 @@ $(document).ready(function() {
 	    var varname = $(row).find('th').first().find('span').first().html();
 	    buf +='<variable code="' + varname + '">';
 	    $(row).find('td').each(function(j,cell) {
-		var varval = $(cell).find('span').first().html();
-		buf +='<value>'
-		buf += conditions[j]
-		buf += '<content>' + varval + '</content>'
-		buf += '</value>'
+		if(j < conditions.length) { 
+		    var varval = $(cell).find('span').first().html();
+		    buf +='<value>'
+		    buf += conditions[j]
+		    buf += '<content>' + varval.replace('&nbsp;','&#160;') + '</content>'
+		    buf += '</value>'
+		}
 	    });
 	    buf += "</variable>";
 	});
