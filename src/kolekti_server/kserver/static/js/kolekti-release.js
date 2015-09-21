@@ -148,6 +148,9 @@ Defines events for languages and release state in toolbar
 	if (state != "unknown") {
 	    $('#main').data('lang', lang)
 	    load_assembly();
+	    $('#panel_download').show()
+	} else {
+	    $('#panel_download').hide()
 	}
     })
 
