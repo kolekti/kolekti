@@ -24,13 +24,17 @@
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
 	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-default btn-save disabled" id="btn_save">Enregistrer</button>
+	  </div>
+	</div>
+      </div>
+    </div>
+    <div class="row top-margin">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified" role="group">
+	  <div class="btn-group" role="group">
 	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
 	  </div>
-	  <!--
-	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish_all">Publier BAT </button>
-	  </div>
-	  -->
 	</div>
       </div>
     </div>
@@ -176,10 +180,13 @@
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 	{% for rlang, state,focus in langstates %}
 	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
-	  <a href="#release_content_{{ rlang }}"
+	 
+	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
+	     {% comment %}
 	     role="tab"
 	     data-toggle="tab"
+	     {% endcomment %}
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
 	     class="text-center"
@@ -191,6 +198,7 @@
 	    <br>
 	    <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
 	  </a>
+	     
 	</li>
 	{% endfor %}
       </ul>

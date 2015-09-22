@@ -99,33 +99,60 @@ Defines events for languages and release state in toolbar
 	return "ko";
     });
 */
+    
+    var enable_save = function() {
+	$('#btn_save').removeClass('disabled');
+	$('#btn_save').removeClass('btn-default');
+	$('#btn_save').removeClass('hidden');
+	$('#btn_save').addClass('btn-warning');
+    };
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Version non enregistrée';
+	}
+    });
+
+
+    
     // Kolekti Release toolbar
 
     
     $('.release-state').on('click', function() {
-	
 	var lang = $(this).closest('ul').data('target-lang');
 	var oldstate = $('.btn-lang-menu-'+lang).data('state')
+	var newstate = $(this).data('state')
 	var labelstate = $(this).find('span').html()
 	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
+	enable_save()
+	$('#release_tabs .active img').attr('src','/static/img/release_status_'+newstate+'.png')
+	$('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
+	$('.btn-lang-menu-'+lang+' .state').html(labelstate);
+
+	$('#main').data('state', newstate)
+	$('#main').attr('data-state', newstate)
+
+	
+    });
+	
+
+
+    $('#btn_save').on('click', function() {
+	var lang = 
+	
 	$.ajax({
 	    url:"/releases/state/",
 	    method:'POST',
 	    data:$.param({
-		'release' :$(this).closest('#main').first().data('release'),
-		'state' : $(this).data('state'),
-		'lang'  : lang
+		'release': $('#main').data('release'),
+		'state' :  $('#main').data('state'),
+		'lang'  :  $('#main').data('lang')
 	    })
 	}).done(function(data) {
-	    $('#release_tabs .active img').attr('src','/static/img/release_status_'+data+'.png')
-	    $('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+data)
-	    $('.btn-lang-menu-'+lang).data('state', data)
-	    $('.btn-lang-menu-'+lang).attr('data-state', data)
-	    $('.btn-lang-menu-'+lang+' .state').html(labelstate);
-	    
-	})
-	
+	    $('#btn_save').addClass('disabled');
+	    $('#btn_save').addClass('btn-default');
+	    $('#btn_save').removeClass('btn-warning');
+	});
     })
 
     var get_publish_languages = function(all_languages) {
@@ -140,8 +167,9 @@ Defines events for languages and release state in toolbar
 	}
     }
 
-
+    /*
     $('#release_tabs a').click(function (e) {
+
 	e.preventDefault()
 	var lang  = $(this).data('lang');
 	var state = $(this).data('state');
@@ -153,6 +181,7 @@ Defines events for languages and release state in toolbar
 	    $('#panel_download').hide()
 	}
     })
+	*/
 
     // content loading function
     var load_assembly = function() {
@@ -163,6 +192,7 @@ Defines events for languages and release state in toolbar
 	    $('#content_'+$('#main').data('lang')).html(data)
 	})
     }
+    
     load_assembly();
 
 
