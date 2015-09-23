@@ -33,8 +33,8 @@ $(document).ready(function() {
         }, 'json');
     };
 
-    var upload_builder_builder = function(path) {
-	return upload_builder = function(e) {
+    var upload_builder_builder = function() {
+	return upload_builder = function(e,path) {
 	    e.prepend(   
 		['Transférer une image : ',
 		 $('<form>', {'class':"upload_form",'enctype':"multipart/form-data",
@@ -74,7 +74,7 @@ $(document).ready(function() {
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder('/sources/'+kolekti.lang+'/pictures')
+		     'create_builder':upload_builder_builder()
 		    })
 	.select(
 	    function(path) {
@@ -107,7 +107,7 @@ $(document).ready(function() {
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder('/sources/share/pictures')
+		     'create_builder':upload_builder_builder()
 		    })
 	.select(
 	    function(path) {
