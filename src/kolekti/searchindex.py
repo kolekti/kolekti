@@ -17,9 +17,10 @@ LOCAL_ENCODING=sys.getfilesystemencoding()
 
 class IndexManager(object):
 
-    def __init__(self, base):
-        self._base = base
-        indexpath = os.path.join(base,'kolekti/index')
+    def __init__(self, projectspath, projectdir):
+
+        self._base = '/'.join([projectspath, projectdir]) + "/"
+        indexpath = os.path.join(projectspath, '.index', projectdir)
         if os.path.exists(indexpath):
             self.ix = index.open_dir(indexpath)
         else:
@@ -173,9 +174,8 @@ class xml_var_extractor(extractor):
 
 
 class searcher(object):
-    def __init__(self, base):
-        self._base = base
-        indexpath = os.path.join(base,'kolekti/index')        
+    def __init__(self, projectspath, projectdir):
+        indexpath = os.path.join(projectspath, '.index', projectdir)
         self.ix = index.open_dir(indexpath)
 
     def search(self, query):

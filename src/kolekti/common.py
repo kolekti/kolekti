@@ -70,6 +70,7 @@ class kolektiBase(object):
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
         projectdir = os.path.basename(self._path[:-1])
+        projectspath = os.path.dirname(self._path[:-1])
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
@@ -103,8 +104,10 @@ class kolektiBase(object):
         except ExcSyncNoSync:
             self.syncMgr = None
         try:
-            self.indexMgr = IndexManager(self._path)
+            self.indexMgr = IndexManager(projectspath, projectdir)
         except:
+            import traceback
+            print traceback.format_exc()
             logging.debug('Search index could not be loaded')
 
 
@@ -486,6 +489,8 @@ class kolektiBase(object):
         try:
             self.indexMgr.post_save(path)
         except:
+            import traceback
+            print traceback.format_exc()
             logging.debug('Search index unavailable')
 
     def makedirs(self, path):
@@ -695,7 +700,6 @@ class kolektiBase(object):
             rootparts = root.split(os.path.sep)
             for file in files:
                 if file  == 'manifest.json':
-                    print root
                     with open(os.path.join(root,file)) as f:
 
                         try:
@@ -713,7 +717,6 @@ class kolektiBase(object):
             rootparts = root.split(os.path.sep)
             for file in files:
                 if file  == 'manifest.json':
-                    print root
                     with open(os.path.join(root,file)) as f:
 
                         try:
