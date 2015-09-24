@@ -8,6 +8,12 @@ $(document).ready( function () {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    var disable_save = function() {
+	$('#btn_save').addClass('disabled');
+	$('#btn_save').addClass('btn-default');
+	$('#btn_save').removeClass('btn-warning');
+    }
+    
     $(window).on('beforeunload', function(e) {
 	if($('#btn_save').hasClass('btn-warning')) {
             return 'Trame non enregistrée';
@@ -288,9 +294,7 @@ $(document).ready( function () {
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
-	    $('#btn_save').addClass('disabled');
-	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').removeClass('btn-warning');
+	    disable_save()
 	});
     })
 
@@ -536,24 +540,30 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_section_rename', function(e) {
 	// get section title
+	e.preventDefault();
+	disable_save()
+	
 	var title_elt = $(this).closest('.section')
 	    .children('.panel-heading')
 	    .children('')
 	    .children('a');
-
-	title_elt.after(
-	    $('<input>',{
-		"type":'text',
-		"value":title_elt.children('span').html()
-	    }).on('focusout',function(e){
-		if ($(this).closest('tr').data('name')!= $(this).val()) {
-		    var new_title=$(this).val();
-		    title_elt.children('span').html(new_title);
+	
+	var i = $('<input>',{
+	    "type":'text',
+	    "value":title_elt.children('span').html()
+	});
+	
+	i.on('focusout',function(e){
+	    if ($(this).closest('tr').data('name')!= $(this).val()) {
+		var new_title=$(this).val();
+		title_elt.children('span').html(new_title);
 		    enable_save();
 		    $(this).remove();
 		}
 	    })
-	);
+	title_elt.after(i);
+	i.focus();
+   
 	title_elt.children('span').html('');
     });	
     
