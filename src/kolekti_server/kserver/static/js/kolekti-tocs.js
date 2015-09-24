@@ -344,7 +344,6 @@ $(document).ready( function () {
 
     $('.publish_job').on('click', function(e) {
 	$('#collapse_'+$(this).attr('id')).collapse('toggle');
-	
     })
 
     
@@ -513,6 +512,9 @@ $(document).ready( function () {
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
+	$('#editjoblink').show();
+	$('#editjoblink').removeClass('hidden')
+	$('#quickselect').removeClass('hidden')
 
 	$('#toc_root').data('kolekti-meta-kolekti_job',name)
 	$('#toc_root').attr('data-kolekti-meta-kolekti_job',name)
