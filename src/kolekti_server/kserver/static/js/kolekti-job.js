@@ -40,7 +40,7 @@ $(document).ready(function() {
 		if (val == '*') {
 		    buf += "<criterion code='"+ $(c).data('kolekti-crit-code') +"'/>" ;
 		}
-		else if (val != '') {
+		else if (!(val === '')) {
 		    buf += "<criterion code='"+ $(c).find('.kolekti-crit-code').html() +"' value='"+ val +"'/>" ;
 		}
 	    });
