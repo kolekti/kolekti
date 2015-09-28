@@ -57,6 +57,7 @@
       <parameter name="generate" 
          type="resource" 
          dir="kolekti/publication-templates/WebHelp5/xsl"
+	 onfail="silent"
          />
     </parameters>
   </pubscript>

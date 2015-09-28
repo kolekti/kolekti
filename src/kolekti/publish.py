@@ -392,19 +392,30 @@ class Publisher(PublisherMixin, kolektiBase):
                                                 '%s/%s'%(label,copyto))
                             
                     else:
-                        self.script_copy(filer = pval,
-                                         srcdir = srcdir,
-                                         targetroot = assembly_dir,
-                                         ext = pdef.get('ext'))
+                        try:
+                            self.script_copy(filer = pval,
+                                            srcdir = srcdir,
+                                            targetroot = assembly_dir,
+                                            ext = pdef.get('ext'))
+                        except:
+                            #only raise an exception if onfail attribute = silent
+                            if pdef.get('onfail') != 'silent':
+                                raise
+                            
                 if pdef.get('type')=='resource':
                     filer = pdef.get('file')
                     if not filer is None:
                         filer = unicode(filer)
                     srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
-                    self.script_copy(filer = filer,
-                                     srcdir = srcdir,
-                                     targetroot = assembly_dir,
-                                     ext = pdef.get('ext'))
+                    try:
+                        self.script_copy(filer = filer,
+                                        srcdir = srcdir,
+                                        targetroot = assembly_dir,
+                                        ext = pdef.get('ext'))
+                    except:
+                        #only raise an exception if onfail attribute = silent
+                        if pdef.get('onfail') != 'silent':
+                            raise
 
         except:
             import traceback
