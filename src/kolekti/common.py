@@ -372,9 +372,7 @@ class kolektiBase(object):
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
-            if system_path:
-                xsldir = os.path.join(self._appdir, xsldir)
-            else:
+            if not system_path:
                 xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
         xsldoc  = ET.parse(path,self._xmlparser)
@@ -528,7 +526,7 @@ class kolektiBase(object):
             shutil.rmtree(ospath)
         except:            
             pass
-        return shutil.copytree(ossource, ospath)
+        return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
 
 
     
