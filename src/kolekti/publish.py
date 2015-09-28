@@ -397,7 +397,9 @@ class Publisher(PublisherMixin, kolektiBase):
                                          targetroot = assembly_dir,
                                          ext = pdef.get('ext'))
                 if pdef.get('type')=='resource':
-                    filer = unicode(pdef.get('file'))
+                    filer = pdef.get('file')
+                    if not filer is None:
+                        filer = unicode(filer)
                     srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
                     self.script_copy(filer = filer,
                                      srcdir = srcdir,
@@ -676,32 +678,37 @@ class Publisher(PublisherMixin, kolektiBase):
             self.makedirs(destpath)
         except OSError:
             pass
-        try:
-            source= u"%s/%s.%s"%(srcdir,filer,ext)
-            dest=   u"%s/%s.%s"%(destpath,filer,ext)
-            logging.debug('copy resource %s -> %s'%(source, dest))
-            self.copyFile(source,dest)
-        except:
-            import traceback
-            logging.error("Impossible de copier la ressource %s"%source)
-            logging.debug(traceback.format_exc())
-            raise
+        if filer is None:
+            self.copyDirs(srcdir, destpath)
+        else:
+            try:
+                source= u"%s/%s.%s"%(srcdir,filer,ext)
+                dest=   u"%s/%s.%s"%(destpath,filer,ext)
+                logging.debug('copy resource %s -> %s'%(source, dest))
+                self.copyFile(source,dest)
+            except:
+                import traceback
+                logging.error("Impossible de copier la ressource %s"%source)
+                logging.debug(traceback.format_exc())
+                print traceback.format_exc()
+                raise
         
-        try:
-            source=u"%s/%s.parts"%(srcdir,filer)
-            if self.exists(source):
-                target=u"%s/%s.parts"%(destpath,filer)
-                try:
-                    self.rmdir(target)
-                except:
-                    pass
-                self.copyDirs(source,target)
+            try:
+                source=u"%s/%s.parts"%(srcdir,filer)
+                if self.exists(source):
+                    target=u"%s/%s.parts"%(destpath,filer)
+                    try:
+                        self.rmdir(target)
+                    except:
+                        pass
+                    self.copyDirs(source,target)
 
-        except:
-            import traceback
-            logging.error("Impossible de copier la ressource %s"%source)
-            logging.debug(traceback.format_exc())
-            raise
+            except:
+                import traceback
+                logging.error("Impossible de copier la ressource %s"%source)
+                logging.debug(traceback.format_exc())
+                print traceback.format_exc()
+                raise
 
 
 
