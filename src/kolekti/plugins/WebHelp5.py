@@ -93,16 +93,17 @@ class plugin(pluginBase.plugin):
             iff.write(idxx)
 
         css=self.get_script_parameter('css')
-
+        self.copyDirs('/'.join([self.assembly_dir,'kolekti','publication-templates','WebHelp5','styles']),
+                      '/'.join([self.publication_plugin_dir, 'usercss']))
         # générer les pages
-        xslt=self.get_xsl('xsl/generate', profile = self.profile, lang = self._publang)
+        xslt=self.get_xsl('generate', profile = self.profile, lang = self._publang)
         puburl=self.getUrlPath(self.publication_plugin_dir)
         templateurl=self.getUrlPath(templatepath)
         # try:
         doc=xslt(self.pivot,
                 pubdir=u"'%s'"%puburl,
                 css=u"'%s'"%css,
-                template=u"'%s'"%templateurl,
+                template=u"'%s'"%templateurl
             )
         res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/index.html"%self.publication_plugin_dir})
         # except:
