@@ -8,7 +8,8 @@
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-release.js"></script>
+<script src="/static/js/kolekti-illustrationsutils.js"></script>
+<script src="/static/js/kolekti-release.js"></script>
 {% endblock %}
 
     {% block title %}
@@ -176,7 +177,7 @@
 
 
 {% block content %}
-    <div id="main" class="release" data-release="{{release_path}}/{{assembly_name}}" data-lang="{{ lang }}">
+    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ lang }}">
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 	{% for rlang, state,focus in langstates %}
 	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
@@ -206,6 +207,7 @@
 
       <div class="tab-content ">
 	{% for rlang, state, focus in langstates %}
+	{% if rlang == lang %}
 	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
 	  {% if state == "unknown" %}
 
@@ -267,13 +269,34 @@
 	      </form>
 	    </div>
 	    <div class="panel-body">
-	      <div id="content_{{ rlang }}">
+	      <div class="row">
+		<div class="col-sm-6 col-md-6">
+		  <div class="btn-group">
+		    <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
+		      Assemblage
+		    </button>
+		    <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
+		      Images
+		    </button>
+		    <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
+		      Variables
+		    </button>
+		  </div>
+		</div>
+	      </div>
+	      <div id="content_pane" class="release-panel-part">
+	      </div>
+	      <div id="illust_pane" class="release-panel-part hidden">
+	
+	      </div>
+	      <div id="variables_pane" class="release-panel-part hidden">
 	      </div>
 	    </div>
 	    
 	  </div>
 	  {% endif %}	  
 	</div>
+	{% endif %}	  
  	{% endfor %}
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">

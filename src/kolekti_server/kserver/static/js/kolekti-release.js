@@ -135,11 +135,53 @@ Defines events for languages and release state in toolbar
 	
     });
 	
+    $('#btn_assembly').on('click', function() {
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#content_pane').removeClass('hidden')
+    })
+    $('#btn_illust').on('click', function() {
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#illust_pane').removeClass('hidden')
+	console.log($('#main').data('release'))
+	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
+		     'parent':"#illust_pane",
+		     'title':" ",
+		     'titleparent':".title",
+		     'mode':"selectonly",
+		     'modal':"no",
+		     'os_actions':'yes',
+		     'create_actions':'yes',
+		     'create_builder':upload_builder_builder()
+		    })
+	.select(
+	    function(path) {
+		$.get('/images/details?path='+path)
+		    .done(
+			function(data) {
+			    $('#preview').html([
+				$('<h4>',{'html':displayname(path)}),
+				data
+			    ]);
+			    $('#preview img').attr('src',path);
 
+			}
+		    )
+	    })
+	.create(upload_image)
+	
+    })
+    $('#btn_variables').on('click', function() {
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#variables_pane').removeClass('hidden')
+    })
 
     $('#btn_save').on('click', function() {
-	var lang = 
-	
 	$.ajax({
 	    url:"/releases/state/",
 	    method:'POST',
@@ -189,7 +231,7 @@ Defines events for languages and release state in toolbar
 	    'release':$('#main').data('release'),
 	    'lang':$('#main').data('lang')
 	}).success(function(data) {
-	    $('#content_'+$('#main').data('lang')).html(data)
+	    $('#content_pane').html(data)
 	})
     }
     
@@ -259,5 +301,7 @@ Defines events for languages and release state in toolbar
 	    $('#pub_progress').remove();
 	});
     })
+
+    
 
 })

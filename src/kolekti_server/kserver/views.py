@@ -179,7 +179,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('django_assembly_edit')
-        
         content = ''.join([str(xsl(t, path="'%s'"%release_path)) for t in body])
         return content
     
@@ -417,7 +416,8 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     
 class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
-        release_path, assembly_name = request.GET.get('release').rsplit('/',1)
+        release_path = request.GET.get('release')
+        assembly_name = release_path.rsplit('/',1)[1]
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
         content = self.get_assembly_edit(assembly_path, release_path=release_path),
@@ -463,10 +463,11 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
     def post(self, request):
-        release, assembly = request.GET.get('release',"").rsplit('/',1)
-         
+        release_path = request.GET.get('release')
+        assembly_name = release_path.rsplit('/',1)[1]
+
         lang=request.GET.get('lang',self.user_settings.active_srclang)
-        assembly_path = '/'.join([release,'sources',lang,'assembly',assembly+'_asm.html'])
+        assembly_path = '/'.join([release_path,'sources',lang,'assembly',assembly_name+'_asm.html'])
         xassembly = self.parse(assembly_path)
         xbody = self.parse_html_string(request.body)
         body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
@@ -475,13 +476,14 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         for e in xbody.xpath('/html/body/*'):
             body.append(e)
         xsl = self.get_xsl('django_assembly_save')
-        xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
+        xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.xwrite(xassembly, assembly_path)
         return HttpResponse(json.dumps({'status':'ok'}))
 
 class ReleasePublishView(kolektiMixin, TemplateView):
     def post (self, request):
-        release, assembly = request.POST.get('release',"/").rsplit('/',1)
+        release_path = request.POST.get('release')
+        assembly_name = release_path.rsplit('/',1)[1]
         langs = request.POST.getlist('langs[]',[])
         context={}
 
@@ -491,7 +493,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
         try:
             p = publish.ReleasePublisher(projectpath, langs=langs)
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release, assembly + "_asm")), content_type="text/html")
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_path, assembly_name + "_asm")), content_type="text/html")
 
         except:
             import traceback
