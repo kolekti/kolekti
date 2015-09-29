@@ -292,6 +292,8 @@
     </li>
   </xsl:template>
   
+  <xsl:template match="html:div[@class='section'][@data-hidden='true']" mode="gentoc"/>
+
   <xsl:template match="html:a[@class='indexmq']" mode="gentoc" />
   <xsl:template match="html:span[@class='title_num']" mode="gentoc" />
 

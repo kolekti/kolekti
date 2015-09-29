@@ -78,6 +78,7 @@
         <xsl:value-of select="$section_depth"/>
 	</xsl:comment>
       -->
+      <xsl:copy-of select="@data-hidden"/>
       <xsl:apply-templates mode="aggreg">
         <xsl:with-param name="section_depth" select="$section_depth+1"/>
       </xsl:apply-templates>
