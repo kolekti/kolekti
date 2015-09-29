@@ -347,24 +347,36 @@
 
   <xsl:template match="html:div[@class='attention']" mode="modcontent">
     <div class="alert alert-warning" role="alert">
+      <p><span class="label label-warning">
+	<xsl:value-of select="kfp:variable(string($translationfile),'Important')" />
+      </span></p>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='danger']" mode="modcontent">
     <div class="alert alert-danger" role="alert">
+      <p><span class="label label-danger">
+	<xsl:value-of select="kfp:variable(string($translationfile),'Danger')" />
+      </span></p>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='remarque']" mode="modcontent">
     <div class="alert alert-info" role="alert">
+      <p><span class="label label-info">
+	<xsl:value-of select="kfp:variable(string($translationfile),'Remarque')" />
+      </span></p>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='exemple']" mode="modcontent">
     <div class="alert alert-success" role="alert">
+      <p><span class="label label-success">
+	<xsl:value-of select="kfp:variable(string($translationfile),'Exemple')" />
+      </span></p>      
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
@@ -497,9 +509,9 @@
 
    <!--  generate html header -->
    <xsl:template name="genhtmlheader">
-     <title><xsl:apply-templates select="/html:html/html:body/html:div[@class='section'][1]/html:*[1]/text()" /></title>
      <meta charset="utf-8" />
      <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+     <xsl:copy-of select="/html:html/html:head/html:title" />
      <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition']"/>
      <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition_label']"/>
      <link rel="stylesheet" href="lib/css/bootstrap.min.css" type="text/css"/>
