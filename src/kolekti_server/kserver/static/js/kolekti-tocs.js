@@ -35,7 +35,10 @@ $(document).ready( function () {
 	    buf += "rel='" + elt.data('kolekti-topic-rel') + "'/>";
 	}
 	else if (elt.hasClass('section')) {
-	    buf+="<div class='section'>";
+	    buf+="<div class='section'";
+	    if (elt.attr('data-hidden') == 'true')
+		buf+=" data-hidden='true'";
+	    buf+=">";
 	    elt.children('.panel-heading').children().each(function(i,e) {
 		buf += process_toc($(e));
 	    });
@@ -163,8 +166,11 @@ $(document).ready( function () {
 					    'tabindex':"-1",
 					    'href':"#",
 					    'class':"btn_section_toc_exclude",
-					    'html':"Exclure du sommaire"
-					})
+					    'html':["Exclure du sommaire",
+						topic.attr('data-hidden')=='true'?' ':'xx',
+						topic.attr('data-hidden')=='true'?$('<span>',{'class':"glyphicon glyphicon-ok"}):null,
+					       ]
+					}),
 				    }):null,
 				    
 				    $('<li>', {
@@ -570,6 +576,22 @@ $(document).ready( function () {
     });	
     
 
+    $('body').on('click', '.btn_section_toc_exclude', function(e) {
+	var section = $(this).closest('.section')
+	if ($(this).data("state") == 'on')
+	{
+	    $(this).data("state",'off');
+	    $(this).parent().find('span').remove();
+	    section.removeAttr('data-hidden')
+	} else {
+	    $(this).data("state",'on');
+	    $(this).append([' ',$('<span>',{'class':"glyphicon glyphicon-ok"})]);
+	    section.attr('data-hidden', 'true')
+	}
+	enable_save();
+    })
+
+    
     // move topic
 
     $('body').on('click', '.btn_topic_up', function(e) {

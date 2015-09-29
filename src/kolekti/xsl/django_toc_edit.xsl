@@ -48,6 +48,7 @@
 
   <xsl:template match="html:div[@class='section']">
     <div class="section panel panel-info">
+      <xsl:copy-of select="@data-hidden"/>
       <div class="panel-heading">
 	<xsl:apply-templates select="*[not(self::html:a) and not(self::html:div[@class='section'])]" mode="collapse"/>
       </div>
