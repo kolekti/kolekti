@@ -346,37 +346,37 @@
 
 
   <xsl:template match="html:div[@class='attention']" mode="modcontent">
+    <p><span class="label label-warning">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Important')" />
+    </span></p>
     <div class="alert alert-warning" role="alert">
-      <p><span class="label label-warning">
-	<xsl:value-of select="kfp:variable(string($translationfile),'Important')" />
-      </span></p>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='danger']" mode="modcontent">
+    <p><span class="label label-danger">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Danger')" />
+    </span></p>
     <div class="alert alert-danger" role="alert">
-      <p><span class="label label-danger">
-	<xsl:value-of select="kfp:variable(string($translationfile),'Danger')" />
-      </span></p>
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='remarque']" mode="modcontent">
-    <div class="alert alert-info" role="alert">
-      <p><span class="label label-info">
-	<xsl:value-of select="kfp:variable(string($translationfile),'Remarque')" />
-      </span></p>
+    <p><span class="label label-success">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Remarque')" />
+    </span></p>
+    <div class="alert alert-success" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='exemple']" mode="modcontent">
-    <div class="alert alert-success" role="alert">
-      <p><span class="label label-success">
-	<xsl:value-of select="kfp:variable(string($translationfile),'Exemple')" />
-      </span></p>      
+    <p><span class="label label-info">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Exemple')" />
+    </span></p>      
+    <div class="alert alert-info" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
@@ -405,43 +405,16 @@
     </li>
   </xsl:template>
 
-
-
-  <!--
   <xsl:template match="html:img" mode="modcontent">
-    <xsl:variable name="src">
-      <xsl:choose>
-        <xsl:when test="starts-with(@src, 'http://')">
-          <xsl:value-of select="@src" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>sources</xsl:text>
-          <xsl:value-of select="substring-after(@src, 'medias/')" />
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <img src="{@src}" alt="{@alt}" title="{@title}">
-      <xsl:if test="@style">
-        <xsl:attribute name="style"><xsl:value-of select="@style" /></xsl:attribute>
-      </xsl:if>
-    </img>
+    <xsl:copy>
+      <xsl:copy-of select="@*"/>
+      <xsl:attribute name="class">
+	<xsl:value-of select="class"/>
+	<xsl:text> img-responsive</xsl:text>
+      </xsl:attribute>
+    </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:embed" mode="modcontent">
-    <xsl:variable name="src">
-      <xsl:choose>
-        <xsl:when test="starts-with(@src, 'http://')">
-          <xsl:value-of select="@src" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>medias/</xsl:text>
-          <xsl:value-of select="substring-after(@src, 'medias/')" />
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <embed width="{@width}" height="{@height}" type="{@type}" pluginspage="{@pluginspage}" src="{$src}" />
-  </xsl:template>
--->
 
   <xsl:template match="node()|@*" mode="modcontent">
     <xsl:copy>
@@ -759,22 +732,13 @@
  </xsl:template>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
  <!-- topic title -->
  <xsl:template name="modtitle">
-   <xsl:apply-templates select="(.//html:h1|.//html:h2|.//html:h3|.//html:h4|.//html:h5|.//html:h6|.//html:dt)[1]" mode="TOCtitle" />
+   <xsl:param name="modid">
+     <xsl:value-of select="@id" />
+   </xsl:param>
+   <xsl:variable name="mod" select="//html:div[@id = $modid]" />
+   <xsl:apply-templates select="($mod//html:h1|$mod//html:h2|$mod//html:h3|$mod//html:h4|$mod//html:h5|$mod//html:h6|$mod//html:dt)[1]" mode="TOCtitle" />
  </xsl:template>
 
  <!-- topic filename -->
@@ -825,7 +789,7 @@
    <xsl:text>.html</xsl:text>
    <xsl:if test="contains($modid,'_')">
      <xsl:text>#</xsl:text>
-     <xsl:value-of select="$modid" />
+     <xsl:value-of select="substring-after($modid,'_')" />
    </xsl:if>
  </xsl:template>
 
