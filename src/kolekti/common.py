@@ -761,7 +761,7 @@ class XSLExtensions(kolektiBase):
     Extensions functions for xslt that are applied during publishing process
     """
     ens = "kolekti:extensions:functions"
-    def __init__(self, path):
+    def __init__(self, path, **kwargs):
         super(XSLExtensions, self).__init__(path)
 
 class PrefixResolver(ET.Resolver):

@@ -492,8 +492,8 @@ class ReleasePublishView(kolektiMixin, TemplateView):
 #        xjob = self.parse(jobpath)
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
         try:
-            p = publish.ReleasePublisher(projectpath, langs=langs)
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_path, assembly_name + "_asm")), content_type="text/html")
+            p = publish.ReleasePublisher(release_path, projectpath, langs=langs)
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(assembly_name + "_asm")), content_type="text/html")
 
         except:
             import traceback
@@ -1043,8 +1043,8 @@ class ReleaseView(PublicationView):
         }
 
             
-        p = publish.ReleasePublisher(projectpath, langs=[self.user_settings.active_srclang])
-        for e in p.publish_assembly(release_dir, pp[0]['pubname']):
+        p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.user_settings.active_srclang])
+        for e in p.publish_assembly(pp[0]['pubname']):
             yield e
             
             

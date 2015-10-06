@@ -13,7 +13,7 @@ import logging
 import json
 from lxml import etree as ET
 
-from publish_utils import PublisherMixin, PublisherExtensions
+from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 from kolekti import plugins
 
@@ -30,8 +30,10 @@ class Publisher(PublisherMixin, kolektiBase):
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
-        
-        
+
+    def getPublisherExtensions(self):        
+        return PublisherExtensions
+    
     def _variable(self, varfile, name):
         """returns the actual value for a variable in a given xml variable file"""
         fvar = self.get_base_variable(varfile)
@@ -155,6 +157,9 @@ class Publisher(PublisherMixin, kolektiBase):
             for event in self.copy_media(fassembly, profile, assembly_dir):
                 events.append(event)
 
+            for event in self.copy_variables(fassembly, profile, assembly_dir):
+                events.append(event)
+
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
                 try:
@@ -170,7 +175,6 @@ class Publisher(PublisherMixin, kolektiBase):
 
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    
 
         return assembly, assembly_dir, pubname, events 
 
@@ -246,13 +250,13 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             # logging.debug(assembly)
             # criteria
-            s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
+            s = self.get_xsl('criteria', self.getPublisherExtensions(), profile=profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
             
             # filter
             logging.debug("filter on profile")
-            s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
+            s = self.get_xsl('filter', self.getPublisherExtensions(), profile=profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
             
@@ -261,12 +265,12 @@ class Publisher(PublisherMixin, kolektiBase):
             self.log_xsl(s.error_log)            
 
             # substvars
-            s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
+            s = self.get_xsl('variables', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
 
             # process links
-            s = self.get_xsl('links', PublisherExtensions, profile = profile, lang=self._publang)
+            s = self.get_xsl('links', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
 
@@ -288,7 +292,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
             # cleanup title levels
             
-            # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            # s = self.get_xsl('titles', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             # assembly = s(assembly)
             
         except ET.XSLTApplyError, e:
@@ -299,8 +303,8 @@ class Publisher(PublisherMixin, kolektiBase):
             raise
 
         except:
-            logging.debug(s.error_log)
             import traceback
+            print traceback.format_exc()
             logging.debug(traceback.format_exc())
             logging.error("Error in publication process")
             raise
@@ -315,8 +319,40 @@ class Publisher(PublisherMixin, kolektiBase):
     def create_settings(self, xjob, pubname, assembly_dir):
         pass
 
+    # copy used variables xml files into assembly space
+    def copy_variables(self, assembly, profile, assembly_dir):
+        for varelt in assembly.xpath('//h:var', namespaces=self.nsmap):
+            vardecl = varelt.get('class')
+            varfile, varname = vardecl.split(':')
+            if '/' in varfile:
+                srcfile = varfile
+            else:
+                srcfile = '/' + "/".join(['sources',self._publang,'variables',varfile])
+            srcfile = srcfile + ".xml"
+            try:
+                self.makedirs(self.dirname(assembly_dir + "/" +srcfile))
+            except OSError:
+                logging.debug('makedir failed')
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"impossible de créer le dossier de variables",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                logging.debug(traceback.format_exc())
+            try:
+                self.copyFile(srcfile, assembly_dir + '/' + srcfile)
+                
+            except:
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"fichier introuvable %s"%(srcfile.encode('utf-8'),),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
 
- 
             
     # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
@@ -909,36 +945,50 @@ class Releaser(Publisher):
 
 
 class ReleasePublisher(Publisher):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, realease_dir, *args, **kwargs):
         if kwargs.has_key('langs'):
             self._publangs = kwargs.get('langs')
             kwargs.pop('langs')
+        self._release_dir = realease_dir
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
-    def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
-        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        assembly_dir = "/releases/" + assembly_dir
-        return assembly_dir
+    def getPublisherExtensions(self):        
+        return ReleasePublisherExtensions
+
+    def get_extensions(self, extclass, **kwargs):
+        kwargs.update({"release":self._release_dir})
+        print kwargs
+        return super(ReleasePublisher, self).get_extensions(extclass,  **kwargs)
+            
+    def assembly_dir(self, xjob = None):
+        return self._release_dir
+#        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
+#        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+#        assembly_dir = "/releases/" + assembly_dir
+#        return assembly_dir
 
     def cleanup_assembly_dir(self, xjob):
         pass
 
-    def publish_assembly(self, release, assembly):
+    def process_path(self, path):
+        print 'process_path', path
+        return self.assembly_dir() + "/" + path
+    
+    def publish_assembly(self, assembly):
         """ publish an assembly"""
-        manifest = self.getOsPath(release + '/kolekti/manifest.json')
+        manifest = self.getOsPath(self._release_dir + '/kolekti/manifest.json')
         first_sep = ""
         if os.path.exists(manifest):
             first_sep = ","
         with open(manifest, 'a') as mf:
             mf.write(first_sep)
-            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(release,int(time.time())))
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir,int(time.time())))
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang
                 mf.write(',{"event":"lang", "label":"%s"}'%(lang,))
                 try:
-                    xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                    xassembly = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
                 except:
                     yield {
                         'event':'error',
@@ -951,7 +1001,7 @@ class ReleasePublisher(Publisher):
                     logging.debug(traceback.format_exc())
                     return
 
-                xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+                xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))
