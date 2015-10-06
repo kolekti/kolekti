@@ -31,7 +31,7 @@ var upload_image = function(browser, folder, update_function) {
         }, 'json');
     };
 
-var upload_builder_builder = function() {
+var upload_image_builder_builder = function() {
 	return upload_builder = function(e,path) {
 	    e.prepend(   
 		['Transférer une image : ',

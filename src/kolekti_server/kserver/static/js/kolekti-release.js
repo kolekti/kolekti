@@ -136,6 +136,7 @@ Defines events for languages and release state in toolbar
     });
 	
     $('#btn_assembly').on('click', function() {
+	$('#preview').parent().addClass('hidden');
 	$('.btn-release-pane').removeClass('active')
 	$(this).addClass('active')
 	$('.release-panel-part').addClass('hidden')
@@ -155,7 +156,7 @@ Defines events for languages and release state in toolbar
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder()
+		     'create_builder':upload_image_builder_builder()
 		    })
 	.select(
 	    function(path) {
@@ -167,7 +168,7 @@ Defines events for languages and release state in toolbar
 				data
 			    ]);
 			    $('#preview img').attr('src',path);
-
+			    $('#preview').parent().removeClass('hidden');
 			}
 		    )
 	    })
@@ -175,10 +176,27 @@ Defines events for languages and release state in toolbar
 	
     })
     $('#btn_variables').on('click', function() {
+	$('#preview').parent().addClass('hidden');
 	$('.btn-release-pane').removeClass('active')
 	$(this).addClass('active')
 	$('.release-panel-part').addClass('hidden')
 	$('#variables_pane').removeClass('hidden')
+	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
+		     'parent':"#variables_pane",
+		     'title':" ",
+		     'titleparent':".title",
+		     'mode':"selectonly",
+		     'modal':"no",
+		     'os_actions':'yes',
+		     'create_actions':'yes',
+		     'create_builder':upload_variable_builder_builder()
+		    })
+	.select(
+	    function(path) {
+		
+	    })
+	.create(upload_varfile)
+	.setup_file(setup_varfile);
     })
 
     $('#btn_save').on('click', function() {
