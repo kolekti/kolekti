@@ -197,6 +197,10 @@ var kolekti_browser = function(args) {
     var editable_path = false
     var titlepath = false
     var os_actions = false
+    var os_action_copy = false
+    var os_action_delete = false
+    var os_action_move = false
+    var os_action_rename = false
     var create_actions = false
     var create_builder = function(e, path){
 	e.prepend(
@@ -236,8 +240,23 @@ var kolekti_browser = function(args) {
 	modal = false;
     if (args && args.editable_path && args.editable_path=='yes')
 	editable_path = true;
-    if (args && args.os_actions && args.os_actions=='yes')
-	os_actions= true;
+	
+    if (args && args.os_actions && args.os_actions=='yes') {
+	os_action_delete = true;
+	os_action_copy = true;
+	os_action_rename = true;
+	os_action_move = true;
+    }
+    if (args && args.os_action_copy && args.os_action_copy=='yes')
+	os_action_copy= true;
+    if (args && args.os_action_delete && args.os_action_delete=='yes') 
+	os_action_delete = true;
+    if (args && args.os_action_move && args.os_action_move=='yes') 
+	os_action_move = true;
+    if (args && args.os_action_rename && args.os_action_rename=='yes') 
+	os_action_rename = true;
+    os_actions = (os_action_copy || os_action_delete || os_action_move || os_action_rename)
+    
     if (args && args.create_actions && args.create_actions=='yes')
 	create_actions= true;
     if (args && args.create_builder)
@@ -283,81 +302,92 @@ var kolekti_browser = function(args) {
 	    if (!os_actions) 
 		$(parent).find('.kolekti-browser-item-action').hide()
 	    else {
-		$(parent).find('.kolekti-action-remove').click(function(e){
-		    var item = $(this).closest('tr').data('name');
-		    if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
-			$.post('/browse/delete',{"path": path + "/" + item})
+		if(os_action_delete)
+		    $(parent).find('.kolekti-action-remove').click(function(e){
+			var item = $(this).closest('tr').data('name');
+			if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
+			    $.post('/browse/delete',{"path": path + "/" + item})
+				.done(function(data) {
+				    console.log(data)
+				    update();
+				})
+			}
+		    })
+		else
+		    $(parent).find('.kolekti-action-remove').hide()
+
+		if(os_action_copy)
+		    $(parent).find('.kolekti-action-copy').click(function(e){
+			var picto = $(this).closest('tr').find('td').first().clone(),
+			    name = 'Copie de '+$(this).closest('tr').data('name'),
+			    srcname = $(this).closest('tr').data('name');
+			$(this).closest('tr').after(
+			    $('<tr>', {
+				'html':[$('<td>',{'html':picto}),
+					$('<td>',{
+					    'html': $('<input>',{
+						'type':'text',
+						'class':"copynameinput",
+						"value":name
+					    }).on('focusout',function(e){
+						$.post('/browse/copy',
+						       {'from':path + "/" + srcname,
+							'to': path + "/" + $(this).val()
+						       })
+						    .done(function(data) {
+							console.log(data)
+							update();
+						    })
+					    })
+					}),
+					$('<td>'),
+					$('<td>')]
+			    }))
+			$('.copynameinput').focus();
+			
+		    });
+		else
+		    $(parent).find('.kolekti-action-copy').hide()
+
+		if(os_action_rename)
+		    $(parent).find('.kolekti-action-rename').click(function(e){
+			$(this).closest('tr').find('.filelink').parent().html(
+			    $('<input>',{
+				"type":'text',
+				"value":$(this).closest('tr').data('name')
+			    }).on('focusout',function(e){
+				if ($(this).closest('tr').data('name')!= $(this).val())
+				    $.post('/browse/move',
+					   {'from':path + "/" + $(this).closest('tr').data('name'),
+					    'to': path + "/" + $(this).val()
+					   })
+				    .done(function(data) {
+					update();
+				    })
+				else
+				    update()
+			    })
+			);
+			$(this).closest('tr').find('input').focus();
+		    });
+		else
+		    $(parent).find('.kolekti-action-rename').hide()
+		
+		if(os_action_move)		
+		    $(parent).find('.kolekti-action-move').click(function(e){
+			$.post('/browse/move',
+			       {'from':path + "/" + $(this).closest('tr').data('name'),
+				'to': path + "/" + $(this).data('dir')
+			       })
 			    .done(function(data) {
 				console.log(data)
 				update();
 			    })
-		    }
-		});
 
-
-		$(parent).find('.kolekti-action-copy').click(function(e){
-		    var picto = $(this).closest('tr').find('td').first().clone(),
-		    name = 'Copie de '+$(this).closest('tr').data('name'),
-		    srcname = $(this).closest('tr').data('name');
-		    $(this).closest('tr').after(
-			$('<tr>', {
-			    'html':[$('<td>',{'html':picto}),
-				    $('<td>',{
-					'html': $('<input>',{
-					    'type':'text',
-					    'class':"copynameinput",
-					    "value":name
-					}).on('focusout',function(e){
-					    $.post('/browse/copy',
-						   {'from':path + "/" + srcname,
-						    'to': path + "/" + $(this).val()
-						   })
-						.done(function(data) {
-						    console.log(data)
-						    update();
-						})
-					})
-				    }),
-				    $('<td>'),
-				    $('<td>')]
-			}))
-		    $('.copynameinput').focus();
-
-		});
-
-
-		$(parent).find('.kolekti-action-rename').click(function(e){
-		    $(this).closest('tr').find('.filelink').parent().html(
-			$('<input>',{
-			    "type":'text',
-			    "value":$(this).closest('tr').data('name')
-			}).on('focusout',function(e){
-			    if ($(this).closest('tr').data('name')!= $(this).val())
-				$.post('/browse/move',
-				       {'from':path + "/" + $(this).closest('tr').data('name'),
-					'to': path + "/" + $(this).val()
-				       })
-				.done(function(data) {
-				    update();
-				})
-			    else
-				update()
-			})
-		    );
-		    $(this).closest('tr').find('input').focus();
-		});
-		
-		$(parent).find('.kolekti-action-move').click(function(e){
-		    $.post('/browse/move',
-			   {'from':path + "/" + $(this).closest('tr').data('name'),
-			    'to': path + "/" + $(this).data('dir')
-			   })
-			.done(function(data) {
-			    console.log(data)
-			    update();
-			})
-
-		});
+		    });
+		else
+		    $(parent).find('.kolekti-action-move').hide()
+	
 		$(parent).find('.dirlist tr.file').each(function(i,e){
 		    promise_setup_file(e)
 		});
