@@ -1195,6 +1195,7 @@ class SyncView(kolektiMixin, View):
             sync.update_all()
             
         elif action == "commit":
+            sync.update_all()
             files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
             sync.commit(files,commitmsg)
             

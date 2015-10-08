@@ -150,9 +150,9 @@
 	       <div class="col-sm-12">
 		 {% for e in changes.commit %}
 	       	 <div class="checkbox">
-		   <label>
+		   <label title="{{e.wstatus}}">
 		     <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		     {{ e.path }} 
+		     {{ e.path }}
 		   </label>
 		   {% comment %}
 		   {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}

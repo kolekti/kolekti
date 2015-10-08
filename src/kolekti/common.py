@@ -495,9 +495,9 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
-            if hasattr(self, "_draft") and self._draft is False:
+            #if hasattr(self, "_draft") and self._draft is False:
                 # svn add if file did not exist
-                self.post_save(path)
+                # self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
