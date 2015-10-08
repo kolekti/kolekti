@@ -134,6 +134,7 @@ $(document).ready(function() {
 				    'html':$('<th>',{
 					'class':'varname',
 					'html':$('<span>',{
+					    'class':'var_name',
 					    'html':$(variable).attr('code')})
 				    })
 				}));
@@ -349,6 +350,12 @@ $(document).ready(function() {
 	disable_commands();
     };
     
+
+    $('#main').on('mouseenter', '.varname', function() {
+	console.log('hover')
+	$(this).next().show()
+    }
+		 );
     
     $('#main').on('click', '.var_name_edit', var_edit);
 
@@ -383,6 +390,7 @@ $(document).ready(function() {
 	    'html':$('<th>',{
 		'class':'varname',
 		'html':$('<span>',{
+		    'class':'var_name',
 		    'html':""})
 	    })
 	}));

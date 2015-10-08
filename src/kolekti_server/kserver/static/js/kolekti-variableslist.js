@@ -41,7 +41,7 @@ $(document).ready(function() {
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes',
-		     'create_builder':upload_builder_builder()
+		     'create_builder':upload_variable_builder_builder()
 		    })
 	.select(
 	    function(path) {
