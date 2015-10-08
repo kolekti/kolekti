@@ -321,7 +321,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
     # copy used variables xml files into assembly space
     def copy_variables(self, assembly, profile, assembly_dir):
-        for varelt in assembly.xpath('//h:var', namespaces=self.nsmap):
+        for varelt in assembly.xpath('//h:var[contains(@class,":")]', namespaces=self.nsmap):
             vardecl = varelt.get('class')
             varfile, varname = vardecl.split(':')
             if '/' in varfile:
