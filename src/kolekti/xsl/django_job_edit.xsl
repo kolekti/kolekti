@@ -138,7 +138,7 @@
     <div class="panel panel-default job-comp profile">
       <div class="panel-body">
 	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-md-8 col-sm-12">
 	    <div class="row">
 	      <div class="col-sm-6 col-xs-12">
 		<label for="profil_name_{generate-id()}"><strong>Nom du profil</strong></label>
@@ -154,7 +154,7 @@
 	      </div>
 	    </div>
 	  </div>
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-md-4 col-sm-12">
 	    <div class="checkbox">
 	      <label>
 		<input type="checkbox" class="profile-enabled">
