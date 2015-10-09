@@ -68,10 +68,28 @@ class SynchroManager(object):
     def history(self):
         return self._client.log(self._base)
 
-    def state(self):
+    def rev_number(self):
         #headrev = self._client.info(self._base)
         headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
         return {"revision":{"number":headrev}}
+    
+    def rev_state(self):
+        #headrev = self._client.info(self._base)
+        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        statuses = self.statuses()
+        status = "N"
+        if len(statuses['error']):
+            status = "E"
+        if len(statuses['conflict']):
+            status = "C"
+        if len(statuses['merge']):
+            status = "M"
+        if len(statuses['commit']):
+            status = "*"
+        if len(statuses['update']):
+            status = "U"
+            
+        return {"revision":{"number":headrev,"status":status}}
 
     
     def revision_info(self, revision):

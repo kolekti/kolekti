@@ -112,9 +112,16 @@ class kolektiBase(object):
 
 
     @property
+    def _syncnumber(self):
+        try:
+            return self.syncMgr.rev_number()
+        except:
+            return "?"
+            
+    @property
     def _syncstate(self):
         try:
-            return self.syncMgr.state()
+            return self.syncMgr.rev_state()
         except:
             return "?"
             

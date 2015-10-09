@@ -123,7 +123,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         context['srclangs'] = languages
         context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
-        context['syncinfo'] = self._syncstate
+        context['syncnum'] = self._syncnumber
+        print self._syncnumber
         context.update(data) 
         return context
 
@@ -1240,9 +1241,18 @@ class SyncDiffView(kolektiMixin, View):
         
         return self.render_to_response(context)
 
-
-
-
+class SyncStatusView(kolektiMixin, View):
+    def get(self, request):
+        try:
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            statuses = sync.rev_state()
+            return HttpResponse(json.dumps(statuses),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        

@@ -77,7 +77,7 @@
 <!--
       <div class="collapse navbar-collapse" id="navbar2">
 	<ul class="nav navbar-nav">
-	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncinfo.revision.number }}]</span></a></li>
+	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncnum.revision.number }}]</span></a></li>
 	</ul>
       </div>
 -->
@@ -104,7 +104,7 @@
 	    </div>
 	    <div class="btn-group" role="group">
 	      <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
-		rev {{ syncinfo.revision.number }}
+		rev {{ syncnum.revision.number }}
 	      </button>
 	    </div>
 	    {% block infobuttons_lang %}
