@@ -114,17 +114,18 @@ class SynchroManager(object):
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         
-    def statuses(self):
-        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[]}
-        statuses = self._client.status(self._base,
-                                       recurse = True,
+    def statuses(self, path="", recurse = True):
+        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
+        statuses = self._client.status(self.__makepath(path),
+                                       recurse = recurse,
                                        get_all = True,
                                        update = True)
         for status in statuses:
             path = status.path[len(self._base):]
             item = {"path":path,
-                    "rstatus":status.repos_text_status,
-                    "wstatus":status.text_status,
+                    "basename":os.path.basename(path),
+                   "rstatus":str(status.repos_text_status),
+                    "wstatus":str(status.text_status),
                     }
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
@@ -134,7 +135,7 @@ class SynchroManager(object):
             if status.text_status == pysvn.wc_status_kind.ignored:
                 pass
             elif status.text_status == pysvn.wc_status_kind.unversioned and status.repos_text_status == pysvn.wc_status_kind.none:
-                pass
+                    res['unversioned'].append(item)
             elif status.repos_text_status in self.statuses_modified:
                 if status.text_status == pysvn.wc_status_kind.added:
                     res['conflict'].append(item)

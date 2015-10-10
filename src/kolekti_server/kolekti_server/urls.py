@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
     url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
+    url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
 
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    

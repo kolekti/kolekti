@@ -1175,6 +1175,7 @@ class SyncView(kolektiMixin, View):
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
             commitmsg = "unspecified"
+        print action
         if action == "conflict":
             resolve = request.POST.get('resolve')
             files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
@@ -1190,6 +1191,7 @@ class SyncView(kolektiMixin, View):
 
         elif action == "merge":
             files = request.POST.getlist('fileselect',[])
+            print files
             sync.update(files)
                 
         elif action == "update":
@@ -1247,8 +1249,21 @@ class SyncStatusView(kolektiMixin, View):
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             from kolekti.synchro import SynchroManager
             sync = SynchroManager(projectpath)
-            statuses = sync.rev_state()
-            return HttpResponse(json.dumps(statuses),content_type="application/json")
+            states = dict(sync.rev_state())
+            return HttpResponse(json.dumps(states),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            
+class SyncResStatusView(kolektiMixin, View):
+    def get(self, request):
+        try:
+            path = request.GET.get("path")
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            state = sync.statuses(path, recurse = False)
+            return HttpResponse(json.dumps(state),content_type="application/json")
         except:
             import traceback
             print traceback.format_exc()
