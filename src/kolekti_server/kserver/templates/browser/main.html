@@ -50,8 +50,9 @@
 	<th></th>
 	<th><a href="#" class="sortcol" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
 	<th><a href="#" class="sortcol" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
-	<th></th>
-      </tr>
+	<th>Actions</th>
+	<th style="width:5%">Synchro</th>
+       </tr>
     </thead>
     <tbody>
       {% for f in files %}
@@ -95,6 +96,7 @@
 	  </div>
 	  {% endif %}
 	</td>
+	<td class="kolekti-browser-sync text-right"></td>
       </tr>
     {% endfor %}
     </tbody>

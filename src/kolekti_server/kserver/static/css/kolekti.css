@@ -147,3 +147,7 @@ label {
 .browser tr.dir {
     background-color: #f9f9f9;
 }
+
+.kolekti-browser-sync a {
+    cursor: pointer;
+}
