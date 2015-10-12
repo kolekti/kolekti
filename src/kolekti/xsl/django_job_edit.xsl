@@ -167,7 +167,7 @@
 	    </div>
 	  </div>
 	</div>
-	<h5>Filtres à la publication</h5>
+	<h5>Filtrage à la publication</h5>
 	<xsl:variable name="profile" select="label"/>
 	<xsl:apply-templates select="/job/settings/criteria">
 	  <xsl:with-param name="profile" select="$profile"/>
