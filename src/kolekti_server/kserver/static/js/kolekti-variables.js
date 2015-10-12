@@ -42,10 +42,10 @@ $(document).ready(function() {
 	    var varname = $(row).find('th').first().find('span').first().html();
 	    buf +='<variable code="' + varname + '">';
 	    $(row).find('td').each(function(j,cell) {
-		if(j < conditions.length) { 
+		if(j < conditions.length || conditions.length == 0) { 
 		    var varval = $(cell).find('span').first().html();
 		    buf +='<value>'
-		    buf += conditions[j]
+		    buf += conditions.length?conditions[j]:''
 		    buf += '<content>' + varval.replace('&nbsp;','&#160;') + '</content>'
 		    buf += '</value>'
 		}
@@ -352,10 +352,8 @@ $(document).ready(function() {
     
 
     $('#main').on('mouseenter', '.varname', function() {
-	console.log('hover')
 	$(this).next().show()
-    }
-		 );
+    });
     
     $('#main').on('click', '.var_name_edit', var_edit);
 
