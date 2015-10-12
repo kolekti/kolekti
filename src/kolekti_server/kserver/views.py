@@ -1190,9 +1190,16 @@ class SyncView(kolektiMixin, View):
                 sync.revert(files)
 
         elif action == "merge":
+            resolve  = request.POST.get('resolve',None)
             files = request.POST.getlist('fileselect',[])
             print files
-            sync.update(files)
+            if resolve =="merge":
+                print 'update'
+                sync.update(files)
+                print "commit"
+                sync.commit(files,commitmsg)
+            if resolve == "remote":
+                sync.revert(files)
                 
         elif action == "update":
             sync.update_all()

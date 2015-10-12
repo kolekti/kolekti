@@ -408,6 +408,10 @@ class kolektiBase(object):
         src = self.__makepath(filename)
         return ET.parse(src,self._xmlparser)
     
+    def parse_html(self, filename):
+        src = self.__makepath(filename)
+        return ET.parse(src,self._htmlparser)
+    
     def read(self, filename):
         ospath = self.__makepath(filename)
         with open(ospath, "r") as f:
