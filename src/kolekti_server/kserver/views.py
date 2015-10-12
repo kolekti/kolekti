@@ -678,7 +678,6 @@ class SettingsJsonView(kolektiMixin, TemplateView):
     template_name = "settings/list.html"
     def get(self, request):
         context = self.get_context_data()
-        context.pop('syncinfo')
         return HttpResponse(json.dumps(context),content_type="application/json")
         
 
