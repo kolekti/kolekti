@@ -4,12 +4,36 @@ import shutil
 import logging
 import urllib2
 import pysvn
-
+import locale
 import sys
+
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
 from exceptions import ExcSyncNoSync
 
+
+def initLocale():
+    # init the locale
+    if sys.platform in ['win32','cygwin']:
+        locale.setlocale( locale.LC_ALL, '' )
+
+    else:
+        language_code, encoding = locale.getdefaultlocale()
+        if language_code is None:
+            language_code = 'en_GB'
+
+        if encoding is None:
+            encoding = 'UTF-8'
+        if encoding.lower() == 'utf':
+            encoding = 'UTF-8'
+
+        try:
+            # setlocale fails when params it does not understand are passed
+            locale.setlocale( locale.LC_ALL, '%s.%s' % (language_code, encoding) )
+        except locale.Error:
+            # force a locale that will work
+            locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
+initLocale()
 
 class SynchroManager(object):
     statuses_modified = [
@@ -124,7 +148,7 @@ class SynchroManager(object):
             path = status.path[len(self._base):]
             item = {"path":path,
                     "basename":os.path.basename(path),
-                   "rstatus":str(status.repos_text_status),
+                    "rstatus":str(status.repos_text_status),
                     "wstatus":str(status.text_status),
                     }
             if status.entry is not None:
