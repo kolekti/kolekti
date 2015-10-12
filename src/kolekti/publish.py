@@ -328,7 +328,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 srcfile = varfile
             else:
                 srcfile = '/' + "/".join(['sources',self._publang,'variables',varfile])
-            srcfile = srcfile + ".xml"
+            srcfile = self.substitute_criteria(srcfile,profile) + ".xml"
             try:
                 self.makedirs(self.dirname(assembly_dir + "/" +srcfile))
             except OSError:
