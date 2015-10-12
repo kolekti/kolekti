@@ -62,7 +62,7 @@ class Publisher(PublisherMixin, kolektiBase):
         for refmod in xtoc.xpath("//h:a[@rel = 'kolekti:topic']/@href",namespaces=self.nsmap):
             try:
                 path = self.process_path(refmod)
-                self.parse(path)
+                self.parse_html(path)
             except IOError:
                 import traceback
                 yield  {
