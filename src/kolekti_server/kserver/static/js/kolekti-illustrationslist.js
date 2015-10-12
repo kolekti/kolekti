@@ -18,6 +18,7 @@ $(document).ready(function() {
 		     'mode':"selectonly",
 		     'modal':"no",
 		     'os_actions':'yes',
+		     'drop_files':'yes',
 		     'create_actions':'yes',
 		     'create_builder':upload_image_builder_builder()
 		    })
@@ -50,6 +51,7 @@ $(document).ready(function() {
 		     'titleparent':".title",
 		     'mode':"selectonly",
 		     'modal':"no",
+		     'drop_files':'yes',
 		     'os_actions':'yes',
 		     'create_actions':'yes',
 		     'create_builder':upload_image_builder_builder()

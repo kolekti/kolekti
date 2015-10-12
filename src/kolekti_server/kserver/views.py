@@ -124,7 +124,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
         context['syncnum'] = self._syncnumber
-        print self._syncnumber
         context.update(data) 
         return context
 
@@ -924,6 +923,20 @@ class BrowserCKView(kolektiMixin, View):
 class BrowserCKUploadView(kolektiMixin, View):
     template_name = "browser/main.html"
 
+class BrowserUploadView(kolektiMixin, TemplateView):
+    def post(self, request):
+        # print request.POST, request.FILES
+        try:
+            path = request.POST['path']
+            name = request.POST['name']
+            payload = request.POST['file']
+
+            self.write(payload, path + "/" + name)
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
 
 
     

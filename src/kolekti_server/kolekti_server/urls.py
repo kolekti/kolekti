@@ -64,6 +64,7 @@ urlpatterns = patterns('',
     url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
     url(r'^browse/ckbrowser$', BrowserCKView.as_view(),name="kolekti_ckbrowser"),
     url(r'^browse/ckupload$', BrowserCKUploadView.as_view(),name="kolekti_ckupload"),
+    url(r'^browse/upload$', BrowserUploadView.as_view(), name='kolekti_browser_upload'),
     url(r'^browse/releases/', BrowserReleasesView.as_view(),name="kolekti_browser_releases"),
     url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 

@@ -196,6 +196,7 @@ var kolekti_browser = function(args) {
     var title = "Navigateur de fichiers";
     var editable_path = false
     var titlepath = false
+    var drop_files = false
     var os_actions = false
     var os_action_copy = false
     var os_action_delete = false
@@ -236,6 +237,8 @@ var kolekti_browser = function(args) {
 	title = args.title;
     if (args && args.titlepath)
 	titlepath = args.titlepath;
+    if (args && args.drop_files)
+	drop_files = args.drop_files;
     if (args && args.modal && args.modal=='no')
 	modal = false;
     if (args && args.editable_path && args.editable_path=='yes')
@@ -557,6 +560,95 @@ var kolekti_browser = function(args) {
 	$.each(listitems, function(idx, itm) { mylist.append(itm); });
     }
 
+
+    // drag and drop files
+
+    if (drop_files) {
+	$(parent).on('dragenter', '.panel', function() {
+            $(this).addClass('panel-danger');
+            return false;
+	});
+	
+	$(parent).on('dragover', '.panel', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).addClass('panel-danger');
+	    return false;
+	});
+	
+	$(parent).on('dragleave', '.panel', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+	    $(this).removeClass('panel-danger');
+            return false;
+	});
+	
+	$(parent).on('drop', '.panel', function(e) {
+            if(e.originalEvent.dataTransfer){
+		if(e.originalEvent.dataTransfer.files.length) {
+                    // Stop the propagation of the event
+                    e.preventDefault();
+                    e.stopPropagation();
+		    $(this).removeClass('panel-danger');		
+                    // Main function to upload
+                    upload(e.originalEvent.dataTransfer.files);
+		}  
+            }
+            else {
+		$(this).removeClass('panel-danger');		
+            }
+            return false;
+	});
+	
+	function upload(files) {
+	    var promises = []
+	    var progress_uploads = 0;
+	    var imagePromise = function(f) {
+		// Only process image files.
+		/*
+		  if (!f.type.match('image/jpeg')) {
+		  alert('The file must be a jpeg image') ;
+		  return false ;
+		  }
+	    */
+		var loader = new FileReader();
+		var def = $.Deferred(), promise = def.promise();
+		loader.onprogress = loader.onloadstart = function (e) { def.notify(e); };
+		loader.onerror = loader.onabort = function (e) { def.reject(e); };
+		promise.abort = function () { return loader.abort.apply(loader, arguments); };
+		
+		// When the image is loaded,
+		// run handleReaderLoad function
+		loader.onload = function(evt) {
+		    var pic = {};
+		    var picinfo = evt.target.result.split(',');
+		    console.log(picinfo)
+		    
+		    pic.mime = picinfo[1];
+		    pic.file = picinfo[0];
+		    pic.name = f.name;
+		    pic.path = path;
+		    $.ajax({
+			type: 'POST',
+			url: '/browse/upload',
+			data: $.param(pic),
+		    }).done(function(data) {
+			def.resolve(data) ;
+		    })
+		}
+		loader.readAsDataURL(f);
+		
+		return promise;
+	    }
+            $.each(files, function(i,f) {
+		promises.push(imagePromise(f));
+	    });
+	    $.when.apply($, promises).done(function () {
+		update();
+	    })
+	}
+    }
+    
     // fetch directory
 
     update()
