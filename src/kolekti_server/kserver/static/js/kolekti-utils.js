@@ -398,7 +398,27 @@ var kolekti_browser = function(args) {
 	    }
 	    set_browser_value(path + '/');
 
-
+	    // order entries : read from session storage
+	    
+	    if (sessionStorage && sessionStorage.browser_sort) {
+		sort = sessionStorage.browser_sort
+		order = sessionStorage.browser_sort_order
+	    } else {
+		sort = "name";
+		order = "asc";
+	    }
+	    $(parent).find('.sortcol-'+sort).each(function(i,e) {
+		$(e).attr('data-sort',order)
+		if(order=="asc") {
+		    $(e).children("span").removeClass('glyphicon-arrow-up hidden');
+		    $(e).children("span").addClass('glyphicon-arrow-down');
+		} else {
+		    $(e).children("span").removeClass('glyphicon-arrow-down hidden');
+		    $(e).children("span").addClass('glyphicon-arrow-up');
+		}
+	    });
+	    bsort(sort, order == "asc")
+		
 	    if (modal)
 		$('.modal').modal();
 	});
@@ -544,6 +564,10 @@ var kolekti_browser = function(args) {
 	    $(this).data('sort',"asc");
 	    $(this).children("span").removeClass('glyphicon-arrow-up hidden');
 	    $(this).children("span").addClass('glyphicon-arrow-down');
+	}
+	if (sessionStorage) {
+	    sessionStorage.browser_sort = $(this).data("sortcol")
+	    sessionStorage.browser_sort_order = $(this).data('sort')
 	}
 	bsort($(this).data('sortcol'),asc);
     })
