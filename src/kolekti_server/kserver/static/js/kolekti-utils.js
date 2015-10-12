@@ -311,7 +311,7 @@ var kolekti_browser = function(args) {
 
 	    if (!os_actions) 
 		$(parent).find('.kolekti-browser-item-action').hide()
-	    else {
+	    else {  
 		if(os_action_delete)
 		    $(parent).find('.kolekti-action-remove').click(function(e){
 			var item = $(this).closest('tr').data('name');
@@ -368,6 +368,8 @@ var kolekti_browser = function(args) {
 				"value":$(this).closest('tr').data('name')
 			    }).on('focusout',function(e){
 				if ($(this).closest('tr').data('name')!= $(this).val())
+				    browser_move_dialog($(this).closest('tr').data('name'), path, $(this).val())
+/*
 				    $.post('/browse/move',
 					   {'from':path + "/" + $(this).closest('tr').data('name'),
 					    'to': path + "/" + $(this).val()
@@ -375,6 +377,7 @@ var kolekti_browser = function(args) {
 				    .done(function(data) {
 					update();
 				    })
+*/
 				else
 				    update()
 			    })
@@ -505,11 +508,101 @@ var kolekti_browser = function(args) {
 		    console.log(data)
 		})
 
+
+
+	    // DND
+
+	    $(parent+' tr.file').draggable({
+		revert: "invalid", // when not dropped, the item will revert back to its initial position
+		containment: "document",
+		helper: "clone",
+		cursor: "move"
+	    });
+	    
+	    $(parent+' tr.dir').droppable({
+		accept:"tr.file",
+		hoverClass: "ui-state-hover",
+		drop: function( event, ui ) {
+		    browser_move_dialog($(ui.draggable).data('name'), path + '/' +  $(this).data('name'), null)
+		}	    
+	    })
+
+	    $(parent).find('.pathstep').each(function(i,e) {
+		var newpath = $(this).data("path");
+		if (newpath.length >= root.length) {
+		    $(this).droppable({
+			accept:"tr.file",
+			hoverClass: "ui-state-hover",
+			drop: function( event, ui ) {
+			    browser_move_dialog($(ui.draggable).data('name'), $( this ).data('path'), null)
+			}	    
+		    })
+		}
+	    })
+
 	    if (modal)
 		$('.modal').modal();
 	});
-    }
+    } // end update function
 
+    var browser_move_dialog = function(filename, newpath, newfilename) {
+	if (newfilename == null) {
+	    newfilename = filename;
+	}
+	
+	$(parent).find('.browser').prepend(
+	    $('  <div>', {
+		'class':"alert alert-danger browser-alert",
+		'role':"alert",
+		'html':[
+		    $("<button>", {
+			'type':"button",
+			'class':"close",
+			'data-dismiss':"alert",
+			'html':$("<span>", {
+			    'aria-hidden':"true",
+			    'html':[
+				'&times;',
+				$('<span>',{'class':"sr-only",'html':'Fermer'})
+			    ]
+			})
+		    }),
+		    $("<span>", {
+			'class':"alert-body",
+			'html':["Déplacer / renommer",
+				$('<p><strong>Attention</strong> si vous déplacez ou renommez cette ressource, les liens et références seront cassés !</p>'),
+				$('<button>', {
+				    'class':"btn btn-xs btn-default",
+				    'html':'Annuler'
+				}).on('click', function(){$(this).closest('.alert').remove()}),
+				" ",
+				$('<button>', {
+				    'class':"btn btn-xs btn-primary",
+				    'html':'Confirmer'
+				}).on('click', function(){
+				    $(this).closest('.alert-body').html()
+				    $.post('/browse/move',{
+					'from':path+"/"+filename,
+					'to':newpath + "/" + newfilename})
+					.done(update)
+					.fail(
+					    $(this).closest('.alert-body').html([
+						'<p>erreur au déplacement de la ressource</p>',
+						$('<button>', {
+						    'class':"btn btn-xs btn-default",
+						    'html':'Fermer'
+						}).on('click', function(){$(this).closest('.alert').remove()}),
+					    ]))
+				}),
+				
+			       ]
+				
+		    })
+		]
+	    })
+	)
+    }
+    
     var browser_alert = function(msg) {
 	
 	$(parent).find('.browser').prepend(
@@ -633,6 +726,8 @@ var kolekti_browser = function(args) {
     })
 */
 
+
+    
     // handler : click for sort
 
     $(parent).on('click', '.sortcol', function(event) {

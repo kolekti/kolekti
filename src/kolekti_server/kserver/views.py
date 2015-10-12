@@ -806,8 +806,8 @@ class BrowserMoveView(kolektiMixin, View):
         src = request.POST.get('from','/')
         dest = request.POST.get('to','/')
         self.move_resource(src, dest)
-        return HttpResponse("",content_type="text/plain")
-        #return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        return HttpResponse(json.dumps(self.path_exists(dest)),content_type="text/plain")
+        #return HttpResponse(,content_type="application/json")
 
 class BrowserCopyView(kolektiMixin, View):
     def post(self,request):

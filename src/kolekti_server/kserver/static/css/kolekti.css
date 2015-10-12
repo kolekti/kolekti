@@ -151,3 +151,20 @@ label {
 .kolekti-browser-sync a {
     cursor: pointer;
 }
+
+/* drag n drop */
+
+.ui-draggable-dragging .kolekti-browser-item-action ,
+.ui-draggable-dragging .kolekti-browser-sync,
+.ui-draggable-dragging .kolekti-browser-date {
+    display:none;
+}
+
+.ui-draggable-dragging .kolekti-browser-sync {
+    display:none;
+}
+
+.browser .ui-state-hover ,
+.browser tr.dir.ui-state-hover {
+    background-color: #D0D0D0;
+}
