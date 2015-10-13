@@ -118,7 +118,7 @@ class plugin(pluginBase.plugin):
 #        yield(self.publisher.view.publink('index.html', self.label, '/'.join((linkurl, self.label, 'index.html'))))
 
         #try:
-        if self.get_script_parameter('zip'):
+        if self.get_script_parameter('zip') == 'yes':
             from zipfile import ZipFile
             #produire un zip
             zipname="%s_%s.zip" %(self.publication_file, self.scriptname)
