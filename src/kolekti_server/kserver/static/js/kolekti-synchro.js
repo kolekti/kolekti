@@ -8,7 +8,7 @@ $(document).ready(function() {
     $('body').on('change','select',function(e) {
 	var val = $(this).val();
 	console.log(val);
-	if (val == "local") {
+	if (val == "local" || val == "merge") {
 	    $("#commitmsg").show();
 	} else {
 	    $("#commitmsg").hide();
