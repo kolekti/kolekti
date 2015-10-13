@@ -3,11 +3,22 @@ $(document).ready(function() {
     
     $('#selectall').change(function() {
 	$('.selectentry').prop('checked',$(this).prop('checked'))
+	check_action()
     });
-    
+    var check_action = function(e) {	
+	var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
+	if(map.length == 0) 
+	    $('.btn-action-synchro').addClass('disabled')
+	else
+	    $('.btn-action-synchro').removeClass('disabled')
+    };
+		  
+    $('body').on('change','.selectentry',check_action);
+    check_action()
+
+		  
     $('body').on('change','select',function(e) {
 	var val = $(this).val();
-	console.log(val);
 	if (val == "local" || val == "merge") {
 	    $("#commitmsg").show();
 	} else {
