@@ -56,7 +56,7 @@
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">          
-	    <li><a href="http://www.kolekti.org/projects/kolekti/wiki" target="_blank">Wiki</a></li>
+	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
@@ -125,11 +125,6 @@
 	    {% endcomment %}
 	    {% endblock %}
 
-	    <div class="btn-group" role="group">
-	    <button class="btn btn-xs btn-default" type="button" >
-		  Aide
-	    </button>
-	    </div>
 	      {% endblock %}
 	    </div>
 	  </div>
