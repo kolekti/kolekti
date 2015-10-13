@@ -8,7 +8,7 @@ $(function() {
 	console.log(data.revision.status);
 	switch(data.revision.status) {
 	case '*':
-	    color="success"
+	    color="info"
 	    break;
 	case 'N':
 	    color="default"
@@ -17,10 +17,10 @@ $(function() {
 	    color="danger"
 	    break;
 	case 'C':
-	    color="danger"
+	    color="warning"
 	    break;
 	case 'M':
-	    color="warning"
+	    color="info"
 	    break;
 	case 'U':
 	    color="info"
