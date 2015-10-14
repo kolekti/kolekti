@@ -247,7 +247,11 @@ class SynchroManager(object):
         return update_revision
 
     def update(self, files):
-        update_revision = self._client.update(files, recurse = True)
+        osfiles = []
+        for f in files:
+            osfiles.append(self.__makepath(f))
+        update_revision = self._client.update(osfiles)
+        
         return update_revision
 
     def revert(self, files):
