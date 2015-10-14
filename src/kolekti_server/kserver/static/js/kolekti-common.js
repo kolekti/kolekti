@@ -20,7 +20,7 @@ $(function() {
 	    color="warning"
 	    break;
 	case 'M':
-	    color="info"
+	    color="warning"
 	    break;
 	case 'U':
 	    color="info"
