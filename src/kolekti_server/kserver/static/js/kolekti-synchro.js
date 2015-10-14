@@ -5,12 +5,14 @@ $(document).ready(function() {
 	$('.selectentry').prop('checked',$(this).prop('checked'))
 	check_action()
     });
-    var check_action = function(e) {	
-	var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
-	if(map.length == 0) 
-	    $('.btn-action-synchro').addClass('disabled')
-	else
-	    $('.btn-action-synchro').removeClass('disabled')
+    var check_action = function(e) {
+	if ($('.selectentry').length) {
+	    var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
+	    if(map.length == 0) 
+		$('.btn-action-synchro').addClass('disabled')
+	    else
+		$('.btn-action-synchro').removeClass('disabled')
+	}
     };
 		  
     $('body').on('change','.selectentry',check_action);
