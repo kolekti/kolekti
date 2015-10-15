@@ -287,7 +287,7 @@ class ProjectsView(kolektiMixin, View):
                 return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
             
 class ProjectsConfigView(kolektiMixin, View):
-    template_name = "projects_config.html"
+    template_name = "projects-config.html"
     def get(self, request):
         settings = self.parse('/kolekti/settings.xml')
         
@@ -295,12 +295,46 @@ class ProjectsConfigView(kolektiMixin, View):
             "active_project" :self.user_settings.active_project.encode('utf-8'),
             "srclangs" :[l.text for l in settings.xpath('/settings/languages/lang')],
             "releaselangs" :[l.text for l in settings.xpath('/settings/releases/lang')],
-            "dafault_srclang":settings.xpath('string(/settings/@sourcelang)'),
+            "default_srclang":settings.xpath('string(/settings/@sourcelang)'),
             "active_srclang":self.user_settings.active_srclang
             })
             
         return self.render_to_response(context)
 
+    def post(self, request):
+        try:
+            settings = self.parse('/kolekti/settings.xml').getroot()
+            srclangs = request.POST.getlist('sources[]',[])
+            rellangs = request.POST.getlist('releases[]',[])
+            print srclangs ,rellangs, request.POST, request.POST.get('default_source','en')
+            settings.set('sourcelang', request.POST.get('default_source','en'))
+            xlangs = settings.find('languages')
+            if xlangs is None:
+                xlangs = ET.SubElement(settings, 'languages')
+            else:
+                for l in xlangs:
+                    xlangs.remove(l)
+            for l in srclangs:
+                xl = ET.SubElement(xlangs,'lang')
+                xl.text = l
+    
+            xlangs = settings.find('releases')
+            if xlangs is None:
+                xlangs = ET.SubElement(settings, 'releases')
+            else:
+                for l in xlangs:
+                    xlangs.remove(l)
+            for l in rellangs:
+                xl = ET.SubElement(xlangs,'lang')
+                xl.text = l
+    
+            self.xwrite(settings,'/kolekti/settings.xml')
+            return HttpResponse(json.dumps('ok'),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=404)
+                    
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
