@@ -26,7 +26,6 @@ $(document).ready(function() {
     // save action
     
     $('#btn_save').on('click', function() {
-	console.log(data())
 	$.ajax({
 	    url:'/projects/config',
 	    type:'POST',

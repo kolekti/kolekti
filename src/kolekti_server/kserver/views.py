@@ -306,7 +306,6 @@ class ProjectsConfigView(kolektiMixin, View):
             settings = self.parse('/kolekti/settings.xml').getroot()
             srclangs = request.POST.getlist('sources[]',[])
             rellangs = request.POST.getlist('releases[]',[])
-            print srclangs ,rellangs, request.POST, request.POST.get('default_source','en')
             settings.set('sourcelang', request.POST.get('default_source','en'))
             xlangs = settings.find('languages')
             if xlangs is None:
