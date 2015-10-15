@@ -3,11 +3,6 @@
 
 {% block operation %}
 
-<div class="alert alert-info" id="progress">
-  <strong>Synchronisation en cours</strong>
-</div>
-
-
 {% if changes.conflict|length or changes.error|length %}
      <div class="alert alert-warning">
        <h3>
