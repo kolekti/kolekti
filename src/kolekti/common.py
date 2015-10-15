@@ -254,7 +254,24 @@ class kolektiBase(object):
                 seen.add(ppath)
                 yield ppath
 
-                
+
+    def zip_publication(self, path):
+        if not(path[:14] == '/publications/' or path[:10] == '/releases/'):
+            raise Exception()
+        from zipfile import ZipFile
+        from StringIO import StringIO
+        zf= StringIO()
+        top = self.getOsPath(path)
+        with ZipFile(zf, "w") as zippy:
+            for root, dirs, files in os.walk(top):
+                rt=root[len(top) + 1:]
+                if rt[:7] == 'kolekti' or rt[:7] == 'sources':
+                    continue
+                for name in files:
+                    zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+        z =  zf.getvalue()
+        zf.close()
+        return z
                 
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])

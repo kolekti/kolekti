@@ -45,7 +45,8 @@ urlpatterns = patterns('',
     
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
     url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
+    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+    url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
@@ -82,6 +83,7 @@ urlpatterns = patterns('',
     url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
     url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),
+    url(r'^publications/zip/$', PublicationsZipView.as_view(),name="publications_zip"),
     url(r'^releases/publications/list.json', ReleasesPublicationsListJsonView.as_view(),name="releases_publications_list_json"),
 
 

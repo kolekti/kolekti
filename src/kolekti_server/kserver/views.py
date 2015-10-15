@@ -286,6 +286,20 @@ class ProjectsView(kolektiMixin, View):
             except ExcSyncNoSync:
                 return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
             
+class ProjectsConfigView(kolektiMixin, View):
+    template_name = "projects_config.html"
+    def get(self, request):
+        settings = self.parse('/kolekti/settings.xml')
+        
+        context = self.get_context_data({
+            "active_project" :self.user_settings.active_project.encode('utf-8'),
+            "srclangs" :[l.text for l in settings.xpath('/settings/languages/lang')],
+            "releaselangs" :[l.text for l in settings.xpath('/settings/releases/lang')],
+            "dafault_srclang":settings.xpath('string(/settings/@sourcelang)'),
+            "active_srclang":self.user_settings.active_srclang
+            })
+            
+        return self.render_to_response(context)
 
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
@@ -313,6 +327,16 @@ class PublicationsListJsonView(kolektiMixin, View):
             "publications": [p for p in self.get_publications()]
         }
         return HttpResponse(json.dumps(context),content_type="application/json")
+
+class PublicationsZipView(kolektiMixin, View):
+    def get(self,request):
+        path = request.GET.get('path')
+        try:
+            return HttpResponse(self.zip_publication(path),content_type="application/zip")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=404)
 
 class ReleasesPublicationsListJsonView(kolektiMixin, View):
     def get(self, request):

@@ -44,27 +44,21 @@
     <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
       <div class="panel-body">
 	{% if project.name == active_project %}
-	Langue : <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
+	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
 	  {% for lang in project.languages %}
 	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
 	  {% endfor %}
+	  </div>
+	  <a class="btn btn-xs btn-default" href="/projects/config">Configurer les langues</a>
 	</div>
 	<hr/>
 	{% endif %}
 	{% ifequal project.status "svn" %}
 	<p>url du dépot SVN : {{ project.url }}</p>
 	<hr/>
-	{% comment %}
-	{% else %}
-	<p>Projet privé</p>
-	{% endcomment %}
 	{% endifequal  %}
 	{% if project.name != active_project %}
 	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
-{% comment %}
-	{% else %}
-	<a href="/">Accéder au projet {{project.name}}</a>
-{% endcomment %}
 	{% endif %}
       </div>      
     </div>

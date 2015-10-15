@@ -837,7 +837,6 @@ class DraftPublisher(Publisher):
             with open(manifest, 'a') as mf:
                 mf.write(first_sep)
                 mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
-
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
                     yield event
@@ -846,6 +845,8 @@ class DraftPublisher(Publisher):
                 for pubres in self.publish_job(assembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
+                yield {"event":"publication_dir", "path":assembly_dir}
+
                 try:
                     pass
                 # self.cleanup_assembly_dir(xjob.getroot())
@@ -1007,4 +1008,6 @@ class ReleasePublisher(Publisher):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
             mf.write("]}")
+            yield {"event":"publication_dir", "path":self._release_dir}
+
         return 
