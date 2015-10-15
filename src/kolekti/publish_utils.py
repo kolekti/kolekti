@@ -23,6 +23,7 @@ class PublisherMixin(object):
         # intercept lang & draft parameters
 
         self._publang = None
+        print "mixin",kwargs
         if kwargs.has_key('lang'):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')

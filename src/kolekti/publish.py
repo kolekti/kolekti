@@ -878,6 +878,7 @@ class Releaser(Publisher):
 
     def make_release(self, toc, job, release_name=None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
+        print "make release",release_name,self._publang
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
         # toc = self.get_base_toc(toc) + ".html"
@@ -913,6 +914,9 @@ class Releaser(Publisher):
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
+        print "RELEASE"
+        print assembly_path
+        print self.syncMgr
         if self.syncMgr is not None :
             try:
                 self.syncMgr.propset("release_state","edition",assembly_path)
@@ -991,6 +995,7 @@ class ReleasePublisher(Publisher):
                 try:
                     xassembly = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
                 except:
+                    import traceback
                     yield {
                         'event':'error',
                         'msg':"impossible de lire l'assemblage",
@@ -998,7 +1003,6 @@ class ReleasePublisher(Publisher):
                         'time':time.time(),
                         }
                     logging.error("unable to read assembly %s"%assembly)
-                    import traceback
                     logging.debug(traceback.format_exc())
                     return
 

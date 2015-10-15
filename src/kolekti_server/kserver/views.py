@@ -105,9 +105,10 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         try:
             projectsettings  = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
             return ([l.text for l in projectsettings.xpath('/settings/languages/lang')],
-                        projectsettings.xpath('string(/settings/@sourcelang)'))
+                    [l.text for l in projectsettings.xpath('/settings/releases/lang')],
+                    projectsettings.xpath('string(/settings/@sourcelang)'))
         except IOError:
-            return ['fr'],'fr'
+            return ['en'],['en','fr','de'],'en'
     
     def get_context_data(self, data={}, **kwargs):
         prj = self.user_settings.active_project
@@ -116,11 +117,12 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         except IOError:
             prj = None
                      
-        languages, default_lang = self.project_langs(self.user_settings.active_project)
+        languages, release_languages, default_lang = self.project_langs(self.user_settings.active_project)
         context = {}
         context['kolekti'] = self._config
         context['projects'] = self.projects()
         context['srclangs'] = languages
+        context['releaselangs'] = release_languages
         context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
         context['syncnum'] = self._syncnumber
@@ -217,7 +219,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         # get userdir
         self.user_settings.active_project = project
         projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
-        languages, defaultlang = self.project_langs(project)
+        languages, rlang, defaultlang = self.project_langs(project)
         if not self.user_settings.active_srclang in languages:
              self.user_settings.active_srclang = defaultlang
         self.user_settings.save()
@@ -443,16 +445,21 @@ class ReleaseStateView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-        state = self.syncMgr.propget("release_state","/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
+        state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
 
     def post(self,request):
-        path, assembly_name = request.POST.get('release').rsplit('/',1)
-        state = request.POST.get('state')
-        lang = request.POST.get('lang')
-        self.syncMgr.propset("release_state",state,"/".join([path,"sources",lang,"assembly",assembly_name+'_asm.html']))
-        return HttpResponse(state)
-        
+        try:
+            path, assembly_name = request.POST.get('release').rsplit('/',1)
+            state = request.POST.get('state')
+            lang = request.POST.get('lang')
+            self.syncMgr.propset("release_state",state,"/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            return HttpResponse(state)
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+                    
 class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
@@ -465,6 +472,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             #            return StreamingHttpResponse(
             for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
                 pass
+            self.syncMgr.propset("release_state",'edition',"/".join(['/releases',assembly_name,"sources",dstlang,"assembly",assembly_name+'_asm.html']))
         except:
             import traceback
             print traceback.format_exc()
@@ -501,7 +509,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         })
         states = []
         focus = []
-        for lang in context.get('srclangs',[]):
+        for lang in context.get('releaselangs',[]):
             tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
                 states.append(self.syncMgr.propget('release_state',tr_assembly_path))
@@ -514,7 +522,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                 print traceback.format_exc()
                 focus.append(False)
                 
-        context.update({'langstates':zip(context.get('srclangs',[]),states,focus)})
+        context.update({'langstates':zip(context.get('releaselangs',[]),states,focus)})
         #print json.dumps(context, indent=2)
         return self.render_to_response(context)
         #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
@@ -1101,18 +1109,20 @@ class ReleaseView(PublicationView):
             return self.render_to_response(context)
 
     def release_iter(self, projectpath, tocpath, xjob):
-        r = publish.Releaser(projectpath, lang=self.user_settings.active_srclang)
+        lang=self.user_settings.active_srclang
+        r = publish.Releaser(projectpath, lang = lang)
         pp = r.make_release(tocpath, xjob)
-        release_dir = pp[0]['assembly_dir']
+        print pp
+        release_dir = pp[0]['assembly_dir'][:-1]
         yield {
             'event':'release',
-            'ref':release_dir[:-1],
+            'ref':release_dir,
             'releasename':pp[0]['releasename'],
             'time':pp[0]['datetime'],
-            'lang':self.user_settings.active_srclang,
+            'lang':lang,
         }
-
-            
+        if self.syncMgr is not None :
+            self.syncMgr.propset("release_state","edition","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasename']+'_asm.html']))
         p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.user_settings.active_srclang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
@@ -1123,7 +1133,6 @@ class TopicEditorView(kolektiMixin, View):
     def get(self, request):
         topicpath = request.GET.get('topic')
         topic = self.get_topic_edit(topicpath)
-        print topic
         context = self.get_context_data({"body":topic,
                                          "title": self.basename(topicpath),
 #                                         "meta":topicmeta
