@@ -50,23 +50,27 @@
 	<th></th>
 	<th><a href="#" class="sortcol sortcol-name" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
 	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
-	<th></th>
-      </tr>
+	<th>Actions</th>
+	<th style="width:5%">Synchro</th>
+       </tr>
     </thead>
     <tbody>
       {% for f in files %}
       <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
-	<td><i class="fa {{ f.icon }}"></i>
+	<td class="kolekti-browser-icon"><i class="fa {{ f.icon }}"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
-	<td><a
+	<td class="kolekti-browser-name"><a
 	       {% if pathsteps.0.label == "sources" %}
 	       href="{{ path }}/{{f.name}}"
 	       {% else %}
 	       href="#"
 	       {% endif %}
 	       data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
-	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
+	<td class="kolekti-browser-date">{{ f.date|date:"d/m/Y H:i" }}</td>
 	<td class="kolekti-browser-item-action">
+	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
+	    <i class="fa fa-pencil"></i>
+	  </button>
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
@@ -95,6 +99,7 @@
 	  </div>
 	  {% endif %}
 	</td>
+	<td class="kolekti-browser-sync text-right"></td>
       </tr>
     {% endfor %}
     </tbody>

@@ -3,6 +3,16 @@ var kolekti = {
     'lang' : 'fr'
 }
 */
+
+var kolekti_bootstrap_status = {
+    "ok":"muted",
+    "update":"info",
+    "commit":"success",
+    "merge":"warning",
+    "conflict":"warning",
+    "error":"danger"
+}
+
 function displayname(path) {
     var f = basename(path)
     return f.replace(/\.[^\.]+$/,'')
@@ -304,7 +314,7 @@ var kolekti_browser = function(args) {
 
 	    if (!os_actions) 
 		$(parent).find('.kolekti-browser-item-action').hide()
-	    else {
+	    else {  
 		if(os_action_delete)
 		    $(parent).find('.kolekti-action-remove').click(function(e){
 			var item = $(this).closest('tr').data('name');
@@ -344,6 +354,7 @@ var kolekti_browser = function(args) {
 					    })
 					}),
 					$('<td>'),
+					$('<td>'),
 					$('<td>')]
 			    }))
 			$('.copynameinput').focus();
@@ -360,6 +371,8 @@ var kolekti_browser = function(args) {
 				"value":$(this).closest('tr').data('name')
 			    }).on('focusout',function(e){
 				if ($(this).closest('tr').data('name')!= $(this).val())
+				    browser_move_dialog($(this).closest('tr').data('name'), path, $(this).val())
+/*
 				    $.post('/browse/move',
 					   {'from':path + "/" + $(this).closest('tr').data('name'),
 					    'to': path + "/" + $(this).val()
@@ -367,6 +380,7 @@ var kolekti_browser = function(args) {
 				    .done(function(data) {
 					update();
 				    })
+*/
 				else
 				    update()
 			    })
@@ -398,6 +412,137 @@ var kolekti_browser = function(args) {
 	    }
 	    set_browser_value(path + '/');
 
+	    $.get('/sync/resstatus',{'path':path})
+		.done(function(data) {
+		    var rows =  $(parent).find('tr[data-name]') 
+		    $.each(data,function(status,listentry) {
+			console.log(status)
+			$.each(listentry, function(i,entry) {
+			    $.each(rows, function(ri,row) {
+				if ($(row).data('name') == entry.basename) {
+				    var cell = $(row).find('.kolekti-browser-sync');
+				    switch(status) {
+				    case 'unversioned':
+					icon = $('<i>',{
+					    'class':"fa fa-ban text-"+kolekti_bootstrap_status[status]
+					})
+				   
+					break;
+				    default:
+					icon = $('<i>',{
+					    'class':"fa fa-users text-"+kolekti_bootstrap_status[status]
+					})
+				    }
+			
+				    cell.html($('<a>',{
+					'class':status,
+					'data-status':status,
+					'html':icon
+				    }))
+				}
+			    });
+			    console.log(entry.basename)
+			});
+		    });
+		    $('.kolekti-browser-sync a').popover({
+			'content':function(){
+			    var msg,
+				linksync = false,
+				linkadd  = false;
+			    switch($(this).data('status')) {
+			    case 'unversioned':
+				msg =  "Non synchronisé";
+				linkadd = true;
+				break;
+			    case 'ok':
+				msg =  "A jour avec le référentiel";
+				break;
+			    case 'commit':
+				msg = "Modifications locales"
+				linksync = true;
+				break;
+			    case 'merge':
+				msg = "Modifications locales et distantes, la fusion est possible"
+				linksync = true;
+				break;
+			    case 'update':
+				msg = "Mise à jour disponible";
+				linksync = true;
+				break;
+			    case 'conflict':
+				msg = "Modifications locales et distantes concurrentes"
+				linksync = true;
+				break;
+			    }
+			    msg = "<div>"+msg+"</div>";
+			    if(linksync)
+				msg += "<div><a href='/sync/'>Synchroniser le projet</a></div>"
+			    if(linkadd)
+				msg += "<div><a href='#' class='kolekti-browser-sync-add'>Ajouter à la synchro</a></div>"
+			    return msg
+			},
+			'title':function(){
+			    var msg;
+			    switch($(this).data('status')) {
+			    case 'unversioned':
+				msg =  "Non partagé";
+				linkadd = true;
+				break;
+			    case 'ok':
+				msg = "Synchronisé"
+				break;
+			    case 'commit':
+			    case 'merge':
+				msg = "Modifié"
+				break;
+			    case 'update':
+				msg = "Obsolète"
+				break;
+			    case 'conflict':
+				msg = 'Conflit'
+				break;
+			    }
+			    return "<span class='text-"+kolekti_bootstrap_status[$(this).data('status')]+"'><strong>"+msg+"</strong></span>";
+			},
+			'trigger':'click',
+			'placement':"left",
+			'html':true
+		    })		
+		    console.log(data)
+		})
+
+
+
+	    // DND
+
+	    $(parent+' tr.file').draggable({
+		revert: "invalid", // when not dropped, the item will revert back to its initial position
+		containment: "document",
+		helper: "clone",
+		cursor: "move"
+	    });
+	    
+	    $(parent+' tr.dir').droppable({
+		accept:"tr.file",
+		hoverClass: "ui-state-hover",
+		drop: function( event, ui ) {
+		    browser_move_dialog($(ui.draggable).data('name'), path + '/' +  $(this).data('name'), null)
+		}	    
+	    })
+
+	    $(parent).find('.pathstep').each(function(i,e) {
+		var newpath = $(this).data("path");
+		if (newpath.length >= root.length) {
+		    $(this).droppable({
+			accept:"tr.file",
+			hoverClass: "ui-state-hover",
+			drop: function( event, ui ) {
+			    browser_move_dialog($(ui.draggable).data('name'), $( this ).data('path'), null)
+			}	    
+		    })
+		}
+	    });
+		
 	    // order entries : read from session storage
 	    
 	    if (sessionStorage && sessionStorage.browser_sort) {
@@ -418,12 +563,71 @@ var kolekti_browser = function(args) {
 		}
 	    });
 	    bsort(sort, order == "asc")
-		
+	    
+
 	    if (modal)
 		$('.modal').modal();
 	});
-    }
+    } // end update function
 
+    var browser_move_dialog = function(filename, newpath, newfilename) {
+	if (newfilename == null) {
+	    newfilename = filename;
+	}
+	
+	$(parent).find('.browser').prepend(
+	    $('  <div>', {
+		'class':"alert alert-danger browser-alert",
+		'role':"alert",
+		'html':[
+		    $("<button>", {
+			'type':"button",
+			'class':"close",
+			'data-dismiss':"alert",
+			'html':$("<span>", {
+			    'aria-hidden':"true",
+			    'html':[
+				'&times;',
+				$('<span>',{'class':"sr-only",'html':'Fermer'})
+			    ]
+			})
+		    }),
+		    $("<span>", {
+			'class':"alert-body",
+			'html':["Déplacer / renommer",
+				$('<p><strong>Attention</strong> si vous déplacez ou renommez cette ressource, les liens et références seront cassés !</p>'),
+				$('<button>', {
+				    'class':"btn btn-xs btn-default",
+				    'html':'Annuler'
+				}).on('click', function(){$(this).closest('.alert').remove()}),
+				" ",
+				$('<button>', {
+				    'class':"btn btn-xs btn-primary",
+				    'html':'Confirmer'
+				}).on('click', function(){
+				    $(this).closest('.alert-body').html()
+				    $.post('/browse/move',{
+					'from':path+"/"+filename,
+					'to':newpath + "/" + newfilename})
+					.done(update)
+					.fail(
+					    $(this).closest('.alert-body').html([
+						'<p>erreur au déplacement de la ressource</p>',
+						$('<button>', {
+						    'class':"btn btn-xs btn-default",
+						    'html':'Fermer'
+						}).on('click', function(){$(this).closest('.alert').remove()}),
+					    ]))
+				}),
+				
+			       ]
+				
+		    })
+		]
+	    })
+	)
+    }
+    
     var browser_alert = function(msg) {
 	
 	$(parent).find('.browser').prepend(
@@ -547,6 +751,20 @@ var kolekti_browser = function(args) {
     })
 */
 
+
+    // sorting
+
+    var bsort = function(col, asc) {		 
+	var mylist = $(parent).find('.dirlist tbody');
+	var listitems = mylist.children('tr').get();
+	listitems.sort(function(a, b) {
+	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
+	    return asc?cmp:0-cmp;
+	})
+	$.each(listitems, function(idx, itm) { mylist.append(itm); });
+    }
+
+    
     // handler : click for sort
 
     $(parent).on('click', '.sortcol', function(event) {
@@ -572,18 +790,7 @@ var kolekti_browser = function(args) {
 	bsort($(this).data('sortcol'),asc);
     })
 
-    // sorting
-
-    var bsort = function(col, asc) {		 
-	var mylist = $(parent).find('.dirlist tbody');
-	var listitems = mylist.children('tr').get();
-	listitems.sort(function(a, b) {
-	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
-	    return asc?cmp:0-cmp;
-	})
-	$.each(listitems, function(idx, itm) { mylist.append(itm); });
-    }
-
+    
 
     // drag and drop files
 
@@ -672,7 +879,9 @@ var kolekti_browser = function(args) {
 	    })
 	}
     }
-    
+    // sync callbacks
+    $(parent).on('click', '.kolekti-browser-sync-add', function(event) {
+    })
     // fetch directory
 
     update()
