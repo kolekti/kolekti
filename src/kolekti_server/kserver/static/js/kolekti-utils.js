@@ -457,7 +457,6 @@ var kolekti_browser = function(args) {
 				linkadd  = false;
 			    switch($(this).data('status')) {
 			    case 'unversioned':
-				msg =  "Non synchronisé";
 				linkadd = true;
 				break;
 			    case 'ok':
@@ -494,8 +493,7 @@ var kolekti_browser = function(args) {
 			    var msg = "";
 			    switch($(this).data('status')) {
 			    case 'unversioned':
-				msg =  "Non partagé";
-				linkadd = true;
+				msg =  "Non synchronisé";
 				break;
 			    case 'ok':
 				msg = "Synchronisé"
