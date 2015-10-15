@@ -238,7 +238,7 @@ class SynchroManager(object):
             }
 
     def resolved(self, file):
-        self._client.resolved(file)
+        self._client.resolved(self.__makepath(file))
 
     def update_all(self):
 #        print "update_all"
@@ -308,6 +308,10 @@ class SynchroManager(object):
     def add_resource(self,path):
         ospath = self.__makepath(path)
         self._client.add(ospath)
+
+    def remove_resource(self,path):
+        ospath = self.__makepath(path)
+        self._client.remove(ospath,keep_local=True,force=True)
 
     def delete_resource(self,path):
         ospath = self.__makepath(path)

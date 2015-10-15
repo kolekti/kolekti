@@ -7,10 +7,10 @@ var kolekti = {
 var kolekti_bootstrap_status = {
     "ok":"muted",
     "update":"info",
-    "commit":"success",
+    "commit":"info",
     "merge":"warning",
     "conflict":"warning",
-    "error":"danger"
+    "error":"warning"
 }
 
 function displayname(path) {
@@ -321,7 +321,7 @@ var kolekti_browser = function(args) {
 			if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
 			    $.post('/browse/delete',{"path": path + "/" + item})
 				.done(function(data) {
-				    console.log(data)
+				    // console.log(data)
 				    update();
 				})
 			}
@@ -348,7 +348,7 @@ var kolekti_browser = function(args) {
 							'to': path + "/" + $(this).val()
 						       })
 						    .done(function(data) {
-							console.log(data)
+							// console.log(data)
 							update();
 						    })
 					    })
@@ -397,7 +397,7 @@ var kolekti_browser = function(args) {
 				'to': path + "/" + $(this).data('dir')
 			       })
 			    .done(function(data) {
-				console.log(data)
+				// console.log(data)
 				update();
 			    })
 
@@ -416,8 +416,8 @@ var kolekti_browser = function(args) {
 		.done(function(data) {
 		    var rows =  $(parent).find('tr[data-name]') 
 		    $.each(data,function(status,listentry) {
-			console.log(status)
 			$.each(listentry, function(i,entry) {
+			    if (entry.kind != 'dir')				
 			    $.each(rows, function(ri,row) {
 				if ($(row).data('name') == entry.basename) {
 				    var cell = $(row).find('.kolekti-browser-sync');
@@ -435,18 +435,24 @@ var kolekti_browser = function(args) {
 				    }
 			
 				    cell.html($('<a>',{
+					'href':"#",
 					'class':status,
 					'data-status':status,
-					'html':icon
+					'data-rstatus':entry.rstatus,
+					'data-wstatus':entry.wstatus,
+					'html':icon,
+					'role':"button",
+					"data-trigger":"focus",
+					'tabindex':ri
 				    }))
 				}
 			    });
-			    console.log(entry.basename)
 			});
 		    });
-		    $('.kolekti-browser-sync a').popover({
+		    
+		    var sync_popover = $('.kolekti-browser-sync a').popover({
 			'content':function(){
-			    var msg,
+			    var msg = "",
 				linksync = false,
 				linkadd  = false;
 			    switch($(this).data('status')) {
@@ -458,7 +464,8 @@ var kolekti_browser = function(args) {
 				msg =  "A jour avec le référentiel";
 				break;
 			    case 'commit':
-				msg = "Modifications locales"
+				if ($(this).data('rstatus') == 'none')
+				    msg += "<div><a href='#' class='kolekti-browser-sync-remove'>Enlever de la synchro</a></div>"
 				linksync = true;
 				break;
 			    case 'merge':
@@ -470,11 +477,13 @@ var kolekti_browser = function(args) {
 				linksync = true;
 				break;
 			    case 'conflict':
+			    case 'error':
 				msg = "Modifications locales et distantes concurrentes"
 				linksync = true;
 				break;
 			    }
-			    msg = "<div>"+msg+"</div>";
+			    if(msg.length)
+				msg = "<div>"+msg+"</div>";
 			    if(linksync)
 				msg += "<div><a href='/sync/'>Synchroniser le projet</a></div>"
 			    if(linkadd)
@@ -482,7 +491,7 @@ var kolekti_browser = function(args) {
 			    return msg
 			},
 			'title':function(){
-			    var msg;
+			    var msg = "";
 			    switch($(this).data('status')) {
 			    case 'unversioned':
 				msg =  "Non partagé";
@@ -492,6 +501,14 @@ var kolekti_browser = function(args) {
 				msg = "Synchronisé"
 				break;
 			    case 'commit':
+				switch($(this).data('wstatus')) {
+				case 'added':
+				    msg = "Ajouté"
+				    break;
+				default:
+				    msg = "Modifié"
+				}
+				break;
 			    case 'merge':
 				msg = "Modifié"
 				break;
@@ -501,14 +518,17 @@ var kolekti_browser = function(args) {
 			    case 'conflict':
 				msg = 'Conflit'
 				break;
+			    case 'error':
+				msg = 'Conflit'
+				break;
 			    }
 			    return "<span class='text-"+kolekti_bootstrap_status[$(this).data('status')]+"'><strong>"+msg+"</strong></span>";
 			},
 			'trigger':'click',
 			'placement':"left",
 			'html':true
-		    })		
-		    console.log(data)
+		    }); // end popover definition
+		    // console.log(data)
 		})
 
 
@@ -853,7 +873,6 @@ var kolekti_browser = function(args) {
 		loader.onload = function(evt) {
 		    var pic = {};
 		    var picinfo = evt.target.result.split(',');
-		    console.log(picinfo)
 		    
 		    pic.mime = picinfo[1];
 		    pic.file = picinfo[0];
@@ -879,8 +898,24 @@ var kolekti_browser = function(args) {
 	    })
 	}
     }
+    
     // sync callbacks
     $(parent).on('click', '.kolekti-browser-sync-add', function(event) {
+	$.ajax({
+	    type: 'POST',
+	    url: '/sync/add',
+	    data: {"path": path + "/" + $(this).closest('tr').data('name')}
+	}).done(update)
+	    
+    })
+
+    $(parent).on('click', '.kolekti-browser-sync-remove', function(event) {
+	$.ajax({
+	    type: 'POST',
+	    url: '/sync/remove',
+	    data: {"path": path + "/" + $(this).closest('tr').data('name')}
+	}).done(update)
+	    
     })
     // fetch directory
 

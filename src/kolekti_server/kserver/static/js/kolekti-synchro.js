@@ -70,24 +70,5 @@ $(document).ready(function() {
 	});
     });
 
-    $('body').on('click','.dosynchro',function(e) {
-	console.log('synchro');
-	
-	$.post('/sync/'+$(this).data('action'), {
-	    'syncromsg':$('#syncromsg').val()
-	})
-	    .done(function(data) {
-		$('.modal-title').html('Synchronisation')		
-		$('.modal-body').html(data)
-		$('.modal-footer').html(
-		    $('<button>',{
-			"class":"btn btn-default", 
-			"html":"fermer"})
-			.on('click',function() { window.location.reload()})
-		)
-    		$('.modal').modal();
-	    })
-    })
-
     $('#syncromsg').focus()    
 })

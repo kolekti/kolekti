@@ -40,7 +40,9 @@ urlpatterns = patterns('',
     url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
     url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
-
+    url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
+    url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
+    
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
     url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
     url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    

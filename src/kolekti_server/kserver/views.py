@@ -1194,17 +1194,20 @@ class SyncView(kolektiMixin, View):
             if resolve == "local":
                 sync.update(files)
                 for file in files:
-                    if os.path.exists(file+'.mine'):
-                        shutil.copy(file+'.mine', file)
+                    print file
+                    if self.exists(file+'.mine'):
+                        print copy
+                        self.copyFile(file+'.mine', file)
+                        print resolve
                         sync.resolved(file)
                 sync.commit(files, commitmsg)
             if resolve == "remote":
                 sync.revert(files)
+                sync.update(files)
 
         elif action == "merge":
             resolve  = request.POST.get('resolve',None)
             files = request.POST.getlist('fileselect',[])
-            print files
             if resolve =="merge":
                 print 'update'
                 sync.update(files)
@@ -1286,7 +1289,33 @@ class SyncResStatusView(kolektiMixin, View):
         except:
             import traceback
             print traceback.format_exc()
-            
+
+class SyncAddView(kolektiMixin, View):
+    def post(self, request):
+        try:
+            from kolekti.synchro import SynchroManager
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            sync = SynchroManager(projectpath)
+            path = request.POST.get('path')
+            sync.add_resource(path)
+            return HttpResponse(json.dumps('ok'),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+                        
+class SyncRemoveView(kolektiMixin, View):
+    def post(self, request):
+        try:
+            from kolekti.synchro import SynchroManager
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            sync = SynchroManager(projectpath)
+            path = request.POST.get('path')
+            sync.remove_resource(path)
+            return HttpResponse(json.dumps('ok'),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+                        
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
