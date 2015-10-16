@@ -452,7 +452,9 @@ class ReleaseStateView(kolektiMixin, TemplateView):
             path, assembly_name = request.POST.get('release').rsplit('/',1)
             state = request.POST.get('state')
             lang = request.POST.get('lang')
-            self.syncMgr.propset("release_state",state,"/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            assembly = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
+            self.syncMgr.propset("release_state",state, assembly)
+            self.syncMgr.commit([assembly],"change release state")
             return HttpResponse(state)
         except:
             import traceback
@@ -471,7 +473,11 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
             #            return StreamingHttpResponse(
             for copiedfiles in self.copy_release(path, assembly_name, srclang, dstlang):
                 pass
-            self.syncMgr.propset("release_state",'edition',"/".join(['/releases',assembly_name,"sources",dstlang,"assembly",assembly_name+'_asm.html']))
+            assembly = "/".join(['/releases',assembly_name,"sources",dstlang,"assembly",assembly_name+'_asm.html'])
+            self.syncMgr.propset("release_state",'edition', assembly)
+            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+
+
         except:
             import traceback
             print traceback.format_exc()
