@@ -499,8 +499,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
     def get(self, request):
         release_path = request.GET.get('release')
         lang = request.GET.get('lang', self.user_settings.active_srclang)
-#        assembly_name = [f['name'] for f in self.get_directory('%s/sources/%s/assembly'%(release_path, lang)) if f['name'][-5:] == '.html'][0][:-5]
-        
         assembly_name = self.basename(release_path)
         assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
         #print self.get_assembly_edit(assembly_path)
@@ -538,13 +536,10 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
         lang=request.GET.get('lang',self.user_settings.active_srclang)
         assembly_path = '/'.join([release_path,'sources',lang,'assembly',assembly_name+'_asm.html'])
-        xassembly = self.parse(assembly_path)
-        xbody = self.parse_html_string(request.body)
-        body = xassembly.xpath('/h:html/h:body',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0]
-        for e in xassembly.xpath('/h:html/h:body/*',namespaces={'h':'http://www.w3.org/1999/xhtml'}):
-            body.remove(e)
-        for e in xbody.xpath('/html/body/*'):
-            body.append(e)
+        payload = request.FILES.get('upload_file').read()
+
+        xassembly = self.parse_html_string(payload)
+
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.xwrite(xassembly, assembly_path)

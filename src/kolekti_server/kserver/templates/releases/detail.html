@@ -43,7 +43,7 @@
 
     <br/>
 
-    <div class="panel panel-default hidden" id="panel_download">
+    <div class="panel panel-default" id="panel_download">
       <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
@@ -59,11 +59,22 @@
 	<div class="panel-body">
 	  <div class="row">
 	    <div class="col-sm-12 col-md-12">
-	      <a href="{{ release_path }}/sources/{{ active_srclang }}/assembly/{{ assembly_name }}_asm.html">
-		Assemblage [{{active_srclang}}]
+	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html">
+		Assemblage [{{lang}}]
 	      </a><br/>
-	      <a href="#" id="releaseimages">Images</a><br/>
-	      <a href="#" id="releasevar">Variables</a><br/>
+	    </div>
+	    <hr/>
+	    <div class="col-sm-12 col-md-12">
+	      <form method="POST" class="upload_form" enctype="multipart/form-data">
+		<div class="input-group">
+		  <label>
+		    Déposer un fichier assemblage
+		    <input type="file" id="dl_assembly" class="form-control upload" name="upload_file"/>
+		  </label>
+		  
+		</div>
+		<button type="submit" class="btn btn-default">Valider</button>
+	      </form>
 	    </div>
 	  </div>
 	</div>
