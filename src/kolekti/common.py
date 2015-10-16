@@ -26,6 +26,8 @@ from searchindex import IndexManager
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
+ns = {'namespaces':{"h":"http://www.w3.org/1999/xhtml"}}
+
 objpathes = {
     "0.6":{
         "topics" : "modules",
@@ -278,14 +280,14 @@ class kolektiBase(object):
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xjob = self.parse(job_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             for imgfile in self.resolve_var_path(src_img, xjob):
                 t = mimetypes.guess_type(imgfile)[0]
                 if t is None:
                     t = "application/octet-stream"
                 callback(imgfile, t)
-        for elt_var in xassembly.xpath('//h:var',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_var in xassembly.xpath('//h:var',**ns):
             attr_class = elt_var.get('class')
             if "=" in attr_class:
                 if attr_class[0] == '/':
@@ -301,32 +303,48 @@ class kolektiBase(object):
 
     def copy_release(self, path, assembly_name, srclang, dstlang):
         # copy images & variables
-        srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
-        for subdir in srcsubdirs:
-            srcpath = '%s/sources/%s/%s'%(path, srclang, subdir)
-            dstpath = '%s/sources/%s/%s'%(path, dstlang, subdir)
-            self.copyDirs(srcpath,dstpath)            
-            try:
-                self.syncMgr.post_save(dstpath)
-            except:
-                pass
+        #srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
+        #for subdir in srcsubdirs:
+        
+        srcpath = '%s/sources/%s'%(path, srclang)
+        dstpath = '%s/sources/%s'%(path, dstlang)
+
+        self.copyDirs(srcpath,dstpath)            
+        try:
+            self.syncMgr.post_save(dstpath)
+        except:
+            pass
 
         # copy assembly / change language in references to images
-        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
+        # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
         assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
         try:
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
         except OSError:
             logging.debug('makedir failed')
-        self.copy_resource(src_assembly_path, assembly_path)
+        # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
                 splitpath[2] = dstlang 
                 elt_img.set('src','/'.join(splitpath))
+        try:
+            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',dstlang)
+        except IndexError:
+            pass
+        try:
+            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',dstlang)
+        except IndexError:
+            pass
+        try:
+            body = xassembly.xpath('/h:html/h:body',**ns)[0]
+            body.set('lang',dstlang)
+            body.set('{http://www.w3.org/XML/1998/namespace}lang',dstlang)
+        except IndexError:
+            pass
         self.xwrite(xassembly, assembly_path)
 
         try:
@@ -364,7 +382,7 @@ class kolektiBase(object):
             logging.debug('makedir failed')
         self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
@@ -485,7 +503,7 @@ class kolektiBase(object):
             self.syncMgr.copy_resource(src, dest)
         except:
             import traceback
-            print traceback.format_exc
+            print traceback.format_exc()
             logging.info('Synchro unavailable')
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
@@ -542,7 +560,6 @@ class kolektiBase(object):
                
         cp = shutil.copy(ossource, ospath)
         if hasattr(self, "_draft") and self._draft is False:
-            print "post save on copy"
             self.post_save(path)
         return cp
             

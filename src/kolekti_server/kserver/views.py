@@ -247,7 +247,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
-        print "home"
         context = self.get_context_data()
         if context.get('active_project') is None:
             return HttpResponseRedirect('/projects/') 
@@ -518,8 +517,8 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             try:
                 focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang))
             except:
-                import traceback
-                print traceback.format_exc()
+                #import traceback
+                #print traceback.format_exc()
                 focus.append(False)
                 
         context.update({'langstates':zip(context.get('releaselangs',[]),states,focus)})
@@ -1112,7 +1111,6 @@ class ReleaseView(PublicationView):
         lang=self.user_settings.active_srclang
         r = publish.Releaser(projectpath, lang = lang)
         pp = r.make_release(tocpath, xjob)
-        print pp
         release_dir = pp[0]['assembly_dir'][:-1]
         yield {
             'event':'release',
@@ -1122,6 +1120,7 @@ class ReleaseView(PublicationView):
             'lang':lang,
         }
         if self.syncMgr is not None :
+            
             self.syncMgr.propset("release_state","edition","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasename']+'_asm.html']))
         p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.user_settings.active_srclang])
         for e in p.publish_assembly(pp[0]['pubname']):
@@ -1253,18 +1252,14 @@ class SyncView(kolektiMixin, View):
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
             commitmsg = "unspecified"
-        print action
         if action == "conflict":
             resolve = request.POST.get('resolve')
             files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
             if resolve == "local":
                 sync.update(files)
                 for file in files:
-                    print file
                     if self.exists(file+'.mine'):
-                        print copy
                         self.copyFile(file+'.mine', file)
-                        print resolve
                         sync.resolved(file)
                 sync.commit(files, commitmsg)
             if resolve == "remote":
@@ -1275,9 +1270,7 @@ class SyncView(kolektiMixin, View):
             resolve  = request.POST.get('resolve',None)
             files = request.POST.getlist('fileselect',[])
             if resolve =="merge":
-                print 'update'
                 sync.update(files)
-                print "commit"
                 sync.commit(files,commitmsg)
             if resolve == "remote":
                 sync.revert(files)
