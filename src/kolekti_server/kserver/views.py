@@ -1262,6 +1262,12 @@ class SyncView(kolektiMixin, View):
                     if self.exists(file+'.mine'):
                         self.copyFile(file+'.mine', file)
                         sync.resolved(file)
+                    try:
+                        sync.resolved(file)
+                    except:
+                        import traceback
+                        print traceback.format_exc()
+                        
                 sync.commit(files, commitmsg)
             if resolve == "remote":
                 sync.revert(files)

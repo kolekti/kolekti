@@ -151,6 +151,7 @@ class SynchroManager(object):
                     "rstatus":str(status.repos_text_status),
                     "wstatus":str(status.text_status),
                     }
+
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
                              "author":status.entry.commit_author})
@@ -166,10 +167,15 @@ class SynchroManager(object):
                 elif status.text_status == pysvn.wc_status_kind.unversioned:
                     res['conflict'].append(item)
                 elif status.text_status in self.statuses_modified:
-                    if self.merge_dryrun(status.path):
-                        res['merge'].append(item)
-                    else:
+                    if (status.repos_text_status == pysvn.wc_status_kind.deleted) and (status.text_status == pysvn.wc_status_kind.deleted or status.text_status == pysvn.wc_status_kind.unversioned):
+                        res['update'].append(item)
+                    elif status.repos_text_status == pysvn.wc_status_kind.deleted:
                         res['conflict'].append(item)
+                    else:
+                        if self.merge_dryrun(status.path):
+                            res['merge'].append(item)
+                        else:
+                            res['conflict'].append(item)
                 elif status.text_status in self.statuses_absent:
                     res['update'].append(item)
                 elif status.text_status in self.statuses_normal:
@@ -189,7 +195,7 @@ class SynchroManager(object):
             else:
                 res['error'].append(item)
 
-
+        print res['conflict']
         return res
 
 
