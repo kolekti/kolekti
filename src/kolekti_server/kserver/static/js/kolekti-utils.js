@@ -463,7 +463,7 @@ var kolekti_browser = function(args) {
 				msg =  "A jour avec le référentiel";
 				break;
 			    case 'commit':
-				if ($(this).data('rstatus') == 'none')
+				if ($(this).data('wstatus') == 'added')
 				    msg += "<div><a href='#' class='kolekti-browser-sync-remove'>Enlever de la synchro</a></div>"
 				linksync = true;
 				break;
