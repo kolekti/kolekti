@@ -860,7 +860,7 @@ class BrowserExistsView(kolektiMixin, View):
 class BrowserMkdirView(kolektiMixin, View):
     def post(self,request):
         path = request.POST.get('path','/')
-        self.makedirs(path)
+        self.makedirs(path, sync=True)
         return HttpResponse("",content_type="text/plain")
 #        return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
 

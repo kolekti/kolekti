@@ -537,10 +537,12 @@ class kolektiBase(object):
             print traceback.format_exc()
             logging.debug('Search index unavailable')
 
-    def makedirs(self, path):
+    def makedirs(self, path, sync=False):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
+            if sync:
+                self.post_save(path)
             #if hasattr(self, "_draft") and self._draft is False:
                 # svn add if file did not exist
                 # self.post_save(path)
