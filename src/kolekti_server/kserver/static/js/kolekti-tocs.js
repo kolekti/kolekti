@@ -167,7 +167,7 @@ $(document).ready( function () {
 					    'href':"#",
 					    'class':"btn_section_toc_exclude",
 					    'html':["Exclure du sommaire",
-						topic.attr('data-hidden')=='true'?' ':'xx',
+						topic.attr('data-hidden')=='true'?' ':'',
 						topic.attr('data-hidden')=='true'?$('<span>',{'class':"glyphicon glyphicon-ok"}):null,
 					       ]
 					}),
