@@ -110,6 +110,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le dossier destination",
@@ -118,13 +119,13 @@ class Publisher(PublisherMixin, kolektiBase):
                         })
 
             logging.debug("W: unable to create assembly directory")
-            import traceback
             logging.debug(traceback.format_exc())
             return assembly, assembly_dir, pubname, events
 
         try:
             self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le fichier assemblage",
@@ -139,6 +140,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.create_settings(xjob, pubname, assembly_dir)
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le fichier de parametres",
@@ -317,7 +319,13 @@ class Publisher(PublisherMixin, kolektiBase):
 
     # create settings.xml file in assembly directory
     def create_settings(self, xjob, pubname, assembly_dir):
-        pass
+        try:
+            self.makedirs(assembly_dir + "/kolekti")
+        except:
+            logging.debug("W: unable to create kolekti subdirectory")
+            import traceback
+            logging.debug(traceback.format_exc())
+
 
     # copy used variables xml files into assembly space
     def copy_variables(self, assembly, profile, assembly_dir):
@@ -832,9 +840,11 @@ class DraftPublisher(Publisher):
             return
         try:
             first_sep = ""
+            mfmode = "w"
             if os.path.exists(manifest):
                 first_sep = ","
-            with open(manifest, 'a') as mf:
+                mfmode = "a"
+            with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
                 mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
                 for event in events:
