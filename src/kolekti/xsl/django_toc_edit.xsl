@@ -50,7 +50,9 @@
     <div class="section panel panel-info">
       <xsl:copy-of select="@data-hidden"/>
       <div class="panel-heading">
-	<xsl:apply-templates select="*[not(self::html:a) and not(self::html:div[@class='section'])]" mode="collapse"/>
+	<xsl:apply-templates select="*[not(self::html:a) and not(self::html:div[@class='section'])]" mode="collapse">
+	  <xsl:with-param name="cid" select="generate-id()"/>
+	</xsl:apply-templates>	
       </div>
 
       <div class="panel-collapse collapse in" id="collapse_{generate-id()}">
@@ -62,9 +64,10 @@
   </xsl:template>
 
   <xsl:template match="*" mode="collapse">
+    <xsl:param name="cid"/>
     <xsl:element name="{local-name()}">
       <xsl:apply-templates select="@*"/>
-      <a data-toggle="collapse" href="#collapse_{generate-id(ancestor::html:div)}">
+      <a data-toggle="collapse" href="#collapse_{$cid}">
 	<small data-ui="yes">
 	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
