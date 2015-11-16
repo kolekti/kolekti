@@ -956,7 +956,7 @@ $(document).ready( function () {
 		refcomp.after(section_obj);
 	    else 
 		if (isinside) {
-		    refcomp.find('.panel-body').prepend(section_obj);
+		    refcomp.find('.panel-body').first().prepend(section_obj);
 		    show_section(refcomp);
 		} else {
 		    refcomp.before(section_obj)
