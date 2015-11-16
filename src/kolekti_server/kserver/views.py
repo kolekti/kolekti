@@ -12,6 +12,7 @@ from datetime import datetime
 import time
 from lxml import etree as ET
 from PIL import Image
+import urllib, urllib2
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -1385,4 +1386,4 @@ class SyncRemoveView(kolektiMixin, View):
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
-        return serve(request, path, projectpath)
+        return serve(request, urllib.quote(path), projectpath)

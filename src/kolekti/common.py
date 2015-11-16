@@ -163,7 +163,8 @@ class kolektiBase(object):
 
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
+        pathparts = [p for p in path.split('/') if p!='']
+        # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
         
@@ -583,7 +584,10 @@ class kolektiBase(object):
     def getUrlPath(self, source):
         path = self.__makepath(source)
         # logging.debug(path)
-        upath = urllib.pathname2url(path.encode('utf-8'))
+        try:
+            upath = str(path)
+        except UnicodeEncodeError:
+            upath = urllib.pathname2url(path.encode('utf-8'))
         if upath[:3]=='///':
             return 'file:' + upath
         else:

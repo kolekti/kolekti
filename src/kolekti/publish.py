@@ -846,7 +846,9 @@ class DraftPublisher(Publisher):
                 mfmode = "a"
             with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
-                mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
+                print assembly_dir, self.basename(pubname), toc, pubtitle
+                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc))
+                mf.write(ev.encode('utf-8'))
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
                     yield event
@@ -1015,7 +1017,7 @@ class ReleasePublisher(Publisher):
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
-            mf.write("]}")
+            mf.write ("]}")
             yield {"event":"publication_dir", "path":self._release_dir}
 
         return 
