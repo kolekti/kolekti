@@ -846,7 +846,6 @@ class DraftPublisher(Publisher):
                 mfmode = "a"
             with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
-                print assembly_dir, self.basename(pubname), toc, pubtitle
                 ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc))
                 mf.write(ev.encode('utf-8'))
                 for event in events:
