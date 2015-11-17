@@ -62,6 +62,7 @@
   <!-- main template -->
 
   <xsl:template match="/">
+
     <exsl:document href="{$pubdir}/js/modcodes.js" method='text'>
       var modcodes = new Object();
       <xsl:apply-templates select="html:html/html:body//html:div[@class='topic']" mode="modcodes" />
@@ -69,8 +70,10 @@
     <exsl:document href="{$pubdir}/js/modtexts.js" method='text'>
       var modtexts = new Object();
       <xsl:apply-templates select="$topics" mode="textcontent" />
-    </exsl:document>
+      </exsl:document>
+
     <xsl:apply-templates select="$topics" />
+
     <xsl:apply-templates select="//html:div[starts-with(@class,'INDEX')]" />
 
   </xsl:template>
@@ -148,9 +151,7 @@
 
             <div class="row">
               <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
-                <xsl:call-template name="gentoc">
-                  <xsl:with-param name="modtitle" select="$modtitle"/>
-                </xsl:call-template>
+                <xsl:call-template name="gentoc"/>
               </div>
 
               <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
@@ -197,7 +198,6 @@
             <div class="row">
               <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
                 <xsl:call-template name="gentoc">
-                  <xsl:with-param name="modtitle" select="$modtitle"/>
                   <xsl:with-param name="modid" select="'alphaindex'"/>
                 </xsl:call-template>
               </div>
@@ -225,23 +225,17 @@
     </exsl:document>
   </xsl:template>
 
-
-
   <xsl:template match="html:div[@class='topic']" mode="gentoc">
-    <xsl:param name="modid" />
 
     <xsl:variable name="modref">
       <xsl:call-template name="modfile" />
     </xsl:variable>
-
-    <xsl:variable name="curtopic" select="boolean(@id = $modid)" />
-
-    <li>
+      
+    <li data-topic-id="{@id}">
       <xsl:attribute name="class">
         <xsl:text>list-group-item</xsl:text>
-        <xsl:if test="$curtopic"> active</xsl:if>
       </xsl:attribute>
-
+      
       <a href="{$modref}">
         <i class="glyphicon glyphicon-file"></i>
         <xsl:call-template name="modtitle" />
@@ -252,26 +246,17 @@
   <xsl:template match="html:div[@class='topic'][not(.//html:h1) and not(.//html:h2)]" mode="gentoc"/>
 
   <xsl:template match="html:div[@class='section']" mode="gentoc">
-    <xsl:param name="modid" />
-    <xsl:param name="modtitle" />
 
     <xsl:variable name="modref">
       <xsl:call-template name="modfile">
         <xsl:with-param name="modid" select="(.//html:div[@class='topic'])[1]/@id" />
       </xsl:call-template>
     </xsl:variable>
-
-    <xsl:variable name="cursection" select="boolean(.//html:div[@id = $modid])" />
-
     <li class="list-group-item">
       <a href="{$modref}" data-section="{generate-id()}">
-        <i>
-          <xsl:attribute name="class">
-            <xsl:choose>
-              <xsl:when test="$cursection"><xsl:text>glyphicon glyphicon-folder-open</xsl:text></xsl:when>
-              <xsl:otherwise><xsl:text>glyphicon glyphicon-folder-close</xsl:text></xsl:otherwise>
-            </xsl:choose>
-          </xsl:attribute>
+        <i class="section-icon">
+	  <!--
+	  -->
         </i>
       </a>
 
@@ -282,12 +267,11 @@
       <ul data-section-content="{generate-id()}">
         <xsl:attribute name="class">
           <xsl:text>list-group</xsl:text>
-          <xsl:if test="not($cursection)"> hidden</xsl:if>
+	  <!--
+              <xsl:if test="not($cursection)"> hidden</xsl:if>
+	  -->
         </xsl:attribute>
-        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gentoc">
-          <xsl:with-param name="modid" select="$modid" />
-          <xsl:with-param name="modtitle" select="$modtitle" />
-        </xsl:apply-templates>
+        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gentoc"/>
       </ul>
     </li>
   </xsl:template>
@@ -590,9 +574,13 @@
  </xsl:template>
 
  <!-- generate TOC -->
+
+ <xsl:variable name="toc">
+   <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc"/>   
+ </xsl:variable>
+ 
  <xsl:template name="gentoc">
    <xsl:param name="modid" select="@id" />
-   <xsl:param name="modtitle" select="''" />
    <!--
    <div class="btn-list col-xs-12">
      <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="glyphicon glyphicon-list visible-xs btn-lg col-xs-12">
@@ -638,10 +626,15 @@
      <div id="menu" class="well navbar-nav col-sm-12">
        <h5><xsl:value-of select="kfp:variable(string($translationfile),'TdmTitre')"/></h5>
        <ul class="menu-list list-group list-unstyled">
-         <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
+	 <!--
+             <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
+             <xsl:with-param name="modid" select="$modid" />
+             <xsl:with-param name="modtitle" select="$modtitle" />
+             </xsl:apply-templates>
+	 -->
+	 <xsl:apply-templates select="exsl:node-set($toc)" mode="processtoc">
            <xsl:with-param name="modid" select="$modid" />
-           <xsl:with-param name="modtitle" select="$modtitle" />
-         </xsl:apply-templates>
+	 </xsl:apply-templates>
        </ul>
        <xsl:if test="//html:div[starts-with(@class,'INDEX')]">
          <ul class="menu-list list-group list-unstyled">
@@ -664,6 +657,89 @@
  </xsl:template>
 
 
+  <xsl:template match="node()|@*" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*" mode="processtoc">
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+ 
+  <xsl:template match="html:ul" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:variable name="content">
+      <xsl:apply-templates select="node()" mode="processtoc" >
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:choose>
+	<xsl:when test="exsl:node-set($content)/html:li/@data-current">
+	  <xsl:attribute name="data-current">yes</xsl:attribute>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:attribute name="class">
+	    <xsl:value-of select="@class"/>
+	    <xsl:text> hidden</xsl:text>
+	  </xsl:attribute>
+	</xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:copy-of select="$content"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:li[not(@data-topic-id)]" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:variable name="content">
+      <xsl:apply-templates select="html:ul" mode="processtoc" >
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:if test="exsl:node-set($content)/html:ul/@data-current">
+	<xsl:attribute name="data-current">yes</xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="html:a" mode="processtoc">
+	<xsl:with-param name="modid" select="boolean(exsl:node-set($content)/html:ul/@data-current)"/>
+      </xsl:apply-templates>
+      <xsl:copy-of select="$content"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="html:li[@data-topic-id]" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:if test="@data-topic-id = $modid">
+	<xsl:attribute name="data-current">yes</xsl:attribute>
+	<xsl:attribute name="class">
+	  <xsl:value-of select="@class"/>
+	  <xsl:text> active</xsl:text>
+	</xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="node()" mode="processtoc" />
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:i[@class='section-icon']" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:attribute name="class">
+        <xsl:choose>
+          <xsl:when test="$modid"><xsl:text>glyphicon glyphicon-folder-open</xsl:text></xsl:when>
+          <xsl:otherwise><xsl:text>glyphicon glyphicon-folder-close</xsl:text></xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <xsl:apply-templates select="node()" mode="processtoc" />
+    </xsl:copy>
+  </xsl:template>
+ 
 
 
  <!-- TODO template menu selection criteres -->
