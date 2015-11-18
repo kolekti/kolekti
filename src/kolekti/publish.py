@@ -100,6 +100,23 @@ class Publisher(PublisherMixin, kolektiBase):
         assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
 
+        try:
+            endpoint = self._project_settings.find('sparql').get('endpoint')
+            from kolekti.publish_queries import kolektiSparQL
+            sp = kolektiSparQL(endpoint)
+            sp.process_queries(assembly)
+        except:
+            import traceback
+            events.append({
+                'event':'warning',
+                'msg':"Impossible d'executer les requetes",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            })
+            print traceback.format_exc()
+            logging.debug("W: unable to create assembly directory")
+            logging.debug(traceback.format_exc())
+
         # calculate the publication name
         pubname = xjob.get('id','')
         pubname = self.substitute_criteria(pubname, xjob)
