@@ -1,7 +1,8 @@
+/*
 var kolekti = {
     'lang' : 'fr'
 }
-
+*/
 function displayname(path) {
     var f = basename(path)
     return f.replace(/\.[^\.]+$/,'')
@@ -25,8 +26,15 @@ Array.prototype.removevalue = function() {
     return this;
 };
 
-$.ajaxSetup({ 
-     beforeSend: function(xhr, settings) {
+var xhrSuccessStatus = {
+		// file protocol always yields status code 0, assume 200
+		0: 200,
+		// Support: IE9
+		// #1450: sometimes IE returns 1223 when it should be 204
+		1223: 204
+	}
+
+var ajaxBeforeSend = function(xhr, settings) {
          function getCookie(name) {
              var cookieValue = null;
              if (document.cookie && document.cookie != '') {
@@ -46,8 +54,120 @@ $.ajaxSetup({
              // Only send the token to relative URLs i.e. locally.
              xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
          }
-     } 
+    settings.converters["* streamed"]=true;
+} ;
+
+$.ajaxSetup({ 
+    beforeSend: ajaxBeforeSend
 });
+
+
+// define transport ajax function for streaming data
+
+var streamedTransport = function(streamCallback) {
+    return $.ajaxTransport("streamed", function( options, originalOptions, jqXHR ) {
+	return {
+	    send: function( headers, completeCallback ) {
+		var i,
+		    xhr = options.xhr();
+		
+		xhr.open(
+		    options.type,
+		    options.url,
+		    options.async,
+		    options.username,
+		    options.password
+		);
+
+		// Apply custom fields if provided
+		if ( options.xhrFields ) {
+		    for ( i in options.xhrFields ) {
+			xhr[ i ] = options.xhrFields[ i ];
+		    }
+		}
+
+		// Override mime type if needed
+		if ( options.mimeType && xhr.overrideMimeType ) {
+		    xhr.overrideMimeType( options.mimeType );
+		}
+
+		// X-Requested-With header
+		// For cross-domain requests, seeing as conditions for a preflight are
+		// akin to a jigsaw puzzle, we simply never set it to be sure.
+		// (it can always be set on a per-request basis or even using ajaxSetup)
+		// For same-domain requests, won't change header if already provided.
+		if ( !options.crossDomain && !headers["X-Requested-With"] ) {
+		    headers["X-Requested-With"] = "XMLHttpRequest";
+		}
+		
+		// Set headers
+		for ( i in headers ) {
+		    xhr.setRequestHeader( i, headers[ i ] );
+		}
+
+		// Callback
+		callback = function( type ) {
+		    return function() {
+			if ( type === "state" ) {
+			    streamCallback(xhr.responseText)
+			}
+			
+			else if ( callback ) {
+			    callback = xhr.onload = xhr.onerror = null;
+			    //console.log(xhr.responseText)
+			    if ( type === "abort" ) {
+				xhr.abort();
+			    }
+			    else if ( type === "error" ) {
+				completeCallback(
+				    // file: protocol always yields status 0; see #8605, #14207
+				    xhr.status,
+				    xhr.statusText
+				);
+			    } else {
+				completeCallback(
+				    xhrSuccessStatus[ xhr.status ] || xhr.status,
+				    xhr.statusText,
+				    // Support: IE9
+				    // Accessing binary-data responseText throws an exception
+				    // (#11426)
+				    typeof xhr.responseText === "string" ? {
+					text: xhr.responseText
+				    } : undefined,
+				    xhr.getAllResponseHeaders()
+				);
+			    }
+			}
+		    }
+		};
+
+		// Listen to events
+		xhr.onload = callback();
+		xhr.onreadystatechange = callback("state");
+		xhr.onerror = callback("error");
+		
+		// Create the abort callback
+		callback = callback("abort");
+		
+		try {
+		    // Do send the request (this may raise an exception)
+		    xhr.send( options.hasContent && options.data || null );
+		} catch ( e ) {
+		    // #14683: Only rethrow if this hasn't been notified as an error yet
+		    if ( callback ) {
+			throw e;
+		    }
+		}
+	    },
+	    
+	    abort: function() {
+		if ( callback ) {
+		    callback();
+		}
+	    }
+	}
+    });
+}
 
 
 /* kolekti objects browser
@@ -77,6 +197,15 @@ var kolekti_browser = function(args) {
     var editable_path = false
     var titlepath = false
     var os_actions = false
+    var create_actions = false
+    var create_builder = function(e, path){
+	e.prepend(
+	    ['Nouveau fichier : ',
+	     $('<input>',{ 'type':"text",
+			  'class':"form-control filename"
+			})]
+	)
+    };
     var resfuncs = {};
     var modal = true;
 
@@ -86,6 +215,12 @@ var kolekti_browser = function(args) {
 	path = args.root;
         root = args.root;
 	params['root']=root
+    }
+    if (args && args.path) {
+	path = args.path;
+    }
+    if (args && args.url) {
+	url = args.url;
     }
     if (args && args.parent)
 	parent = args.parent;
@@ -103,7 +238,11 @@ var kolekti_browser = function(args) {
 	editable_path = true;
     if (args && args.os_actions && args.os_actions=='yes')
 	os_actions= true;
-
+    if (args && args.create_actions && args.create_actions=='yes')
+	create_actions= true;
+    if (args && args.create_builder)
+	create_builder = args.create_builder;
+    
     params['mode']=mode;
 
     var get_browser_value = function() {
@@ -131,19 +270,28 @@ var kolekti_browser = function(args) {
 	$.get(url, params, function(data) {
 	    $(parent).html([
 		data,
-		$('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><div class="col-sm-2">'+(editable_path?'Chemin':'Nom')+' :</div><div class="col-sm-10"><input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
+//		$('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><div class="col-sm-2">'+(editable_path?'Chemin':'Nom')+' :</div><div class="col-sm-10"><input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
+		$('<div class="row hidden"><div class="col-sm-12"><input type="text" class="form-control browserfile" id="browserval"/></div></div>')]
 			  )
-	}).done(function(){	
+	}).done(function(){
+	    if (!create_actions) {
+		$(parent).find('.kolekti-browser-create-actions').hide()
+	    } else {
+		create_builder($(parent).find('.newfile_collapse div'), path)
+	    }
+
 	    if (!os_actions) 
-		$(parent).find('.koleti-browser-item-action').hide()
+		$(parent).find('.kolekti-browser-item-action').hide()
 	    else {
 		$(parent).find('.kolekti-action-remove').click(function(e){
-		    $.post('/browse/delete',{"path": path + "/" + $(this).closest('tr').data('name')})
-			.done(function(data) {
-			    console.log(data)
-			    update();
-			})
-
+		    var item = $(this).closest('tr').data('name');
+		    if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
+			$.post('/browse/delete',{"path": path + "/" + item})
+			    .done(function(data) {
+				console.log(data)
+				update();
+			    })
+		    }
 		});
 
 
@@ -198,6 +346,7 @@ var kolekti_browser = function(args) {
 		    );
 		    $(this).closest('tr').find('input').focus();
 		});
+		
 		$(parent).find('.kolekti-action-move').click(function(e){
 		    $.post('/browse/move',
 			   {'from':path + "/" + $(this).closest('tr').data('name'),
@@ -209,9 +358,14 @@ var kolekti_browser = function(args) {
 			})
 
 		});
-	    }
+		$(parent).find('.dirlist tr.file').each(function(i,e){
+		    promise_setup_file(e)
+		});
 
+	    }
 	    set_browser_value(path + '/');
+
+
 	    if (modal)
 		$('.modal').modal();
 	});
@@ -219,7 +373,7 @@ var kolekti_browser = function(args) {
 
     var browser_alert = function(msg) {
 	
-	$(parent).find('.browser').append(
+	$(parent).find('.browser').prepend(
 	    $('  <div>', {
 		'class':"alert alert-danger alert-dismissible browser-alert",
 		'role':"alert",
@@ -244,53 +398,52 @@ var kolekti_browser = function(args) {
 	    })
 	)
     }
-
-    var select = function(f) {	
-	resfuncs['select']=f;
-	return {"always":always};
-    };
-
-    var always = function(f) {
-	resfuncs['always']=f;
+    var return_functions = {
+	'select':function(f) {	
+	    resfuncs['select']=f;
+	    return return_functions;
+	},
+	'create':function(f) {	
+	    resfuncs['create']=f;
+	    return return_functions;
+	},
+	'setup_file':function(f) {	
+	    resfuncs['setup_file']=f;
+	    return return_functions;
+	},
     };
 
     // calls register callback functions
 
-    var closure = function(f) {
-	if (mode == "create")
-	    $.get("/browse/exists", {'path':get_browser_value()}, function(data) {
-		if (!data) {
-		    $.map(resfuncs , function(v,i) {
-			v(get_browser_value())
-		    })
-		} else {
-		    browser_alert("Le fichier sélectionné existe deja")
-		    return
-		}
-	    })
-	else
-	    $.map(resfuncs , function(v,i) {
-		v(get_browser_value());
-	    })
+    var closure_select = function() {
+	resfuncs['select'] && resfuncs['select'](get_browser_value());
+    };	
+    var closure_create = function() {
+	resfuncs['create'] && resfuncs['create']($(parent), path, update);
     };
+    var promise_setup_file = function(e) {
+	var f = $(e).data('name'); 
+	resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, path, f);
+    };
+
 
     // click on file
 
-    $(parent).on('click', '.filelink', function() {
+    $(parent).on('click', '.filelink', function(e) {
+	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
 	    update();
 	} else {
 	    set_browser_value(path + '/' + $(this).html())
-	    if (mode=="selectonly") {
-		closure()
-	    }
+	    closure_select()
 	}
     })
 
     // navigate into parent folders
 
-    $(parent).on('click', '.pathstep', function() {
+    $(parent).on('click', '.pathstep', function(e) {
+	e.preventDefault();
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
 	    path = newpath;
@@ -298,20 +451,48 @@ var kolekti_browser = function(args) {
 	}
     })
 
-    // new folder
+    // new folder/file accordion behavior
 
-    $(parent).on('click', '.create-folder', function() {
+    $(parent).on('click', '.newfolder', function(e){
+	$(parent + ' .newfile_collapse.in').collapse('hide');
+    });
+
+    $(parent).on('click', '.newfile', function(e){
+	$(parent + ' .newfolder_collapse.in').collapse('hide');
+    });
+
+    $(parent).on('shown.bs.collapse', '.newfile_collapse', function () {
+	$(parent + ' .newfile_collapse input').focus();
+    })
+    
+    $(parent).on('shown.bs.collapse', '.newfolder_collapse', function () {
+	$(parent + ' .newfolder_collapse input').focus();
+    })
+    
+   // new folder
+
+    $(parent).on('click', '.create-folder', function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
 	folderpath = path + "/" + $(parent).find(".foldername").val();
 	$.post("/browse/mkdir",{path : folderpath}, function(data) {
 	    update();
 	})
     })
+    $(parent).on('click', '.create-file', function(e) {
+	e.preventDefault();
+	e.stopImmediatePropagation();
+	closure_create();
+    })
+
 
     // Validate modal / browser
 
+/*
     $(parent).on('click', '.browservalidate', function() {
 	closure();
     })
+*/
 
     // handler : click for sort
 
@@ -346,34 +527,13 @@ var kolekti_browser = function(args) {
 	$.each(listitems, function(idx, itm) { mylist.append(itm); });
     }
 
-    // activate Validate button
-
-    if (mode != "selectonly") {
-	if (!$(buttonsparent+'>button.browservalidate').length) {
-	    $('<button type="button" class="btn btn-default browservalidate">OK</button>').prependTo($(buttonsparent));
-	}
-
-	$(buttonsparent).off('click', '.browservalidate');
-	$(buttonsparent).on('click', '.browservalidate', function(event) {
-	    closure();
-	});
-    }
-
-    // set title
-
-    $(titleparent).html(title);
-    
     // fetch directory
 
     update()
     
     // return functions
 
-    return {
-	"select":select,
-	"always":always
-    }
-    
+    return return_functions;
 }
 
 

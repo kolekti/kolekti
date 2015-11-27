@@ -1,10 +1,20 @@
+
 $(document).ready(function() {
     
     $('#selectall').change(function() {
 	$('.selectentry').prop('checked',$(this).prop('checked'))
     });
     
-
+    $('body').on('change','select',function(e) {
+	var val = $(this).val();
+	console.log(val);
+	if (val == "local") {
+	    $("#commitmsg").show();
+	} else {
+	    $("#commitmsg").hide();
+	}
+    });
+		 
     $('body').on('click','.btn-select-merge',function(e) {
 	action = $('.select-merge').val();
 	console.log(action);
@@ -47,10 +57,10 @@ $(document).ready(function() {
 	});
     });
 
-    $('body').on('click','#dosynchro',function(e) {
+    $('body').on('click','.dosynchro',function(e) {
 	console.log('synchro');
 	
-	$.post('/sync/start', {
+	$.post('/sync/'+$(this).data('action'), {
 	    'syncromsg':$('#syncromsg').val()
 	})
 	    .done(function(data) {

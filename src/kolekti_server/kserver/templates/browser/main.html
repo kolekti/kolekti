@@ -1,36 +1,44 @@
-<div class="browser">
+<div class="browser" id="{{ id }}">
   <div class="row">
     <div class="col-sm-12 col-md-12">
-      <span class="pull-right">
+      <span class="pull-right kolekti-browser-create-actions">
 	<button type="button" 
-		class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfolder"
+		class="btn btn-default btn-xs newfolder"
 		data-toggle="collapse"
-		data-target="#foldername_collapse"
+		data-target="#newfolder_collapse{{ id }}"
 		aria-expanded="false"
-		title="Nouveau dossier"
-		aria-controls="foldername_collapse">
+		title="Créer dossier..."
+		aria-controls="newfolder_collapse{{ id }}">
 	  +<i class="fa fa-folder-open-o"></i>
 	</button>
 
 	<button type="button" 
-		class="btn btn-default btn-sm {% if not mode == "create" %}hidden{% endif %} newfile"
+		class="btn btn-default btn-xs newfile"
 		data-toggle="collapse"
-		data-target="#foldername_collapse"
+		data-target="#newfile_collapse{{ id }}"
 		aria-expanded="false"
-		title="Nouveau fichier"
-		aria-controls="foldername_collapse">
+		title="Nouveau..."
+		aria-controls="newfile_collapse{{ id }}">
 	  +<span class="fa fa-file-o"></i>
 	</button>
-
       </span>
 
       <span class="btn-group">
 	{% for step in pathsteps %} / <a class="pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#">{{ step.label }}</a>{% endfor %}
 	
       </span>
-      <div class="collapse" id="foldername_collapse">
-	Nouveau dossier : <input type="text" class="form-control foldername"/>
-	<button class="btn btn-default btn-xs create-folder">ok</button>
+
+      <div class="panel panel-info collapse newfolder_collapse" id="newfolder_collapse{{ id }}" role="tabpanel">
+	<div class="panel-heading">
+	  Nouveau dossier : <input type="text" class="form-control foldername"/>
+	  <button class="btn btn-default btn-xs create-folder">ok</button>
+	  
+	</div>
+      </div>
+      <div class="panel panel-info collapse newfile_collapse" id="newfile_collapse{{ id }}" role="tabpanel">
+	<div class="panel-heading">
+	  <button class="btn btn-default btn-xs create-file">ok</button>
+	</div>
       </div>
     </div>
   </div>
@@ -47,25 +55,33 @@
     </thead>
     <tbody>
       {% for f in files %}
-      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}">
+      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
 	<td><i class="fa {{ f.icon }}"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
-	<td><a href="#" data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
+	<td><a
+	       {% if pathsteps.0.label == "sources" %}
+	       href="{{ path }}/{{f.name}}"
+	       {% else %}
+	       href="#"
+	       {% endif %}
+	       data-mimetype="{{ f.type }}" class="filelink">{{ f.name }}</a></td>
 	<td>{{ f.date|date:"d/m/Y H:i" }}</td>
-	<td class="koleti-browser-item-action">
+	<td class="kolekti-browser-item-action">
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+	  {% if not f.type == "text/directory" %}
 	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">
 	    <i class="fa fa-copy"></i>
 	  </button>
+	  {% endif %}
 	  {% if expertmode %}
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-edit"></i>
 	  </button>
 	  
 	  <div class="btn-group">
-	    <button class="btn btn-xs btn-default" title="Déplacer" data-toggle="dropdown" aria-expanded="false">
+	    <button class="btn btn-xs btn-default" title="DÃ©placer" data-toggle="dropdown" aria-expanded="false">
 	      <i class="fa fa-folder-o"></i>
 	      <span class="caret"></span>
 	    </button>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block current_settings %}class="menu-current"{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-job.css"></script>
@@ -10,10 +10,23 @@
     <script src="/static/js/kolekti-job.js"></script>
 {% endblock %}
 
-{% block title %}{% endblock %}
+{% block title %}Paramètres de publication : {{ name }}{% endblock %}
 
 {% block content %}
 
 {{ job|safe }}
 
 {% endblock %}
+
+{% block menu %}
+    
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save" data-path="{{ path }}">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
+{% endblock %}
+

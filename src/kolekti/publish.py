@@ -11,148 +11,11 @@ import os
 import copy
 import logging
 import json
-
 from lxml import etree as ET
 
+from publish_utils import PublisherMixin, PublisherExtensions
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
-
-
-
-class PublisherMixin(object):
-    nsmap={"h":"http://www.w3.org/1999/xhtml"}
-    def __init__(self, *args, **kwargs):
-        # intercept lang & draft parameters
-
-        self._publang = None
-        if kwargs.has_key('lang'):
-            self._publang = kwargs.get('lang')
-            kwargs.pop('lang')
-
-        self._draft = False
-    
-        super(PublisherMixin, self).__init__(*args, **kwargs)
-
-        if self._publang is None:
-            self._publang = self._config.get("sourcelang","en")
-            
-    def process_path(self, path):
-        return self.substitute_criteria(path, ET.XML('<criteria/>'))
-
-    def substitute_criteria(self, string, profile, extra={}):
-        extra.update({"LANG":self._publang})
-        return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
-
-    
-    def pubdir(self, assembly_dir, profile):
-        # calculates and creates the publication directory
-        pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
-        pubdir = self.substitute_criteria(pubdir, profile)
-        pubdir = assembly_dir + "/publications/" + pubdir
-        logging.debug('pubdir : %s'%pubdir)
-
-        try:
-            self.makedirs(pubdir)
-        except:
-            logging.debug("publication path %s already exists"%pubdir)
-        return pubdir
-    
-class PublisherExtensions(PublisherMixin, XSLExtensions):
-    """
-    Extensions functions for xslt that are applied during publishing process
-    """
-    ens = "kolekti:extensions:functions:publication"
-
-    def __init__(self, *args, **kwargs):
-        if kwargs.has_key('profile'):
-            self._profile = kwargs.get('profile')
-            kwargs.pop('profile')
-        super(PublisherExtensions,self).__init__(*args, **kwargs)
-        
-
-    def gettopic(self, _, *args):
-        modid = args[0]
-        path = self.process_path(modid)
-        upath = self.getUrlPath(path)
-        logging.debug("get topic %s -> %s"%(modid,upath))
-        return upath
-
-    def gettopic2(self, _, *args):
-        modid = args[0]
-        path = self.process_path(modid)
-        logging.debug("get topic path %s -> %s"%(modid,path))
-        return path
-
-    def criteria(self, _, *args):
-        logging.debug('xslt ext criteria')
-        return self._profile.xpath("criteria/criterion|/job/criteria/criterion")
-
-    def criteria_definitions(self, _, *args):
-        logging.debug('xslt ext criteria_definitions')
-        return self._project_settings.xpath("/settings/criteria/criterion")
-
-    def lang(self, _, *args):
-        logging.debug('lang criteria_definitions')
-        return self._publang
-    
-    def normpath(self, _, *args):
-        """Returns normalized path"""
-
-        path = args[0]
-        try:
-            src  = args[1]
-            ndir = src.split('/')[:-1]
-        except IndexError:
-            ndir=[]
-        ndir.extend(path.split('/'))
-        newdir=[]
-        for i in ndir :
-            if i=='':
-                pass
-            if i=='.':
-                pass
-            if i=='..':
-                newdir.pop()
-            else:
-                newdir.append(i)
-        r= '/'.join(newdir)
-        return r
-        
-    def replace_strvar(self, _, args):
-        srcstr = self.substitute_criteria(args, self._profile)
-        return self.substitute_variables(srcstr, self._profile)
-
-    def replace_criteria(self, _, args):
-        srcstr = args
-        r = self.substitute_criteria(srcstr, self._profile)
-        return r
-
-    def variable(self, _, *args):
-        sheet = self.substitute_criteria(args[0], self._profile)
-        variable = self.substitute_criteria(args[1], self._profile)
-        return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
-
-    def evaluate_condition(self, _, args):
-        conditions = args.replace(' ','')
-        list_conditions = conditions.split(";")
-        return ''
-    
-    def listdir(self, _, *args):
-        path = args[0]
-        ext = args[1]        
-        try:
-            return [os.path.splitext(f['name'])[0] for f in self.get_directory(path) if os.path.splitext(f['name'])[1][1:]==ext]
-        except:
-            return ["Error: path %s does not exist"%path]
-
-
-
-def test():
-    testprofile = """
-    <profile>
-    </profile>"""
-    profile = ET.XML(testprofile)
-    pe = PublisherExtensions(profile)
-    pe.listdir('/sources')
+from kolekti import plugins
 
 class Publisher(PublisherMixin, kolektiBase):
     """Manage all publication process functions, assembly tocs, filters assemblies, invoke scripts
@@ -167,6 +30,7 @@ class Publisher(PublisherMixin, kolektiBase):
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
+        
         
     def _variable(self, varfile, name):
         """returns the actual value for a variable in a given xml variable file"""
@@ -183,32 +47,58 @@ class Publisher(PublisherMixin, kolektiBase):
             s = s.replace('_%s_'%k,v)
         return self.substitute_variables(self.substitute_criteria(s,profile),profile)
 
+    def get_script(self, plugin):
 
-		
+        # imports a script python module
+        pm = getattr(plugins,plugin)
+        pl  = getattr(pm, "plugin")
+        return pl(self._path, lang = self._publang)
+        #return plugins.getPlugin(plugin,self._path)
 
-    def publish_assemble(self, toc, xjob):
+
+    def check_modules(self, xtoc):
+        for refmod in xtoc.xpath("//h:a[@rel = 'kolekti:topic']/@href",namespaces=self.nsmap):
+            try:
+                path = self.process_path(refmod)
+                self.parse(path)
+            except IOError:
+                import traceback
+                yield  {
+                        'event':'error',
+                        'msg':"module %s non trouvé"%path.encode('utf-8'),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }  
+            except ET.XMLSyntaxError, e:
+                import traceback
+                yield  {
+                        'event':'error',
+                        'msg':"erreur dans %s : %s"%(path.encode('utf-8'), str(e)),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }  
+
+        
+    def publish_assemble(self, xtoc, xjob):
+        events = []
         """create and return an assembly from the toc using the xjob critria for filtering"""
         assembly_dir = self.assembly_dir(xjob)
 
-        logging.debug('********************************** process toc')
-
+        # produce assembly document from toc and topics
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
-        assembly = xsassembly(toc, lang="'%s'"%self._publang)
+        assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-
-        logging.debug('********************************** filter assembly')
-        # criteria
+        
+        # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
                         
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
-        assembly = s(assembly,action="'assemble'")
+        assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
 
-        # logging.debug("after cond! %s"%str([ET.tostring(c) for c in assembly.xpath('//*[local-name() = "cond"]')
-            
-
+        # calculate the publication name
         pubname = xjob.get('id','')
         pubname = self.substitute_criteria(pubname, xjob)
         
@@ -218,15 +108,43 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le dossier destination",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
             logging.debug("W: unable to create assembly directory")
             import traceback
             logging.debug(traceback.format_exc())
-            
-        self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
+            return assembly, assembly_dir, pubname, events
+
+        try:
+            self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
+        except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le fichier assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
+            return assembly, assembly_dir, pubname, events
 
 
         logging.debug('********************************** create settings')
-        self.create_settings(xjob, pubname, assembly_dir)
+        try:
+            self.create_settings(xjob, pubname, assembly_dir)
+        except:
+            events.append({
+                        'event':'error',
+                        'msg':"Impossible de créer le fichier de parametres",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
+            return assembly, assembly_dir, pubname, events
 
         logging.debug('********************************** copy scripts resources')
         for profile in xjob.xpath("/job/profiles/profile[@enabled='1']"):
@@ -234,7 +152,8 @@ class Publisher(PublisherMixin, kolektiBase):
             s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
             fassembly = s(assembly)
             logging.debug('********************************** copy media')
-            self.copy_media(fassembly, profile, assembly_dir)
+            for event in self.copy_media(fassembly, profile, assembly_dir):
+                events.append(event)
 
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
@@ -242,43 +161,76 @@ class Publisher(PublisherMixin, kolektiBase):
                     self.copy_script_params(script, profile, assembly_dir)
                 except:
                     import traceback
+                    events.append({
+                        'event':'error',
+                        'msg':"Impossible de copier les parametres du script %s"%script.get('name'),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    raise Exception
+                    
 
-        return assembly, assembly_dir, pubname 
+        return assembly, assembly_dir, pubname, events 
 
 
 
     def publish_job(self, assembly, xjob):
         """publishes a an assembly for every profile in xjob
-           invoke publication scripts for every publication """ 
+           invoke publication scripts for every publication
+            iterator : yields a result for each selected profile / script 
+           """ 
         assembly_dir = self.assembly_dir(xjob)
         res=[]
-        
-        # logging.debug(ET.tostring(xjob))
+
+        yield {'event':'job', 'label':xjob.get('id')}
+
         for profile in xjob.xpath('/job/profiles/profile'):
-            #  logging.debug(profile)
             if profile.get('enabled','0') == '1':
-                resscripts = []
+                profilename = profile.find('label').text
+
+                yield {'event':'profile', 'label':profilename}
+
                 # creates the document (pivot) file
-                pivot = self.publish_profile(assembly, profile, assembly_dir)
-                
-                 # invoke scripts
+                try:
+                    pivot = self.publish_profile(assembly, profile, assembly_dir)
+                except:
+                    import traceback
+                    logging.error("Assembly Error")
+                    yield {
+                        'event':'error',
+                        'msg':"erreur lors de l'assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                    logging.debug(traceback.format_exc())
+                # invoke scripts
                 for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
-                        resscripts.append({"script":script.get('name'),"docs":resscript})
+                        yield {
+                            'event':'result',
+                            'script':script.get('name'),
+                            'docs':resscript,
+                            'time':time.time(),
+                            }
                     except:
                         import traceback
                         logging.error("Script %s finished with errors"%script.get('name'))
+                        yield {
+                            'event':'error',
+                            'msg':"Erreur d'execution du script %s"%script.get('name'),
+                            'stacktrace':traceback.format_exc(),
+                            'time':time.time(),
+                            }
                         logging.debug(traceback.format_exc())
-                        raise Exception
-                res.append({'profile':profile.find('label').text,
-                            'scripts':resscripts,
-                            'time':time.time(), #datetime.now(),
-                            })
-        return res
+
+#                res.append({'profile':profile.find('label').text,
+#                            'scripts':resscripts,
+#                            'time':time.time(), #datetime.now(),
+#                            })
+        return 
 
 
     def publish_profile(self, assembly, profile, assembly_dir):
@@ -290,7 +242,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logging.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-        
+
         try:
             # logging.debug(assembly)
             # criteria
@@ -306,7 +258,7 @@ class Publisher(PublisherMixin, kolektiBase):
             
             s = self.get_xsl('filter-empty-sections')
             assembly = s(assembly)
-            self.log_xsl(s.error_log)
+            self.log_xsl(s.error_log)            
 
             # substvars
             s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
@@ -325,7 +277,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 self.log_xsl(s.error_log)
 
             # make toc
-            # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
+            # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
             s = self.get_xsl('toc')
             assembly = s(assembly)
             self.log_xsl(s.error_log)
@@ -341,21 +293,22 @@ class Publisher(PublisherMixin, kolektiBase):
             
         except ET.XSLTApplyError, e:
             logging.debug(s.error_log)
-            logging.error("Error in publication process")
-            raise Exception
+            import traceback
+            logging.debug(traceback.format_exc())
+            logging.error("Error in publication process (xsl)")
+            raise
 
         except:
             logging.debug(s.error_log)
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Error in publication process")
-            raise Exception
+            raise
         
         # write pivot
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
-
-        self.xwrite(pivot, pivfile)
+        self.xwrite(pivot, pivfile, sync = False)
         return pivot
 
     # create settings.xml file in assembly directory
@@ -365,25 +318,37 @@ class Publisher(PublisherMixin, kolektiBase):
 
  
             
-    # copy media to _c, update src attributes in assembly
+    # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
         for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
             ref = med.get('src')
             ref = self.substitute_criteria(ref, profile)
             if ref[0] == '/':
                 ref = ref[1:]
-            med.set('src',ref)
+#            med.set('src',ref)
             logging.debug('image src : %s'%ref)
             try:
-                refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
+                refdir = "/".join([assembly_dir]+ref.split('/')[:-1])
+                # refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
                 self.makedirs(refdir)
             except OSError:
                 logging.debug('makedir failed')
                 import traceback
                 logging.debug(traceback.format_exc())
+            try:
+                self.copyFile(ref, assembly_dir + '/' + ref)
+            except:
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"fichier introuvable %s"%(ref.encode('utf-8'),),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                
+        return
 
-            self.copyFile(ref, assembly_dir + '/' + ref)
-
+                
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
         name=script.get('name')
@@ -391,7 +356,7 @@ class Publisher(PublisherMixin, kolektiBase):
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
             logging.error("Script %s not found" %name)
-            raise Exception
+            raise
 
         # copy libs
         try:
@@ -405,7 +370,7 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.error('Unable to copy script libs')
             import traceback
             logging.debug(traceback.format_exc())
-            raise Exception
+            raise
         
         params = {}
         try:
@@ -443,7 +408,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("[Script %s] could not copy resources"%name)
-            raise Exception
+            raise
         
         
     
@@ -453,11 +418,7 @@ class Publisher(PublisherMixin, kolektiBase):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
-        suffix = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(suffix[@enabled='1'])")),profile), profile)
-        if len(suffix):
-            pubname = "%s_%s"%(label, suffix)
-        else:
-            pubname = label
+        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
             
         name=script.get('name')
         params = {}
@@ -469,7 +430,7 @@ class Publisher(PublisherMixin, kolektiBase):
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
             logging.error("Impossible de trouver le script: %s" %label)
-            raise Exception
+            raise
 
         
         # shall we filter the pivot before applying the script
@@ -501,7 +462,7 @@ class Publisher(PublisherMixin, kolektiBase):
         stype = scrdef.get('type')
         try:
             if stype=="plugin":
-                from kolekti.plugins import getPlugin
+#                from kolekti.plugins import getPlugin
                 
                 plugname=scrdef.find("plugin").text
                 try:
@@ -510,11 +471,10 @@ class Publisher(PublisherMixin, kolektiBase):
                     logging.error("Impossible de charger le script %(label)s"%{'label': plugname.encode('utf-8')})
                     import traceback
                     logging.debug(traceback.format_exc())
-                    raise Exception
+                    raise
 
-                res = plugin(script, profile, assembly_dir, fpivot, self._publang)
-            
-                #logging.info("%(label)s ok"% {'label': plugname.encode('utf-8')})
+                res = plugin(script, profile, assembly_dir, fpivot)
+                logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
 
                 
             elif stype=="shell":
@@ -535,6 +495,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 cmd=self.__substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
+#                print cmd
                 try:
                     import subprocess
                     exccmd = subprocess.Popen(cmd, shell=True,
@@ -573,7 +534,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     logging.debug(traceback.format_exc())
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
-                    raise Exception
+                    raise
 
                 finally:
                     exccmd.stderr.close()
@@ -604,7 +565,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         self.model.pubsave(str(docf),'/'.join((label,sout)))
                     except:
                         logging.error("Impossible d'exécuter le script %(label)s"%{'label': label.encode('utf-8')})
-                        raise Exception
+                        raise
                     errors = set()
                     for err in xslt.error_log:
                         if not err.message in errors:
@@ -642,13 +603,13 @@ class Publisher(PublisherMixin, kolektiBase):
             
                 except:
                     logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
-                    raise Exception
+                    raise
             
         except:
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
-            raise Exception
+            raise
         return res
 
 
@@ -695,7 +656,7 @@ class Publisher(PublisherMixin, kolektiBase):
             if not exccmd.returncode == 0:
                 err=exccmd.stderr.read()
                 logging.debug(err)
-                raise Exception
+                raise
         except:
             dbgexc()
             
@@ -724,7 +685,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.error("Impossible de copier la ressource %s"%source)
             logging.debug(traceback.format_exc())
-            raise Exception
+            raise
         
         try:
             source=u"%s/%s.parts"%(srcdir,filer)
@@ -740,7 +701,7 @@ class Publisher(PublisherMixin, kolektiBase):
             import traceback
             logging.error("Impossible de copier la ressource %s"%source)
             logging.debug(traceback.format_exc())
-            raise Exception
+            raise
 
 
 
@@ -755,9 +716,9 @@ class DraftPublisher(Publisher):
         self._draft = True
 
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        assembly_dir = "/drafts/" + assembly_dir
+        assembly_dir = "/publications/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
         return assembly_dir
@@ -768,53 +729,99 @@ class DraftPublisher(Publisher):
         self.rmtree(assembly_dir + "/kolekti")
         
 
-    # publishes a list of jobs
+    # publishes a list of job toc
     
-    def publish_draft(self, toc, jobs=None):
-        """ publishes a kolekti toc, using the profiles sets present in jobs list"""
-        
+    def publish_draft(self, toc, job, pubtitle=None):
+        """ publishes a kolekti toc, with a job"""
+        status = True
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         # toc = self.get_base_toc(toc) + ".html"
         logging.debug("publish toc %s",toc)
+        
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
         else:
             xtoc = self.parse(toc)
+
+        if pubtitle is not None:
+            xtoc.xpath("/h:html/h:head/h:title", namespaces=self.nsmap)[0].text = pubtitle
+
         publications = []
+        # path = self.get_base_job(job) + ".xml"
+        if isinstance(job,ET._ElementTree):
+            xjob = job
+        else:
+            xjob = self.parse(job)
+
+        # assembly
+        logging.debug('********************************** CREATE ASSEMBLY')
+
+        for ev in self.check_modules(xtoc):
+            yield ev
+            status = (ev.get('event','') != 'error')
+
+            if not status:
+                return
         
-        for job in jobs:
-            # path = self.get_base_job(job) + ".xml"
-            if isinstance(job,ET._ElementTree):
-                xjob = job
-            else:
-                xjob = self.parse(job)
-            # assembly
-            logging.debug('********************************** CREATE ASSEMBLY')
-            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
+        try:
+            assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
+            manifest = self.getOsPath(assembly_dir + '/kolekti/manifest.json')
 
-            logging.debug('********************************** PUBLISH ASSEMBLY')
-            pubres = self.publish_job(assembly, xjob.getroot())
+        except:
+            import traceback
+            yield {
+                    'event':'error',
+                    'msg':"erreur lors de l'assemblage",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                }
+            return
+        try:
+            first_sep = ""
+            if os.path.exists(manifest):
+                first_sep = ","
+            with open(manifest, 'a') as mf:
+                mf.write(first_sep)
+                mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
 
-            publications.append({"job":xjob.getroot().get('id'), "publications":pubres})
-            try:
-                pass
-                #self.cleanup_assembly_dir(xjob.getroot())
-            except:
-                logging.debug('Warning: could not remove tmp dir')
-        # self.write(json.dumps(publications), assembly_dir+'/kolekti/'+ pubname +'_publications.json')
-        return publications
+                for event in events:
+                    mf.write(",\n" + json.dumps(event))
+                    yield event
+            
+                logging.debug('********************************** PUBLISH ASSEMBLY')
+                for pubres in self.publish_job(assembly, xjob.getroot()):
+                    mf.write(",\n" + json.dumps(pubres))
+                    yield pubres
+                try:
+                    pass
+                # self.cleanup_assembly_dir(xjob.getroot())
+                except:
+                    logging.debug('Warning: could not remove tmp dir')
+                mf.write("]}\n")
+        except:
+            import traceback
+            yield {
+                'event':'error',
+                'msg':"impossible d'ouvrir le fichier manifeste",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            
+        return
     
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
-        
+
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/releases/" + assembly_dir
+        if assembly_dir[-1] != "/":
+            assembly_dir += "/"
         return assembly_dir
 
-    def make_release(self, toc, jobs):
+    def make_release(self, toc, job, release_name=None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
@@ -822,26 +829,50 @@ class Releaser(Publisher):
         logging.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
+            if release_name is None:
+                raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
-        for job in jobs:
-            # path = self.get_base_job(job) + ".xml"
-            if isinstance(job,ET._ElementTree):
-                xjob = job
-            else:
-                xjob = self.parse(job)
-            # assembly
-            logging.debug('********************************** CREATE ASSEMBLY')
-            assembly, assembly_dir, pubname = self.publish_assemble(xtoc, xjob.getroot())
-            res.append({"assembly_dir":assembly_dir,
-                        "pubname":pubname,
-                        "datetime":time.time(), #datetime.now(),
-                        "job":unicode(xjob.getroot().get('id')),
-                        "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
-                })
+        #        release_name = os.path.splitext(pubdir.rsplit("/", 1)[1])[0]
 
-        self.write('<publication type="release"/>', assembly_dir+"/.manifest")
-        self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+pubname+"_"+self._publang+"_parameters.json")
+        if isinstance(job,ET._ElementTree):
+            xjob = job.getroot()
+        else:
+            xjob = self.parse(job).getroot()
+        release_name = xjob.get('pubdir')
+        xjob.set('id',release_name + '_asm')
+
+        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
+
+        # assembly
+        logging.debug('********************************** CREATE ASSEMBLY')
+        assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
+        res.append({"assembly_dir":assembly_dir,
+                    "pubname":pubname,
+                    "releasename":release_name,
+                    "datetime":time.time(), #datetime.now(),
+                    "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"})
+                    })
+
+        # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
+        self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
+        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
+        if self.syncMgr is not None :
+            try:
+                self.syncMgr.propset("release_state","edition",assembly_path)
+        #            self.syncMgr.add_resource(assembly_path)
+                self.syncMgr.commit(assembly_path, "Release Creation")
+        #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
+            except:
+                import traceback
+                res.append({
+                    'event':'error',
+                    'msg':"Erreur de synchronisation",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    })
+                   
         return res
 
     # copies the job in release directory
@@ -861,10 +892,13 @@ class Releaser(Publisher):
 
 class ReleasePublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        if kwargs.has_key('langs'):
+            self._publangs = kwargs.get('langs')
+            kwargs.pop('langs')
         super(ReleasePublisher, self).__init__(*args, **kwargs)
 
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/dir/@value)'),xjob)
+        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
         assembly_dir = "/releases/" + assembly_dir
         return assembly_dir
@@ -874,16 +908,35 @@ class ReleasePublisher(Publisher):
 
     def publish_assembly(self, release, assembly):
         """ publish an assembly"""
-        assembly_dir = 'releases/' + release
-        try:
-            xassembly = self.parse('releases/' + release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
-        except:
-            logging.error("unable to read assembly %s"%assembly)
-            import traceback
-            logging.debug(traceback.format_exc())
-            
-        xjob = self.parse('releases/' + release + '/kolekti/publication-parameters/'+ assembly +'.xml')
-        xjob=xjob.getroot()
-        publications = self.publish_job(xassembly,xjob)
-        self.write(json.dumps(publications), assembly_dir+'/kolekti/publication-parameters/'+ assembly + '_' + self._publang + '_publications.json')
-        return [{"job":xjob.get('id'), "publications":publications}]
+        manifest = self.getOsPath(release + '/kolekti/manifest.json')
+        first_sep = ""
+        if os.path.exists(manifest):
+            first_sep = ","
+        with open(manifest, 'a') as mf:
+            mf.write(first_sep)
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(release,int(time.time())))
+            for lang in self._publangs:
+                yield {'event':'lang', 'label':lang}
+                self._publang = lang
+                mf.write(',{"event":"lang", "label":"%s"}'%(lang,))
+                try:
+                    xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                except:
+                    yield {
+                        'event':'error',
+                        'msg':"impossible de lire l'assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                    logging.error("unable to read assembly %s"%assembly)
+                    import traceback
+                    logging.debug(traceback.format_exc())
+                    return
+
+                xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        
+                for pubres in self.publish_job(xassembly, xjob.getroot()):
+                    mf.write(",\n" + json.dumps(pubres))
+                    yield pubres
+            mf.write("]}")
+        return 

@@ -1,0 +1,33 @@
+{% extends "synchro/synchro.html" %}
+
+
+{% block operation %}
+
+<div class="alert alert-info">
+  <h3>Revision {{ revinfo.rev }}</h3>
+  <p>Fichiers modifiés</p>
+  {% for item in revsumm %}
+  <div class="row">
+    <div class="col-sm-8">
+      <code>{{ item.path }}</code>
+    </div>
+    <div class="col-sm-4">
+      {{ item.summarize_kind }}
+    </div>
+  </div>
+  {% endfor %}
+
+  <br/><hr/><br/>
+  <p>Détail des différences :</p>
+  <div class="panel panel-default margin-top">
+    <div class="panel-body">
+      <pre>
+	{{ difftext }}
+      </pre>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+

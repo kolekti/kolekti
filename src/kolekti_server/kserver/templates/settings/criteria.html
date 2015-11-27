@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block current_settings %}class="menu-current"{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-criteria.css"></script>
@@ -10,18 +10,9 @@
     <script src="/static/js/kolekti-criteria.js"></script>
 {% endblock %}
 
-{% block title %}{% endblock %}
+{% block title %}Critères{% endblock %}
 
 {% block content %}
-
-<h2>Critères
-  <span class="pull-right">
-    <button type="button" class="btn btn-default disabled hidden" id="btn_save">
-      Enregistrer
-    </button>
-  </span>
-</h2>
-
 <div>
   {% for criterion in criteria %}
   <div class="criterion" data-criterion="{{ criterion.code }}">
@@ -32,29 +23,52 @@
 	    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	    <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
 	  </small>
-	  <strong>Code</strong>
+
 	  <input type="text" value="{{ criterion.code }}"></input>
 	</a>
 	<span class="pull-right">
-	  <button type="button" class="btn btn-default btn-xs delete-criterion">
+	  <button type="button" class="btn btn-default btn-xs crit-del-crit">
 	    Supprimer
 	  </button>
 	</span>
       </div>
       <div class="panel-collapse collapse" id="collapse_{{ forloop.counter }}">
 	<div class="panel-body">
+	  <strong>Valeurs</strong>
 	  {% for val in criterion.values %}
 	  <div class="row">
-	    <div class="">
-	      <input type="text" value="{{ val }}"/>
+	    <div class="col-md-8">
+	      <input type="text" class="form-control" value="{{ val }}"/>
+	    </div>
+	    <div class="col-md-4">
+	      <button class="btn btn-default btn-xs crit-del-value">Supprimer</button>
 	    </div>
 	  </div>
 	  {% endfor %}
-	  </ul>
+
+	  <div class="row top-margin">
+	    <div class="col-sm-12">
+	      <button class="btn btn-default btn-xs crit-add-value">Ajouter une valeur</button>
+	    </div>
+	  </div>
 	</div>
       </div>
     </div>
   </div>
   {% endfor %}
+  <button class="btn btn-default btn-xs crit-add-crit">Ajouter un critère</button>
+
 </div>
+{% endblock %}
+
+{% block menu %}
+    
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
 {% endblock %}

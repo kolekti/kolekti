@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="settings">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="languages" minOccurs="1" maxOccurs="1"/>
+	<xs:element ref="criteria" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name='version' type='xs:string' fixed="0.7"/>
+      <xs:attribute name="sourcelang" type="xs:string"/>
+    </xs:complexType>
+
+    
+    <xs:keyref name="sourcelangKey" refer="languagesKey">
+      <xs:selector xpath="."/>
+      <xs:field xpath="@sourcelang"/>
+    </xs:keyref>
+
+    <xs:key name="languagesKey">
+      <xs:selector xpath="languages/lang"/>
+      <xs:field xpath="."/>
+    </xs:key>
+
+  </xs:element>
+
+  <xs:element name="languages">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="lang" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="criteria" >
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="criterion" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="criterion">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="value" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name='type' type='xs:string' fixed="enum"/>
+      <xs:attribute name="code" type="xs:string"/>
+    </xs:complexType>    
+  </xs:element>
+
+</xs:schema>

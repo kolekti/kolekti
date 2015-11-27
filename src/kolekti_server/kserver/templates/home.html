@@ -1,4 +1,20 @@
-{% extends "base.html" %}
+{% extends "base-wide.html" %}
 
-{% block title %}Overview{% endblock %}
+{% block title %}{{ kolekti.project }}{% endblock %}
+{% block current_home %}class="menu-current"{% endblock %}
 
+{% block content %}
+
+<div id="widgets">
+<!--
+  <p>Projet : {{ kolekti.project }}
+    <a id="editprojects" href="/projects/" title="Gestionnaire de projets"><span class="glyphicon glyphicon-cog"> </span></a>
+
+  </p>
+-->
+</div>
+{% endblock %}
+
+{% block extrascripts %}
+<script src="/static/js/kolekti-home.js"></script>
+{% endblock %}

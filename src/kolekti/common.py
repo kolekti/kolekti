@@ -6,6 +6,7 @@
 import os
 import sys
 import re
+from copy import copy
 from datetime import datetime
 import ConfigParser
 import urllib2
@@ -19,6 +20,7 @@ mimetypes.init()
 from lxml import etree as ET
 
 from exceptions import *
+from settings import settings
 from synchro import SynchroManager
 from searchindex import IndexManager
 
@@ -49,15 +51,15 @@ objpathes = {
 
  
 class kolektiBase(object):
-    def __init__(self, path):
+    def __init__(self, path, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
         try:
-            Config = ConfigParser.ConfigParser()
-            Config.read("kolekti.ini")
-            self._appdir = Config.get('InstallSettings','installdir')
+            Config = settings()
+            self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+
         # logging.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
@@ -67,7 +69,7 @@ class kolektiBase(object):
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
-        projectdir = os.path.basename(path)
+        projectdir = os.path.basename(self._path[:-1])
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
@@ -99,12 +101,20 @@ class kolektiBase(object):
         try:
             self.syncMgr = SynchroManager(self._path)
         except ExcSyncNoSync:
-            pass
+            self.syncMgr = None
         try:
             self.indexMgr = IndexManager(self._path)
         except:
-            pass
-        
+            logging.debug('Search index could not be loaded')
+
+
+    @property
+    def _syncstate(self):
+        try:
+            return self.syncMgr.state()
+        except:
+            return "?"
+            
     def __getattribute__(self, name):
         # logging.debug('get attribute: ' +name)
         # import traceback
@@ -141,7 +151,7 @@ class kolektiBase(object):
 
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = urllib2.url2pathname(path).split(os.path.sep)
+        pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
         
@@ -151,12 +161,14 @@ class kolektiBase(object):
         defs = os.path.join(self._appdir, 'pubscripts.xml')
         return ET.parse(defs).getroot()
 
-    def get_script(self, plugin):
-        # imports a script python module
-        import plugins
-        return plugins.getPlugin(plugin,self._path)
 
-    def get_directory(self, root=None):
+    def basename(self, path):
+        return path.split('/')[-1]
+
+    def dirname(self, path):
+        return "/".join(path.split('/')[:-1])
+    
+    def get_directory(self, root=None, filter=None):
         res=[]
         if root is None:
             root = self._path
@@ -164,17 +176,18 @@ class kolektiBase(object):
             root = self.__makepath(root)
         for f in os.listdir(root):
             pf = os.path.join(root, f)
-            d = datetime.fromtimestamp(os.path.getmtime(pf))
-            if os.path.isdir(pf):
-                t = "text/directory"
-                if os.path.exists(os.path.join(pf,'.manifest')):
-                    mf = ET.parse(os.path.join(pf,'.manifest'))
-                    t += "+" + mf.getroot().get('type')
-            else:
-                t = mimetypes.guess_type(pf)[0]
-                if t is None:
-                    t = "application/octet-stream"
-            res.append({'name':f, 'type':t, 'date':d})
+            if os.path.exists(pf) and (filter is None or filter(root,f)):
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                if os.path.isdir(pf):
+                    t = "text/directory"
+                    if os.path.exists(os.path.join(pf,'.manifest')):
+                        mf = ET.parse(os.path.join(pf,'.manifest'))
+                        t += "+" + mf.getroot().get('type')
+                else:
+                    t = mimetypes.guess_type(pf)[0]
+                    if t is None:
+                        t = "application/octet-stream"
+                res.append({'name':f, 'type':t, 'date':d})
         return res
 
     def get_tree(self, root=None):
@@ -199,6 +212,143 @@ class kolektiBase(object):
 
         return dir
 
+    def get_release_assemblies(self, path):
+        ospath= self.__makepath(path)
+        for f in os.listdir(ospath):
+            if os.path.exists(os.path.join(ospath,f,'kolekti',"publication-parameters")):
+                pf = os.path.join(os.path.join(ospath,f))
+                d = datetime.fromtimestamp(os.path.getmtime(pf))
+                yield (f, d)
+
+    def get_publications(self):
+        publications = []
+        for manifest in self.iterpublications:
+            yield manifest[-1]
+        
+    def get_releases_publications(self):
+        publications = []
+        for manifest in self.iter_releases_publications:
+            yield manifest[-1]
+        
+    def resolve_var_path(self, path, xjob):
+        criteria = re.findall('\{.*?\}', path)
+        if len(criteria) == 0:
+            yield path
+        seen = set()
+        for profile in xjob.xpath("/job/profiles/profile|/"):
+            ppath = copy(path)
+            for pcriterion in profile.findall('criteria/criterion'):
+                if pcriterion.get('code') in criteria:
+                    ppath.replace('{%s}'%pcriterion.get('code'), pcriterion.get('value'))
+            if not ppath in seen:
+                seen.add(ppath)
+                yield ppath
+
+                
+                
+    def iter_release_assembly(self, path, assembly, lang, callback):
+        assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
+        job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
+        xjob = self.parse(job_path)
+        xassembly = self.parse( assembly_path)
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            for imgfile in self.resolve_var_path(src_img, xjob):
+                t = mimetypes.guess_type(imgfile)[0]
+                if t is None:
+                    t = "application/octet-stream"
+                callback(imgfile, t)
+        for elt_var in xassembly.xpath('//h:var',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            attr_class = elt_var.get('class')
+            if "=" in attr_class:
+                if attr_class[0] == '/':
+                    varfilepath = '/'.join(path, attr_class)
+                else:
+                    varfilepath = '/'.join(path, "sources", lang, "variables", attr_class)
+                for varfile in self.resolve_var_path(varfilepath, xjob):
+                    t = mimetypes.guess_type(varfile)[0]
+                    if t is None:
+                        t = "application/octet-stream"
+                    yield callback(varfile, t)
+                    
+
+    def copy_release(self, path, assembly_name, srclang, dstlang):
+        # copy images & variables
+        srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
+        for subdir in srcsubdirs:
+            srcpath = '%s/sources/%s/%s'%(path, srclang, subdir)
+            dstpath = '%s/sources/%s/%s'%(path, dstlang, subdir)
+            self.copyDirs(srcpath,dstpath)            
+            try:
+                self.syncMgr.post_save(dstpath)
+            except:
+                pass
+
+        # copy assembly / change language in references to images
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
+        try:
+            refdir = "/".join([path,'sources',dstlang,'assembly'])
+            self.makedirs(refdir)
+        except OSError:
+            logging.debug('makedir failed')
+        self.copy_resource(src_assembly_path, assembly_path)
+        xassembly = self.parse( assembly_path)
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang 
+                elt_img.set('src','/'.join(splitpath))
+        self.xwrite(xassembly, assembly_path)
+
+        try:
+            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+        except:
+            pass
+        yield assembly_path
+        return
+
+                                        
+    def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
+        def copy_callback(respath, restype):
+            splitpath = respath.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang
+                splitpath = [path]+splitpath
+                try:
+                    refdir = "/".join(splitpath.split('/')[:-1])
+                    self.makedirs(refdir)
+                except OSError:
+                    logging.debug('makedir failed')
+
+                respath = path + respath
+                self.copy_resource(respath, '/'.join(splitpath))
+            return '/'.join(splitpath)
+
+        for copiedfile in self.iter_release_assembly(path, assembly_name, srclang, copy_callback):
+            yield copiedfile
+        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        try:
+            refdir = "/".join([path,'sources',dstlang,'assembly'])
+            self.makedirs(refdir)
+        except OSError:
+            logging.debug('makedir failed')
+        self.copy_resource(src_assembly_path, assembly_path)
+        xassembly = self.parse( assembly_path)
+        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1:3] == ["sources",srclang]:
+                splitpath[2] = dstlang 
+                elt_img.set('src','/'.join(splipath))
+        self.xwrite(xassembly, assembly_path)
+        yield assembly_path
+        return
+    
+        # iteration 
+    
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
@@ -234,6 +384,7 @@ class kolektiBase(object):
     def log_xsl(self, error_log):
         for entry in error_log:
             logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+            print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
             #logging.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
             #logging.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
             #logging.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
@@ -260,12 +411,20 @@ class kolektiBase(object):
             f.write(content)
         self.post_save(filename)
         
-    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
+    def write_chunks(self, chunks, filename, mode="w"):
+        ospath = self.__makepath(filename)
+        with open(ospath, mode) as f:
+            for chunk in chunks():
+                f.write(chunk)
+        self.post_save(filename)
+        
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
 
             
     # for demo
@@ -284,44 +443,58 @@ class kolektiBase(object):
     def move_resource(self, src, dest):
         try:
             self.syncMgr.move_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            shutil.move(self._makepath(src), self._makepath(dst))
-        self.indexMgr.move_resource(src, dest)
+            shutil.move(self.__makepath(src), self.__makepath(dest))
+        try:
+            self.indexMgr.move_resource(src, dest)
+        except:
+            logging.debug('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
-        except ExcSyncNoSync:
+        except:
+            import traceback
+            print traceback.format_exc
             logging.info('Synchro unavailable')
-            shutil.copy(self._makepath(src), self._makepath(dst))
-        self.indexMgr.copy_resource(src, dest)
+            shutil.copy(self.__makepath(src), self.__makepath(dest))
+        try:
+            self.indexMgr.copy_resource(src, dest)
+        except:
+            logging.debug('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
-        except ExcSyncNoSync:
+        except:
             logging.info('Synchro unavailable')
-            if os.path.isdir(self._makepath(path)):
-                shutil.rmtree(self._makepath(path))
+            if os.path.isdir(self.__makepath(path)):
+                shutil.rmtree(self.__makepath(path))
             else:
-                os.unlink(self._makepath(path))
-            
-        self.indexMgr.delete_resource(path)
-        
+                os.unlink(self.__makepath(path))
+        try:
+            self.indexMgr.delete_resource(path)
+        except:
+            logging.debug('Search index unavailable')
+
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
-        except ExcSyncNoSync:
-            logging.info('Synchro unavailable')
-        self.indexMgr.post_save(path)
-        
+        except:
+            logging.debug('Synchro unavailable')
+        try:
+            self.indexMgr.post_save(path)
+        except:
+            logging.debug('Search index unavailable')
+
     def makedirs(self, path):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
-            # svn add if file did not exist
-            self.post_save(path)
+            if hasattr(self, "_draft") and self._draft is False:
+                # svn add if file did not exist
+                self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
@@ -331,13 +504,17 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         return os.path.exists(ospath)
 
-    def copyFile(self, source, path):
+    def copyFile(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
         # logging.debug("copyFile %s -> %s"%(ossource, ospath))
                
-        return shutil.copy(ossource, ospath)
-
+        cp = shutil.copy(ossource, ospath)
+        if hasattr(self, "_draft") and self._draft is False:
+            print "post save on copy"
+            self.post_save(path)
+        return cp
+            
     def copyDirs(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
@@ -363,6 +540,19 @@ class kolektiBase(object):
             return 'file://' + upath
 
 
+    def getUrlPath2(self, source):
+        path = self.__makepath(source)
+        # logging.debug(path)
+        
+        upath = path.replace(os.path.sep,"/")
+# upath = urllib.pathname2url(path.
+        if upath[:3]=='///':
+            return 'file:' + upath
+        if upath[0]=='/':
+            return 'file://' + upath
+        return 'file:///' + upath
+
+
     def getPathFromUrl(self, url):
         return os.path.join(url.split('/')[3:])
 
@@ -376,7 +566,7 @@ class kolektiBase(object):
             return aurl
 
     def _get_criteria_dict(self, profile):
-        criteria = profile.xpath("criteria/criterion")
+        criteria = profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):c.get('value',None)})
@@ -390,7 +580,7 @@ class kolektiBase(object):
         return criteria_dict
 
 
-    def substitute_criteria(self,string, profile, extra={}):
+    def substitute_criteria(self, string, profile, extra={}):
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
         #logging.debug(criteria_dict)
@@ -408,7 +598,7 @@ class kolektiBase(object):
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
             # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
-            value = self.variable_value(sheet, sheet_variable, profile)
+            value = self.variable_value(sheet, sheet_variable, profile).text
             string = string.replace(variable, value)
         return string
 
@@ -426,17 +616,18 @@ class kolektiBase(object):
         criteria_dict.update(extra)
         for value in values:
             accept = True
-            for criterion in value.findall('criterion'):
+            for criterion in value.findall('crit'):
                 criterion_name = criterion.get('name')
-                if criterion_name in criterion_dict:
+                
+                if criterion_name in criteria_dict:
                     if not criteria_dict.get(criterion_name) == criterion.get('value'):
                         accept = False
                 else:
                     accept = False
             if accept:
-                return value.find('content').text
+                return value.find('content')
         logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return "[??]"
+        return ET.XML("<content>[??]</content>")
 
 
     @property
@@ -450,11 +641,14 @@ class kolektiBase(object):
 
     @property
     def itertocs(self):
+        def filter(root,f):
+            return os.path.splitext(f)[1]==".html" or os.path.splitext(f)[1]==".xml" 
+
         for root, dirs, files in os.walk(os.path.join(self._path, 'sources'), topdown=False):
             rootparts = root.split(os.path.sep)
             if 'tocs' in rootparts:
                 for file in files:
-                    if os.path.splitext(file)[-1] == '.html':
+                    if os.path.exists(os.path.join(root,file)) and filter(root,file):
                         yield self.localpath(os.path.sep.join(rootparts+[file]))
 
     @property
@@ -495,6 +689,43 @@ class kolektiBase(object):
                         yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
                                "name":os.path.splitext(file)[0]}
         
+    @property
+    def iterpublications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file  == 'manifest.json':
+                    print root
+                    with open(os.path.join(root,file)) as f:
+
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield {'event':'error',
+                                   'file':os.path.join(root,file),
+                                   'msg':'cannot read manifest file',
+                                   }
+    @property
+    def iter_releases_publications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file  == 'manifest.json':
+                    print root
+                    with open(os.path.join(root,file)) as f:
+
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield {'event':'error',
+                                   'file':os.path.join(root,file),
+                                   'msg':'cannot read manifest file',
+                                   }
+                        
     def release_details(self, path, lang):
         res=[]
         root = self.__makepath(path)
@@ -506,7 +737,7 @@ class kolektiBase(object):
                 # print release_params
                 
                 for job_params in release_params:
-                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_'+ lang +'_publications.json'))
+                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
                     resjob = {
                         'lang': lang,
                         'release':release_params,
@@ -517,7 +748,12 @@ class kolektiBase(object):
                     
         return res
                 
-                
+    def create_project(self, project_dir, projects_path):
+        tpl = os.path.join(self._appdir, 'project_template')
+        target = os.path.join(projects_path, project_dir)
+        shutil.copytree(tpl, target)
+
+                    
                 
 class XSLExtensions(kolektiBase):
     """

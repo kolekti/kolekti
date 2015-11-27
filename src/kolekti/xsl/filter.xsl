@@ -88,19 +88,26 @@
         <xsl:with-param name="listcond" select="$classcond"/>
       </xsl:call-template>
     </xsl:variable>
+
 <!--
     <xsl:message>condition : <xsl:value-of select="@class"/> [<xsl:value-of select="$cond"/>]</xsl:message>
 -->
+<!--
     <xsl:comment><xsl:value-of select="$action"/>:[cond <xsl:value-of select="$classcond"/>] <xsl:value-of select="$cond"/>]</xsl:comment>
+-->
     <xsl:choose>
 
       <xsl:when test="$cond='true'">
-	<xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> true</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> true</xsl:comment>
+-->
 	<xsl:apply-templates select="node()"/>        
       </xsl:when>
 
       <xsl:when test="$action = 'assemble' and $cond='none'">
-	<xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$action"/>:<xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+-->
 	<xsl:copy>
 	  <xsl:copy-of select="@class"/>
 	  <xsl:apply-templates select="node()|@*"/>
@@ -108,7 +115,9 @@
       </xsl:when>
 
       <xsl:when test="$cond='user'">
-	<xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
+-->
 	<xsl:copy>
 	  <xsl:copy-of select="@class"/>
 	  <xsl:apply-templates select="node()|@*"/>
@@ -116,7 +125,9 @@
       </xsl:when>
 
       <xsl:when test="$cond='none'">
-	<xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
+-->
 	<xsl:apply-templates select="node()"/>        
       </xsl:when>
     </xsl:choose>
@@ -143,14 +154,18 @@
         <xsl:choose>
 
       <xsl:when test="$cond='true'">
-	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+-->
 	<xsl:copy>
 	  <xsl:apply-templates select="node()|@*"/>
 	</xsl:copy>        
       </xsl:when>
 
       <xsl:when test="$action = 'assemble' and $cond='none'">
-	<xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> none (assemble)</xsl:comment>
+-->
 	<xsl:copy>
 	  <xsl:copy-of select="@class"/>
 	  <xsl:apply-templates select="node()|@*"/>
@@ -158,7 +173,9 @@
       </xsl:when>
 
       <xsl:when test="$cond='user'">
-	<xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
+-->
 	<xsl:copy>
 	  <xsl:copy-of select="@class"/>
 	  <xsl:apply-templates select="node()|@*"/>
@@ -166,7 +183,9 @@
       </xsl:when>
 
       <xsl:when test="$cond='none'">
-	<xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
+      <!--
+      <xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
+-->
       <xsl:copy>
         <xsl:apply-templates select="node()|@*"/>        
       </xsl:copy>
@@ -228,10 +247,7 @@
     <xsl:choose>
       
      <xsl:when test="$criteria[@code=$predicat][@value]">
-<!--
-     <xsl:when test="/html:html/html:head/html:meta[@scheme='condition'][@name=$predicat]">
--->
-        <!-- le critère est spécifié dans le profil et a une valeur -->
+       <!-- le critère est spécifié dans le profil et a une valeur -->
         <xsl:variable name="found">
 	  <xsl:choose>
 	    <xsl:when test="starts-with($values,'[')">
@@ -287,7 +303,7 @@
   <xsl:template name="value_in_list">
     <xsl:param name="value"/>
     <xsl:param name="list"/>
-    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>
+<!--    <xsl:message><xsl:value-of select="$value"/> in <xsl:value-of select="$list"/>        <xsl:value-of select="$value=$list"/> </xsl:message>-->
     <xsl:choose>
       <xsl:when test="contains($list,',')">
         <xsl:choose>

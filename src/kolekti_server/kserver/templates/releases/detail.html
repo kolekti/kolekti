@@ -1,31 +1,70 @@
 {% extends "base.html" %}
 {% block current_releases %}class="menu-current"{% endblock %}
-
+{% load statustags %}
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-releases.css"></script>
     <link rel="stylesheet" type="text/css"  href="/criteria.css"></script>
+<!--    <script src="/static/ckeditor/ckeditor.js"></script> -->
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-releases.js"></script>
+    <script src="/static/js/kolekti-release.js"></script>
 {% endblock %}
 
-{% block title %}
- [RELEASE]
-{% endblock %}
+    {% block title %}
+    {{ assembly_name }}
+    {% endblock %}
+
+
+    {% block infobuttons_lang %}
+    {% endblock %}	      
 
 {% block menu %}
     <div class="row">
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_publish">Publier</button>
-      </div>
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-default btn_publish" id="btn_plublish_langs">Plusieurs lanques</button>
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified" role="group">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
+	  </div>
+	  <!--
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish_all">Publier BAT </button>
+	  </div>
+	  -->
+	</div>
       </div>
     </div>
 
     <br/>
 
+    <div class="panel panel-default" id="panel_download">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Télécharger
+	  </a>
+	</h4>
+      </div>
+      <div id="collapsePL" class="panel-collapse collapse in ">
+	<div class="panel-body">
+	  <div class="row">
+	    <div class="col-sm-12 col-md-12">
+	      <a href="{{ release_path }}/sources/{{ active_srclang }}/assembly/{{ assembly_name }}_asm.html">
+		Assemblage [{{active_srclang}}]
+	      </a><br/>
+	      <a href="#" id="releaseimages">Images</a><br/>
+	      <a href="#" id="releasevar">Variables</a><br/>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+
+    
     <div class="panel panel-default hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
@@ -38,7 +77,7 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapsePL" class="panel-collapse collapse on">
+      <div id="collapsePL" class="panel-collapse collapse on ">
 	<div class="panel-body">
 	  <div class="row">
 	    <div class="col-sm-6 col-md-6">
@@ -81,7 +120,7 @@
 
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-default hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapseAS" class="collapsed">
@@ -109,7 +148,7 @@
 
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-default hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
@@ -129,19 +168,119 @@
 	</div>
       </div>
     </div>
-
-
 {% endblock %}
 
+
 {% block content %}
+    <div id="main" class="release" data-release="{{release_path}}/{{assembly_name}}" data-lang="{{ lang }}">
+      <ul class="nav nav-tabs" role="tablist" id="release_tabs">
+	{% for rlang, state,focus in langstates %}
+	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
+	  <a href="#release_content_{{ rlang }}"
+	     aria-controls="release_content_ {{ rlang }}"
+	     role="tab"
+	     data-toggle="tab"
+	     data-state="{{ state }}"
+	     data-lang="{{ rlang }}"
+	     class="text-center"
+	     {% if  state == "unknown" %}
+	     title="Créer la version {{ rlang }}"
+	     {% endif %}
+	     >
+	    <span class="state lead">{{ rlang }}</span>
+	    <br>
+	    <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+	  </a>
+	</li>
+	{% endfor %}
+      </ul>
+      <!-- Tab panes -->
+
+      <div class="tab-content ">
+	{% for rlang, state, focus in langstates %}
+	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
+	  {% if state == "unknown" %}
+
+	  <div class="panel panel-info">
+	    <div class="panel-heading">
+	      <form action="/releases/copy/" method="POST">
+		<div class="form-group">
+		  <p><strong>Cette version n'existe pas en langue <em> {{ rlang }}</em></strong></p>
+		  <div class="form-group">
+		    <label for="release_copy_from_lang">Sélectionnez la langue source à partir de laquelle doit être crée la version <em>{{ rlang }}</em> : </label>
+		    <select name="release_copy_from_lang">
+		      {% for mrlang, mstate in langstates %}
+		      {% if mstate != 'unknown' %} 
+		      <option value="{{ mrlang }}">{{ mrlang }}</option>
+		      {% endif %}
+		      {% endfor %}
+		    </select>
+		  </div>
+		  <input type="hidden" name="release_lang" value="{{ rlang }}"/>
+		  <input type="hidden" name="release" value="{{ release_path }}/{{assembly_name}}"/>
+		<button type="submit" class="btn btn-default">Créer</button>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	  
+	  {% else %}
+	  
+	  <div class="panel panel-info">
+	    <div class="panel-heading">
+	      <form>
+		<div class="form-group">
+
+	      	  <label for="statemenu">Statut :</label>
+		  <div class="btn-group">
+	      	    <button class="btn btn-default btn-sm btn-lang-menu-{{ rlang }} btn-lang-menu-{{ state }} btn-lang-menu dropdown-toggle" type="button"
+			  name="statemenu"
+			    title="{{ state }}"
+			    data-lang="{{ rlang }}"
+			    data-state="{{ state }}" 
+			    data-toggle="dropdown"
+			    aria-expanded="true">
+		      <span class="state">{{state|statustext}}</span>
+		      <span class="caret"/>
+		    </button>
+		    <ul class="dropdown-menu" role="menu" data-target-lang="{{ rlang }}">
+		      <li><a class="release-state" data-state="edition" href="#" ><span>Nouveau</span></a></li>
+		      <li><a class="release-state" data-state="translation" href="#"><span class="text-primary">En traduction</span></a></li>
+		      <li><a class="release-state" data-state="validation" href="#"><span class="text-warning">En relecture</a></li>
+		      <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
+		    </ul>
+		  </div>
+		</div>
+		<div class="checkbox">
+		  <label>
+		    <input type="checkbox" id="focus_{{ lang }}"/>Focus
+		  </label>
+		</div>
+	      </form>
+	    </div>
+	    <div class="panel-body">
+	      <div id="content_{{ rlang }}">
+	      </div>
+	    </div>
+	    
+	  </div>
+	  {% endif %}	  
+	</div>
+ 	{% endfor %}
+	<div id="browsers">
+	  <div class="browser_lang collapse in" id="browser_lang">
+	  </div>
+	  <div class="browser_share collapse" id="browser_share">
+	  </div>
+	</div>
+	
+      </div>
+    </div>
+{% endblock %}
 
 
 
-<div class="release">
-  {% for l in kolekti.languages %}
-  <button class="btn btn-default btn-xs {% if l == lang  %}active{% endif %}">{{ l }}</button>
-  {% endfor %}
-</div>
+{% block modal-body %}
 {% endblock %}
 
 

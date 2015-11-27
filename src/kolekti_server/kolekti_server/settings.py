@@ -24,10 +24,10 @@ SECRET_KEY = '47+&9*yikq4^1_fpxaf32!u^5&m(tw7dssr+h-%4sq&3uzz7q9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = False
 
-TEMPLATE_DEBUG = True
 HOSTNAME='0.0.0.0'
-ALLOWED_HOSTS = ['192.168.1.234']
+ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -59,10 +59,21 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
+KOLEKTI_CONFIG = settings()
+KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+# APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
+if os.sys.platform[:3] == "win":
+    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
+    DB_NAME = appdatadir + '\\db.sqlite3'
+    DB_NAME = DB_NAME.replace('\\','/')
+else:
+    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': DB_NAME,
     }
 }
 
@@ -70,8 +81,8 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+TIME_ZONE = KOLEKTI_CONFIG.get('InstallSettings',{'timezone':"Europe/Paris"}).get('timezone')
+#TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -91,14 +102,14 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.    
     "kolekti_server/kserver/templates",
 )
-RE_BROWSER_IGNORE=["~$","^\.svn$"]
+RE_BROWSER_IGNORE=["~$","^\.svn$", "^#.*#$"]
 
 # kolekti configuration
 
 
 
-KOLEKTI_CONFIG = settings()
-KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+#KOLEKTI_CONFIG = settings()
+#KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
 #print KOLEKTI_CONFIG
 
 STATICFILES_DIRS = (

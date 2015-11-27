@@ -1,208 +1,235 @@
-{% extends "base.html" %}
-{% load timetags %}
-
-{% block title %}Synchronisation{% endblock %}
-{% block current_sync %}class="menu-current"{% endblock %}
-{% block extrascripts %}
-    <script src="/static/js/kolekti-synchro.js"></script>
-{% endblock %}
-
-{# no repository #}
-{#
-<div class="alert alert-warning">
-  <h3>Aucun dépot configuré</h3>
-  <p>Vous ne bénéficiez pas des fonctions collaboratives de kolekti</p>
-  <p>Entrez l'adresse du serveur SVN</p> 
-  <p>Contactez nous pour un 
- <form method="POST">
-    input type
-</form>
-#}
+{% extends "synchro/synchro.html" %}
 
 
-{# history #}
-{% block menu %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-	<h3>Historique</h3>
-      </div>
-      <div class="panel-body">
-	{% for commit in history %}
-	<p><span class="badge">{{commit.revision.number}}</span> par {{commit.author}}, le {{commit.date|print_timestamp}}</p>
-	<div class="panel panel-default">
-	  <div class="panel-body">
-	    <p>{{commit.message}}</p>
-	  </div>
-	</div>
-	</blockquote>
-	{% endfor %}
-      </div>
-    </div>
-{% endblock %}
+{% block operation %}
 
-
-{% block content %}
-
-<div class="main">
-  {% if changes.error|length %}
+{% if changes.error|length %}
   <div class="alert alert-error">
    <strong>Mise à jour impossible</strong> votre copie de travail est en état de conflit. 
    <p>Utlisez votre client subversion pour résoudre les conflits et synchroniser le projet</p>
   </div>
 
 
-  {% else %}
+{% else %}
   {% if changes.conflict|length %}
-   <div class="alert alert-warning">
+     <div class="alert alert-warning">
+       <h3>
+	 <strong>Attention</strong> : des fichiers ont été modifiés localement et sur le dépot
+       </h3>
+       <form class="form-horizontal" method="POST">
+	 <input  type="hidden" name="action" value="conflict"/>
+       <div class="panel panel-default top-margin">
+	 <div class="panel-body">
+	   <p>Les modifications <strong>ne peuvent donner lieu à une mise à jour automatique</strong> de votre copie de travail, il vous est possible de :</p>
+	   <ul>
+	     <li><strong>Valider la version locale</strong>, en écrasant les modifications faites par les autres utilisateurs depuis votre dernière syncronisation</li>
+	     <li><strong>Remplacer par la version distante</strong>, en écransant les modification que vous avez fait depuis la dernière synchronisation</li>
+	     <li>Vous pouvez également résoudre le conflit manuellement en utilisant un client subversion.</li>
+	   </ul>
+	   <hr>
+	     <div class="form-group">
+	       <div class="col-sm-12">
 
-     <h3>
-       <strong>Attention</strong> des fichiers ont été modifiés localement et sur le dépot
-     </h3>
-     <div class="panel panel-default">
-       <div class="panel-body">
-	 <h4>Modifications concurrentes ne pouvant pas etre fusionnées</h4>
-	 <ul>
-	   <li class="checkbox">
-	     <label>
-	       <input id="selectall" type="checkbox" value="">
-	       Tout sélectionner / déselectionner
-	     </label>
-	     <hr>
-	   </li>
-	   {% for e in changes.conflict %}
-	   <li class="checkbox">
-	     <label>
-	       <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="">
-	       {{ e.path }} 
-	     </label>
-	     {% if e.kind == "file" %}
-	     <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
-	     {% endif %}
-	     <br>
-	   </li>
-	   {% endfor %}
-	 </ul>
-	 <hr/>
-	 <div class="form-group">
-	   <label class="col-sm-6 control-label">Avec les fichiers sélectionnés</label>
-	   <div class="col-sm-5">
-	     <select class="form-control select-conflit">
-	       <option value="local">Conserver la version locale</option>
-	       <option value="remote">Remplacer par la version distante</option>
-	       {# 	 <option>Marquer comme résolu</option> #}
-	     </select>
+		 {% for e in changes.conflict %}
+		 <div class="checkbox">
+		   <label>
+		     <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
+		     {{ e.path }} 
+		   </label>
+		   {% comment %}
+		   {% if e.kind == "file" %}
+		   <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
+		   {% endif %}
+		   {% endcomment %}
+		   <br>
+		 </div>
+		 {% endfor %}
+	       </div>
+	     </div>
+	     <div class="form-group">
+	       <div class="col-sm-12">
+		 <div class="checkbox">
+		   <label>
+		     <input id="selectall" type="checkbox" value="">
+		     <small><em>Tout sélectionner / déselectionner</em></small>
+		   </label>
+		 </div>
+	       </div>
+	     </div>
+	     <hr/>
+		     
+	     <div class="form-group">
+	       <label class="col-sm-2 control-label">Avec les fichiers sélectionnés : </label>
+	       <div class="col-sm-10">
+		 <select name="resolve" class="form-control select-conflit">
+		   <option value="local">Valider la version locale</option>
+		   <option value="remote">Remplacer par la version distante</option>
+		   {# 	 <option>Marquer comme résolu</option> #}
+		 </select>
+	       </div>
+	     </div>
+
+	     <div class="form-group" id="commitmsg">
+	       <label class="col-sm-2 control-label">Description des changements</label>
+	       <div class="col-sm-10">
+		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+	       </div>
 	     </div>
 	 </div>
-	 <div class="col-sm-1">
-	   <button class="btn btn-default -conflict">ok</button>
-	 </div>
-	 
-	   
-	   
-	 {% if changes.merge|length %}
-	 <h4>Modifications concurrentes pouvant etre fusionnées</h4>
-	 <ul>
-	   <li class="checkbox">
-	     <label>
-	       <input id="selectall" type="checkbox" value="" data-path="{{ e.path }}">
-	       Tout sélectionner / déselectionner
-	     </label>
-	     <hr>
-	   </li>
-	     {% for e in changes.merge %}
-	   <li class="checkbox">
-	     <label>
-	       <input class="selectentry entry-merge" type="checkbox" value="">
-	       {{ e.path }}
-	     </label>
-	     {% if e.kind == "file" %}
-	     <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
-	     {% endif %}
-	     <br>
-	   </li>
-	   {% endfor %}
-	 </ul>
-	 <hr/>
-	 <div class="form-group">
-	   <label class="col-sm-6 control-label">Avec les fichiers sélectionnés</label>
-	   <div class="col-sm-5">
-	     <select class="form-control select-merge">
-	       <option value="local">Conserver la version locale</option>
-	       <option value="remote">Remplacer par la version distante</option>
-	       <option value="merge">Fusionner</option>
-	     </select>
+       </div>
+       <button type="submit" class="btn btn-warning btn-block">Appliquer</button>
+       </form>
+     </div>
+  {% else %}
+     
+    {% if changes.merge|length %}
+     <div class="alert alert-success">
+       <form class="form-horizontal" method="POST">
+	 <input  type="hidden" name="action" value="merge"/>
+       <h3>Fusion des modifications concurrentes</h3>
+       <div class="panel panel-default">
+	 <div class="panel-collapse collapse in" id="collapseSynchro">
+	   <div class="panel-body">
+
+             <ul>
+	       {% for e in changes.merge %}
+	       <li>
+		 {{ e.path }}
+		 {% comment %}
+		 {% if e.kind == "file" %}
+		 <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
+		 {% endif %}
+		 {% endcomment %}
+		 <br>
+	       </li>
+	       {% endfor %}
+	     </ul>
 	   </div>
 	 </div>
-	 <div class="col-sm-1">
-	   <button class="btn btn-default btn-select-merge">ok</button>
-	 </div>
-	 {% endif %}
        </div>
+       <br>
+       <button id="dosynchro"  type="submit"  class="btn btn-success btn-block">Fusionner</button>
+       </form>
      </div>
-   </div>
+     
   {% else %}
 
-  {% if changes.update|length or changes.commit|length or changes.merge|length %}
-  <div class="alert alert-success">
-    <h3>Synchronisation possible</h3>
-    <a href="#" class="synchro_details" data-toggle="collapse" data-target="#collapseSynchro">masquer détails</a>
-    <div class="panel panel-default">
-      <div class="panel-collapse collapse in" id="collapseSynchro">
-	<div class="panel-body">
+    {% if changes.update|length %}
+     <div class="alert alert-success">
+       <form class="form-horizontal" method="POST">
+	 <input  type="hidden" name="action" value="update"/>
+       <h3>Récupération des mises à jour vers l'arborescence locale</h3>
+       <div class="panel panel-default">
+	 <div class="panel-collapse collapse in" id="collapseSynchro">
+	   <div class="panel-body">
+	     <ul>
+	       
+	       {% for e in changes.update %}
+	       <li>{{ e.path }}
+		 {% comment %}
+		 {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}		   {% endcomment %}
+	       </li>
+	       {% endfor %}
+	     </ul>
+	   </div>
+	 </div>
+       </div>
+       <button type="submit"  class="btn btn-success btn-block">Mettre à jour</button>
+       </form>
+     </div>
+    {% else %}
+     
+      {% if changes.commit|length  %}
+       <div class="alert alert-success">
+       <form class="form-horizontal" method="POST">
+	 <input  type="hidden" name="action" value="commit"/>
+         <h3>Envoi des modifications vers l'arborescence distante</h3>
+	 <div class="panel panel-default">
+	   <div class="panel-body">
+	     <div class="form-group">
+	       <div class="col-sm-12">
+		 {% for e in changes.commit %}
+	       	 <div class="checkbox">
+		   <label>
+		     <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
+		     {{ e.path }} 
+		   </label>
+		   {% comment %}
+		   {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}
+		   {% endcomment %}
+		 </div>
+		 {% endfor %}
+	       </div>
+	     </div>
 
-	  {% if changes.update|length %}
-	  <h4>Récupération des mises à jour vers l'arborescence locale</h4>
-	  <ul>
-	    {% for e in changes.update %}
-	    <li>{{ e.path }} {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}</li>
-	    {% endfor %}
-	  </ul>
-	  {% endif %}
+	     <div class="form-group">
+	       <div class="col-sm-12">
+		 <div class="checkbox">
+		   <label>
+		     <input id="selectall" type="checkbox" value="">
+		     <small><em>Tout sélectionner / déselectionner</em></small>
+		   </label>
+		 </div>
+	       </div>
+	     </div>
+	     <hr/>
+		     
 
-	  {% if changes.commit|length %}
-	  <h4>Envoi des modifications vers l'arborescence distante</h4>
-	  <ul>
-	    {% for e in changes.commit %}
-	    <li>{{ e.path }}{% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}</li>
-	    {% endfor %}
-	  </ul>
-	  {% endif %}
-	  
-	  {% if changes.merge|length %}
-	  <h4>Modifications concurrentes pouvant etre fusionnées</h4>
-	  <ul>
-	    {% for e in changes.merge %}
-	    <li>
-	      {{ e.path }}
-	      {% if e.kind == "file" %}
-	      <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
-	      {% endif %}
-	      <br>
-	    </li>
-	    {% endfor %}
-	  </ul>
-	  {% endif %}
-	</div>
-      </div>
-    </div>
-    <div class="{% if not changes.commit|length %}hidden{% endif %}">
-    <p><strong>Description des changements</strong></p>
-    <textarea id="syncromsg" class="form-control" ></textarea>
-    </div>
-    <br>
-    <button id="dosynchro" class="btn btn-success btn-block">Synchroniser</button>
+	     <div class="form-group" id="commitmsg">
+	       <label class="col-sm-2 control-label">Description des changements</label>
+	       <div class="col-sm-10">
+		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+	       </div>
+	     </div>
 
-  </div>
-  
-  {% else %}
+	     
+	   </div>
+	 </div>
+	 <button type="submit"  class="btn btn-success btn-block">Valider</button>
+       </form>
+       </div>
+       {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %}    
+{% endblock %}
+
+
+{% block nextsteps %}
+  {% if changes.conflict|length or changes.merge|length or  changes.update|length or changes.commit|length  %}
+  <h3>Etape(s) suivante(s)</h3>
+  <ul>
+
+    {% if changes.conflict|length %}
+    {% if changes.merge|length %}
+    <li>Fusion des modifications concurrentes
+      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre utilisateur et par vous depuis la dernière synchronisation, cette étape fusionne les modifications dans ces fichiers.</p>
+    </li>
+    {% endif %}
+    {% endif %}
+
+    {% if changes.conflict|length or changes.merge|length %}
+    {% if changes.update|length %}
+    <li>Récupération des modifications distantes
+      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre utilisateur depuis la dernière synchronisation, cette étape met a jour les fichiers de votre copie de travail.</p>
+    </li>
+    {% endif %}
+    {% endif %}
+
+    {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
+    {% if changes.commit|length  %}
+    <li>Envoi des modifications locales
+      <p>{{ changes.commit|length }} fichiers ont été modifiés sur votre copie de travail. Cette étape envoie vos modifications aux autres utilisateurs.</p>
+    </li>
+    {% endif %}
+    {% endif %}
+    {% else %}
   <div class="alert alert-success">
     <strong>Le projet est synchronisé</strong>
   </div>
   {% endif %}
 
-  {% endif %}
+  </ul>
   
-  {% endif %}
-</div>
-{% endblock %}
-
+  {% endblock %}

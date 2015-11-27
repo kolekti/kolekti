@@ -49,12 +49,13 @@
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
 	<title><xsl:value-of select="@data-kolekti-title"/></title>
-	<xsl:if test="@data-kolekti-job">
+	<meta name="DC.title" content="{@data-kolekti-title}"/>
+	<xsl:for-each select="@*[starts-with(name(),'data-kolekti-meta-kolekti_')]">
 	  <xsl:element namespace='http://www.w3.org/1999/xhtml' name="meta">
-	    <xsl:attribute name="name">kolekti.job</xsl:attribute>
-	    <xsl:attribute name="content"><xsl:value-of select="@data-kolekti-job-path"/></xsl:attribute>
+	    <xsl:attribute name="name">kolekti.<xsl:value-of select="substring(name(),27)"/></xsl:attribute>
+	    <xsl:attribute name="content"><xsl:value-of select="."/></xsl:attribute>
 	  </xsl:element>
-	</xsl:if> 
+	</xsl:for-each>
       </head>
       <body>
 	<xsl:apply-templates/>

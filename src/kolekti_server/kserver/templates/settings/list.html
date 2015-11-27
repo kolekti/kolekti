@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "base-wide.html" %}
 
-{% block current_settings %}class="menu-current"{% endblock %}
-{% block title %}Parametres {{ kolekti.project }}{% endblock %}
+{% block current_tools %}class="menu-current"{% endblock %}
+{% block title %}Parametres de publication{% endblock %}
 
 {% block extrascripts %}
     <script src="/static/js/kolekti-jobslist.js"></script>
@@ -14,37 +14,8 @@
 {% block content %}
 
 <div class="main">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a href="#">
-	  Critères de filtrage
-	</a>
-      </h4>
-    </div>
-    <div class="panel-body">
-	<a href="criteria">Modifier les critères</a>
-    </div>
-  </div>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a href="#">
-	  Parametres de publication
-	</a>
-      </h4>
-    </div>
-    <div class="panel-body">
-      <div class="title">
-      </div>
-      <div class="browserparent">
-      </div>
-      <div class="buttons">
-	Nouveaux parametres : <input class="" id="new_name" type="input"/> <button class="btn btn-default" id="btn_create">Créer</button>
-      </div>
-      
-    </div>
-  </div>
+  <div class="browserparent">
+  </div>      
 </div>
 
 

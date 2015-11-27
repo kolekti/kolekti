@@ -1,0 +1,16 @@
+
+  <div class="col-sm-12 col-md-12">
+    <img alt="{{ path }}" src="{{ path }}" class="img-responsive" />
+  </div>
+  <div class="col-sm-12 col-md-12">
+    <ul>
+      <li>format : {{format}}</li>
+      <li>poids : {{fileweight}} Ko</li>
+      <li>mode : {{ mode }}</li>
+      <li>taille : {{ size }}</li>
+      {% for name, value in info.items %}
+      <li> {{ name }} : {{ value }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+

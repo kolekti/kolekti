@@ -8,6 +8,12 @@ $(document).ready( function () {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Trame non enregistrée';
+	}
+    });
+
     // serialize the toc in a fomat suitable to push it to the server (save) 
 
     var process_toc = function(elt) {
@@ -51,7 +57,7 @@ $(document).ready( function () {
 		buf += domelt.nodeValue;
 	    }
 	}
-	return buf;			    
+	return buf;		    
     }
 
     // builds the contaxtual menu for any topic entry in the toc
@@ -59,7 +65,7 @@ $(document).ready( function () {
     var topicmenu = function(topic) {
 	var parent=topic.hasClass('section')?
 	    topic.children('.panel-heading').find("a").parent():
-	    topic.find('h4');
+	    topic.find('h4.panel-title');
 	parent.append(
 	    $('<span>', {
 		'class':'pull-right kolekti-ui kolekti-ui-topic-actions',
@@ -102,13 +108,23 @@ $(document).ready( function () {
 					    'html':"Insérer avant..."
 					})
 				    }),
+				    topic.hasClass('section')?$('<li>', {
+					'role':"presentation",
+					'html':$('<a>', {
+					    'role':"menuitem",
+					    'tabindex':"-1",
+					    'href':"#",
+					    'class':"btn_topic_insert_inside",
+					    'html':"Insérer dedans..."
+					})
+				    }):null,
 				    $('<li>', {
 					'role':"presentation",
 					'html':$('<a>', {
 					    'role':"menuitem",
 					    'tabindex':"-1",
 					    'href':"#",
-					'class':"btn_topic_insert_after",
+					    'class':"btn_topic_insert_after",
 					    'html':"Insérer après..."
 					})
 				    }),
@@ -140,7 +156,7 @@ $(document).ready( function () {
 					    'role':"menuitem",
 					    'tabindex':"-1",
 					    'href':"#",
-					    'class':"btn_section_exclude",
+					    'class':"btn_section_toc_exclude",
 					    'html':"Exclure du sommaire"
 					})
 				    }):null,
@@ -210,7 +226,11 @@ $(document).ready( function () {
 	$.get('/tocs/usecases/',{"pathes":[topicref]}).
 	    success(function(data){ 
 		$(topic).find('.kolekti-shared-topic').remove();
-		var v = data[topicref].removevalue(tocref)
+		var v;
+		if (topicref in data)
+		    v = data[topicref].removevalue(tocref)
+		else
+		    v = []
 		if(v.length)
 		    $('<span>', {
 			'class':"btn-group kolekti-shared-topic",
@@ -246,7 +266,16 @@ $(document).ready( function () {
 	    });
     }
 
-
+    var check_empty = function() {
+	if($('#toc_root').find('div, a[rel=kolekti\\:topic]').length == 0) {
+	    $('#toc_root').append(
+		$('<button>',{
+		    'type':"button",
+		    'class':"btn btn-default kolekti-ui",
+		    'html':"Insérer"
+		}).on('click', function(e) {newcomp($(this),false, false)}))
+	}
+    }
 
     // left panel button events
 
@@ -261,7 +290,6 @@ $(document).ready( function () {
 	}).success(function(data) {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').addClass('hidden');
 	    $('#btn_save').removeClass('btn-warning');
 	});
     })
@@ -293,17 +321,20 @@ $(document).ready( function () {
 
     // publish
 
-    var get_publish_params = function(params) {
+    var get_publish_params = function(job) {
+	var params={};
 	params['profiles']=[]
-	$(".kolekti-job").find('.publish_job_profile').each(function(i, e) {
-	    if (e.checked)
+	$(".kolekti-job-"+job).find('.publish_job_profile').each(function(i, e) {
+	    if ($(e).is(":checked"))
 		params['profiles'].push($(e).data('kolekti-profile'))
 	});
 	params['scripts']=[]
-	$(".kolekti-job").find('.publish_job_script').each(function(i, e) {
-	    if (e.checked)
+	$(".kolekti-job-"+job).find('.publish_job_script').each(function(i, e) {
+	    if ($(e).is(":checked"))
 		params['scripts'].push($(e).data('kolekti-script'))
 	});
+	params['pubdir']=$("#input_toc_pubdir").val();
+	params['pubtitle']=$("#input_toc_title").val();
 	return params;
     }
 
@@ -312,47 +343,119 @@ $(document).ready( function () {
 	
     })
 
-
+    
     $('.btn_publish').on('click', function() {
 	var url='/publish/'
-	var params = {}
-	if ($(this).attr('id') == 'btn_release') {
-	    url += 'release/'
-	} else {
-	    url += 'draft/'
-	}
-	$('.modal-body').html('<div id="pubresult"></div>');
-	$('.modal-title').html('Publication');
-	$('.modal-footer button').html('fermer');
-	$('.modal').modal();
+
 	var toc = $('#toc_root').data('kolekti-path');
+	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
+	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
 
-	//    $('.publish_job').each(function(i,e){
-//	$('.kolekti-job').each(function(i,e){
-//	    if (!$(e).hasClass('hidden')) {
-//		nojob = false;
+	params = get_publish_params(job)
+	params['toc']=toc;
+	params['job']=jobpath;
 
-	var job = $('#toc_root').data('kolekti-job');
-	var jobpath =  $('#toc_root').data('kolekti-job-path');
-//	var idjob = $(e).attr('id');
-	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div id="pub_results"><div class="progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div></div></div></div>').appendTo($('#pubresult'));
-	params = get_publish_params(params)
-		
+	$('.modal-body').html('<div id="releasename"></div><div id="pubresult"></div>');
+	$('.modal-title').html('Publication');
+
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
-	    $('#pub_results').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
-	} else {
-	    params['toc']=toc;
-	    params['job']=jobpath;
+		$('#pub_progress').remove();
+	    $('#pubresult').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
+	    $('.modal').modal();
+	    return;
+	} 
+	
+	
+	var check_release = function(action) {
+	    var toc = $('#toc_root').data('kolekti-path');
+	    $('.modal-footer button').html('fermer');
+	    $('.modal-title').html('Création de version');
+	    $('#releasename').html('<div class="panel panel-default"><div class="panel-body"><div class="form"><div class="form-group"><label for="release_name">Nom de la version</label><input type="text" class="form-control" id="release_name"/></div><div class="form-group"><button class="btn btn-default" id="confirm_version">Créer la version</button></div></div></div></div>');
+	    $('.modal').modal('show');
+	    $('.modal').on('shown.bs.modal', function() {
+		$("#release_name").val($('#toc_root').data('kolekti-tocname')+'_');
+		$("#release_name").focus();
+	    })
+
+	    $('#modalform').submit( function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		params['pubdir'] = $('#release_name').val()
+		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
+		$.get(assembly)
+		    .success(function() {
+			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
+			    do_publish()
+		    })
+		    .error(function() {
+			do_publish()
+		    })
+	    })
+	}
+
+	var do_publish = function() {
+	    $('.modal-footer button').html('fermer');
+	    $('.modal').modal();
+	    $('#pubresult').html('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>');
 	    
+		
+	    var streamcallback = function(data) {
+		//		console.log(data);
+		$("#pub_results").html(data);
+	    }
+	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
+	    streamedTransport(streamcallback);
 	    $.ajax({
 		url:url,
 		type:'POST',
 		data:params,
+		dataType:"streamed",
+		beforeSend:function(xhr, settings) {
+		    ajaxBeforeSend(xhr, settings);
+		    settings.xhr.onreadystatechange=function(){
+			console.log(xhr.responseText);
+		    }
+		}
 	    }).done(function(data) {
-		$('#pub_results').html(data);
+		$("#pub_results").html(data);
+	    }).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#pub_results').html([
+		    $('<div>',{'class':"alert alert-danger",
+			       'html':[$('<h5>',{'html':"Erreur"}),
+				       $('<p>',{'html':"Une erreur inattendue est survenue lors de la publication"})
+				       
+				      ]}),
+		    $('<a>',{
+			'class':"btn btn-primary btn-xs",
+			'data-toggle':"collapse",
+			'href':"#collapseStacktrace",
+			'aria-expanded':"false",
+			'aria-controls':"collapseStracktrace",
+			    'html':'Détails'}),
+		    $('<div>',{'class':"well",
+			       'html':[
+				   $('<p>',{'html':textStatus}),
+				   $('<p>',{'html':errorThrown}),
+				   $('<pre>',{'html':jqXHR.responseText})]
+			      })
+		]);
+	    }).always(function() {
+		$('#pub_progress').remove();
 	    });
 	};
-    })
+	
+	if ($(this).attr('id') == 'btn_release') {
+	    url += 'release/'
+	    $('.modal-title').html('Création de version');
+	    check_release(params, do_publish)
+
+	} else {
+	    url += 'draft/'
+	    $('.modal-title').html('Publication');
+	    do_publish()
+	}
+
+    });
 
     // display
 
@@ -395,14 +498,22 @@ $(document).ready( function () {
 	enable_save()
     })
 
+
+    $('body').on('change','#input_toc_pubdir', function(e) {
+	var title = $.trim($(this).val());
+	$('#toc_root').data('kolekti-meta-kolekti_pubdir',title)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_pubdir',title)
+	enable_save()
+    })
+
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
-	var path = $(this).data('kolekti-job-path');
-	console.log(name)
-	$('#toc_root').data('kolekti-job',name)
-	$('#toc_root').attr('data-kolekti-job',name)
-	$('#toc_root').data('kolekti-job-path',path)
-	$('#toc_root').attr('data-kolekti-job-path',path)
+	var path = $(this).data('kolekti-jobpath');
+
+	$('#toc_root').data('kolekti-meta-kolekti_job',name)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_job',name)
+	$('#toc_root').data('kolekti-meta-kolekti_jobpath',path)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_jobpath',path)
 	$('#editjoblink').attr('href','/settings/job?path='+path)
 	$('.label_job').each(function(i,e) {
 	    $(e).html(name)}
@@ -420,7 +531,7 @@ $(document).ready( function () {
 	var topic = $(this).closest('.topic');
 	var url = topic.data('kolekti-topic-href');
 	window.open('/topics/edit/?topic='+url);
-	e.preventDefault();
+
     }) 
 
     $('body').on('click', '.btn_section_rename', function(e) {
@@ -444,103 +555,107 @@ $(document).ready( function () {
 	    })
 	);
 	title_elt.children('span').html('');
-	e.preventDefault();
     });	
     
 
     // move topic
 
     $('body').on('click', '.btn_topic_up', function(e) {
-	var topic = $(this).closest('.topic');
-	if (topic) {
-	    if (topic.prev('.topic').length) {
-		topic.insertBefore(topic.prev('.topic'));
+	e.preventDefault();
+	var comp = $(this).closest('.topic, .section');
+	if (comp.length) {
+	    if (comp.prev('.topic').length) {
+		// precedent est un topic
+		comp.insertBefore(comp.prev('.topic'));
+		enable_save();
+	    } else if (comp.prev('.section').length) {
+		// precedent est une section
+		var section = comp.prev('.section');
+		comp.appendTo(section.find('.panel-body')[0]);
+		show_section(section);
 		enable_save();
 	    } else {
-		var section = topic.closest('.section');
-		if (section.length) {
-		    var prev_section = section.prev('.section');
-		    if (prev_section.length) {
-			topic.appendTo(prev_section),
-			enable_save();
-		    } else {
-			topic.insertBefore(section);
-			enable_save();
-		    }
+		// pas de précédent, on regarde si on est dans un section
+		var sections = comp.parents('.section');
+		if (sections.length) {
+		    // section.insertBefore(comp);
+		    comp.insertBefore(sections.first());
+		    enable_save();
 		}
 	    }
-	} else {
 	}
-	e.preventDefault();
+
     });
 
 
     $('body').on('click','.btn_topic_down', function(e) {
-	var topic = $(this).closest('.topic');
-	if (topic) {
-	    if (topic.next('.topic').length) {
-		topic.insertAfter(topic.next('.topic'));
+	e.preventDefault();
+	var comp = $(this).closest('.topic, .section');
+	if (comp.length) {
+	    if (comp.next('.topic').length) {
+		// suivant  est un topic
+		comp.insertAfter(comp.next('.topic'));
+		enable_save();
+	    } else if (comp.next('.section').length) {
+		// suivant  est une section
+		var section = comp.next('.section');
+		comp.prependTo(section.find('.panel-body'));
+		show_section(section);
 		enable_save();
 	    } else {
-		var next_section = topic.next('.section');
-		if (next_section.length) {
-		    var first_topic = next_section.find('.topic');
-		    if (first_topic.length) {
-			topic.insertBefore(first_topic[0]);
-			enable_save();
-		    } else {
-			topic.appendTo(next_section),
-			enable_save();
-		    }
-		} else {
-		    var section = topic.closest('.section');
-		    if (section.length) {
-			var next_section = section.next('.section');
-			if (next_section.length) {
-			    var first_topic = next_section.find('.topic');
-			    if (first_topic.length) {
-				topic.insertBefore(first_topic[0]);
-				enable_save();
-			    } else {
-				topic.appendTo(next_section),
-				enable_save();
-			    }
-			}
-		    }
+		// pas de suivant, on regarde si on est dans un section
+		var sections = comp.parents('.section');
+		if (sections.length) {
+		    comp.insertAfter(sections.first());
+		    enable_save();
 		}
 	    }
 	}
-	e.preventDefault();
     });
 
     $('body').on('click', '.btn_topic_insert_before', function(e) {
-	var topic = $(this).closest('.topic');
-	newcomp(topic, false);
 	e.preventDefault();
+	var topic = $(this).closest('.topic');
+	if (topic.length == 0)
+	    topic = $(this).closest('.section');
+	newcomp(topic, false, false);
     });
 
     $('body').on('click', '.btn_topic_insert_after', function(e) {
-	var topic = $(this).closest('.topic');
-	newcomp(topic,true);
 	e.preventDefault();
+	var topic = $(this).closest('.topic');
+	if (topic.length == 0)
+	    topic = $(this).closest('.section');
+	newcomp(topic,true, false);
+    });
+    
+    $('body').on('click', '.btn_topic_insert_inside', function(e) {
+	e.preventDefault();
+	topic = $(this).closest('.section');
+	newcomp(topic,false, true);
     });
     
     // remove topic
 
     $('body').on('click', '.btn_topic_delete', function(e) {
-	var topic = $(this).closest('.topic');
-	if (topic)
-	    topic.remove();
-	else 
-	    $(this).closest('.section').remove();
-	enable_save();
 	e.preventDefault();
+	var topic = $(this).closest('.topic');
+	if (topic.length) {
+	    topic.remove();
+	    enable_save();
+	} else if ($(this).closest('.section').length) {
+	    if (window.confirm('Supprimer la section ?')) {
+		$(this).closest('.section').remove();
+		enable_save();
+	    }
+	}
+	check_empty();
     });
 
     
-    var create_topic = function(path, id, topic) {
+    var create_topic_obj = function(path, id, topic) {
 
-	var topicfile = displayname(path);
+	var topicfile = basename(path);
 
 	var topic_obj = $('<div>', {
 	    'class':"topic",
@@ -575,7 +690,7 @@ $(document).ready( function () {
 					'data-toggle':"tooltip", 
 					'data-placement':"top",
 					'title':path,
-					'html':topicfile
+					'html':$('<small>',{'html':topicfile})
 				    })
 				]
 			    })
@@ -597,12 +712,100 @@ $(document).ready( function () {
 	return topic_obj;
     } 
 
+    var create_topic_error_obj = function(path, id, reason) {
+	reason = reason || "Module has errors"
+	var topicfile = displayname(path);
+
+	var topic_obj = $('<div>', {
+	    'class':"topic",
+	    'data-kolekti-topic-rel':"kolekti:topic:error",
+	    'data-kolekti-topic-href':path,
+	    'html':$('<div>', {
+		'class':"panel panel-danger",
+		'html':[
+		    $('<div>', {
+			'class':"panel-heading",
+			'html':$('<h4>', {
+			    'class':"panel-title",
+			    'html':[
+				$('<span>',{
+				    'class':"glyphicon glyphicon-warning-sign",
+				    'title':reason,
+				    'html':" "}),
+				" ",
+				$('<span>',{
+				    'data-toggle':"tooltip", 
+				    'data-placement':"top",
+				    'title':path,
+				    'html':$("<small>",{"html":topicfile})
+			    })]
+			})
+		    })
+		]
+	    })
+	});
+	
+	topicmenu(topic_obj);
+	return topic_obj;
+    }
+
+    var create_section_obj = function(id, title) {
+	var section_obj = $('<div>', {
+	    'class':"section panel panel-info",
+	    'html':[$('<div>', {
+		'class':"panel-heading",
+		'html':$('<h1>', {
+		    'html':$('<a>',{
+			'data-toggle':"collapse",
+			'class':"collapsed",
+			'href':"#collapse_"+id,
+			'html':[
+			    $('<small>',{
+				'data-ui':'yes',
+				'html':[
+				    $('<span>',{
+					'class':"glyphicon glyphicon-chevron-right",
+					'aria-hidden':"true",
+					html:' '
+				    }),
+				    $('<span>',{
+					'class':"glyphicon glyphicon-chevron-down",
+					'aria-hidden':"false",
+					html:' '
+				    })
+				]}),
+			    $('<span>',{
+				'data-ui':"wrap", 
+				'html':title
+			    })
+			]
+		    })
+		})
+	    }),
+		    $('<div>', {
+			'class':"panel-collapse collapse",
+			'id':"collapse_"+id,
+			'html':$('<div>',{ 
+			    'class':"panel-body",
+			}),
+		    })
+		   ]
+	});
+	
+	topicmenu(section_obj);
+	return section_obj;
+    }
+ 
+    var show_section = function(section_obj) {
+	section_obj.find('a[data-toggle=collapse]').first().removeClass('collapsed');
+	if (! section_obj.find('.panel-collapse.collapse').first().hasClass('in'))
+	    section_obj.find('.panel-collapse').first().collapse('toggle');
+    }
 
     // handles dialog for insertion of topics & sections
 
-    var newcomp = function(comp, isafter) {
-
-
+    var newcomp = function(refcomp, isafter, isinside) {
+//	$('.modal').data('refcomp', refcomp);
 	$('.modal-title').html('Insertion');
 	
 	// builds dialog
@@ -611,22 +814,17 @@ $(document).ready( function () {
 		"class":"row",
 		"html":[
 		    $("<div>", {
-			"class":"col-sm-12 col-md-4 insert-buttons",
+			"class":"col-sm-12 col-md-3 insert-buttons",
 			"html":[
-			    $('<a>',{
-				"class":"btn btn-block btn-default btn-insert-new-module",
-				"href":"#",
-				"html":"Nouveau module"
-			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-module",
 				"href":"#",
-				"html":"Module existant"
+				"html":"Module"
 			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-section",
 				"href":"#",
-				"html":"Nouvelle section"
+				"html":"Section"
 			    }),
 			    $('<a>',{
 				"class":"btn btn-block btn-default btn-insert-toc",
@@ -640,286 +838,230 @@ $(document).ready( function () {
 			    })]
 		    }),
 		    $("<div>", {
-			"class":"col-sm-12 col-md-8 insert-main"
+			"class":"col-sm-12 col-md-9 insert-main"
 		    })
 		]
 	    })
 	);
 
-	// handles new topic part : select model / create topic
-
-	$('.modal').on('click','.btn-insert-new-module', function(e) {
-	    e.preventDefault();
+	var select_topic_browser = function() {
+	    //e.preventDefault();
+	    //e.stopImmediatePropagation();
+	    
 	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
+	    $('.modal .btn-insert-module').addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
-	    $('.insert-main').html($('<div>',{
-		"html":[
-/*
-		    $('<div>',{
-			"class":"alert alert-info",
-			"html":$("<p>",{
-			    "class":"new-module-title",
-			    "html":"test&nbsp;"
-			})
-		    }),
-*/
-		    $('<div>',{
-			"class":"new-module-browser",
-		    }),
-		    $('<div>',{
-			"class":"new-module-models-select",
-			"html":[
-			    $('<div>',{
-				"class":"new-module-model-select alert alert-info",
-				"html":[
-				    $("<span>",{ 
-					'class':'pull-right',
-					"html":$("<button>", {
-					    "type":"button",
-					    "class":'btn btn-default btn-xs new-module-model-btn align-',
-					    "data-toggle":"collapse",
-					    "data-target":"#newModuleModelBrowser",
-					    "aria-expanded":"false",
-					    "aria-controls":"newModuleModelBrowser",
-					    "html":"changer..."
-					})
-				    }),
-				    $('<strong>Modèle : </strong>'),
-				    $("<span>",{ 
-					'class':'new-module-model-display',
-					'data-model-path':'/sources/'+kolekti.lang+'/templates/default.html',
-					'html':'default'
-				    }),
 
-				    $('<div>',{
-					"class":"new-module-model-browser collapse",
-					"id":"newModuleModelBrowser",
-					"html":$('<div>',{
-					    "class":"alert alert-info",
-					    "html":$("<p>",{
-						"class":"new-module-title",
-						"html":"test&nbsp;"
-					    })
-					})
-				    })
-				]
-			    })
-			]  
-		    })
-		]}));
-
-	    kolekti_browser({'root':'/sources/'+kolekti.lang+'/templates',
-			     'parent':".new-module-model-browser",
-			     'title':"selectionnez un modele",
-			     'titleparent':".new-module-browser-title",
-			     'mode':"selectonly"
-			    })
-		.select(
-		    function(path) {
-			$('.new-module-model-display').html(basename(path))
-			$('.new-module-model-display').data('model-path',path)
-			console.log(path)
-		    }
-		)
-
-	    kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
-			     'parent':".new-module-browser",
-			     'title':"Selectionnez l'emplacement, le nom et le modèle pour la création du module",
-			     'titleparent':".new-module-title",
-			     'mode':"create",
-			     'editable_path':false
-			    })
-		.select(
-		    function(path) {
-			$.post('/topics/create/',
-			       {'modelpath': $('.new-module-model-display').data('model-path'),
-				'topicpath': path})
-			    .success(
-				$.get(path)
-				    .success(function(data) {
-		    			var topic = $.parseXML( data ),
-					id = Math.round(new Date().getTime() + (Math.random() * 100)),
-					topic_obj = create_topic(path, id, topic);
-					if (isafter) 
-					    comp.after(topic_obj)
-					else 
-					    comp.before(topic_obj)
-					enable_save();
-					$('.modal').modal('hide');
-				    })
-			    )
-		    }
-		)
-	    //	    .always(function() {console.log("after")})
-	})
-
-	// handle add existing topic : select topic
-
-	$('.modal').on('click','.btn-insert-module', function(e) {
-	    e.preventDefault();
-	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
-	    $('.modal-footer').off('click', '.browservalidate');
-	    $('.insert-main').html($('<div>',{
-		'html':[
-		    $('<div>',{
-			"class":"alert alert-info",
-			"html":$("<p>",{
-			    "class":"new-module-title",
-			    "html":"&nbsp;"
-			})
-		    }),
-		    $('<div>',{
-			"class":"new-module-browser",
-		    })
-		]}));
-
-	    kolekti_browser(
-		{'root':'/sources/'+kolekti.lang+'/topics',
-		 'parent':".new-module-browser",
-		 'title':"Sélectionnez le module à insérer",
-		 'titleparent':".new-module-title",
-		 'editable_path':false
-		}).select(function(path) {
+	    var insert_topic = function(path) {
 		    $.get(path).success(
 			function(data){
 			    var topic = $.parseXML( data ),
 			    id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			    topic_obj = create_topic(path, id, topic);
-			    if (isafter) 
-				comp.after(topic_obj)
-			    else 
-				comp.before(topic_obj)
+			    topic_obj = create_topic_obj(path, id, topic);
+			    if (isafter) { 
+				refcomp.after(topic_obj);
+			    } else {
+				if (isinside) {
+				    refcomp.find('.panel-body').prepend(topic_obj);
+				    show_section(refcomp);
+			        } else {
+				    refcomp.before(topic_obj);
+				}
+			    }
+			    $("#toc_root>button").remove();
 			    usecases(topic_obj);
 			    enable_save();
 			    $('.modal').modal('hide');
 			})
+	    };
+	    
+	    kolekti_browser(
+		{'root':'/sources/'+kolekti.lang+'/topics',
+		 'parent':".insert-main",
+		 'titleparent':".new-module-title",
+		 'create_actions':'yes',
+		 'create_builder':create_builder
 		})
+		.select(insert_topic)
+		.create(function(browser, folder, update_function) {
+		    var filename = $(browser).find('#new_name').val();
+		    $.post('/topics/create/',
+			   {
+			       'model': $('.label-tpl').data('tpl'),
+			       'topicpath': folder + "/" + filename
+			   }).done(function(data) {
+			       insert_topic(data);
+			   }).fail(function() {
+			       console.log("error")
+			   }).always(function() {
+			       console.log("fter")
+			   });
+		})
+
+	    $('.insert-main').on('click', '.tpl-item',function(e){
+		$('.label-tpl').html($(this).data('tpl'))
+		$('.label-tpl').data('tpl',$(this).data('tpl'));
+	    })
+
+	};
+
+	// handle add  topic : select topic
+
+	$('.modal').on('click','.btn-insert-module', function(e) {
+	    select_topic_browser();
+	});
+
+	$('.modal').off('click','.btn-add-section');
+	$('.modal').on('click', '.btn-add-section',function(e) {
+	    var id = Math.round(new Date().getTime() + (Math.random() * 100)),
+		title = $('.modal #input_section_title').val()
+	    section_obj = create_section_obj(id, title);
+	    if (isafter) 
+		refcomp.after(section_obj);
+	    else 
+		if (isinside) {
+		    refcomp.find('.panel-body').prepend(section_obj);
+		    show_section(refcomp);
+		} else {
+		    refcomp.before(section_obj)
+		}
+	    $("#toc_root>button").remove();
+	    enable_save();
+	    $('.modal').modal('hide');
 	});
 
 	// handles add section : get section title & update structure
 
+	$('.modal').off('click','.btn-insert-section')
 	$('.modal').on('click','.btn-insert-section', function(e) {
-	    e.preventDefault();
 	    $('.insert-buttons a').removeClass('active');
 	    $(this).addClass('active');
 	    $('.modal-footer').off('click', '.browservalidate');
 	    $('.insert-main').html([
-		$('<div>',{
-		    "class":"alert alert-info",
-		    "html":$("<p>",{
-			"html":"Nouvelle section"
-		    })
-		}),
+		"Libellé de la section",
 		$('<input>', {
 		    'type':'text',
+		    'class':"form-control",
 		    'id':'input_section_title',		
-		    'placeholder':'Titre de la section'
+		    'placeholder':''
+		}),
+		$('<button>',{
+		    'type':"button",
+		    'class':"btn btn-default btn-add-section",
+		    'html':"Insérer"
 		})
 	    ]);
 	    
+/*
 	    $('.modal-footer').on('click', '.browservalidate', function(event) {
 		console.log("add section")
 	    });	
-
+*/
 	})
 
 	// handles add toc (if not already exists)
-	
+	$('.modal').off('click','.btn-insert-toc')
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:toc"]').length) {
 	    $('.modal .btn-insert-toc').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-toc', function(e) {
-	    e.preventDefault();
-	    $('.insert-buttons a').removeClass('active');
-	    $(this).addClass('active');
-
-		$('.modal-footer').off('click', '.browservalidate');
-		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer une table des matières"})}));
-		$('.modal-footer').on('click', '.browservalidate', function(event) {
-		    console.log("add toc")
-		    var topic_obj = $('<div>', {
-			'class':"topic",
-			'data-kolekti-topic-rel':"kolekti:toc",
-			'html':$('<div>', {
-			    'class':"panel panel-warning",
-			    'html':[
-				$('<div>', {
-				    'class':"panel-heading",
-				    'html':$('<h4>', {
-					'class':"panel-title",
-					'html':$('<span>',{
-					    'data-toggle':"tooltip", 
-					    'data-placement':"top",
-					    'title':"Table des matières",
-					    'html':$('<em>',{'html':"Table des matières"})
-					})
+	    $('.modal').one('click','.btn-insert-toc', function(e) {
+		e.preventDefault();
+		$('.insert-buttons a').removeClass('active');
+		$(this).addClass('active');
+		var topic_obj = $('<div>', {
+		    'class':"topic",
+		    'data-kolekti-topic-rel':"kolekti:toc",
+		    'html':$('<div>', {
+			'class':"panel panel-warning",
+			'html':[
+			    $('<div>', {
+				'class':"panel-heading",
+				'html':$('<h4>', {
+				    'class':"panel-title",
+				    'html':$('<span>',{
+					'data-toggle':"tooltip", 
+					'data-placement':"top",
+					'title':"Table des matières",
+					'html':$('<em>',{'html':"Table des matières"})
 				    })
-				})]
-			})
-		    });
-		    topicmenu(topic_obj);
-		    if (isafter) 
-			comp.after(topic_obj)
-		    else 
-			comp.before(topic_obj)
-		    enable_save();
-		    $('.modal').modal('hide');
-		});	
-	    })
+				})
+			    })]
+		    })
+		});
+		topicmenu(topic_obj);
+		if (isafter) 
+		    refcomp.after(topic_obj)
+		else 
+		    if (isinside) {
+			refcomp.find('.panel-body').prepend(topic_obj);
+			show_section(refcomp);
+		    } else {
+			refcomp.before(topic_obj)
+		    }
+		$("#toc_root>button").remove();
+		enable_save();
+		$('.modal').modal('hide');
+	    });	
 	}
 
 	// handles add index (if not already exists)
-
+	$('.modal').off('click','.btn-insert-idx')
 	if ($('#toc_root div[data-kolekti-topic-rel="kolekti:index"]').length) {
 	    $('.modal .btn-insert-idx').addClass('disabled');
 	} else {
-	    $('.modal').on('click','.btn-insert-idx', function(e) {
+	    $('.modal').one('click','.btn-insert-idx', function(e) {
 		e.preventDefault();
 		$('.insert-buttons a').removeClass('active');
 		$(this).addClass('active');
 		$('.modal-footer').off('click', '.browservalidate');
-		$('.insert-main').html($('<div>',{"class":"alert alert-info","html":$("<p>",{"html":"Validez pour insérer un index alphabétique"})}));
-		$('.modal-footer').on('click', '.browservalidate', function(event) {
-		    console.log("add index")
-		    var topic_obj = $('<div>', {
-			'class':"topic",
-			'data-kolekti-topic-rel':"kolekti:index",
-			'html':$('<div>', {
-			    'class':"panel panel-warning",
-			    'html':[
-				$('<div>', {
-				    'class':"panel-heading",
-				    'html':$('<h4>', {
-					'class':"panel-title",
-					'html':$('<span>',{
-					    'data-toggle':"tooltip", 
-					    'data-placement':"top",
-					    'title':"Index alphabétique",
-					    'html':$('<em>',{'html':"Index alphabétique"})
-					})
+		var topic_obj = $('<div>', {
+		    'class':"topic",
+		    'data-kolekti-topic-rel':"kolekti:index",
+		    'html':$('<div>', {
+			'class':"panel panel-warning",
+			'html':[
+			    $('<div>', {
+				'class':"panel-heading",
+				'html':$('<h4>', {
+				    'class':"panel-title",
+				    'html':$('<span>',{
+					'data-toggle':"tooltip", 
+					'data-placement':"top",
+					'title':"Index alphabétique",
+					'html':$('<em>',{'html':"Index alphabétique"})
 				    })
-				})]
-			})
-		    });
+				})
+			    })]
+		    })
+		});
 
-		    topicmenu(topic_obj);
-		    if (isafter) 
-			comp.after(topic_obj)
-		    else 
-			comp.before(topic_obj)
-		    enable_save();
-		    $('.modal').modal('hide');
-		});	
-	    })
+		topicmenu(topic_obj);
+		if (isafter) 
+		    refcomp.after(topic_obj)
+		else 
+		    if (isinside) {
+			refcomp.find('.panel-body').prepend(topic_obj);
+			show_section(refcomp);
+		    } else {
+			refcomp.before(topic_obj)
+		    }
+		$("#toc_root>button").remove();
+		enable_save();
+		$('.modal').modal('hide');
+	    });	
 	}
+	/*
 	if (!$('.modal-footer>button.browservalidate').length)
 	    $('<button type="button" class="btn btn-default browservalidate">Valider</button>').prependTo($('.modal-footer'));
+	*/
+	select_topic_browser()
 
 	// display dialog
 	$('.modal').modal();
-    }
+    }  // newcomp
+
+    // end insert dialog
+
 
     // finalize UI by adding menus to topics
 
@@ -927,26 +1069,46 @@ $(document).ready( function () {
 	($(t).data('kolekti-topic-rel')=='kolekti:toc' || $(t).data('kolekti-topic-rel')=='kolekti:index')
 	    && topicmenu($(t));
     });
+    
 
-    $('a').each(function(i,comp) {
-	if($(comp).attr('rel')=="kolekti:topic") {
+    $('a').each(function(i,refcomp) {
+	if($(refcomp).attr('rel')=="kolekti:topic") {
 	    var path = $(this).data('kolekti-topic-url');
+	    var idtopic = $(this).data('kolekti-topic-id');
+	    var topic;
 	    $.get(path)
 		.done(
 		    function(data){
-			var topic = $.parseXML( data ),
-			id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			topic_obj = create_topic(path, id, topic);
-			$(comp).after(topic_obj)
-			usecases(topic_obj);
-			$(comp).detach()
-
-		    }
-		);
+			try {
+			    if (data instanceof Document)
+				topic = data;
+			    else
+				topic = $.parseXML( data );
+			    var topic_obj = create_topic_obj(path, idtopic, topic);
+			    $(refcomp).after(topic_obj)
+			    usecases(topic_obj);
+			    $(refcomp).detach();
+			} catch (err) {
+			    // was not XML
+			    var id = Math.round(new Date().getTime() + (Math.random() * 100));
+			    var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
+			    $(refcomp).after(topic_obj)
+			    $(refcomp).detach();
+			}
+		    })
+		.fail(
+		    function(data){
+			var id = Math.round(new Date().getTime() + (Math.random() * 100));
+			var topic_obj = create_topic_error_obj(path, idtopic, "Module non trouvé");
+			$(refcomp).after(topic_obj)
+			$(refcomp).detach();
+		    });
 	}
     });
 
     $('.section').each(function(i,t){
 	topicmenu($(t));
     });
+
+    check_empty();
 })

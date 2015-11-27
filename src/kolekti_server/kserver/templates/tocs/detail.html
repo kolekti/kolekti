@@ -4,12 +4,13 @@
 {% block current_trames %}class="menu-current"{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></script>
-    <link rel="stylesheet" type="text/css"  href="/criteria.css"></script>
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></link>
+    <link rel="stylesheet" type="text/css"  href="/criteria.css"></link>
 {% endblock %}
 
 
 {% block extrascripts %}
+    <script src="/static/js/kolekti-topics-common.js"></script>
     <script src="/static/js/kolekti-tocs.js"></script>
     <script src="/static/js/kolekti-tocs-filter.js"></script>
 {% endblock %}
@@ -17,17 +18,21 @@
 {% block title %}
         <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
 	{{ tocdisplay }}
-	<span class="pull-right">
-	  <button type="button" class="btn btn-default disabled hidden" id="btn_save">
-	    Enregistrer
-	  </button>
-</span>
 {% endblock %}
 
 
 {% block menu %}
     
     <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
+
+    <div class="row top-margin">
       <div class="col-sm-6 col-md-6">
 	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
       </div>
@@ -40,7 +45,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePublier" class="collapsed">
+	  <a data-toggle="collapse" href="#collapsePublier" class="">
 	    <small>
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
@@ -49,73 +54,92 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapsePublier" class="panel-collapse collapse">
+      <div id="collapsePublier" class="panel-collapse collapse in">
 	<div class="panel-body">
+{% comment %}
+	  <h5>
+	  Nom de la publication
+	  </h5>	  
+	  <input type='text'
+		 class='block-control'
+		 id='input_toc_title'
+		 value="{{ toctitle }}"/>
+{% endcomment %}
+	  <h5>
+	  Dossier de la publication
+	  </h5>	  
+	  <input type='text'
+		 class='block-control'
+		 id='input_toc_pubdir'
+		 value="{{ tocmeta.kolekti_pubdir }}"/>
+	  
 	  <h5>
 	  Fichier de paramètres
 	  </h5>
 	  <span class="btn-group">
-	    <button type="button" class="btn btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-job-path="{{ tocjob }}">		  
-	      <span class="label_job">{{ tocjob|basename }}</span>
+	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
+	      <span class="label_job">{{ tocmeta.kolekti_job|urlbasename }}</span>
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 	      {% for job in jobs %}
 	      <li role="presentation">
 		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
-		   data-kolekti-job-path="{{ job.path }}">
+		   data-kolekti-jobpath="{{ job.path }}">
 		  {{ job.name }}
 		</a>
 	      </li>
 	      {% endfor %}
 	    </ul>
 	  </span>
-{#	  <span class="pull-right"> #}
-	    <a id="editjoblink" href="/settings/job?path={{ tocjob }}" title="Éditer les paramètres"><span class="glyphicon glyphicon-cog"> </span></a>
-{#	  </span>#}
+	  
+	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"><span class="glyphicon glyphicon-cog"> </span></a>
 
+	  
 	  <h5>
-	  Titre
+	  Sélection rapide
 	  </h5>
-	  
-	  <input type='text'
-		 class='block-control'
-		 id='input_toc_title'
-		 value="{{ toctitle }}"/>
 
-	  
 	  {% for job in jobs %}
 
 
-	  <div class="row {% if job.path != tocjob %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+	  <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
 	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	    <div class="col-sm-12 col-md-12">
 
-	      <h5>Profils</h5>
+	      <h6>Profils</h6>
 	    </div>
 	    {% for profile in job.profiles %}
+
 	    <div class="col-sm-6 col-md-6">
 	      <div class="checkbox" checked>
 		<label>
-  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile }}" data-kolekti-profile="{{ profile }}" checked/>
-		  {{ profile }}
+  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
+			 {% if profile.1 == "1"%}checked{% endif %}/>
+		  {{ profile.0 }}
 		</label>
 	      </div>
 	    </div>
 	    {% endfor %}
 	    <div class="col-sm-12 col-md-12">
-	      <h5>Sorties</h5>
+	      <h6>Sorties</h6>
 	    </div>
 	    {% for script in job.scripts %}
 	    <div class="col-sm-6 col-md-6">
 	      <div class="checkbox">
 		<label>
-  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script }}" data-kolekti-script="{{ script }}" checked/>
-		  {{ script }}
+  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
+			 {% if script.1 == "1"%} checked{% endif %}/>
+		  {{ script.0 }}
 		</label>
 	      </div>
 	    </div>
 	    {% endfor %}
+	    {% comment %}
+	    <div class="col-sm-12 col-md-12 top-margin">
+	      <a id="editjoblink" class="btn btn-default btn-block" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres">Paramètres avancés...</a>
+	    </div>
+	    {% endcomment %}
 	  </div>
 	  {% endfor %}
 	</div>
@@ -145,10 +169,10 @@
     </div>
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-danger hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapseDiag" class="collapsed">
+	  <a data-toggle="collapse" href="#collapseDiag" class="">
 	    <small>
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
@@ -157,7 +181,7 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapseDiag" class="panel-collapse collapse">
+      <div id="collapseDiag" class="panel-collapse collapse in">
 	<div class="panel-body diag">
 	  <p> En cours de chargement... </p>
 	</div>
@@ -169,7 +193,35 @@
 
 {% block content %}
     <hr>
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}" data-kolekti-job="{{ tocjob }}" data-kolekti-job-path="{{ tocjob }}">
+    <div id="toc_meta">
+      <!--
+      <div class="section panel panel-info">
+	<div class="panel-body">
+	  -->
+      <div class="row">
+	    <div class="col-sm-6">
+	      Titre :
+	      <input type="text" name="title" id="input_toc_title" value="{{ tocmeta.DC_title }}"/>
+	    </div>
+	    <div class="col-sm-6">
+	      Auteur : {{ tocmeta.DC_creator }}
+	      {% comment %} 	    <input type="text" name="author" id="tocauthor" value="{{ tocmeta.DC_creator }}"/> {% endcomment %}
+	    </div>
+	  </div>
+<!--
+	</div>
+      </div>
+-->
+    </div>
+
+    <hr>
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"
+	 data-kolekti-tocname="{{ tocdisplay }}"
+      {% for namemeta, valuemeta  in tocmeta.items %}
+      data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
+      {% endfor %}
+      >
+      
   {{ toccontent|safe}}
    </div>
 {% endblock %}
