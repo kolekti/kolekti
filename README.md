@@ -9,7 +9,7 @@ Il permet de publier automatiquement, à partir des mêmes fichiers
 sources, plusieurs versions personnalisées en différents formats
 (Webhelp, pdf, HTML5).
  
-Kolekti est un logiciel libre qui utilise des formats ouverts : le fond
+Kolekti est un logiciel libre qui utilise des formats ouverts : le fonds
 documentaire est au format HTML.
 
 Il s'installe en local sur les postes et offre la possibilité de
