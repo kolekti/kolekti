@@ -6,17 +6,18 @@
 {% if changes.conflict|length or changes.error|length %}
      <div class="alert alert-warning">
        <h3>
-	 <strong>Attention</strong> : des fichiers ont été modifiés localement et sur le dépot
+	 <strong>Attention</strong> : les mêmes fichiers ont été modifiés en local et sur le serveur externe
        </h3>
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="conflict"/>
        <div class="panel panel-default top-margin">
 	 <div class="panel-body">
-	   <p>Les modifications effectuées <strong>ne peuvent donner lieu à une mise à jour automatique</strong> de votre copie de travail, il vous est possible de :</p>
+	   <p>La mise à jour ne peut pas être automatique. Vous devez choisir entre :</p>
 	   <ul>
 	     <li><strong>Valider les fichiers modifiés en local</strong> : les fichiers modifiés par d'autres utilisateurs sur le serveur externe seront écrasés.</li>
 	     <li><strong>Remplacer vos fichiers par ceux du serveur externe</strong></li>
-	   </ul>
+	     </ul>
+
 	   <hr>
 	     <div class="form-group">
 	       <div class="col-sm-12">
@@ -64,8 +65,8 @@
 	       <label class="col-sm-2 control-label">Avec les fichiers sélectionnés : </label>
 	       <div class="col-sm-10">
 		 <select name="resolve" class="form-control select-conflit">
-		   <option value="local">Valider la version locale</option>
-		   <option value="remote">Remplacer par la version distante</option>
+		   <option value="local">Valider les fichiers modifiés en local</option>
+		   <option value="remote">Remplacer les fichiers par ceux du serveur</option>
 		   {# 	 <option>Marquer comme résolu</option> #}
 		 </select>
 	       </div>
@@ -183,7 +184,7 @@
        <div class="alert alert-info">
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="commit"/>
-         <h3>Envoi des modifications vers l'arborescence distante</h3>
+         <h3>Envoi des fichiers modifiés vers le serveur externe</h3>
 	 <div class="panel panel-default">
 	   <div class="panel-body">
 	     <div class="form-group">
@@ -247,29 +248,29 @@
 
 {% block nextsteps %}
   {% if changes.conflict|length or changes.merge|length or  changes.update|length or changes.commit|length  %}
-  <h3>Etape(s) suivante(s)</h3>
+  <h3>Étape(s) suivante(s)</h3>
   <ul>
 
     {% if changes.conflict|length %}
     {% if changes.merge|length %}
     <li>Fusion des modifications concurrentes
-      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre utilisateur et par vous depuis la dernière synchronisation, cette étape fusionne les modifications dans ces fichiers.</p>
+      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre utilisateur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
     </li>
     {% endif %}
     {% endif %}
 
     {% if changes.conflict|length or changes.merge|length %}
     {% if changes.update|length %}
-    <li>Récupération des modifications distantes
-      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre utilisateur depuis la dernière synchronisation, cette étape met a jour les fichiers de votre copie de travail.</p>
+    <li>Récupération en local des fichiers modifiés sur le serveur externe
+      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre utilisateur depuis la dernière synchronisation, cette étape met à jour les fichiers sur votre poste de travail.</p>
     </li>
     {% endif %}
     {% endif %}
 
     {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
     {% if changes.commit|length  %}
-    <li>Envoi des modifications locales
-      <p>{{ changes.commit|length }} fichiers ont été modifiés sur votre copie de travail. Cette étape envoie vos modifications aux autres utilisateurs.</p>
+    <li>Envoi sur le serveur externe des fichiers modifiés en local
+      <p>{{ changes.commit|length }} fichiers ont été modifiés sur votre poste de travail. Cette étape envoie vos modifications sur le serveur externe.</p>
     </li>
     {% endif %}
     {% endif %}
