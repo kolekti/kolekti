@@ -14,9 +14,8 @@
 	 <div class="panel-body">
 	   <p>Les modifications effectuées <strong>ne peuvent donner lieu à une mise à jour automatique</strong> de votre copie de travail, il vous est possible de :</p>
 	   <ul>
-	     <li><strong>Valider la version locale</strong>, en écrasant les modifications faites par les autres utilisateurs depuis votre dernière synchronisation</li>
-	     <li><strong>Remplacer par la version distante</strong>, en écrasant les modifications locales depuis la dernière synchronisation</li>
-	     <li>Vous pouvez également résoudre le conflit manuellement en utilisant un client subversion.</li>
+	     <li><strong>Valider les fichiers modifiés en local</strong> : les fichiers modifiés par d'autres utilisateurs sur le serveur externe seront écrasés.</li>
+	     <li><strong>Remplacer vos fichiers par ceux du serveur externe</strong></li>
 	   </ul>
 	   <hr>
 	     <div class="form-group">
@@ -159,7 +158,7 @@
      <div class="alert alert-info">
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="update"/>
-       <h3>Récupération des mises à jour vers l'arborescence locale</h3>
+       <h3>Récupération en local des fichiers du serveur</h3>
        <div class="panel panel-default">
 	 <div class="panel-collapse collapse in" id="collapseSynchro">
 	   <div class="panel-body">
