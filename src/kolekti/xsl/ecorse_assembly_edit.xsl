@@ -77,6 +77,20 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section'])=1]">
+    <xsl:if test="ancestor-or-self::html:div[@id=$section]">
+      <xsl:copy>
+	<xsl:apply-templates select="@*"/>
+	<a data-toggle="collapse" href="#collapseSection{generate-id()}" aria-controls="collapseSection{generate-id()}">
+	  <xsl:apply-templates select="html:h1"/>
+	</a>
+	<div class="section-content niv{count(ancestor::html:div[@class='section']) + 1} collapse" id="collapseSection{generate-id()}">
+	  <xsl:apply-templates select="html:div"/>
+	</div>
+      </xsl:copy>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match = "html:div[@class='topic']">
     <div class="col-sm-12 col-lg-6">
       <div class="thumbnail">
@@ -104,6 +118,7 @@
   <xsl:template match = "html:div[@class='kolekti-sparql-foreach']">
     <xsl:apply-templates/>
   </xsl:template>
+  
   <xsl:template match = "html:p[@class='kolekti-sparql-foreach-query']"/>
   <xsl:template match = "html:div[@class='kolekti-sparql-foreach-template']"/>
   <xsl:template match = "html:div[@class='kolekti-sparql-results']">
@@ -152,15 +167,15 @@
 	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
 	</button>
 	<ul class="dropdown-menu" role="menu">
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="bar">
+	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Bar">
 	    <xsl:text>Histogramme </xsl:text>
-	    <xsl:if test="@data-chart-type='bar'">
+	    <xsl:if test="@data-chartjs-kind='Bar'">
 	      <span class="glyphicon glyphicon-ok"></span>
 	    </xsl:if>
 	  </a></li>
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="line">
+	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Line">
 	    <xsl:text>Linéaire </xsl:text>
-	    <xsl:if test="@data-chart-type='bar'">
+	    <xsl:if test="@data-chartjs-kind='Line'">
 	      <span class="glyphicon glyphicon-ok"></span>
 	    </xsl:if>
 	  </a></li>

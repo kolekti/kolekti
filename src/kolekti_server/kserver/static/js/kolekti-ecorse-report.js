@@ -105,16 +105,22 @@ $(document).ready(function() {
 	var myNewChart = new Chart(ctx)[kind](data);
     }
 
+
+    $('.section-content.collapse').on('shown.bs.collapse', function() {
+	$(this).find('.kolekti-sparql-result-chartjs').each(function() {
+	    var data = $(this).data('chartjs-data')
+	    var kind = $(this).data('chartjs-kind')
+	    var canvas   = $(this).find('canvas').attr('id')
+	    make_chart(canvas, kind, data);
+	});
+    })
     
     $('.kolekti-sparql-result-chartjs').each(function() {
 	var data = $(this).data('chartjs-data')
-	var kind = $(this).data('chartjs-kind')
-	var canvas   = $(this).find('canvas').attr('id')
-	make_chart(canvas, kind, data);
 	$(this).find('.legend').append(
 	    $.map(data.datasets, function(s,i) {
 		return $('<p>', {
-		    'class':'legendtiem',
+			'class':'legendtiem',
 		    'html':[
 			$('<span>', {
 			    'class':"legendcolor",
