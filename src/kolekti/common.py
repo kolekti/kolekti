@@ -412,12 +412,14 @@ class kolektiBase(object):
         # loads an xsl stylesheet
         # 
         logging.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
+
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
             if not system_path:
                 xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
+
         xsldoc  = ET.parse(path,self._xmlparser)
         if extclass is  None:
             extclass = XSLExtensions

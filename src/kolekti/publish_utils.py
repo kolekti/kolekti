@@ -61,6 +61,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     ens = "kolekti:extensions:functions:publication"
 
     def __init__(self, *args, **kwargs):
+        self._profile = None
         if kwargs.has_key('profile'):
             self._profile = kwargs.get('profile')
             kwargs.pop('profile')

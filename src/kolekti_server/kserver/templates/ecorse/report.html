@@ -1,0 +1,136 @@
+{% extends "base_ecorse.html" %}
+{% load ostags %}
+
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/ecorse.css"></link>
+    <script src="/static/Chart.min.js" type="text/javascript">
+      <xsl:text>&#x0D;</xsl:text>
+    </script>
+    <script>
+   </script>
+{% endblock %}
+
+
+{% block extrascripts %}
+    <script src="/static/ckeditor/ckeditor.js"></script>
+    <script src="/static/js/kolekti-ecorse-report.js"></script>
+{% endblock %}
+
+{% block page-title %}
+    {{ title }}
+{% endblock %}
+
+    {% block menu %}
+    <ul class="list-group user">
+      <li class="list-group-item">Administrateur</li>
+    </ul>
+    
+    <ul class="list-group user">
+      <li class="list-group-item">
+	<a href="#" class="ecorse-action-create-report" data-toggle="modal" data-target="#modal_create">Créer rapport... </a>
+      </li>
+    </ul>
+    
+    <ul class="list-group list-releases">
+    {% for release in releases %}
+    <li class="list-group-item">
+      <a href="?release=/releases/{{release.name}}"><strong>{{release.name}}</strong></a>
+      {% if release.name == current %}
+      <br/>
+      
+      <div class="list-group">
+	<div class="list-group-item">
+	  <div class="btn-group">
+	    <a href="#" class="btn btn-default btn-xs ecorse-action-update-data">
+	      <i class="fa fa-refresh"></i>&nbsp;
+	      Actualiser
+	    </a>
+	  </div>
+	  <div class="btn-group">
+	    <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+	      <i class="fa fa-download"></i>&nbsp;
+	      Télécharger&nbsp;
+	      <span class="caret"></span>
+	    </a>
+	   
+	    <ul class="dropdown-menu" role="menu">
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
+		  <i class="fa fa-file-pdf-o"></i>&nbsp;
+		  Pdf
+		</a>
+	      </li>
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
+		  <i class="fa fa-file-word-o"></i>&nbsp;
+		  Word
+		</a>
+	      </li>
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
+		  <i class="fa fa-file-powerpoint-o"></i>&nbsp;
+		  PowerPoint
+		</a>
+	      </li>
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
+		  <i class="fa fa-download"></i>&nbsp;
+		  HTML5
+		</a>
+	      </li>
+	    </ul>
+	  </div>
+	</div>
+	{{ menu|safe }}
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="report" data-release="{{ release }}">
+    {{ content|safe}}
+    </div>
+    
+    <div class="modal" id="modal_create">
+      <div class="modal-dialog modal-lg">
+	<div class="modal-content">
+	  <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+            <h4 class="modal-title">Créer un rapport</h4>
+	  </div>
+	  <div class="modal-body">
+	    <div class="form-horizontal">
+	      <div class="form-group">
+		<label for="titre" class="col-sm-2 control-label">Titre</label>
+		<input name="titre" id="titre_rapport" type="text"/>
+	      </div>
+	      <div class="form-group">
+		<label for="commune1" class="col-sm-2 control-label">Commune 1</label>
+		<input name="commune1" id="commune1" type="text" class="typeahead" data-provide="typeahead"/>
+	      </div>
+	      <div class="form-group">
+		<label for="commune2" class="col-sm-2 control-label">Commune 2</label>
+		<input name="commune2" id="commune2" type="text" class="typeahead" data-provide="typeahead"/>
+	      </div>
+	      <div class="form-group">
+		<label for="commune3" class="col-sm-2 control-label">Commune 3</label>
+		<input name="commune3" id="commune3" type="text" class="typeahead" data-provide="typeahead"/>
+	      </div>
+	      <hr/>
+	    </div>
+	  </div>
+	  <div class="modal-footer">
+	    {% block modal-footer %}{% endblock %}
+            <button type="button" class="btn btn-default" id="modal_create_ok">OK</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+{% endblock %}
+

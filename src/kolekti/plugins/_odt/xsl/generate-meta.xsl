@@ -5,7 +5,9 @@
 		xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" 
 		xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
 		xmlns:html="http://www.w3.org/1999/xhtml"
-		exclude-result-prefixes="html"
+		xmlns:ke = "kolekti:extensions:functions:publication"
+		exclude-result-prefixes="html ke"
+		extension-element-prefixes="ke"
 		>
   <xsl:output indent="yes"/>
   <xsl:param name="pivot"/>
@@ -28,7 +30,7 @@
       <!--
       <xsl:apply-templates select="document($pivot)/html:html/html:head/html:meta[@scheme='condition']"/>
       -->
-      <xsl:apply-templates select="document($pivot)/html:html/html:body//html:p[starts-with(@class,'k ')]"/>
+      <xsl:apply-templates select="document(ke:get_url($pivot))/html:html/html:body//html:p[starts-with(@class,'k ')]"/>
     </xsl:copy>
 
   </xsl:template>

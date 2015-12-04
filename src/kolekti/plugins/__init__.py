@@ -5,6 +5,7 @@
 
 import pluginBase
 import WebHelp5
+import odt
 
 #def getPlugin(plugin, path):
 #    logging.debug('plugin import %s'%plugin)

@@ -90,12 +90,18 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-        
+
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
-                        
+
+        # ECORSE only : substvars
+        s = self.get_xsl('variables', PublisherExtensions, profile = xjob, lang=self._publang)
+        assembly = s(assembly)
+        self.log_xsl(s.error_log)
+
+        
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
@@ -1001,7 +1007,7 @@ class ReleasePublisher(Publisher):
     def process_path(self, path):
         return self.assembly_dir() + "/" + path
     
-    def publish_assembly(self, assembly):
+    def publish_assembly(self, assembly, xjob=None):
         """ publish an assembly"""
         manifest = self.getOsPath(self._release_dir + '/kolekti/manifest.json')
         first_sep = ""
@@ -1027,8 +1033,8 @@ class ReleasePublisher(Publisher):
                     logging.error("unable to read assembly %s"%assembly)
                     logging.debug(traceback.format_exc())
                     return
-
-                xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+                if xjob is None:
+                    xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))

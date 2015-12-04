@@ -71,7 +71,7 @@
  
   <xsl:template match="html:section|html:div[@class='section']" mode="aggreg">
     <xsl:param name="section_depth"/>
-    <div class="section">
+    <div class="section" id="s{generate-id()}">
       <!--
 	  <xsl:comment>
         <xsl:text>depth </xsl:text>

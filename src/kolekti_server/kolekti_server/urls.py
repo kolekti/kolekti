@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from kserver.views import *
+from kserver.views_ecorse import *
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -9,6 +10,19 @@ from django.views.static import serve as staticView
 #admin.autodiscover()
 
 urlpatterns = patterns('',
+    # ECOres specific wiews
+    # url(r'^$', EcoRSEHomeView.as_view(), name='ecorsehome'),
+    url(r'^ecorse/report/$', EcoRSEReportView.as_view(), name='ecorsereport'),
+    url(r'^ecorse/report/publish$', EcoRSEReportPublishView.as_view(), name='ecorsereportpublish'),
+    url(r'^ecorse/report/update$', EcoRSEReportUpdateView.as_view(), name='ecorsereportupdate'),
+    url(r'^ecorse/report/analysis$', EcoRSEReportAnalysisView.as_view(), name='ecorsereportanalysis'),
+    url(r'^ecorse/report/star$', EcoRSEReportStarView.as_view(), name='ecorsereportstar'),
+    url(r'^ecorse/report/hide$', EcoRSEReportHideView.as_view(), name='ecorsereporthide'),
+    url(r'^ecorse/report/chart$', EcoRSEReportChartView.as_view(), name='ecorsereportchart'),
+
+    url(r'^ecorse/communes$', EcoRSECommunesView.as_view(), name='ecorsecommunes'),
+    
+
     # Examples:
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),

@@ -34,7 +34,9 @@ class PluginsExtensions(PublisherExtensions):
 
     def process_path(self, path):
         return self._resdir + "/" +super(PluginsExtensions, self).process_path(path)
-    
+
+    def get_url(self, _, path):
+        return self.getUrlPath(path)
     
 
 class plugin(PublisherMixin,kolektiBase):
@@ -70,10 +72,10 @@ class plugin(PublisherMixin,kolektiBase):
                                             **kwargs)
         return xsl
     
-    def get_project_xsl(self,xslfile, **kwargs):
+    def get_plugin_xsl(self,xslfile, **kwargs):
         logging.debug("get xsl from plugin %s"%self._plugindir)
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
-                                          xsldir = self._plugindir,
+                                          xsldir = os.path.join(self._plugindir,'xsl'),
                                           system_path = True,
                                           resdir = self.assembly_dir,
                                           **kwargs)
