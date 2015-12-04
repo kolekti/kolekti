@@ -193,7 +193,24 @@ class EcoRSEReportHideView(EcoRSEMixin, View):
     
 class EcoRSEReportChartView(EcoRSEMixin, View):
     def post(self, request):
-        return HttpResponse(json.dumps())
+        release_path = request.POST.get('release','')
+        topicid =  request.POST.get('topic','')
+        chart =  request.POST.get('charttype','Bar')
+        try:
+            report = self.get_report(release_path)
+            topic = report.xpath("//html:div[@id = '%s']"%topicid,
+                                 namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+            topic.set('data-chartjs-kind', chart )
+            self.write_report(report, release_path)
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")
+            
+        return HttpResponse(json.dumps({'status':'ok','chart':chart}),
+                            content_type="application/json")
+
     
     
 class EcoRSEReportView(EcoRSEMixin, View):
