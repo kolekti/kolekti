@@ -18,8 +18,8 @@ python /media/donnees/web/ecorse/kolekti/src/kolekti_server/manage.py runserver
 -> http://127.0.0.1:8000/projects/ 
 projet: ecorse
 url : http://beta.kolekti.net/svn/EcoRSE
-utilisateur : fecou 
-mdp : 789456 
+utilisateur : github_user 
+mdp : ...
 
 
 config de génération de rapport
