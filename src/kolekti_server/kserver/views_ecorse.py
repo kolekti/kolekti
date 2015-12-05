@@ -198,9 +198,9 @@ class EcoRSEReportChartView(EcoRSEMixin, View):
         chart =  request.POST.get('charttype','Bar')
         try:
             report = self.get_report(release_path)
-            topic = report.xpath("//html:div[@id = '%s']"%topicid,
-                                 namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-            topic.set('data-chartjs-kind', chart )
+            topic_chart = report.xpath("//html:div[@id = '%s']//html:p[@class='kolekti-sparql-result-chartjs']"%topicid,
+                                    namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+            topic_chart.set('data-chartjs-kind', chart )
             self.write_report(report, release_path)
         except:
             import traceback

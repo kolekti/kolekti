@@ -20,7 +20,8 @@
 -->
 <xsl:stylesheet
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
-  xmlns:html="http://www.w3.org/1999/xhtml" 
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.w3.org/1999/xhtml" 
   
   exclude-result-prefixes="html"
   version="1.0">
@@ -52,12 +53,8 @@
   
 
   <xsl:template match="html:h1">
-    <xsl:element name="h{count(ancestor::html:div[@class='section']) + 1}" namespace="">
-      <xsl:attribute name="class">
-	<xsl:value-of select="@class"/>
-	<xsl:text> clearfix col-lg-12</xsl:text>
-      </xsl:attribute>
-      <xsl:apply-templates select="node()"/>
+    <xsl:element name="h{count(ancestor::html:div[@class='section']) + 1}" namespace="http://www.w3.org/1999/xhtml">
+      <xsl:apply-templates select="@*|node()"/>
     </xsl:element>
   </xsl:template>
 
@@ -68,27 +65,48 @@
   </xsl:template>
   
   <xsl:template match = "html:div[@class='section']">
-    <xsl:if test="ancestor-or-self::html:div[@id=$section]">
-      <xsl:copy>
-	<xsl:apply-templates select="@*"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:apply-templates select="html:h1"/>
+      <div class="section-content niv{count(ancestor::html:div[@class='section']) + 1}" id="section_{@id}" aria-multiselectable="true">
+	  <xsl:apply-templates select="html:div"/>
+      </div>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section']) = 0]">
+    <xsl:copy>
+      <xsl:apply-templates select="@id"/>
+      <div>
 	<xsl:apply-templates select="html:h1"/>
+      </div>
+      <p></p>
+      <div class="panel-group" role="tablist" id="section_{@id}" aria-multiselectable="false">
 	<xsl:apply-templates select="html:div"/>
-      </xsl:copy>
-    </xsl:if>
+      </div>
+    </xsl:copy>
   </xsl:template>
 
   <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section'])=1]">
-    <xsl:if test="ancestor-or-self::html:div[@id=$section]">
-      <xsl:copy>
-	<xsl:apply-templates select="@*"/>
-	<a data-toggle="collapse" href="#collapseSection{generate-id()}" aria-controls="collapseSection{generate-id()}">
-	  <xsl:apply-templates select="html:h1"/>
-	</a>
-	<div class="section-content niv{count(ancestor::html:div[@class='section']) + 1} collapse" id="collapseSection{generate-id()}">
-	  <xsl:apply-templates select="html:div"/>
-	</div>
-      </xsl:copy>
-    </xsl:if>
+      <!--
+	  <xsl:copy>
+      -->
+	  <div class="panel panel-default" id="{@id}">
+	  <div class="panel-heading" role="tab" id="heading_{@id}">
+	    <h3 class="panel-title {html:h1/@class}">
+	      <a data-toggle="collapse" href="#collapse_section_{@id}" aria-controls="collapse_section_{@id}" data-parent="#section_{ancestor::html:div[@class='section']/@id}">
+		<xsl:apply-templates select="html:h1/node()"/>
+	      </a>
+	    </h3>
+	  </div>
+	  <div  class="panel-collapse collapse section-content" role="tabpanel" aria-labelledby="heading_{@id}" id="collapse_section_{@id}">
+	    <div class="panel-body">
+	      <xsl:apply-templates select="html:div"/>
+	    </div>
+	  </div>
+	  </div>
+
+<!--      </xsl:copy>-->
   </xsl:template>
 
   <xsl:template match = "html:div[@class='topic']">
@@ -100,7 +118,7 @@
 	    <xsl:apply-templates select="@*"/>
 	    <xsl:apply-templates select="html:h1"/>
 	    <hr/>
-	    <div class="topicCollapses" id="collapseTopic{generate-id()}" role="tablist">
+	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
 
 	      <xsl:call-template name="topic-controls"/>
 	      <xsl:apply-templates select="html:div[@class='details']"/>
@@ -134,14 +152,14 @@
 
   <xsl:template name="topic-controls">
     <span class="btn-group">
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseDetails{generate-id()}" aria-expanded="false" aria-controls="collapseDetails{generate-id()}">
+      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseDetails{@id}" aria-expanded="false" aria-controls="collapseDetails{@id}">
 	<i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
       </a>
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseAnalyse{generate-id()}" aria-expanded="false" aria-controls="collapseAnalyse{generate-id()}">
+      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseAnalyse{@id}" aria-expanded="false" aria-controls="collapseAnalyse{@id}">
 	<i class="fa fa-pencil"></i>
 	<xsl:text> Analyse</xsl:text>
       </a>
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapsePictures{generate-id()}" aria-expanded="false" aria-controls="collapsePictures{generate-id()}">
+      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapsePictures{@id}" aria-expanded="false" aria-controls="collapsePictures{@id}">
 	<i class="fa fa-picture-o"></i>
 	<xsl:text> Visuels</xsl:text>
       </a>
@@ -166,17 +184,19 @@
 	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
 	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
 	</button>
+	<xsl:variable name="ckind" select=".//html:p[@class='kolekti-sparql-result-chartjs']/@data-chartjs-kind"/>
 	<ul class="dropdown-menu" role="menu">
 	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Bar">
 	    <xsl:text>Histogramme </xsl:text>
-	    <xsl:if test="@data-chartjs-kind='Bar'">
-	      <span class="glyphicon glyphicon-ok"></span>
+
+	    <xsl:if test="$ckind='Bar'">
+	      <i class="fa fa-check"></i>
 	    </xsl:if>
 	  </a></li>
 	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Line">
 	    <xsl:text>Linéaire </xsl:text>
-	    <xsl:if test="@data-chartjs-kind='Line'">
-	      <span class="glyphicon glyphicon-ok"></span>
+	    <xsl:if test="$ckind='Line'">
+	      <i class="fa fa-check"></i>
 	    </xsl:if>
 	  </a></li>
 	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
@@ -188,7 +208,7 @@
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-sparql-foreach-results']">
-    <div class="collapse collapseDetails collapseTopic" id="collapseDetails{generate-id(ancestor::html:div[@class='topic'])}" role="tabpanel">
+    <div class="collapse collapseDetails collapseTopic" id="collapseDetails{ancestor::html:div[@class='topic']/@id}" role="tabpanel">
       <div class="well">
 	<table class="table">
 	  <xsl:apply-templates/>
@@ -198,9 +218,9 @@
   </xsl:template>
   
   <xsl:template name="topic-analyse">
-    <div class="collapse collapseAnalyse collapseTopic" id="collapseAnalyse{generate-id()}"  role="tabpanel">
+    <div class="collapse collapseAnalyse collapseTopic" id="collapseAnalyse{@id}"  role="tabpanel">
       <div class="well">
-	<div id="editor{generate-id()}" class="anaeditor" contenteditable="true">
+	<div id="editor{@id}" class="anaeditor" contenteditable="true">
 	  <xsl:copy-of select="html:div[@class='analyse']"/>
 	</div>
       </div>
@@ -208,7 +228,7 @@
   </xsl:template>
   
   <xsl:template name="topic-visuels">
-    <div class="collapse collapsePictures collapseTopic" id="collapsePictures{generate-id()}"  role="tabpanel">
+    <div class="collapse collapsePictures collapseTopic" id="collapsePictures{@id}"  role="tabpanel">
       <div class="well">
 	<xsl:copy-of select="div[@class='visuels']"/>
       </div>
@@ -229,9 +249,9 @@
   </xsl:template>
 
   <xsl:template match="html:p[@class='kolekti-sparql-result-chartjs']">
-    <div class="kolekti-sparql-result-chartjs" data-chartjs-data='{.}'>
+    <div class="kolekti-sparql-result-chartjs" data-chartjs-data='{.}' id="chart_{ancestor::html:div[@class='topic']/@id}">
       <xsl:copy-of select='@data-chartjs-kind'/>
-      <canvas id="{generate-id()}"></canvas>
+      <canvas id="canvas_{ancestor::html:div[@class='topic']/@id}"></canvas>
       <div class="legend">
       </div>
     </div>
