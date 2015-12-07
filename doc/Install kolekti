@@ -10,7 +10,7 @@ sudo apt-get install python-sparqlwrapper
 git clone git@github.com:kolekti/kolekti.git
 git checkout ecorse
 
-export PYTHONPATH=media/donnees/web/ecorse/kolekti/src
+export PYTHONPATH=/media/donnees/web/ecorse/kolekti/src
 cp /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3.ref /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3
 
 python /media/donnees/web/ecorse/kolekti/src/kolekti_server/manage.py runserver
