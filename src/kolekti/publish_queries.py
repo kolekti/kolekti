@@ -50,7 +50,6 @@ class kolektiSparQL(object):
                 topic.set('data-hidden','yes')
                 
             else:
-            
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})
                 pjson = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-json"})
                 pjson.text = json.dumps(results)

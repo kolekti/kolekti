@@ -94,14 +94,25 @@ $(document).ready(function() {
     Chart.defaults.global.responsive = true;
     var chartcolors = ['220,51,51', '51,51,220', '51,220,61'];
     
-    var make_chart  = function(canvas, kind, data) {
+    var make_chart  = function(chartid, kind, data) {
+	var chart = document.getElementById(chartid)
+	var canvasid = 'canvas_' + chartid
+	$(chart).find('canvas').remove()
+	$(chart).append($('<canvas>', {'id':canvasid}))
+	
         for (s=0; s < data['seriescount']; s++) {
- 	    data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.5)";
+	    data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
   	    data['datasets'][s]["strokeColor"] = "rgba("+chartcolors[s]+",0.8)";
-	    data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.75)";
-	  data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
-        }
-        var ctx = document.getElementById(canvas).getContext("2d");
+	    if (kind == "Bar") {
+		data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.75)";
+ 		data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.5)";
+            }
+	    if (kind == "Line") {
+		data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.2)";
+ 		data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.1)";
+            }
+	}
+        var ctx = document.getElementById(canvasid).getContext("2d");
 	var myNewChart = new Chart(ctx)[kind](data);
     }
 
@@ -110,8 +121,8 @@ $(document).ready(function() {
 	$(this).find('.kolekti-sparql-result-chartjs').each(function() {
 	    var data = $(this).data('chartjs-data')
 	    var kind = $(this).data('chartjs-kind')
-	    var canvas   = $(this).find('canvas').attr('id')
-	    make_chart(canvas, kind, data);
+	    var parent   = $(this).attr('id')
+	    make_chart(parent, kind, data);
 	});
     })
     
@@ -296,7 +307,8 @@ $(document).ready(function() {
 	return 
     }
     
-    $('.ecorse-action-chart').on('click', function() {
+    $('.ecorse-action-chart').on('click', function(e) {
+	e.preventDefault()
 	if(!$(this).find('i').length) {
 	    var btn = $(this)
 	    var charttype = $(this).attr('data-chart-type')
@@ -304,7 +316,7 @@ $(document).ready(function() {
 	    var release = $('.report').data('release')
 	    
 	    $.ajax({
-		url:"/ecorse/report/charttype",
+		url:"/ecorse/report/chart",
 		method:'POST',
 		data:$.param({
 		    'release': release,
@@ -315,12 +327,12 @@ $(document).ready(function() {
 		
 		if (data.status == 'ok') {
 		    btn.closest('ul').find('i').remove();
-		    btn.append('<i>', { 'class':'fa fa-icon-ok'});
+		    btn.append($('<i>', { 'class':'fa fa-check'}));
 		    var chart = btn.closest('.thumbnail').find('.kolekti-sparql-result-chartjs')
 		    chart.attr('data-chartjs-kind',charttype)
 		    var data = chart.data('chartjs-data')
-		    var canvas   = chart.find('canvas').attr('id')
-		    make_chart(canvas, charttype, data);
+		    var chartid   = chart.attr('id')
+		    make_chart(chartid, charttype, data);
 		    
 		}
 	    }).fail(function(data) {
