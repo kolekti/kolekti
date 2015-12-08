@@ -3,7 +3,6 @@ $(document).ready(function() {
     // CKEDitor Behavior
     // The "instanceCreated" event is fired for every editor instance created.
     CKEDITOR.on( 'instanceCreated', function ( event ) {
-	console.log("ck")
 	var editor = event.editor,
 	    element = editor.element;
 	
@@ -49,7 +48,6 @@ $(document).ready(function() {
 		    })
 		}).done(function(data) {
 		    if (data.status == 'ok') {
-			console.log('saved')
 			editor.ecorse_state = false;
 		    }
 		}).fail(function(data) {
@@ -98,7 +96,7 @@ $(document).ready(function() {
 	var chart = document.getElementById(chartid)
 	var canvasid = 'canvas_' + chartid
 	$(chart).find('canvas').remove()
-	$(chart).append($('<canvas>', {'id':canvasid}))
+	$(chart).prepend($('<canvas>', {'id':canvasid}))
 	
         for (s=0; s < data['seriescount']; s++) {
 	    data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
@@ -117,13 +115,14 @@ $(document).ready(function() {
     }
 
 
-    $('.section-content.collapse').on('shown.bs.collapse', function() {
-	$(this).find('.kolekti-sparql-result-chartjs').each(function() {
-	    var data = $(this).data('chartjs-data')
-	    var kind = $(this).data('chartjs-kind')
-	    var parent   = $(this).attr('id')
-	    make_chart(parent, kind, data);
-	});
+    $('.section-content.collapse').on('shown.bs.collapse', function(e) {
+	if ($(e.target).hasClass('section-content'))
+	    $(this).find('.kolekti-sparql-result-chartjs').each(function() {
+		var data = $(this).data('chartjs-data')
+		var kind = $(this).closest('.topic').data('chart-kind')
+		var parent   = $(this).attr('id')
+		make_chart(parent, kind, data);
+	    });
     })
     
     $('.kolekti-sparql-result-chartjs').each(function() {
@@ -164,17 +163,32 @@ $(document).ready(function() {
 
     // typeahead
     $('#modal_create').on('shown.bs.modal', function () {
-	$('#titre_rapport').focus()
-	$.get('/ecorse/communes').done(function(data) {
-	    communes = data
-	    $('.typeahead').typeahead({source:data})
-	    
-	})
+	var get_communes = function(){
+	    // recupere la liste des communes
+	    $.get('/ecorse/communes',{'referentiel':$("#ecorse_select_referentiel").val()})
+		.done(function(data) {
+		    $('.typeahead').typeahead({source:data})
+		})
+	}
+	
+	$('#ecorse_select_referentiel').on('change', get_communes)
+
+	// recupere la liste des referentiels
+	$.get('/ecorse/referentiels').done(function(data) {
+	    $('#ecorse_select_referentiel').find('option').remove()
+	    $(data).each(function(i,v) {
+		$('#ecorse_select_referentiel').append(
+		    $('<option>',{'value':v, 'html':v.replace('.html','')})
+		);
+	    });
+	    get_communes();
+	});
+	$('#ecorse_select_referentiel').focus();
 
     })
 
     $('#modal_create_ok').on('click', function () {
-	console.log('ok')
+	var referentiel = $("#ecorse_select_referentiel").val();
 	var title = $('#titre_rapport').val()
 	var commune1 = $('#commune1').typeahead("getActive")
 	var commune2 = $('#commune2').typeahead("getActive")
@@ -185,25 +199,23 @@ $(document).ready(function() {
 	    commune2 = {'id':''}
 	if (!commune3)
 	    commune3 = {'id':''}
-	
-	console.log(title)
-	console.log(commune1)
-	console.log(commune2)
-	console.log(commune3)
-	
+
+	$('#modal_create').hide()
+	$('#modal_create_processing').show()
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/ecorse/report/create",
 	    method:'POST',
 	    data:$.param({
 		'title': title,
+		'toc': referentiel,
 		'commune1':commune1.id,
 		'commune2':commune2.id,
 		'commune3':commune3.id
 	    })
 	}).done(function(data) {
-	    console.log(data)
-	    if (data.status == 'ok') {
-		window.location.url = '?release='+data.release
+	    if (data.length) {
+		var url = window.location.origin + window.location.pathname + '?release=/releases/' + data[0].releasename 
+		window.location.replace(url)
 	    }
 	}).fail(function(data) {
 	});
@@ -213,6 +225,7 @@ $(document).ready(function() {
     // Actualisation des données
     $('.ecorse-action-update-data').on('click', function() {
 	var release = $('.report').data('release')
+	$('#modal_update_processing').show()
 	$.ajax({
 	    url:"/ecorse/report/update",
 	    method:'POST',
@@ -229,15 +242,66 @@ $(document).ready(function() {
 
     // Téléchargement (publication kolekti)
     $('.ecorse-action-dl-pdf').on('click', function() {
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/ecorse/report/publish",
+	    method:'POST',
+	    data:$.param({
+		'release': release,
+		'script': 'pdf'
+	    })
+	}).done(function(data) {
+	}).fail(function(data) {
+	});
 	
     })
     $('.ecorse-action-dl-word').on('click', function() {
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/ecorse/report/publish",
+	    method:'POST',
+	    data:$.param({
+		'release': release,
+		'script': 'odt'
+	    })
+	}).done(function(data) {
+	    console.log(data)
+	    $.each(data, function(i,v) {
+		console.log(v)
+		if (v.event == 'result')
+		    window.location.replace(window.location.origin + v.docs[0].url)
+	    })
+	}).fail(function(data) {
+	});
 	
     })
     $('.ecorse-action-dl-presentation').on('click', function() {
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/ecorse/report/publish",
+	    method:'POST',
+	    data:$.param({
+		'release': release,
+		'script': 'ppt'
+	    })
+	}).done(function(data) {
+	}).fail(function(data) {
+	});
 	
     })
     $('.ecorse-action-dl-html').on('click', function() {
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/ecorse/report/publish",
+	    method:'POST',
+	    data:$.param({
+		'release': release,
+		'script': 'web'
+	    })
+	}).done(function(data) {
+
+	}).fail(function(data) {
+	});
 	
     })
 
@@ -303,9 +367,6 @@ $(document).ready(function() {
     })
 
 	// selection graphique
-    var ecorse_set_chart = function(charttype){
-	return 
-    }
     
     $('.ecorse-action-chart').on('click', function(e) {
 	e.preventDefault()
@@ -328,8 +389,8 @@ $(document).ready(function() {
 		if (data.status == 'ok') {
 		    btn.closest('ul').find('i').remove();
 		    btn.append($('<i>', { 'class':'fa fa-check'}));
+		    topic.attr('data-chart-kind',charttype)
 		    var chart = btn.closest('.thumbnail').find('.kolekti-sparql-result-chartjs')
-		    chart.attr('data-chartjs-kind',charttype)
 		    var data = chart.data('chartjs-data')
 		    var chartid   = chart.attr('id')
 		    make_chart(chartid, charttype, data);

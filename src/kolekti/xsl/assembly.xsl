@@ -57,6 +57,7 @@
         <title>
           <xsl:value-of select="html:head/html:title/text()"/>
         </title>
+	<xsl:copy-of select="html:head/html:meta"/>
       </head>
       <body lang="{$lang}" xml:lang="{$lang}">
         <xsl:apply-templates select="html:body" mode="aggreg">

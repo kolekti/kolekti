@@ -12,6 +12,7 @@ from django.views.static import serve as staticView
 urlpatterns = patterns('',
     # ECOres specific wiews
     # url(r'^$', EcoRSEHomeView.as_view(), name='ecorsehome'),
+    url(r'^ecorse/$', EcoRSEReportView.as_view(), name='ecorsehome'),
     url(r'^ecorse/report/$', EcoRSEReportView.as_view(), name='ecorsereport'),
     url(r'^ecorse/report/publish$', EcoRSEReportPublishView.as_view(), name='ecorsereportpublish'),
     url(r'^ecorse/report/update$', EcoRSEReportUpdateView.as_view(), name='ecorsereportupdate'),
@@ -21,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^ecorse/report/chart$', EcoRSEReportChartView.as_view(), name='ecorsereportchart'),
 
     url(r'^ecorse/communes$', EcoRSECommunesView.as_view(), name='ecorsecommunes'),
+    url(r'^ecorse/referentiels$', EcoRSEReferentielsView.as_view(), name='ecorsereferentiels'),
     
 
     # Examples:

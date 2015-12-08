@@ -112,10 +112,10 @@
   <xsl:template match = "html:div[@class='topic']">
     <div class="col-sm-12 col-lg-6">
       <div class="thumbnail">
-	<xsl:apply-templates select="html:div[@class='kolekti-sparql']"/>
-	<div class="caption">
-	  <xsl:copy>
-	    <xsl:apply-templates select="@*"/>
+	<xsl:copy>
+	  <xsl:apply-templates select="@*"/>
+	  <xsl:apply-templates select="html:div[@class='kolekti-sparql']"/>
+	  <div class="caption">
 	    <xsl:apply-templates select="html:h1"/>
 	    <hr/>
 	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
@@ -125,8 +125,8 @@
 	      <xsl:call-template name="topic-analyse"/>
 	      <xsl:call-template name="topic-visuels"/>
 	    </div>
-	  </xsl:copy>
-	</div>
+	  </div>
+	</xsl:copy>
       </div>
     </div>
   </xsl:template>
@@ -184,7 +184,7 @@
 	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
 	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
 	</button>
-	<xsl:variable name="ckind" select=".//html:p[@class='kolekti-sparql-result-chartjs']/@data-chartjs-kind"/>
+	<xsl:variable name="ckind" select="@data-chart-kind"/>
 	<ul class="dropdown-menu" role="menu">
 	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Bar">
 	    <xsl:text>Histogramme </xsl:text>
@@ -238,16 +238,20 @@
 
   <xsl:template match="html:div[@class='kolekti-sparql-foreach-result']">
     <tr>
-      <xsl:apply-templates select=".//html:span"/>
+      <xsl:apply-templates mode="tpl"/>
     </tr>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='kolekti-sparql-foreach-result']//html:span">
+  <xsl:template match="html:div[@class='kolekti-sparql-foreach-result']//html:span" mode="tpl">
     <td>
       <xsl:apply-templates/>
     </td>
   </xsl:template>
 
+  <xsl:template match="html:div[@class='kolekti-sparql-foreach-result']//html:span[@class='tplvalue']" mode="tpl">
+    <xsl:apply-templates/>
+  </xsl:template>
+  
   <xsl:template match="html:p[@class='kolekti-sparql-result-chartjs']">
     <div class="kolekti-sparql-result-chartjs" data-chartjs-data='{.}' id="chart_{ancestor::html:div[@class='topic']/@id}">
       <xsl:copy-of select='@data-chartjs-kind'/>

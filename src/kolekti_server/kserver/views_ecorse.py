@@ -59,6 +59,11 @@ class EcoRSEMixin(kolektiMixin):
         report_path = "/".join([release_path,"sources","fr","assembly",report_name+"_asm.html"])
         return self.parse(report_path)
 
+    def get_job(self, release_path):
+        report_name = release_path.rsplit('/',1)[1]
+        job_path = "/".join([release_path,"kolekti","publication-parameters",report_name+"_asm.xml"])
+        return self.parse(job_path)
+
     def write_report(self, report, release_path):
         report_name = release_path.rsplit('/',1)[1]
         report_path = "/".join([release_path,"sources","fr","assembly",report_name+"_asm.html"])
@@ -68,14 +73,15 @@ class EcoRSEMixin(kolektiMixin):
         pass
 
 
-class EcoRSEReportPublishView(EcoRSEMixin, View):
+class EcoRSEReportCreateView(EcoRSEMixin, View):
     def post(self, request):
         try:
             title = request.POST.get('title','')
             commune1 = request.POST.get('commune1','')
             commune2 = request.POST.get('commune2','')
             commune3 = request.POST.get('commune3','')
-            tocpath = '/sources/fr/tocs/trame_sparql.html'
+            toc = request.POST.get('toc')
+            tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             xjob.getroot().set('pubdir',title)
             lang=self.user_settings.active_srclang
@@ -85,7 +91,6 @@ class EcoRSEReportPublishView(EcoRSEMixin, View):
             ET.SubElement(criteria, 'criterion', attrib={"code":"codeINSEE2","value":commune2})
             ET.SubElement(criteria, 'criterion', attrib={"code":"codeINSEE3","value":commune3})
             r = publish.Releaser(projectpath, lang = lang)
-            print ET.tostring(xjob)
             pp = r.make_release(tocpath, xjob)
         except:
             import traceback
@@ -98,10 +103,10 @@ class EcoRSEReportPublishView(EcoRSEMixin, View):
 class EcoRSEReportUpdateView(EcoRSEMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
-        print release_path
         try:
             report = self.get_report(release_path)
             endpoint = self._project_settings.find('sparql').get('endpoint')
+            endpoint = endpoint + report.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)',   namespaces={'h':'http://www.w3.org/1999/xhtml'})
             from kolekti.publish_queries import kolektiSparQL
             sp = kolektiSparQL(endpoint)
             sp.process_queries(report)
@@ -198,9 +203,9 @@ class EcoRSEReportChartView(EcoRSEMixin, View):
         chart =  request.POST.get('charttype','Bar')
         try:
             report = self.get_report(release_path)
-            topic_chart = report.xpath("//html:div[@id = '%s']//html:p[@class='kolekti-sparql-result-chartjs']"%topicid,
+            topic = report.xpath("//html:div[@id = '%s']"%topicid,
                                     namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-            topic_chart.set('data-chartjs-kind', chart )
+            topic.set('data-chart-kind', chart )
             self.write_report(report, release_path)
         except:
             import traceback
@@ -229,8 +234,8 @@ class EcoRSEReportView(EcoRSEMixin, View):
         except IndexError:
             import traceback
             print traceback.format_exc()
-            content = None
-            menu = self.get_assembly_menu(release_path = release_path)
+            content = "Selectionnez un rapport"
+            menu = None
             assembly_name = None
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
@@ -243,9 +248,52 @@ class EcoRSEReportView(EcoRSEMixin, View):
 
 class EcoRSECommunesView(EcoRSEMixin, View):
     def get(self, request):
+        referentiel = request.GET.get('referentiel','')
+        xtoc = self.parse('/sources/fr/tocs/ecorse/'+referentiel)
         endpoint = self._project_settings.find('sparql').get('endpoint')
+        endpoint = endpoint + xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
         from kolekti.publish_queries import kolektiSparQL
         sp = kolektiSparQL(endpoint)
         communes = sp.get_communes()
-        
+        print communes
         return HttpResponse(json.dumps(communes),content_type="application/json")
+
+class EcoRSEReferentielsView(EcoRSEMixin, View):
+    def get(self, request):
+        try:
+            referentiels = self.get_directory('/sources/fr/tocs/ecorse')
+            return HttpResponse(json.dumps([r.get('name') for r in referentiels]),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")
+
+
+class EcoRSEReportPublishView(EcoRSEMixin, View):
+    def post(self, request):
+        try:
+            release_path = request.POST.get('release','')
+            assembly_name = release_path.rsplit('/',1)[1] + "_asm"
+            script = request.POST.get('script','')
+            xjob = self.get_job(release_path)
+            jscripts = xjob.getroot().find('scripts')
+            for jscript in jscripts:
+                if jscript.get('name') != script:
+                    jscripts.remove(jscript)
+            print ET.tostring(jscripts)
+            lang=self.user_settings.active_srclang
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            r = publish.ReleasePublisher(release_path, projectpath, langs = [lang])
+            res = []
+            for e in r.publish_assembly(assembly_name, xjob):
+                if e['event']=='error':
+                    print e['stacktrace']
+                res.append(e)
+            return HttpResponse(json.dumps(res),content_type="application/json")           
+        except:
+            print res
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")

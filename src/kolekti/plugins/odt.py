@@ -20,6 +20,7 @@
 import os
 import time
 import urllib
+import json
 
 from lxml import etree as ET
 from PIL import Image
@@ -52,7 +53,9 @@ class plugin(pluginBase.plugin):
         "add_to_projects":True,
         "parameters":''
         }
-
+        
+    _ns ={'h':'http://www.w3.org/1999/xhtml'}
+     
     def postpub(self):
         res = []
         
@@ -97,7 +100,7 @@ class plugin(pluginBase.plugin):
                 odtids={}
                 iter = 0
                 try:
-                    for img in pivot.xpath('/h:html/h:body//h:img', namespaces={'h':'http://www.w3.org/1999/xhtml'}):
+                    for img in pivot.xpath('/h:html/h:body//h:img', namespaces=self._ns):
                         newsrc = urllib2.quote(img.get('src').encode('utf-8'))
                     
                         if odtids.get(newsrc, '') == '':
@@ -181,7 +184,7 @@ class plugin(pluginBase.plugin):
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
 
-                # self.xwrite(content, tmpdebug)
+                self.xwrite(content, tmpdebug)
                 zipout.writestr('content.xml', bytes=str(content))
                 zipout.writestr('mimetype', bytes='application/vnd.oasis.opendocument.text')
 
@@ -207,11 +210,24 @@ class plugin(pluginBase.plugin):
 
 
     def _generate_graphics(self):
-        
-        for graph in self.pivot.xpath('//html:div[@class="kolekti-sparql-result"]'):
-            data = json.loads(graph.xpath('string(p[@class="kolekti-sparql-result-json"])'))
-
-    def _generate_bar(self, data, idg):
+        self.makedirs(self.publication_plugin_dir+'/img')
+        for topic in self.pivot.xpath('//h:div[@class="topic"]',namespaces=self._ns):
+            charttype = topic.get('data-chart-kind', 'none')
+            
+            data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
+            renderer = getattr(self, '_generate_%s'%(charttype,))
+            print renderer
+            chartfile = self.getOsPath(self.publication_plugin_dir+'/img/'+ topic.get('id')+'.png')
+            renderer(json.loads(data),  chartfile)
+                
+    def _generate_Bar(self, data, chartfile):
+        print "bar chart",data
         bar_chart = pygal.Bar()
-        
-        bar_chart.render_to_file('bar_chart.svg')
+        bar_chart.x_labels = data['labels']
+        for serie in data['datasets']:
+            bar_chart.add(serie['label'], [float(v) for v in serie['data']])
+          
+        bar_chart.render_to_png(chartfile)
+
+    def _generate_none(self, data, chartfile):
+        return

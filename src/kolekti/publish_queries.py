@@ -19,7 +19,7 @@ class kolektiSparQL(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"} 
     def __init__(self, endpoint):
         self.sparql = SPARQLWrapper(endpoint)
-
+        print endpoint
 
     def get_communes(self):
         query = """PREFIX generic_metadata: <http://ecorse.eu/schema/generic_metadata#>
@@ -45,18 +45,21 @@ class kolektiSparQL(object):
             self.sparql.setQuery(query)
             self.sparql.setReturnFormat(JSON)
             results = self.sparql.query().convert()
+            topic = dquery.xpath('ancestor::h:div[@class="topic"]',namespaces=self.nsmap)[0]
+            if topic.get("data-chart-kind") is None:
+                topic.set("data-chart-kind","Bar")
             if not len(results['results']['bindings']):
-                topic = dquery.xpath('ancestor::h:div[@class="topic"]',namespaces=self.nsmap)[0]
                 topic.set('data-hidden','yes')
                 
             else:
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})
                 pjson = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-json"})
                 pjson.text = json.dumps(results)
-                phisto = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-chartjs","data-chartjs-kind":"Bar"})
+                phisto = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-chartjs"})
                 phisto.text = self._to_json_chartjs(results)
                 dquery.append(resdiv)
-
+            
+                
         for dquery in assembly.xpath("//h:div[@class='kolekti-sparql-foreach']", namespaces=self.nsmap):
             query = dquery.xpath("string(h:p[@class='kolekti-sparql-foreach-query'])",  namespaces=self.nsmap)
             self.sparql.setQuery(query)
@@ -76,6 +79,9 @@ class kolektiSparQL(object):
         return assembly
 
     def _instanciate(self, elt, values, root = False):
+        for child in elt:
+            self._instanciate(child, values)
+
         for attr in elt.keys():
             val = elt.get(attr)
             elt.set(attr, val.format(**values))
@@ -84,8 +90,14 @@ class kolektiSparQL(object):
             t = elt.text
             t = t.encode('utf-8')
             t = t.format(**values)
-            elt.text = t.decode('utf-8')
-
+            html = ET.HTML('<html><body><span class="tplvalue">'+t.decode('utf-8')+'</span></body></html>')
+            span = html.find('body').find('span')
+            if len(span) == 0:
+                elt.text = t.decode('utf-8')
+            else:
+                elt.text=""
+                elt.insert(0,span)
+                
         if (not root) and not elt.tail is None :
             t = elt.tail
             t = t.encode('utf-8')
@@ -93,8 +105,6 @@ class kolektiSparQL(object):
             elt.tail = t.decode('utf-8')
 
 
-        for child in elt:
-            self._instanciate(child, values)
             
     
     

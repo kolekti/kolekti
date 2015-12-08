@@ -90,7 +90,8 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-
+        print ET.tostring(assembly)[:500]
+        
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
@@ -108,6 +109,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
         try:
             endpoint = self._project_settings.find('sparql').get('endpoint')
+            endpoint = endpoint + xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)', namespaces=self.nsmap)
             from kolekti.publish_queries import kolektiSparQL
             sp = kolektiSparQL(endpoint)
             sp.process_queries(assembly)
