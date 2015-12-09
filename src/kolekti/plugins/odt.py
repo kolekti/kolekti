@@ -102,7 +102,7 @@ class plugin(pluginBase.plugin):
                 iter = 0
                 try:
                     for img in pivot.xpath('/h:html/h:body//h:img', namespaces=self._ns):
-                        newsrc = urllib2.quote(img.get('src').encode('utf-8'))
+                        newsrc = img.get('src').encode('utf-8')
                         print 'image',newsrc
                         if odtids.get(newsrc, '') == '':
                             # get an uuid for the image
@@ -179,7 +179,7 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_plugin_xsl('generate-styles')
                 doc=xslx(styles,
-                        pivot="'%s'"%tmppivot)
+                        pivot="'%s'"%urllib.quote(tmppivot))
 
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
@@ -191,9 +191,9 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_plugin_xsl('generate')
                 content=xslx(template,
-                         pivot="'%s'"%tmppivot,
-                         styles="'%s'"%tmpstyles,
-                         mapping="'%s'"%mapfile)
+                         pivot="'%s'"%urllib.quote(tmppivot),
+                         styles="'%s'"%urllib.quote(tmpstyles),
+                         mapping="'%s'"%urllib.quote(mapfile))
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
 
