@@ -87,9 +87,9 @@ class EcoRSEReportCreateView(EcoRSEMixin, View):
             lang=self.user_settings.active_srclang
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             criteria = xjob.xpath('/job/criteria')[0]
-            ET.SubElement(criteria, 'criterion', attrib={"code":"codeINSEE1","value":commune1})
-            ET.SubElement(criteria, 'criterion', attrib={"code":"codeINSEE2","value":commune2})
-            ET.SubElement(criteria, 'criterion', attrib={"code":"codeINSEE3","value":commune3})
+            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI1","value":commune1})
+            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
+            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI3","value":commune3})
             r = publish.Releaser(projectpath, lang = lang)
             pp = r.make_release(tocpath, xjob)
         except:
