@@ -134,6 +134,10 @@
   <xsl:template match="html:div [@class][@class='topicinfo']" priority="999"/>
   <xsl:template match="html:span[@class='title_num']"/>
 
+  <xsl:template match="html:span[@class='tab']">
+    <text:tab/>
+  </xsl:template>
+
 
   <!-- generate index -->
 
@@ -305,6 +309,12 @@
   <xsl:template match="html:a[@class='voirpage']">
    <xsl:variable name="href" select="substring(@href, 2)" />
    <text:reference-ref text:reference-format="page" text:ref-name="{$href}">0</text:reference-ref>
+  </xsl:template>
+
+  <xsl:template match="html:a[@class='wwwlink']">
+    <text:a xlink:type="simple" xlink:href="{@href}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">
+      <xsl:apply-templates/>
+    </text:a>
   </xsl:template>
   
   <xsl:template match="html:p[starts-with(@class,'k ')]"/>
@@ -576,6 +586,11 @@
   </xsl:template>
 
   <xsl:template name="img-attrsize">
+      <xsl:attribute name="svg:height">6cm</xsl:attribute>
+      <xsl:attribute name="svg:width">10cm</xsl:attribute>
+  </xsl:template>
+  
+  <xsl:template name="img-attrsize2">
       <xsl:attribute name="svg:height">
 	<xsl:choose>
 	  <!--<xsl:when test="@height and @orig_resh"><xsl:value-of select="@height div @orig_resh"/><xsl:text>in</xsl:text></xsl:when>-->

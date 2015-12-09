@@ -20,6 +20,7 @@
 import os
 import time
 import urllib
+import urllib2
 import json
 
 from lxml import etree as ET
@@ -102,7 +103,7 @@ class plugin(pluginBase.plugin):
                 try:
                     for img in pivot.xpath('/h:html/h:body//h:img', namespaces=self._ns):
                         newsrc = urllib2.quote(img.get('src').encode('utf-8'))
-                    
+                        print 'image',newsrc
                         if odtids.get(newsrc, '') == '':
                             # get an uuid for the image
                             odtid = getid(iter)+os.path.splitext(newsrc)[1]
@@ -126,7 +127,7 @@ class plugin(pluginBase.plugin):
                         img.set('newimgid',odtid)
                         try:
                             # sets the size and def of the image in the pivot for xslt processing
-                            im = Image.open(StringIO(self.publisher.model.abstractIO.getFile(newsrc)))
+                            im = Image.open(StringIO(self.read(newsrc)))
                             (w,h)=im.size
                             img.set('orig_width',str(w))
                             img.set('orig_height',str(h))
@@ -151,8 +152,12 @@ class plugin(pluginBase.plugin):
                 self.xwrite(pivot, tmppivot)
                 
                 # creates a temporary styles file from the template, TODO : use an xslt extension
-                self.write(zipin.read('styles.xml'),tmpstyles)
+                styles = zipin.read('styles.xml')
+                self.write(styles,tmpstyles)
+                styles = ET.XML(styles)
+                
 
+                
                 # generates the metadata of the odt file
 
                 tmeta=ET.XML(zipin.read('meta.xml'))
@@ -171,6 +176,14 @@ class plugin(pluginBase.plugin):
                 #writeback metadata in the generated file
                 zipout.writestr('meta.xml', bytes=str(doc))
 
+
+                xslx = self.get_plugin_xsl('generate-styles')
+                doc=xslx(styles,
+                        pivot="'%s'"%tmppivot)
+
+                for entry in xslx.error_log:
+                    print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+                zipout.writestr('styles.xml', bytes=str(doc))
 
                 # generates the content
 
@@ -217,17 +230,28 @@ class plugin(pluginBase.plugin):
             data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
             renderer = getattr(self, '_generate_%s'%(charttype,))
             print renderer
-            chartfile = self.getOsPath(self.publication_plugin_dir+'/img/'+ topic.get('id')+'.png')
+            chartfile = self.getOsPath(self.publication_plugin_dir+'/img/chart_'+ topic.get('id')+'.png')
             renderer(json.loads(data),  chartfile)
                 
     def _generate_Bar(self, data, chartfile):
-        print "bar chart",data
         bar_chart = pygal.Bar()
         bar_chart.x_labels = data['labels']
+        bar_chart.width = 500
+        bar_chart.height = 300
         for serie in data['datasets']:
             bar_chart.add(serie['label'], [float(v) for v in serie['data']])
           
         bar_chart.render_to_png(chartfile)
+
+    def _generate_Line(self, data, chartfile):
+        line_chart = pygal.Line()
+        line_chart.width = 500
+        line_chart.height = 300
+        line_chart.x_labels = data['labels']
+        for serie in data['datasets']:
+            line_chart.add(serie['label'], [float(v) for v in serie['data']])
+          
+        line_chart.render_to_png(chartfile)
 
     def _generate_none(self, data, chartfile):
         return
