@@ -255,7 +255,6 @@ class EcoRSECommunesView(EcoRSEMixin, View):
         from kolekti.publish_queries import kolektiSparQL
         sp = kolektiSparQL(endpoint)
         communes = sp.get_communes()
-        print communes
         return HttpResponse(json.dumps(communes),content_type="application/json")
 
 class EcoRSEReferentielsView(EcoRSEMixin, View):

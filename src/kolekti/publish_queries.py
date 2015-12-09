@@ -24,16 +24,19 @@ class kolektiSparQL(object):
     def get_communes(self):
         query = """PREFIX generic_metadata: <http://ecorse.eu/schema/generic_metadata#>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        SELECT DISTINCT ?communeURI ?communeLabel
+        PREFIX igeo: <http://rdf.insee.fr/def/geo#>
+        SELECT DISTINCT *
         WHERE {
-        ?communeURI a <http://rdf.insee.fr/def/geo#Commune> ;
-         rdfs:label ?communeLabel .
+            ?placeURI a/rdfs:subClassOf* generic_metadata:territoire ;
+             rdfs:label ?placeLabel .
+             OPTIONAL {?placeURI igeo:codeINSEE ?codeINSEE}
+              BIND (concat(str(?placeLabel),if(bound(?codeINSEE),concat(' (',str(?codeINSEE),')'),'')) AS ?placeLabelFull)
         }
         """
         self.sparql.setQuery(query)
         self.sparql.setReturnFormat(JSON)
         results = self.sparql.query().convert()
-        return [{"id":e.get('communeURI').get('value').split('/')[-1], "name":e.get('communeLabel').get('value')} for e in results['results']['bindings']]
+        return [{"id":e.get('placeURI').get('value'), "name":e.get('placeLabelFull').get('value')} for e in results['results']['bindings']]
     
         
     def process_queries(self, assembly):
