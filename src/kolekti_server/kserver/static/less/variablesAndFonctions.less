@@ -1,0 +1,154 @@
+/* = Imports = */
+
+@import "../bootstrap/less/variables.less";
+@import "../bootstrap/less/variables_modifs.less";
+// nb : certaines variables sont importées du fichier de bootstrap
+@import "../bootstrap/less/mixins.less";
+// nb : certaines fonctions sont importées du fichier de bootstrap
+
+
+
+/* ==========================================
+Variables
+========================================== */
+
+@vertLogo : #7ec241;
+@orangeLogo: #f68a1f;
+
+@rougeLogo : #ad004e  ;
+@bleuLiens : #0A5778  ; 
+
+@rougeFonce : #990000  ;
+@rougeBordeaux : #660000  ;
+@bleuFonce : #0F272F  ;
+@orangeFonce:  #C23E0D; //#DA511F ;
+
+
+@blanc : #FFFFFF ;
+@grisClairPlusPlus : #EFEFEF;
+@grisClairPlus : #E1E1E1  ;
+@grisClair : #BEBEBE  ;
+@grisMoyen : #777777;
+@grisFonce : #424242  ;
+@grisFoncePlus : #31313F  ;
+@noirClair : #09090A  ; 
+@noir : #000000  ;
+
+@baseFontColor : @gray-dark; //#5b565a; //#09090A;
+
+@linkColor : @link-color;
+@linkColorHover : @orangeLogo;
+
+@admLinkColor : @rougeBordeaux;
+@admLinkColorHover : @orangeLogo;
+
+@ftSz_42px: 2.62em;
+@ftSz_25px: 1.56em;
+@ftSz_19px: 1.36em;
+@ftSz_17px: 1.21em;
+@ftSz_16px: 1.15em;
+@ftSz_14px: 1em;
+@ftSz_11px: 0.78em;
+
+// si compilé avec less.js :
+@baseUrlForImages: "../img/";
+
+
+@font-family-sans-serif:  "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif:       Georgia, "Times New Roman", Times, serif;
+//** Default monospace fonts for `<code>`, `<kbd>`, and `<pre>`.
+@font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
+@font-family-base:        @font-family-sans-serif;
+
+@font-size-base:          14px;
+
+
+@texteFontFamily:        @font-family-sans-serif ;
+@hsFontFamily:       @font-family-sans-serif ;
+@hsFontWeight: 500;
+@hsColor: @baseFontColor;
+@menuFontFamily:      @hsFontFamily;
+
+
+
+
+/* @media examples 
+@screen-xs-min, @screen-sm-min, @screen-md-min, @screen-lg-min;
+@screen-xs-max: (@screen-sm-min - 1);
+@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {}
+*/ 
+
+
+
+
+
+/* ==========================================
+Fonts
+========================================== */
+
+/*@font-face {
+	font-family: ProximaNova;
+	src: url("../fonts/ProximaNova-Bold.otf");
+}*/
+
+//pour less compilé avec less.js dans baseHtml.html
+//@fontPath: "../fonts/";
+//pour précompiler less dans css/bootstrap.css
+//@fontPath:          "../fonts/";
+
+/*@fontFaceName01:"Verdana";
+@font-face {
+  font-family: "@{fontFaceName01}";
+  src: ~"url('@{fontPath}@{fontFaceName01}.eot')";
+  src: ~"url('@{fontPath}@{fontFaceName01}.eot?#iefix') format('embedded-opentype')",
+       ~"url('@{fontPath}@{fontFaceName01}.woff') format('woff')",
+       ~"url('@{fontPath}@{fontFaceName01}.ttf') format('truetype')",
+       ~"url('@{fontPath}@{fontFaceName01}.svg#@{icon-font-svg-id}') format('svg')";
+}*/
+
+
+/* ==========================================
+Fonctions
+========================================== */
+.box-shadow-color(@style, @c) when (iscolor(@c)) {
+    // @style: (inset) horizontal vertical blur spread
+    // cf. http://box-shadow.info
+	box-shadow:         @style @c;
+	-webkit-box-shadow: @style @c;
+	-moz-box-shadow:    @style @c;
+}
+.box-shadow-color(@style, @alpha: 50%) when (isnumber(@alpha)) {
+    // @alpha 0.5 par exemple
+	.box-shadow(@style rgba(0, 0, 0, @alpha)); //@style : décalage x, décalage y, spread
+}
+
+.border-radius(@radius) {
+  .border-top-radius(@radius);
+  //.border-right-radius(@radius);
+  .border-bottom-radius(@radius);
+  //.border-left-radius(@radius);
+}
+
+
+.threeD-ball (@colorStart, @start, @colorMiddle, @middle, @colorStop, @stop, @horizOffset, @vertOffset, @angle) {
+	// .3d-ball (yellow, 0%, red, 95%, orange, 100%, 45px, 45px, 45deg);
+	background-image: -moz-radial-gradient(@horizOffset @vertOffset @angle, circle cover, @colorStart @start, @colorStop @stop, @colorMiddle @middle );
+	background-image: -webkit-radial-gradient(@horizOffset @vertOffset, circle cover, @colorStart, @colorStop);
+	background-image: radial-gradient(@horizOffset @vertOffset @angle, circle cover, @colorStart @start, @colorStop @stop, @colorMiddle @middle );
+}
+
+.img-with-style() {
+  padding: 0px;
+  margin: 0;
+  //background-color: @blanc;
+  //border: thin solid @vertLogo;
+  //.box-shadow-color(1px 2px 3px 0px, 0.3);
+}
+.img-without-style() {
+  padding: 0;
+  margin: inherit;
+  background-color: transparent;
+  border: none;
+  .box-shadow-color(1px 2px 3px 0px, 0);
+}
+

@@ -1,0 +1,201 @@
+/* Fecou less */
+
+
+/* ==========================================
+Imports
+========================================== */
+@import "variablesAndFonctions.less";
+
+
+/* ==========================================
+Généralités
+========================================== */
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	//margin: 0;
+	//padding: 0;
+	//border: 0;
+}
+
+body {
+	font-size:@font-size-base;
+	font-family: @texteFontFamily;
+	text-rendering: optimizeLegibility;
+    color:@baseFontColor;
+	@file: "fonds/pattern.png";
+	background: url( "@{baseUrlForImages}@{file}" ) repeat scroll 0 bottom transparent;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: @hsFontFamily;
+	font-weight: @hsFontWeight;
+	color: @hsColor;
+	text-rendering: optimizelegibility; // Fix the character spacing for headings
+	small {
+		font-weight: normal;
+		color: @gray-light;
+	}
+}
+h1 {
+	//margin-bottom: 0.7em;
+	//font-size: 2.5em;
+}
+h2 {
+	//margin: 0.6em 0 0.4em 0;
+}
+h3, h4, h5, h6 {
+	//line-height: 1.4em;
+}
+
+p {
+	text-align: left;
+}
+li {
+	//list-style-type: none;
+}
+a, a:link {
+	color: @linkColor;
+	//text-decoration: none;
+}
+a:visited {
+	color: @linkColor;
+	//text-decoration: none;
+}
+a:hover, a:active {
+	color: @linkColorHover;
+	text-decoration: underline;
+}
+
+@media (max-width: 1199px) {  .visible-largeDesktop { display:none; }}
+@media (min-width: 1200px) {  .hidden-largeDesktop { display:none; }}
+
+img {
+}
+
+section {
+}
+
+a.admlink , a.admlink:link, a.admlink:visited {
+	color: @admLinkColor;
+}
+a.admlink:hover, a.admlink:active {
+	color: @admLinkColorHover;
+}
+
+.mgt { // margin top
+	margin-top: 15px;
+}
+.mgb { // margin bottom
+	margin-bottom: 15px;
+}
+.pdt { // padding top
+	padding-top: 15px;
+}
+.pdb { // padding bottom
+	padding-bottom: 15px;
+}
+.ch { //center horizontaly
+	margin-left: auto;
+	margin-right:auto;
+	display:block;
+}
+
+.btn-fecou, a.btn-fecou {
+	//@file: "fonds/menuGaucheButtonBgInactive.png";
+	//background: url( "@{baseUrlForImages}@{file}" ) repeat scroll transparent;
+	#gradient > .vertical( lighten(@orangeLogo, 5%); darken(@orangeLogo, 5%) );
+	color:@blanc !important;
+	border: none !important;
+	.box-shadow-color(1px 2px 3px 1px, 0.3);
+	&:hover, &:active, &:focus {
+		//@file: "../../images/fonds/menuGaucheButtonBgActive.png";
+		//background: url( "@{baseUrlForImages}@{file}" ) repeat scroll transparent;
+		#gradient > .vertical( lighten(@vertLogo, 10%); @vertLogo );
+		color:@blanc;
+		cursor: pointer !important;
+	}
+}
+
+
+.no-min-height {
+	min-height: inherit !important;
+}
+
+html {
+	.IE9-only {
+		display:none;
+	}
+	&.lt-ie10 .IE9-only {
+		display:block;//visible seulement pour IE lt 9
+	}
+}
+
+
+
+/* ==========================================
+Admin
+========================================== */
+
+
+
+/* ==========================================
+Content
+========================================== */
+		
+	/* ==== Navigation ==== */
+
+	/* ==== Left menus ==== */
+	
+	
+	/* ==== Main content ==== */
+
+
+		/* breadcrumb, fil d'ariane */
+
+	
+		/* widgets */
+
+	
+	/* ==== Right menus ==== */
+
+	/* ==== Footer ==== */
+
+
+
+
+/* ==========================================
+Media queries
+========================================== */
+
+
+@media (min-width: @screen-lg-min) {
+}
+
+@media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+}
+
+
+
+/* ==========================================
+Page de contact
+========================================== */
+
+@import "pageDeContact.less";
+
+
+/* ==========================================
+Reseaux sociaux
+========================================== */
+
+
+/* ==========================================
+IE10-IE11
+========================================== */
+/* ne semble pas marcher, mais c'est pas grave 
+cf. http://www.impressivewebs.com/ie10-css-hacks/
+cf. http://css-tricks.com/ie-10-specific-styles/ */
+html.ie10 {
+	.img-responsive, .thumbnail > img, .thumbnail a > img, .carousel-inner > .item > img, .carousel-inner > .item > a > img {
+		width: inherit;
+	}
+}
