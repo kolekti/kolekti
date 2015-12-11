@@ -35,6 +35,10 @@ from kolekti.import_sheets import Importer, Templater
 from views import kolektiMixin
 
 class EcoRSEMixin(kolektiMixin):
+    def render_to_response(self, context):
+        context.update({'DEBUG': settings.DEBUG})
+        return super(EcoRSEMixin, self).render_to_response(context)
+
     def get_assembly_edit(self, path, release_path="", section=None):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
         if section is None:
@@ -236,7 +240,8 @@ class EcoRSEReportView(EcoRSEMixin, View):
             print traceback.format_exc()
             content = "Selectionnez un rapport"
             menu = None
-            assembly_name = None
+            assembly_name = ""
+
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
                                         "release":release_path,
