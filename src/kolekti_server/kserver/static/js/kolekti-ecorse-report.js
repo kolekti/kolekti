@@ -161,18 +161,27 @@ $(document).ready(function() {
     })
 */
 
-    // typeahead
-    $('#modal_create').on('shown.bs.modal', function () {
-	var get_communes = function(){
-	    // recupere la liste des communes
-	    $.get('/ecorse/communes',{'referentiel':$("#ecorse_select_referentiel").val()})
+    var ref_communes = {}
+
+    $('.typeahead').typeahead({source:function(query, process) {
+	var ref = $("#ecorse_select_referentiel").val();
+	if (ref_communes.hasOwnProperty(ref))
+	    return process(ref_communes[ref]);
+	else {
+	    $.get('/ecorse/communes',{'referentiel':ref})
 		.done(function(data) {
-		    $('.typeahead').typeahead({source:data})
+		    ref_communes[ref] = data;
+		    return process(data)
 		})
 	}
-	
-	$('#ecorse_select_referentiel').on('change', get_communes)
+    }})
 
+    $('#ecorse_select_referentiel').on('change', function() {
+	$('.typeahead').val('')
+    });
+    
+    // typeahead
+    $('#modal_create').on('shown.bs.modal', function () {
 	// recupere la liste des referentiels
 	$.get('/ecorse/referentiels').done(function(data) {
 	    $('#ecorse_select_referentiel').find('option').remove()
@@ -181,8 +190,10 @@ $(document).ready(function() {
 		    $('<option>',{'value':v, 'html':v.replace('.html','')})
 		);
 	    });
-	    get_communes();
 	});
+	$('.typeahead').each(function(){
+	    $(this).val('')
+	})
 	$('#ecorse_select_referentiel').focus();
 
     })
