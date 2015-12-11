@@ -7,17 +7,17 @@
 		<title>{{ kolekti.project }}{% block page-title %}{% endblock %}</title>
 		<link rel="icon" href="/static/kolekti.png">
 		
-		{% with use_less=true use_bsless=true %}
-			{# use_bsless ne fonctionne que si use_less=true #}
+		{% with use_less="true" use_bsless="true" %}
+			{# use_bsless ne fonctionne que si use_less="true" et use_bsless="true" #}
 			<!-- Bootstrap -->
-			{% if use_less == true and use_bsless == true %}				
+			{% if use_less == "true" and use_bsless == "true" %}				
 				<link rel="stylesheet/less" type="text/css" href="/static/bootstrap/less/bootstrap.less"/>
 			{% else %}
 				<link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 			{% endif %}
 
 			<!-- Custom styles for this template -->
-			{% if use_less == true %}
+			{% if use_less == "true" %}
 				<link rel="stylesheet/less" type="text/css" href="/static/less/ecorse.less"/>
 
 				<script type="text/javascript">
@@ -31,9 +31,7 @@
 			{% else %}
 				<link href="/static/css/ecorse.css" rel="stylesheet">
 			{% endif %}
-
-			<div>{{ use_less }}</div>
-
+			<div>{{ use_less }}{{ use_bsless }}</div>
 		{% endwith %}
 
 		<!-- Font Awesome -->
@@ -85,6 +83,20 @@
 				</div><!--/.nav-collapse -->
 			</div>
 		</nav>
+
+		{% with test=1 %}
+						
+			<div class="jumbotron">
+			  <h1>
+			  	{{ test }}
+			  	{% if test == 1 %}
+					___test true				
+				{% else %}
+					___test false				
+				{% endif %}
+			  </h1>
+			</div>
+		{% endwith %}
 
 		{% block page-content %}{% endblock %}
 
