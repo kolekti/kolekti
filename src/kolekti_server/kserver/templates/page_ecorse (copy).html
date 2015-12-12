@@ -4,34 +4,35 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>EcoRSE {% block page-title %}{% endblock %}</title>
+		<title>{{ kolekti.project }}{% block page-title %}{% endblock %}</title>
 		<link rel="icon" href="/static/kolekti.png">
 		
-		<!-- Bootstrap -->
-		{% if DEBUG %}
-			{% with use_bsless="true" %}
-				<!-- Bootstrap -->
-				{% if use_bsless == "true" %}				
-					<link rel="stylesheet/less" type="text/css" href="/static/bootstrap/less/bootstrap.less"/>
-				{% else %}
-					<link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-				{% endif %}			
-				<!-- <div>{{ use_bsless }}</div> -->
-			{% endwith %}
+		{% with use_less="true" use_bsless="true" %}
+			{# use_bsless ne fonctionne que si use_less="true" et use_bsless="true" #}
+			<!-- Bootstrap -->
+			{% if use_less == "true" and use_bsless == "true" %}				
+				<link rel="stylesheet/less" type="text/css" href="/static/bootstrap/less/bootstrap.less"/>
+			{% else %}
+				<link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+			{% endif %}
+
 			<!-- Custom styles for this template -->
-			<link rel="stylesheet/less" type="text/css" href="/static/less/ecorse.less"/>
-			<script type="text/javascript">
-			  less = {
-			  env: "development",
-			  dumpLineNumbers: "mediaquery"
-			  //dumpLineNumbers: "comments"
-			  };
-			</script>
-			<script type="text/javascript" src="/static/js/less.min.js"></script>
-		{% else %}
-			<link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-			<link href="/static/css/ecorse.css" rel="stylesheet">
-		{% endif %}
+			{% if use_less == "true" %}
+				<link rel="stylesheet/less" type="text/css" href="/static/less/ecorse.less"/>
+
+				<script type="text/javascript">
+					less = {
+						env: "development",
+						dumpLineNumbers: "mediaquery"
+						//dumpLineNumbers: "comments"
+					};
+				</script>
+				<script type="text/javascript" src="/static/js/less.min.js"></script>
+			{% else %}
+				<link href="/static/css/ecorse.css" rel="stylesheet">
+			{% endif %}
+			<!-- <div>{{ use_less }}{{ use_bsless }}</div> -->
+		{% endwith %}
 
 		<!-- Font Awesome -->
 		<link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
@@ -48,6 +49,7 @@
 	</head>
 
 	<body role="document">
+
 		<!-- Fixed navbar -->
 		<nav class="navbar navbar-ecorse">
 			<div class="container">
