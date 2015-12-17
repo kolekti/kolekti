@@ -100,7 +100,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             except ExcSyncNoSync:
                 project.update({"status":"local"})
             projects.append(project)
-        return projects
+        return sorted(projects, key=lambda p: p.get('name').lower())
+
 
     def project_langs(self, project):
         try:
