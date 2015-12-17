@@ -905,7 +905,7 @@ class Releaser(Publisher):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        release_name = xjob.get('pubdir')
+        release_name = xjob.get('pubdir', release_name)
         xjob.set('id',release_name + '_asm')
 
         xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
@@ -957,13 +957,15 @@ class Releaser(Publisher):
 
 
 class ReleasePublisher(Publisher):
-    def __init__(self, realease_dir, *args, **kwargs):
+    def __init__(self, release_dir, *args, **kwargs):
+        self._publangs = None
         if kwargs.has_key('langs'):
             self._publangs = kwargs.get('langs')
             kwargs.pop('langs')
-        self._release_dir = realease_dir
+        self._release_dir = release_dir
         super(ReleasePublisher, self).__init__(*args, **kwargs)
-
+        if self._publangs is None:
+            self._publangs = self._project_settings.xpath("/settings/releases/lang/text()")
     def getPublisherExtensions(self):        
         return ReleasePublisherExtensions
 
