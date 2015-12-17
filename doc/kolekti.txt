@@ -1,0 +1,96 @@
+Kolekti : usage de la ligne de commande
+
+kolekti fournit un einterface en ligne de commande permettant d'automatiser certaines opérations du logiciel : publication, création / publication de versions, import / export de variables, diagnostic, recherche, syncrhronisation. 
+
+L'interface en ligne de commande s'utilise en executant le fichier kolekti.py du dossier src/ de la distribution. L'aide en ligne intégrée de la ligne de commande peut etre consultée en utilisant l'argument --help :
+
+$ ./kolekti.py --help
+
+usage: kolekti.py [-h] [-C FILE] [-v] [-b BASE]
+                  {publish,make_release,publish_release,diagnostic,varods,varxml,index,search,sync}
+		                    ...
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -C FILE, --config FILE
+             alternative config file
+  -v, --verbose         display verbose ouput
+  -b BASE, --base BASE  kolekti base path
+
+kolekti commands:
+  {publish,make_release,publish_release,diagnostic,varods,varxml,index,search,sync}
+      publish             assemble, filter and produce documents
+      make_release        create a release
+      publish_release     publish a release
+      diagnostic          diagnostic on project or toc
+      varods              convert variables from xml to ods
+      varxml              convert variables from ods to xml
+      index               (re)build search index
+      search              search query
+      sync                synchronize project
+				      
+
+Arguments globaux
+*****************
+
+Ces argument s'appliquent à toutes commandes kolekti :
+-h, --help : affiche l'aide en ligne sommaire de la ligne de commande kolekti
+
+-C FILE, --config FILE : spécifie un chemin de fichier de configuration de kolekti, ce fichier est utilisé pour spécifier les valeurs fréquentes des arguments de la ligne de commande, afin de ne pas avoir à les spécifier systématiquement lors de l'utilisation de cette dernière.
+
+-v, --verbose : affiche des informations supplémentaire lors de l'execution de kolekti.
+
+-b BASE : chemin d'accès à la base (projet) kolekti à utiliser
+
+Commandes
+*********
+
+La commande permet de spécifier l'opération à réaliser. En fonction de la commande spécfiée, des arguments additionnels peuvent etre donnés à kolekti, pour consulter les arguments disponibles pour une commande, utilisez: kolekti.py COMMANDE --help
+
+Fichier de configuration
+************************
+
+Les arguments les plus frequemment utilisés peuvent être spéficiés dans un fichier de configuration afin de ne pas avoir à les répéter a chaque utilisation de la ligne de commande, le fichier de configuration est recherché aux emplacements suivants, par ordre de priorité :
+
+* chemin spécifié en argument de la ligne de commande
+* kolekti.ini (dans le dossier courant)
+* $HOME/.kolekti [linux]
+* %APPDATA%\kolekti\kolekti.ini [windows]
+* /etc/kolekti.ini [linux]
+
+Le fichier de configuration utilise la syntaxe des fichiers ini.
+Chaque section (nom entre [] ) correspond à une comment et contient les couples nom : valeur des arguments, un argument par ligne.
+
+Détail des paramètres des commandes
+***********************************
+
+Dans les parametres des commandes les chemins sont spéficiés relativement à la recine du projet. Les paramètres entre crochet droits sont optionnels.
+
+publish : publication directe des sources
+=========================================
+
+$kolekti.py publish [-h] [-j JOB] [-l LANG] toc
+
+toc : chemin de la trame à publier
+-j JOB : chemin du fichier de paramètres de publication à utiliser, remplace la valeur présente dans la trame
+-l LANG : code langue des sources à utiliser pour la publication
+
+
+make_release : création d'une version
+=====================================
+
+$kolekti.py make_release [-h] [-l LANG] [-j JOB] toc name
+
+toc : chemin de la trame à publier
+name : nom de la version à créer
+-j JOB : chemin du fichier de paramètres de publication à utiliser, remplace la valeur présente dans la trame
+-l LANG : code langue des sources à utiliser pour la création de la version, utilise la langue définie dans la configuration du projet si omise
+
+publish_release : publication d'une version
+===========================================
+
+kolekti.py publish_release [-h] [-l LANGS] name
+
+name : nom de la version à publier
+-l LANGS : liste des codes langue à publier, séparés par des virgules
+

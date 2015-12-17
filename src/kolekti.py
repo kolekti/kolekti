@@ -59,35 +59,37 @@ if __name__ == '__main__':
     # defaults.update({'cmd':'server'})
     # parser_s.set_defaults(**defaults)
 
-    # draft generation
-    parser_draft = subparsers.add_parser('draft', help="assemble, filter and produce draft documents")
-    parser_draft.add_argument('toc', action='store')
-    parser_draft.add_argument('job', action='store')
-    parser_draft.add_argument('-l', '--lang', action='store')
-    defaults=config.get("draft",{})
-    defaults.update({'cmd':'draft'})
+    # publish
+    parser_draft = subparsers.add_parser('publish', help="assemble, filter and produce documents")
+    parser_draft.add_argument('toc', action='store', help="Toc to be published")
+    parser_draft.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
+    parser_draft.add_argument('-l', '--lang', action='store', help="language of sources" )
+    defaults=config.get("publish",{})
+    defaults.update({'cmd':'publish'})
     parser_draft.set_defaults(**defaults)
     
     # release generation
-    parser_release = subparsers.add_parser('release', help="create release document")
-    parser_release.add_argument('toc', action='store')
-    parser_release.add_argument('job', action='store')
+    parser_release = subparsers.add_parser('make_release', help="create a release")
+    parser_release.add_argument('toc', action='store', help="Toc source of the release")
+    parser_release.add_argument('name', action='store', help="Name of the release")
+    parser_release.add_argument('-l', '--lang', action='store', help="language of sources" )
+    parser_release.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
     # parser_release.add_argument('release', action='store')
-    defaults=config.get("release",{})
-    defaults.update({'cmd':'release'})
+    defaults=config.get("make_release",{})
+    defaults.update({'cmd':'make_release'})
     parser_release.set_defaults(**defaults)
     
 
     # publication d'une release 
-    parser_pub = subparsers.add_parser('publish', help="publish release document")
-    parser_pub.add_argument('release', action='store')
-    parser_pub.add_argument('assembly', action='store')
-    parser_pub.add_argument('-l', '--lang', action='store')
-    defaults=config.get("publish",{})
-    defaults.update({'cmd':'publish'})
+    parser_pub = subparsers.add_parser('publish_release', help="publish a release")
+    parser_pub.add_argument('name', action='store', help="the release name")
+#    parser_pub.add_argument('assembly', action='store')
+    parser_pub.add_argument('-l', '--langs', action='store', help="comma-separated list of languages to publish")
+    defaults=config.get("publish_release",{})
+    defaults.update({'cmd':'publish_release'})
     parser_pub.set_defaults(**defaults)
     
-    # publication d'une release 
+    # perform diagnostics
     parser_diag = subparsers.add_parser('diagnostic', help="diagnostic on project or toc")
     parser_diag.add_argument('-t', '--toc', action='store')
     parser_diag.add_argument('-l', '--lang', action='store')
@@ -151,12 +153,16 @@ if __name__ == '__main__':
     #    wsgi = wsgiclass(args.base)
     #    httpserver.serve(wsgi, host, port)
         
-    if args.cmd == 'draft':
+    if args.cmd == 'publish':
         from kolekti import publish
         try:
             p = publish.DraftPublisher(args.base, lang=args.lang)
-            toc = p.get_base_toc(args.toc)
-            job = p.get_base_job(args.job)
+            toc = p.parse(args.toc)
+            if args.job:
+                job = args.job
+            else:
+                tocjob = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                job = "/kolekti/publication-parameters/"+tocjob+'.xml'
             for event in p.publish_draft(toc, job):
                 if event['event'] == "job":
                     logging.info('Publishing Job %s'%event['label'])
@@ -170,45 +176,39 @@ if __name__ == '__main__':
                 if event['event'] == "error":
                     logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                 if event['event'] == "warning":
-                    logging.info(' [W] %s\n%s'%(msg) 
+                    logging.info(' [W] %s\n%s'%(msg) )
             logging.info("Publication complete")
         except:
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Publication ended with errors")
 
-    if args.cmd == 'release':
+    if args.cmd == 'make_release':
         from kolekti import publish
         try:
             p = publish.Releaser(args.base, lang=args.lang)
-            toc = p.get_base_toc(args.toc)
-            job = p.get_base_job(args.job)
-            p.make_release(toc, job)
+            toc = p.parse(args.toc)
+            if args.job:
+                job = args.job
+            else:
+                tocjob = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                job = "/kolekti/publication-parameters/"+tocjob+'.xml'
+            xjob = p.parse(job)
+            xjob.getroot().set('pubdir',args.name)
+            p.make_release(toc, xjob, release_name=args.name)
             logging.info("Release sucessful")
         except:
             import traceback
             logging.debug(traceback.format_exc())
             logging.error("Release ended with errors")
                     
-    if args.cmd == 'diagnostic':
-        from kolekti import diagnostic
-        try:
-            d = diagnostic.Diagnostic(args.base)
-            if args.toc:
-                d.diag_toc(args.toc)
-            else:
-                d.diag_project()
-        except:
-            import traceback
-            logging.debug(traceback.format_exc())
-            logging.error("Diagnostics failed")
-                    
-    if args.cmd == 'publish':
+    if args.cmd == 'publish_release':
         from kolekti import publish
         try:
-            p = publish.ReleasePublisher(args.base, lang=args.lang)
+            release = '/releases/' + args.name
+            p = publish.ReleasePublisher(release, args.base, langs = args.langs.split(','))
 
-            for event in p.publish_assembly(args.release, args.assembly)
+            for event in p.publish_assembly(args.name + "_asm"):
                 if event['event'] == "job":
                     logging.info('Publishing Job %s'%event['label'])
                 if event['event'] == "profile":
@@ -229,6 +229,19 @@ if __name__ == '__main__':
             logging.debug(traceback.format_exc())
             logging.error("Publication ended with errors")
             
+    if args.cmd == 'diagnostic':
+        from kolekti import diagnostic
+        try:
+            d = diagnostic.Diagnostic(args.base)
+            if args.toc:
+                d.diag_toc(args.toc)
+            else:
+                d.diag_project()
+        except:
+            import traceback
+            logging.debug(traceback.format_exc())
+            logging.error("Diagnostics failed")
+                    
     if args.cmd == 'varods':
         from kolekti import variables
         c = variables.XMLToOds(args.base)
