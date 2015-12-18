@@ -150,6 +150,8 @@ class SynchroManager(object):
                     "basename":os.path.basename(path),
                     "rstatus":str(status.repos_text_status),
                     "wstatus":str(status.text_status),
+                    "rpropstatus":str(status.repos_prop_status),
+                    "wpropstatus":str(status.prop_status),
                     }
 
             if status.entry is not None:
