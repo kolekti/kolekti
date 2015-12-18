@@ -229,9 +229,11 @@ class plugin(pluginBase.plugin):
             
             data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
             renderer = getattr(self, '_generate_%s'%(charttype,))
-            print renderer
             chartfile = self.getOsPath(self.publication_plugin_dir+'/img/chart_'+ topic.get('id')+'.png')
-            renderer(json.loads(data),  chartfile)
+            try:
+                renderer(json.loads(data),  chartfile)
+            except:
+                topic.set('data-chart-kind', 'none')
                 
     def _generate_Bar(self, data, chartfile):
         bar_chart = pygal.Bar()

@@ -96,22 +96,24 @@ $(document).ready(function() {
 	var chart = document.getElementById(chartid)
 	var canvasid = 'canvas_' + chartid
 	$(chart).find('canvas').remove()
-	$(chart).prepend($('<canvas>', {'id':canvasid}))
+	if (data != 'no data') {
+	    $(chart).prepend($('<canvas>', {'id':canvasid}))
 	
-        for (s=0; s < data['seriescount']; s++) {
-	    data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
-  	    data['datasets'][s]["strokeColor"] = "rgba("+chartcolors[s]+",0.8)";
-	    if (kind == "Bar") {
-		data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.75)";
- 		data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.5)";
-            }
-	    if (kind == "Line") {
-		data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.2)";
- 		data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.1)";
-            }
+            for (s=0; s < data['seriescount']; s++) {
+		data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
+  		data['datasets'][s]["strokeColor"] = "rgba("+chartcolors[s]+",0.8)";
+		if (kind == "Bar") {
+		    data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.75)";
+ 		    data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.5)";
+		}
+		if (kind == "Line") {
+		    data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.2)";
+ 		    data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.1)";
+		}
+	    }
+            var ctx = document.getElementById(canvasid).getContext("2d");
+	    var myNewChart = new Chart(ctx)[kind](data);
 	}
-        var ctx = document.getElementById(canvasid).getContext("2d");
-	var myNewChart = new Chart(ctx)[kind](data);
     }
 
 
@@ -127,7 +129,11 @@ $(document).ready(function() {
     
     $('.kolekti-sparql-result-chartjs').each(function() {
 	var data = $(this).data('chartjs-data')
-	$(this).find('.legend').append(
+	if (data == "no data") {
+	    $(this).find('.legend').append($('<p class="error">Aucune donnée pour cet indicateur</p>'))
+	}else{
+	    $(this).find('.legend').append(
+	    
 	    $.map(data.datasets, function(s,i) {
 		return $('<p>', {
 			'class':'legendtiem',
@@ -147,7 +153,8 @@ $(document).ready(function() {
 		    ]
 		} )
 	    })
-	)
+	    )
+	}
     });
 
     // actions

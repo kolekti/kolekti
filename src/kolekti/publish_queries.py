@@ -53,13 +53,22 @@ class kolektiSparQL(object):
                 topic.set("data-chart-kind","Bar")
             if not len(results['results']['bindings']):
                 topic.set('data-hidden','yes')
+                print "No result for query"
+                print query
                 
             else:
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})
                 pjson = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-json"})
                 pjson.text = json.dumps(results)
                 phisto = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-chartjs"})
-                phisto.text = self._to_json_chartjs(results)
+                
+                try:
+                    phisto.text = self._to_json_chartjs(results)
+                except:
+                    print "error parsing results"
+                    print query
+                    phisto.text = "no data"
+
                 dquery.append(resdiv)
             
                 
@@ -124,7 +133,7 @@ class kolektiSparQL(object):
         reslist = result['results']['bindings']
         years = set()
         series = {}
-        sreslist = sorted(reslist, key=lambda s:s.get('year').get('value'))
+        sreslist = sorted(reslist, key=lambda s:s.get('year',{'value':'0'}).get('value'))
         for item in sreslist:
             year = item[u'year']['value']
             years.add(year)
@@ -133,36 +142,11 @@ class kolektiSparQL(object):
                 series[place].append(item[u'xapprox']['value'])
             except KeyError:
                 series[place]=[item[u'xapprox']['value']]
-#        if len(years)
-#            resdict = dict([(z,v['value']) for z,v in item.iteritems()])
-#            print
-#            print resdict
-        print "years", str(years)
-        print "series", str(series)
         res = {
             "seriescount":len(series.keys()),
             "labels":sorted(list(years)),
             "datasets":[{
                 "label":k,
                 "data":v
-                } for k,v in series.iteritems()]}
+            } for k,v in series.iteritems()]}
         return json.dumps(res)
-        if len(reslist):
-            labels = [record['year']['value'] for record in reslist]
-            print labels
-            try:
-                res = {
-                    "labels": [record['year']['value'] for record in reslist],
-                    "datasets": [{
-                        "label": reslist[0]['valueLabel']['value'],
-                        "data": [record['xapprox']['value'] for record in reslist]
-                        }]
-                    }
-                
-                return json.dumps(res)
-            except:
-                import traceback
-                print traceback.format_exc()
-                raise
-        else:
-            return "no data"
