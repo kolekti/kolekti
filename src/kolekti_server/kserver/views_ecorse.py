@@ -250,6 +250,32 @@ class EcoRSEReportView(EcoRSEMixin, View):
                                         "title":assembly_name})
     
         
+class EcoRSEReportView(EcoRSEMixin, View):
+    template_name = "ecorse/share.html"
+    def get(self, request):
+            
+        release_path = request.GET.get('release','')
+        section = request.GET.get('section')
+        try:
+            assembly_name = release_path.rsplit('/',1)[1]
+            self._checkout(release_path)
+            assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
+            content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
+            menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+        except IndexError:
+            import traceback
+            print traceback.format_exc()
+            content = "Selectionnez un rapport"
+            menu = None
+            assembly_name = ""
+
+        return self.render_to_response({"content":content,
+                                        "current":assembly_name,
+                                        "release":release_path,
+                                        "menu":menu,
+                                        "title":assembly_name})
+    
+        
 
 class EcoRSECommunesView(EcoRSEMixin, View):
     def get(self, request):

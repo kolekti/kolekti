@@ -13,7 +13,8 @@ urlpatterns = patterns('',
     # ECOres specific wiews
     # url(r'^$', EcoRSEHomeView.as_view(), name='ecorsehome'),
     url(r'^ecorse/$', EcoRSEReportView.as_view(), name='ecorsehome'),
-    url(r'^ecorse/report/$', EcoRSEReportView.as_view(), name='ecorsereport'),
+    
+    url(r'^ecorse/report/$', EcoRSEReportShareView.as_view(), name='ecorsereport'),
     url(r'^ecorse/report/create$', EcoRSEReportCreateView.as_view(), name='ecorsereportcreate'),
     url(r'^ecorse/report/publish$', EcoRSEReportPublishView.as_view(), name='ecorsereportpublish'),
     url(r'^ecorse/report/update$', EcoRSEReportUpdateView.as_view(), name='ecorsereportupdate'),
