@@ -348,10 +348,10 @@ class kolektiBase(object):
             pass
         self.xwrite(xassembly, assembly_path)
 
-        try:
-            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
-        except:
-            pass
+#        try:
+#            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+#        except:
+#            pass
         yield assembly_path
         return
 
