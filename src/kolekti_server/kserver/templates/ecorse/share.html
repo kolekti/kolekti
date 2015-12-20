@@ -1,0 +1,70 @@
+{% extends "base_ecorse.html" %}
+{% load ostags %}
+
+
+{% block extracss %}
+    <script>
+   </script>
+{% endblock %}
+
+
+{% block extrascripts %}
+    <script src="/static/Chart.min.js" type="text/javascript"></script>
+    <script src="/static/js/kolekti-ecorse-share.js"></script>
+{% endblock %}
+
+{% block page-title %}
+    {{ title }}
+{% endblock %}
+
+    {% block menu %}
+    <ul class="list-group list-releases">
+      <li class="list-group-item">
+	<a href="?release={{ release }}"><strong>{{ current }}</strong></a>
+	<br/>
+	
+	<div class="btn-group">
+	  <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+	    <i class="fa fa-download"></i>&nbsp;
+	    Télécharger&nbsp;
+	    <span class="caret"></span>
+	  </a>
+	  <ul class="dropdown-menu" role="menu">
+	    <li role="presentation">
+	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
+		<i class="fa fa-file-pdf-o"></i>&nbsp;
+		Pdf
+	      </a>
+	    </li>
+	    <li role="presentation">
+	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
+		<i class="fa fa-file-word-o"></i>&nbsp;
+		Word
+	      </a>
+	    </li>
+	    <li role="presentation">
+	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
+		<i class="fa fa-file-powerpoint-o"></i>&nbsp;
+		PowerPoint
+	      </a>
+	      </li>
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
+		  <i class="fa fa-download"></i>&nbsp;
+		  HTML5
+		</a>
+	      </li>
+	    </ul>
+	</div>
+	  {{ menu|safe }}
+      </li>
+    </ul>
+    {% endblock %}
+
+
+{% block content %}
+    <div class="report" data-release="{{ release }}">
+    {{ content|safe}}
+    </div>    
+{% endblock %}
+
