@@ -122,6 +122,8 @@ a.admlink:hover, a.admlink:active {
 }
 
 html {
+	position: relative;
+	min-height: 100%;
 	.IE9-only {
 		display:none;
 	}
@@ -144,10 +146,13 @@ Content
 		
 	/* ==== Navigation ==== */
 	.navbar-ecorse {
-	    background-color: @cielLogo;
-	    background-color: #00b1d8;
-
+	    background-color: @marineLogo;
 	    border-color: darken(@cielLogo, 20%);
+
+	    .navbar-brand img {
+		    position: relative;
+		    top: -10px;
+		}
 	}
 
 
@@ -166,8 +171,53 @@ Content
 	/* ==== Right menus ==== */
 
 	/* ==== Footer ==== */
+	@footerHeight: 60px ;
+	body {
+		/* Margin bottom by footer height */
+	  	margin-bottom: @footerHeight;
+	}
 
+	.footer {
+	    position: absolute;
+	    bottom: 0;
+	    width: 100%;
+	    /* Set the fixed height of the footer here */
+	    height: @footerHeight;
+	    background-color: darken(@marineLogo, 10%);
+	    padding: 1.5em 0 ;
+	    .copyright {
+	    	color: @grisClair;
+	    }
+	}
 
+	// Social Buttons
+	ul.social-buttons {
+	    margin-bottom: 0;
+	    text-align: right;
+	    @socialButtonsHeight: 30px ;
+	    li {
+	        a {
+	            display: block;
+	            background-color: @noirClair;
+	            height: @socialButtonsHeight;
+	            width: @socialButtonsHeight;
+	            border-radius: 100%;
+	            font-size: 20px;
+	            line-height: @socialButtonsHeight;
+	            color: white;
+	            outline: none;
+	            text-align: center;
+	            -webkit-transition: all 0.3s;
+	            -moz-transition: all 0.3s;
+	            transition: all 0.3s;
+	            &:hover,
+	            &:focus,
+	            &:active {
+	                background-color: @linkColorHover;
+	            }
+	        }
+	    }
+	}
 
 
 /* ==========================================

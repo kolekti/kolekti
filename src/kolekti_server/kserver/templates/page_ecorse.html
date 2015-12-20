@@ -8,10 +8,10 @@
 		<link rel="icon" href="/static/kolekti.png">
 		
 		<!-- Bootstrap -->
-		{% if DEBUG %}
-			{% with use_bsless="true" %}
+		{% if DEBUG %} {# paramètre DEBUG dans /media/donnees/web/ecorse/kolekti/src/kolekti_server/kolekti_server/settings.py #}
+			{% with use_bsless=True %}
 				<!-- Bootstrap -->
-				{% if use_bsless == "true" %}				
+				{% if use_bsless %}				
 					<link rel="stylesheet/less" type="text/css" href="/static/bootstrap/less/bootstrap.less"/>
 				{% else %}
 					<link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -49,8 +49,8 @@
 
 	<body role="document">
 		<!-- Fixed navbar -->
-		<nav class="navbar navbar-ecorse">
-			<div class="container">
+		<nav class="navbar navbar-ecorse navbar-static-top">
+			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 						<span class="sr-only">Toggle navigation</span>
@@ -58,45 +58,122 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="#">Ecorsef</a>
+					<a class="navbar-brand page-scroll" href="#"><img height="40px" src="/static/img/logo.png" alt="logo Ecorse"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-						<li class="active"><a href="#">Home</a></li>
-						<li><a href="#about">About</a></li>
-						<li><a href="#contact">Contact</a></li>
+						<li class="active"><a href="#">Accueil</a></li>						
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Rapports <span class="caret"></span></a>
 							<ul class="dropdown-menu">
-								<li><a href="#">Action</a></li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
+								<li><a href="#">Rapport 1</a></li>
+								<li><a href="#">Autre rapport</a></li>
 								<li role="separator" class="divider"></li>
-								<li class="dropdown-header">Nav header</li>
-								<li><a href="#">Separated link</a></li>
-								<li><a href="#">One more separated link</a></li>
+								<li class="dropdown-header">Rapports archivés</li>
+								<li><a href="#">Rapport 0</a></li>
+								<li><a href="#">Analyse Voiron</a></li>
 							</ul>
 						</li>
 					</ul>
+
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="#about">À propos</a></li>
+						<li class="dropdown">
+		                    <a href="#" data-toggle="dropdown" class="dropdown-toggle" aria-expanded="false">
+		                        <i class="fa fa-user fa-fw"></i> D. Rouquet &nbsp;<i class="fa fa-caret-down"></i>
+		                    </a>
+		                    <ul class="dropdown-menu dropdown-user">
+		                        <li><a href="#"><i class="fa fa-user fa-fw"></i> Mon profil</a>
+		                        </li>
+		                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
+		                        </li>
+		                        <li class="divider"></li>
+		                        <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
+		                        </li>
+		                    </ul>
+		                    <!-- /.dropdown-user -->
+		                </li>
+						<li>
+							<form class="navbar-form navbar-left" role="search">
+								<div class="form-group input-group custom-search-form">
+	                                <input type="text" placeholder="Search..." class="form-control">
+	                                <span class="input-group-btn">
+	                                <button type="button" class="btn btn-default">
+	                                    <i class="fa fa-search"></i>
+	                                </button>
+	                            </span>
+	                            </div>
+                            </form>
+						</li>
+						<li>
+							<button id="fullscreen" type="button" class="btn btn-default navbar-btn">
+								<a title="Full Screen" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a>
+							</button>
+							<!-- <button type="button" class="btn btn-default navbar-btn">Sign in</button>
+							<div class="btn-header transparent pull-right" id="fullscreen">
+								<span> <a title="Full Screen" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a> </span>
+							</div> -->
+						</li>
+						<li>
+							<button id="hide-menu" type="button" class="btn btn-default navbar-btn">
+								<a title="Full Screen" data-action="toggleMenu" href="javascript:void(0);"><i class="fa fa-reorder"></i></a>
+							</button>
+							<!-- <div class="btn-header pull-right" id="hide-menu">
+								<span> <a title="Collapse Menu" data-action="toggleMenu" href="javascript:void(0);"><i class="fa fa-reorder"></i></a> </span>
+							</div> -->
+						</li>
+					</ul>
+					
 				</div><!--/.nav-collapse -->
 			</div>
 		</nav>
 
-		{% with test=1 %}
-						
-			<div class="jumbotron">
-			  <h1>
-			  	{{ test }}
-			  	{% if test == 1 %}
-					___test true				
-				{% else %}
-					___test false				
-				{% endif %}
-			  </h1>
-			</div>
-		{% endwith %}
+		{% comment "Test variables with" %}		
+			{% with test=True %}
+							
+				<div class="jumbotron">
+				  <h1>
+				  	{{ test }}
+				  	{% if test %}
+						___test true				
+					{% else %}
+						___test false				
+					{% endif %}
+				  </h1>
+				</div>
+			{% endwith %}
+		{% endcomment %}	
+		
+
+
+		<div class="container-fluid">
+			<ol class="breadcrumb">
+				<li><a href="#">Home</a></li>
+				<li><a href="#">Library</a></li>
+				<li class="active">Data</li>
+			</ol>
+		</div>
 
 		{% block page-content %}{% endblock %}
+
+
+		<footer class="footer">
+	        <div class="container-fluid">
+	            <div class="row">
+	                <div class="col-md-4">
+	                    <span class="copyright">Copyright © 2016</span>
+	                </div>
+	                <div class="col-md-offset-4 col-md-4">
+	                    <ul class="list-inline social-buttons">
+	                        <li><a href="https://twitter.com/ecorse"><i class="fa fa-twitter"></i></a>
+	                        </li>
+	                        <li><a href="https://www.facebook.com/ecorse/"><i class="fa fa-facebook"></i></a>
+	                        </li>          
+	                    </ul>
+	                </div>
+	            </div>
+	        </div>
+	    </footer>
 
 		{% comment %}
 			<div class="modal fade">
@@ -131,6 +208,21 @@
 		<script src="/static/js/kolekti-utils.js"></script>
 		<script src="/static/js/kolekti-common.js"></script>
 		-->
+
+		{# scripts additionnels Felix #}
+		<script>
+			// jQuery for page scrolling feature - requires jQuery Easing plugin
+			$(function() {
+			    $('a.page-scroll').bind('click', function(event) {
+			        var $anchor = $(this);
+			        $('html, body').stop().animate({
+			            scrollTop: $($anchor.attr('href')).offset().top
+			        }, 1500, 'easeInOutExpo');
+			        event.preventDefault();
+			    });
+			});
+		</script>
+		{# fin scripts additionnels Felix #}
 	
 		{% block extrascripts %}{% endblock %}
 	
