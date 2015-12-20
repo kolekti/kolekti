@@ -53,19 +53,45 @@
   </xsl:template>
   
 
-  <xsl:template match="html:h1">
-    <xsl:element name="h{count(ancestor::html:div[@class='section']) + 1}" namespace="http://www.w3.org/1999/xhtml">
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:element>
-  </xsl:template>
-
   <xsl:template match="html:div[@class='topic']/html:h1">
     <h5>
       <xsl:apply-templates select="node()|@*"/>
     </h5>
   </xsl:template>
-  
+
+  <xsl:template match="html:h1"/>
+  <xsl:template match="html:head"/>
+
   <xsl:template match = "html:div[@class='section']">
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match = "html:body">
+    <div>
+      <xsl:apply-templates select="html:div[@class='section']"/>
+    </div>
+    <div>
+      <xsl:apply-templates select=".//html:div[@class='topic'][@data-star]"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match = "html:body/html:div[@class='section']">
+    <div>
+      <a href="?release={$path}&amp;section={@id}">
+	<xsl:attribute name="class">
+	  <xsl:value-of select="html:h1/@class"/>
+	  <xsl:text> list-group-item</xsl:text>
+	  <xsl:if test="@id = $section">
+	    <xsl:text> active</xsl:text>
+	  </xsl:if>
+	</xsl:attribute>
+	<xsl:value-of select="html:h1"/>
+      </a>
+    </div>
+  </xsl:template>
+
+  
+  <xsl:template match = "html:div[@class='topic'][@data-star]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:apply-templates select="html:h1"/>
@@ -75,62 +101,6 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section']) = 0]">
-    <xsl:copy>
-      <xsl:apply-templates select="@id"/>
-      <div>
-	<xsl:apply-templates select="html:h1"/>
-      </div>
-      <p></p>
-      <div class="panel-group" role="tablist" id="section_{@id}" aria-multiselectable="false">
-	<xsl:apply-templates select="html:div"/>
-      </div>
-    </xsl:copy>
-  </xsl:template>
-
-  <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section'])=1]">
-      <!--
-	  <xsl:copy>
-      -->
-	  <div class="panel panel-default" id="{@id}">
-	  <div class="panel-heading" role="tab" id="heading_{@id}">
-	    <h3 class="panel-title {html:h1/@class}">
-	      <a data-toggle="collapse" href="#collapse_section_{@id}" aria-controls="collapse_section_{@id}" data-parent="#section_{ancestor::html:div[@class='section']/@id}">
-		<xsl:apply-templates select="html:h1/node()"/>
-	      </a>
-	    </h3>
-	  </div>
-	  <div  class="panel-collapse collapse section-content" role="tabpanel" aria-labelledby="heading_{@id}" id="collapse_section_{@id}">
-	    <div class="panel-body">
-	      <xsl:apply-templates select="html:div"/>
-	    </div>
-	  </div>
-	  </div>
-
-<!--      </xsl:copy>-->
-  </xsl:template>
-
-  <xsl:template match = "html:div[@class='topic']">
-    <div class="col-sm-12 col-lg-6">
-      <div class="thumbnail">
-	<xsl:copy>
-	  <xsl:apply-templates select="@*"/>
-	  <xsl:apply-templates select="html:div[@class='kolekti-sparql']"/>
-	  <div class="caption">
-	    <xsl:apply-templates select="html:h1"/>
-	    <hr/>
-	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
-
-	      <xsl:call-template name="topic-controls"/>
-	      <xsl:apply-templates select="html:div[@class='details']"/>
-	      <xsl:call-template name="topic-analyse"/>
-	      <xsl:call-template name="topic-visuels"/>
-	    </div>
-	  </div>
-	</xsl:copy>
-      </div>
-    </div>
-  </xsl:template>
 
   <xsl:template match = "html:div[@class='topicinfo']"/>
 

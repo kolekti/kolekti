@@ -39,20 +39,22 @@ class EcoRSEMixin(kolektiMixin):
         context.update({'DEBUG': settings.DEBUG})
         return super(EcoRSEMixin, self).render_to_response(context)
 
-    def get_assembly_edit(self, path, release_path="", section=None):
+    def get_assembly_edit(self, path, release_path="", section=None, share = False):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
         if section is None:
-            section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+            xsl = self.get_xsl('ecorse_assembly_home')
+            body = xassembly.getroot()
+        else:
+            xsl = self.get_xsl('ecorse_assembly_edit')
+            body = xassembly.xpath('/html:html/html:body/html:div[@class="section"][@id="%s"]'%section, namespaces={'html':'http://www.w3.org/1999/xhtml'})
 
-        body = xassembly.xpath('/html:html/html:body/html:div[@class="section"][@id="%s"]'%section, namespaces={'html':'http://www.w3.org/1999/xhtml'})
-        xsl = self.get_xsl('ecorse_assembly_edit')
-        content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section)) for t in body])
+        content = ''.join([str(xsl(t, path="'%s'"%release_path, share="'%s'"%share)) for t in body])
         return content
 
     def get_assembly_menu(self, path, release_path="", section=None):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
-        if section is None:
-            section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+#        if section is None:
+#           section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('ecorse_assembly_menu')
         content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section)) for t in body])
@@ -250,7 +252,7 @@ class EcoRSEReportView(EcoRSEMixin, View):
                                         "title":assembly_name})
     
         
-class EcoRSEReportView(EcoRSEMixin, View):
+class EcoRSEReportShareView(EcoRSEMixin, View):
     template_name = "ecorse/share.html"
     def get(self, request):
             
@@ -258,9 +260,8 @@ class EcoRSEReportView(EcoRSEMixin, View):
         section = request.GET.get('section')
         try:
             assembly_name = release_path.rsplit('/',1)[1]
-            self._checkout(release_path)
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
-            content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
+            content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section, share = True)
             menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
         except IndexError:
             import traceback
