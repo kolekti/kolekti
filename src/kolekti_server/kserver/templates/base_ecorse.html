@@ -1,20 +1,41 @@
 {% extends "page_ecorse.html" %}
 
 {% block page-content %}
-    <div class="container-fluid">
-      <div class="row">
-	<div class="col-sm-3 col-md-3 side">
-	  <div data-spy="affix" data-offset-top="0" id="sideaffix">
-	    {% block menu %}{% endblock %}
-	  </div>
-	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-3 col-md-2 sidebar">
+				{# pas besoin du affix, sinon on ne peutr pas scroller... <div data-spy="affix" data-offset-top="0" id="sideaffix"> #}
+				<div id="side-menu">
+					{% block menu %}{% endblock %}
+				</div>
+			</div>
 
-        <div class="col-sm-9 col-md-9 main">
-          <h1 class="pagetitle">{% block title %}{% endblock %}</h1>
-	  {% block content %}generic template{% endblock %}
+			<div class="col-sm-9 col-md-10 main">
+				<ol class="breadcrumb">
+					<li><a href="#">Home</a></li>
+					<li><a href="#">Library</a></li>
+					<li class="active">Data</li>
+				</ol>
+
+				{% comment "La boucle et le test ne semble pas nécessaires" %}
+					{% for release in releases %}
+						{% if release.name == current %}
+							<div class="jumbotron">
+								<h1 class="pagetitle">{% block title %}{% endblock %}{{release.name}}</h1>
+							</div>							
+						{% endif %}
+					{% endfor %}
+				{% endcomment %}
+
+				<div class="jumbotron">
+					<h1 class="pagetitle">{{current}}</h1>
+				</div>
+
+
+				{% block content %}generic template{% endblock %}
+			</div>
+		</div>
 	</div>
-      </div>
-    </div>
 {% endblock %}
 
 

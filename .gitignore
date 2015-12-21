@@ -39,7 +39,8 @@ nosetests.xml
 src/kolekti_server/db.sqlite3
 
 #fichier de backup de linux
-*~
+.~*
+*.*~
 
 
 #ajouts felix
