@@ -68,7 +68,7 @@ class kolektiBase(object):
             self._path = path
         else:
             self._path = path + os.path.sep
-        self._xmlparser = ET.XMLParser()
+        self._xmlparser = ET.XMLParser(load_dtd = True)
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
