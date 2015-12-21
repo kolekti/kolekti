@@ -6,6 +6,7 @@
 import os
 import sys
 import re
+from string import maketrans
 from copy import copy
 from datetime import datetime
 import ConfigParser
@@ -161,9 +162,17 @@ class kolektiBase(object):
         lp = self.__makepath(path)
         return os.path.exists(lp)
 
+    def __pathchars(self, s):
+        intab = """?'"<>\/|"""
+        outtab = "!_______"
+        for i,o in zip(intab, outtab):
+            s = s.replace(i,o)
+        return s
+    
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = [p for p in path.split('/') if p!='']
+        pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
+        res =  os.path.join(self._path, *pathparts)
         # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logging.debug(urllib2.url2pathname(path))
