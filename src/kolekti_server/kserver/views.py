@@ -326,7 +326,7 @@ class ProjectsConfigView(kolektiMixin, View):
             else:
                 for l in xlangs:
                     xlangs.remove(l)
-            for l in rellangs:
+            for l in set(rellangs).union(set(srclangs)):
                 xl = ET.SubElement(xlangs,'lang')
                 xl.text = l
     
