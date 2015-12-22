@@ -15,7 +15,6 @@ from kolekti.settings import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
@@ -66,6 +65,7 @@ if os.sys.platform[:3] == "win":
     appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
     DB_NAME = appdatadir + '\\db.sqlite3'
     DB_NAME = DB_NAME.replace('\\','/')
+    os.environ['XML_CATALOG_FILES']='/'.join([BASE_DIR,'dtd','w3c-dtd-xhtml.xml'])
 else:
     DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
 

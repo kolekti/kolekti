@@ -11,6 +11,7 @@ import random
 from datetime import datetime
 import time
 from lxml import etree as ET
+import base64
 from PIL import Image
 import urllib, urllib2
 try:
@@ -488,32 +489,27 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     
 class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
-        release_path = request.GET.get('release')
-        assembly_name = release_path.rsplit('/',1)[1]
-        lang = request.GET.get('lang', self.user_settings.active_srclang)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
-        content = self.get_assembly_edit(assembly_path, release_path=release_path),
+        try:
+            release_path = request.GET.get('release')
+            assembly_name = release_path.rsplit('/',1)[1]
+            lang = request.GET.get('lang', self.user_settings.active_srclang)
+            assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+            content = self.get_assembly_edit(assembly_path, release_path=release_path),
+        except:
+            import traceback
+            print traceback.format_exc()
         return HttpResponse(content)
     
         
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
-    def get(self, request):
-        release_path = request.GET.get('release')
-        lang = request.GET.get('lang', self.user_settings.active_srclang)
-        assembly_name = self.basename(release_path)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
-        #print self.get_assembly_edit(assembly_path)
-        context = self.get_context_data({
-            'releasesinfo':self.release_details(release_path, lang),
-            'success':True,
-            'release_path':release_path,
-            'assembly_name':assembly_name,
-            'lang':lang,
-#            'content':self.get_assembly_edit(assembly_path, release_path=release_path),
-        })
+
+    def get_context_data(self, context):
+        context = super(ReleaseDetailsView, self).get_context_data(context)
         states = []
         focus = []
+        release_path = context.get('release_path')
+        assembly_name = context.get('assembly_name')
         for lang in context.get('releaselangs',[]):
             tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
@@ -528,9 +524,22 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                 focus.append(False)
                 
         context.update({'langstates':zip(context.get('releaselangs',[]),states,focus)})
-        #print json.dumps(context, indent=2)
+        return context
+    
+    def get(self, request):
+        release_path = request.GET.get('release')
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        assembly_name = self.basename(release_path)
+        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+        #print self.get_assembly_edit(assembly_path)
+        context = self.get_context_data({
+            'releasesinfo':self.release_details(release_path, lang),
+            'success':True,
+            'release_path':release_path,
+            'assembly_name':assembly_name,
+            'lang':lang,
+        })
         return self.render_to_response(context)
-        #        return HttpResponse(self.read(path+'/kolekti/manifest.json'),content_type="application/json")
     
     def post(self, request):
         release_path = request.GET.get('release')
@@ -539,13 +548,20 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang=request.GET.get('lang',self.user_settings.active_srclang)
         assembly_path = '/'.join([release_path,'sources',lang,'assembly',assembly_name+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
-
-        xassembly = self.parse_html_string(payload)
+        xassembly = self.parse_string(payload)
 
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.xwrite(xassembly, assembly_path)
-        return HttpResponse(json.dumps({'status':'ok'}))
+        context = self.get_context_data({
+            'releasesinfo':self.release_details(release_path, lang),
+            'success':True,
+            'release_path':release_path,
+            'assembly_name':assembly_name,
+            'lang':lang,
+        })
+        return self.render_to_response(context)
+
 
 class ReleasePublishView(kolektiMixin, TemplateView):
     def post (self, request):
@@ -589,7 +605,7 @@ class ImagesUploadView(kolektiMixin, TemplateView):
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
-            self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name, mode = "wb") 
+            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
@@ -600,16 +616,24 @@ class ImagesDetailsView(kolektiMixin, TemplateView):
         path = request.GET.get('path')
         name = path.rsplit('/',1)[1]
         ospath = self.getOsPath(path)
-        im = Image.open(ospath)
-        context = self.get_context_data({
-            'fileweight':"%.2f"%(float(os.path.getsize(ospath)) / 1024),
-            'name':name,
-            'path':path,
-            'format':im.format,
-            'mode':im.mode,
-            'size':im.size,
-            'info':im.info,
-            })
+        try:
+            im = Image.open(ospath)
+            context = self.get_context_data({
+                'fileweight':"%.2f"%(float(os.path.getsize(ospath)) / 1024),
+                'name':name,
+                'path':path,
+                'format':im.format,
+                'mode':im.mode,
+                'size':im.size,
+                'info':im.info,
+                })
+        except:
+            import traceback
+            print traceback.format_exc()
+            context = self.get_context_data({
+                'name':name,
+                'path':path,
+                })
         return self.render_to_response(context)
 
 
@@ -997,8 +1021,8 @@ class BrowserUploadView(kolektiMixin, TemplateView):
             path = request.POST['path']
             name = request.POST['name']
             payload = request.POST['file']
-
-            self.write(payload, path + "/" + name)
+            data = base64.decodestring(payload)
+            self.write(data, path + "/" + name, mode="wb")
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             import traceback

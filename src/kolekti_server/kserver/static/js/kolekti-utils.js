@@ -872,8 +872,8 @@ var kolekti_browser = function(args) {
 		    var pic = {};
 		    var picinfo = evt.target.result.split(',');
 		    
-		    pic.mime = picinfo[1];
-		    pic.file = picinfo[0];
+		    pic.mime = picinfo[0];
+		    pic.file = picinfo[1];
 		    pic.name = f.name;
 		    pic.path = path;
 		    $.ajax({

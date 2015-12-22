@@ -462,9 +462,9 @@ class kolektiBase(object):
         with open(ospath, "r") as f:
             return f.read()
 
-    def write(self, content, filename):
+    def write(self, content, filename, mode="w"):
         ospath = self.__makepath(filename)
-        with open(ospath, "w") as f:
+        with open(ospath, mode) as f:
             f.write(content)
         self.post_save(filename)
         
