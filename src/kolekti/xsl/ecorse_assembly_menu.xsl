@@ -36,16 +36,29 @@
    
   
   <xsl:template match = "html:div[@class='section']">
-    <a href="?release={$path}&amp;section={@id}">
-      <xsl:attribute name="class">
-	<xsl:value-of select="html:h1/@class"/>
-	<xsl:text> list-group-item</xsl:text>
-	<xsl:if test="@id = $section">
-	  <xsl:text> active</xsl:text>
-	</xsl:if>
-      </xsl:attribute>
-      <xsl:value-of select="html:h1"/>
-    </a>
+    <xsl:choose>
+      <xsl:when test="@id = $section">
+	<span>
+	  <xsl:attribute name="class">
+	    <xsl:value-of select="html:h1/@class"/>
+	    <xsl:text> list-group-item</xsl:text>
+	    <xsl:text> active</xsl:text>
+	  </xsl:attribute>
+	  <xsl:value-of select="html:h1"/>
+	</span>
+      </xsl:when>
+      <xsl:otherwise>
+	
+	<a href="?release={$path}&amp;section={@id}">
+	  <xsl:attribute name="class">
+	    <xsl:value-of select="html:h1/@class"/>
+	    <xsl:text> list-group-item</xsl:text>
+	  </xsl:attribute>
+	  <xsl:value-of select="html:h1"/>
+	</a>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+  
   
 </xsl:stylesheet>
