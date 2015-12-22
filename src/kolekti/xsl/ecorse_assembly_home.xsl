@@ -67,38 +67,81 @@
   </xsl:template>
 
   <xsl:template match = "html:body">
-    <div>
-      <xsl:apply-templates select="html:div[@class='section']"/>
+    <div class="accueil sections">
+      <div class="row">
+	<xsl:apply-templates select="html:div[@class='section']"/>
+      </div>
     </div>
-    <div>
-      <xsl:apply-templates select=".//html:div[@class='topic'][@data-star]"/>
+    <div class="accueil alaune">
+      <div class="panel panel-default">
+	<div class="panel-heading">
+	  <h3 class="panel-title">Indicateurs à la une</h3>
+	</div>
+	<div class="panel-body">
+	  <div class="row">
+	    <xsl:apply-templates select=".//html:div[@class='topic'][@data-star]"/>
+	  </div>
+	</div>
+      </div>
     </div>
   </xsl:template>
   
   <xsl:template match = "html:body/html:div[@class='section']">
-    <div>
-      <a href="?release={$path}&amp;section={@id}">
-	<xsl:attribute name="class">
-	  <xsl:value-of select="html:h1/@class"/>
-	  <xsl:text> list-group-item</xsl:text>
-	  <xsl:if test="@id = $section">
-	    <xsl:text> active</xsl:text>
-	  </xsl:if>
-	</xsl:attribute>
-	<xsl:value-of select="html:h1"/>
-      </a>
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-primary {html:h1/@class}">
+	<div class="panel-heading">
+	  <div class="row">
+	    <div class="col-xs-3">
+	      <div class="picto {html:h1/@class}"></div>
+	    </div>
+	    <div class="col-xs-9 text-right">
+	      <div class="huge">
+		<xsl:value-of select="html:h1"/>
+	      </div>
+	      <div>
+		<xsl:value-of select="count(.//html:div[@class='topic'])"/>
+		&#xA0;Indicateurs
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<a href="#">
+	  <div class="panel-footer">
+	    <span class="pull-left">
+	      Voir les détails
+	    </span>
+	    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+	    <div class="clearfix"></div>
+	  </div>
+	</a>
+      </div>
     </div>
+
   </xsl:template>
 
   
   <xsl:template match = "html:div[@class='topic'][@data-star]">
-    <xsl:copy>
-      <xsl:apply-templates select="@*"/>
-      <xsl:apply-templates select="html:h1"/>
-      <div class="section-content niv{count(ancestor::html:div[@class='section']) + 1}" id="section_{@id}" aria-multiselectable="true">
-	  <xsl:apply-templates select="html:div"/>
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
+	<a href="#">
+	  <div class="panel-heading">
+	    <div class="row">
+	      <div class="col-xs-3">
+		<div class="picto {ancestor::html:div[@class='section']/html:h1/@class}"></div>
+	      </div>
+	    <div class="col-xs-9 text-right">
+	      <div class="huge">
+	      </div>
+	      <div>
+		<xsl:value-of select="html:h1"/>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	</a>
       </div>
-    </xsl:copy>
+    </div>
+
   </xsl:template>
 
 
