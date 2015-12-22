@@ -210,7 +210,7 @@ body {
 		left: 0;
 		bottom: 60px;
 
-		.sidebar-title {
+		/*.sidebar-title {
 			display: none;
 			margin: 0 -15px;
     		padding: 0 0 0 1em;
@@ -223,20 +223,39 @@ body {
 		}
 		.side-menu {
 			display: block;
-		}
+		}*/
 
 		.panel {
 			margin: 15px 0;
 			background-color: fadeout(@grisClair, 60%);
-			background-color: @cielLogo;
-			.panel-title {
+			.panel-title, .panel-title a {
 				color: @orangeLogo;
+			}
+			.panel-body {
+				padding: 2px;
+				.list-group-item {
+					background-color: @grisClairPlusPlus;
+					&.active {
+						background-color: @cielLogo;
+						//cursor: default;
+					}
+					&:first-child {
+					  border-top-left-radius: 0;
+					  border-top-right-radius: 0;
+					}
+					&:last-child {
+					  border-top-left-radius: 0;
+					  border-top-right-radius: 0;
+					}
+				}
+
+
 			}
 		}
 
 
 		a.ecorse-action-update-data, a.dropdown-toggle {
-			color: @grisFoncePlus;
+			color: @linkColor;
 		}
 	}
 
@@ -256,7 +275,9 @@ body {
 			background-color: fadeout(@grisClair, 60%);
 			h1 {
 				font-size: 45px;
-				
+				a:hover {
+					color: @marineLogo;
+				}
 			}
 		}
 
@@ -309,7 +330,7 @@ body {
 	            border-radius: 100%;
 	            font-size: 20px;
 	            line-height: @socialButtonsHeight;
-	            color: @orangeDarken;
+	            color: @cielLogo; // @orangeDarken;
 	            outline: none;
 	            text-align: center;
 	            -webkit-transition: all 0.3s;

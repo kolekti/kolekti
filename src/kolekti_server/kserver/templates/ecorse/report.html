@@ -96,15 +96,11 @@
 	{% endcomment %}
 
 	{# remplace le menu ci dessus #}
-	<div class="sidebar-title">
-		<h4>{{ current }}</h4>
-	</div>
-
 	<div id="side-menu">
 	
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				<h3 class="panel-title">{{ current }}</h3>
+				<h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h3>
 			</div>
   			<div class="panel-body">
 				{% comment %}
@@ -138,13 +134,13 @@
 			</div>
 			<div class="panel-footer">
 				<div class="btn-group">
-					<a href="#" class="btn btn-default btn-xs ecorse-action-update-data">
+					<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
 						<i class="fa fa-refresh"></i>&nbsp;
 						Actualiser
 					</a>
 				</div>
 				<div class="btn-group">
-					<a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+					<a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
 						<i class="fa fa-download"></i>&nbsp;
 						Télécharger&nbsp;
 						<span class="caret"></span>

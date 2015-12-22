@@ -10,9 +10,13 @@
 
 			<div class="col-sm-9 col-md-offset-2 col-md-10 main">
 				<ol class="breadcrumb">
-					<li><a href="#">Home</a></li>
-					<li><a href="#">Library</a></li>
-					<li class="active">Data</li>
+					<li>Accueil</a></li>
+					{% if section %}
+						<li><a href="#">{{ release.name }}</a></li>
+						<li class="active">{{ current }}</li>				
+					{% else %}
+						<li class="active">{{ current }}</li>
+					{% endif %}					
 				</ol>
 
 				{% comment "La boucle et le test ne semble pas nécessaires" %}
@@ -26,7 +30,7 @@
 				{% endcomment %}
 
 				<div class="jumbotron">
-					<h1 class="pagetitle">{{current}}</h1>
+					<h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h1>
 				</div>
 
 
