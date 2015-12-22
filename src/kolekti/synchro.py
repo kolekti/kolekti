@@ -197,7 +197,6 @@ class SynchroManager(object):
             else:
                 res['error'].append(item)
 
-        print res['conflict']
         return res
 
 
