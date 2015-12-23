@@ -136,19 +136,7 @@ $(document).ready(function() {
 	
     })
     $('.ecorse-action-dl-html').on('click', function() {
-	var release = $('.report').data('release')
-	$.ajax({
-	    url:"/ecorse/report/publish",
-	    method:'POST',
-	    data:$.param({
-		'release': release,
-		'script': 'web'
-	    })
-	}).done(function(data) {
-
-	}).fail(function(data) {
-	});
-	
+	$("#modal_share").modal("show")
     })
     
 })

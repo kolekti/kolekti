@@ -71,11 +71,20 @@
 										<a href="?release=/releases/{{release.name}}">{{release.name}}</a>
 									</li>
 								{% endfor %}
+								{% if releases %}
+
 								<li role="separator" class="divider"></li>
 								{# <li class="dropdown-header">Rapports archivés</li> #}
 								<li>
 									<a href="#" class="ecorse-action-create-report" data-toggle="modal" data-target="#modal_create">Créer rapport... </a>
 								</li>
+								{% else %}
+								<li class="active" >
+								  <a href="?release=/releases/{{current}}">{{current}}</a>
+									</li>
+
+							
+								{% endif %}
 							</ul>
 						</li>
 					</ul>

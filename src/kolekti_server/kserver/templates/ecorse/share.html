@@ -1,70 +1,166 @@
 {% extends "base_ecorse.html" %}
+
 {% load ostags %}
 
 
 {% block extracss %}
-    <script>
-   </script>
+	<script>
+	</script>
 {% endblock %}
 
 
 {% block extrascripts %}
-    <script src="/static/Chart.min.js" type="text/javascript"></script>
-    <script src="/static/js/kolekti-ecorse-share.js"></script>
+	<script src="/static/Chart.min.js" type="text/javascript"></script>
+	<script src="/static/js/kolekti-ecorse-share.js"></script>
 {% endblock %}
 
 {% block page-title %}
-    {{ title }}
+	{{ title }}
 {% endblock %}
 
-    {% block menu %}
-    <ul class="list-group list-releases">
-      <li class="list-group-item">
-	<a href="?release={{ release }}"><strong>{{ current }}</strong></a>
-	<br/>
+{% block sidebar %}
+	{% comment "Déjà présent dans la navbar..." %}
+		<ul class="list-group user">
+			<li class="list-group-item">Administrateur</li>
+		</ul>
+	{% endcomment %}
 	
-	<div class="btn-group">
-	  <a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-	    <i class="fa fa-download"></i>&nbsp;
-	    Télécharger&nbsp;
-	    <span class="caret"></span>
-	  </a>
-	  <ul class="dropdown-menu" role="menu">
-	    <li role="presentation">
-	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
-		<i class="fa fa-file-pdf-o"></i>&nbsp;
-		Pdf
-	      </a>
-	    </li>
-	    <li role="presentation">
-	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
-		<i class="fa fa-file-word-o"></i>&nbsp;
-		Word
-	      </a>
-	    </li>
-	    <li role="presentation">
-	      <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
-		<i class="fa fa-file-powerpoint-o"></i>&nbsp;
-		PowerPoint
-	      </a>
-	      </li>
-	      <li role="presentation">
-		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
-		  <i class="fa fa-download"></i>&nbsp;
-		  HTML5
-		</a>
-	      </li>
-	    </ul>
+	{% comment "Déplacé dans la navbar dans le dropdown rapports..." %}	
+		<ul class="list-group user">
+			<li class="list-group-item">
+				<a href="#" class="ecorse-action-create-report" data-toggle="modal" data-target="#modal_create">Créer rapport... </a>
+			</li>
+		</ul>
+	{% endcomment %}
+		
+	{% comment "Autres rapports déplacés dans la navbar rapports..." %}	
+		<ul class="list-group list-releases">
+			{% for release in releases %}
+				<li class="list-group-item">
+					<a href="?release=/releases/{{release.name}}"><strong>{{release.name}}</strong></a>
+					{% if release.name == current %}
+						<br/>
+						
+						<div class="list-group">
+							<div class="list-group-item">
+								<div class="btn-group">
+									<a href="#" class="btn btn-default btn-xs ecorse-action-update-data">
+										<i class="fa fa-refresh"></i>&nbsp;
+										Actualiser
+									</a>
+								</div>
+								<div class="btn-group">
+									<a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+										<i class="fa fa-download"></i>&nbsp;
+										Télécharger&nbsp;
+										<span class="caret"></span>
+									</a>
+								 
+									<ul class="dropdown-menu" role="menu">
+										<li role="presentation">
+											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
+												<i class="fa fa-file-pdf-o"></i>&nbsp;
+												Pdf
+											</a>
+										</li>
+										<li role="presentation">
+											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
+												<i class="fa fa-file-word-o"></i>&nbsp;
+												Word
+											</a>
+										</li>
+										<li role="presentation">
+											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
+												<i class="fa fa-file-powerpoint-o"></i>&nbsp;
+												PowerPoint
+											</a>
+										</li>
+										<li role="presentation">
+											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
+												<i class="fa fa-share-alt"></i>&nbsp;
+												Partager
+											</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+							
+							{{ menu|safe }}
+						
+						</div>
+					{% endif %}
+				</li>
+			{% endfor %}
+		</ul>
+	{% endcomment %}
+
+	{# remplace le menu ci dessus #}
+	<div id="side-menu">
+	
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h3>
+			</div>
+
+
+
+			<div class="panel-footer">
+				<div class="btn-group">
+					<a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-download"></i>&nbsp;
+						Télécharger&nbsp;
+						<span class="caret"></span>
+					</a>
+				 
+					<ul class="dropdown-menu btn-sm-dropdown" role="menu">
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
+								<i class="fa fa-file-pdf-o"></i>&nbsp;
+								Pdf
+							</a>
+						</li>
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
+								<i class="fa fa-file-word-o"></i>&nbsp;
+								Word
+							</a>
+						</li>
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
+								<i class="fa fa-file-powerpoint-o"></i>&nbsp;
+								PowerPoint
+							</a>
+						</li>
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
+								<i class="fa fa-share-alt"></i>&nbsp;
+								Partager
+							</a>
+						</li>
+					</ul>			
+				</div>
+			</div>
+  			
+
+
+  			<div class="panel-body">
+				{{ menu|safe }}
+			</div>
+			
+		</div>
+
 	</div>
-	  {{ menu|safe }}
-      </li>
-    </ul>
-    {% endblock %}
+
+
+{% endblock %}
 
 
 {% block content %}
-    <div class="report" data-release="{{ release }}">
-    {{ content|safe}}
-    </div>    
+	<div class="report" data-release="{{ release }}">
+		{{ content|safe}}
+	</div>
+	
+	{% include "ecorse/modal_create.html" %}
+		
 {% endblock %}
 
