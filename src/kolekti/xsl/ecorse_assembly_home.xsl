@@ -105,7 +105,7 @@
 	    </div>
 	  </div>
 	</div>
-	<a href="#">
+	<a href="?release={$path}&amp;section={@id}">
 	  <div class="panel-footer">
 	    <span class="pull-left">
 	      Voir les détails
@@ -123,12 +123,11 @@
   <xsl:template match = "html:div[@class='topic'][@data-star]">
     <div class="col-lg-3 col-md-6">
       <div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
-	<a href="#">
-	  <div class="panel-heading">
-	    <div class="row">
-	      <div class="col-xs-3">
-		<div class="picto {ancestor::html:div[@class='section']/html:h1/@class}"></div>
-	      </div>
+	<div class="panel-heading">
+	  <div class="row">
+	    <div class="col-xs-3">
+	      <div class="picto {ancestor::html:div[@class='section']/html:h1/@class}"></div>
+	    </div>
 	    <div class="col-xs-9 text-right">
 	      <div class="huge">
 	      </div>
@@ -138,7 +137,6 @@
 	    </div>
 	  </div>
 	</div>
-	</a>
       </div>
     </div>
 
