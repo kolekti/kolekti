@@ -102,36 +102,9 @@
 			<div class="panel-heading">
 				<h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h3>
 			</div>
-  			<div class="panel-body">
-				{% comment %}
-				<ul class="nav nav-sidebar">
-					<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-					<li><a href="#">Reports</a></li>
-					<li><a href="#">Analytics</a></li>
-					<li><a href="#">Export</a></li>
-				</ul>
-				{% endcomment %}
 
-				{{ menu|safe }}
-			</div>
+
+
 			<div class="panel-footer">
 				<div class="btn-group">
 					<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
@@ -146,7 +119,7 @@
 						<span class="caret"></span>
 					</a>
 				 
-					<ul class="dropdown-menu" role="menu">
+					<ul class="dropdown-menu btn-sm-dropdown" role="menu">
 						<li role="presentation">
 							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
 								<i class="fa fa-file-pdf-o"></i>&nbsp;
@@ -173,90 +146,17 @@
 						</li>
 					</ul>			
 				</div>
-
 			</div>
-		</div>
-
-		{% comment %}	
-
-		<ul class="nav nav-sidebar">
-			<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-			<li><a href="#">Reports</a></li>
-			<li><a href="#">Analytics</a></li>
-			<li><a href="#">Export</a></li>
-		</ul>
+  			
 
 
-
-
-		<div class="list-group">
-			<div class="list-group-item">
-				<div class="btn-group">
-					<a href="#" class="btn btn-default btn-xs ecorse-action-update-data">
-						<i class="fa fa-refresh"></i>&nbsp;
-						Actualiser
-					</a>
-				</div>
-				<div class="btn-group">
-					<a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-						<i class="fa fa-download"></i>&nbsp;
-						Télécharger&nbsp;
-						<span class="caret"></span>
-					</a>
-				 
-					<ul class="dropdown-menu" role="menu">
-						<li role="presentation">
-							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
-								<i class="fa fa-file-pdf-o"></i>&nbsp;
-								Pdf
-							</a>
-						</li>
-						<li role="presentation">
-							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
-								<i class="fa fa-file-word-o"></i>&nbsp;
-								Word
-							</a>
-						</li>
-						<li role="presentation">
-							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
-								<i class="fa fa-file-powerpoint-o"></i>&nbsp;
-								PowerPoint
-							</a>
-						</li>
-						<li role="presentation">
-							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
-								<i class="fa fa-share-alt"></i>&nbsp;
-								Partager
-							</a>
-						</li>
-					</ul>
-				</div>
-			</div>					
+  			<div class="panel-body">
+				{{ menu|safe }}
+			</div>
+			
 		</div>
 
 	</div>
-
-	{{ menu|safe }}
-
-	{% endcomment %}</div>
 
 
 {% endblock %}

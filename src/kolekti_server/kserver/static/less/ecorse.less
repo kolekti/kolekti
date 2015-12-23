@@ -195,6 +195,9 @@ body {
 	    		color: @orangeLogo;
 	    	}
 		}
+		.dropdown a .caret {
+			color: @noirClair;
+		}
 	}
 
 
@@ -209,21 +212,6 @@ body {
 		top: 57px;
 		left: 0;
 		bottom: 60px;
-
-		/*.sidebar-title {
-			display: none;
-			margin: 0 -15px;
-    		padding: 0 0 0 1em;
-    		padding: 1em;
-			background-color: @grisClair;
-			h3, h4, h5, h6 {
-				color: @orangeLogo;
-				margin: 0;
-			}
-		}
-		.side-menu {
-			display: block;
-		}*/
 
 		.panel {
 			margin: 15px 0;
@@ -247,10 +235,28 @@ body {
 					  border-top-left-radius: 0;
 					  border-top-right-radius: 0;
 					}
+					&:before {
+						@file: "sprite.png";
+						background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+						content: "";
+						display: block;
+						float: left;
+						height: 18px;
+						margin-left: -5px;
+						margin-right: 7px;
+						position: relative;
+						top: 0;
+						width: 18px;
+					}
+					&.bien-etre:before {
+						background-position: -50px 0px ;
+					}
 				}
-
-
+			}				
+			.panel-footer .btn-sm-dropdown{
+				font-size: 12px;
 			}
+
 		}
 
 
@@ -282,11 +288,30 @@ body {
 		}
 
 		.report h2 {
-			color: @orangeLogo;
+			color: @grisFoncePlus; //@orangeLogo;
 			background-color: fadeout(@grisClair, 60%);
 			border-radius: @border-radius-base;
 			padding: 10px 30px 10px 30px;
 			margin-top: -20px;
+			&:before {
+				@file: "sprite.png";
+				background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+				background-position: 0px 0px;
+				content: "";
+				display: block;
+				float: left;
+				height: 35px;
+				margin-left: 0;
+				margin-right: 20px;
+				position: relative;
+				top: -1px;
+				width: 35px;
+			}			
+			&.bien-etre {
+				background-color: fadeout(@bien-etre, 20%);
+				&:before { background-position: -50px -50px; }				
+			}
+
 		}
 
 	
