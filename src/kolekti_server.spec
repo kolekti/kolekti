@@ -82,11 +82,7 @@ data_files = [('LICENSE','LICENCE','DATA'),
               ('kolekti.ico','kolekti.ico','DATA'),
               ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3.ref'),'DATA'),
               (os.path.join('kolekti','pubscripts.xml'),os.path.join('kolekti','pubscripts.xml'),'DATA'),
-              ] +
-    extra_datas('kolekti/templates')+
-    extra_datas('kolekti/dtd') +
-    extra_datas('kolekti/xsl') +
-    extra_plugins()
+              ] +    extra_datas('kolekti/templates')+    extra_datas('kolekti/dtd') +    extra_datas('kolekti/xsl') +    extra_plugins()
 
 coll = COLLECT(exe,
                a.binaries,

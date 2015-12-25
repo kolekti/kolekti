@@ -59,3 +59,5 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 [UninstallDelete]
 Type: filesandordirs; Name: "{userappdata}\kolekti"
 Type: filesandordirs; Name: "{app}\kolekti.ini"
+Type: filesandordirs; Name: "{app}\kolekti.log"
+Type: filesandordirs; Name: "{app}\kolekti.err"
