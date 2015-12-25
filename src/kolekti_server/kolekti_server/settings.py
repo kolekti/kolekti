@@ -65,7 +65,6 @@ if os.sys.platform[:3] == "win":
     appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
     DB_NAME = appdatadir + '\\db.sqlite3'
     DB_NAME = DB_NAME.replace('\\','/')
-    os.environ['XML_CATALOG_FILES']='/'.join([BASE_DIR,'dtd','w3c-dtd-xhtml.xml'])
 else:
     DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
 
