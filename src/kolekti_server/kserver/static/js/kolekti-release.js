@@ -117,6 +117,28 @@ Defines events for languages and release state in toolbar
     
     // Kolekti Release toolbar
 
+    $('.nav-tabs .active .state.lead ').on('click', function() {
+	var tab = $(this).closest('a');
+	has_focus = tab.hasClass('focus');
+	$.ajax({
+	    url:"/releases/focus/",
+	    method:'POST',
+	    data:$.param({
+		'release': $('#main').data('release'),
+		'lang'   : $('#main').data('lang'),
+		'state'  : !has_focus
+	    })
+	}).done(function(data) {
+	    if (data.status='OK')
+	    {
+		if (has_focus)
+		    tab.removeClass('focus');
+		else
+		    tab.addClass('focus');
+	    }
+	});
+    })
+
     
     $('.release-state').on('click', function() {
 	var lang = $(this).closest('ul').data('target-lang');
@@ -142,6 +164,7 @@ Defines events for languages and release state in toolbar
 	$('.release-panel-part').addClass('hidden')
 	$('#content_pane').removeClass('hidden')
     })
+
     $('#btn_illust').on('click', function() {
 	$('.btn-release-pane').removeClass('active')
 	$(this).addClass('active')
@@ -175,6 +198,7 @@ Defines events for languages and release state in toolbar
 	.create(upload_image)
 	
     })
+
     $('#btn_variables').on('click', function() {
 	$('#preview').parent().addClass('hidden');
 	$('.btn-release-pane').removeClass('active')

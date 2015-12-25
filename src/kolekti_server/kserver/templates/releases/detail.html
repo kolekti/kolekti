@@ -205,7 +205,7 @@
 	     {% endcomment %}
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
-	     class="text-center"
+	     class="text-center {% if focus %} focus{% endif %}"
 	     {% if  state == "unknown" %}
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
@@ -276,11 +276,13 @@
 		    </ul>
 		  </div>
 		</div>
+		<!--
 		<div class="checkbox">
 		  <label>
 		    <input type="checkbox" id="focus_{{ lang }}"/>Focus
 		  </label>
 		</div>
+		-->
 	      </form>
 	    </div>
 	    <div class="panel-body">

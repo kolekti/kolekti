@@ -464,6 +464,27 @@ class ReleaseStateView(kolektiMixin, TemplateView):
             print traceback.format_exc()
             return HttpResponse(status=500)
                     
+class ReleaseFocusView(kolektiMixin, TemplateView):
+
+    def post(self,request):
+        try:
+            release = request.POST.get('release')
+            path, assembly_name = release.rsplit('/',1)
+            state = request.POST.get('state')
+            lang = request.POST.get('lang')
+            print state
+            try:
+                rf = ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang)
+            except ReleaseFocus.DoesNotExist:
+                rf = ReleaseFocus(release = release, assembly = assembly_name, lang = lang)
+            rf.state = (state == "true")
+            rf.save()
+            return HttpResponse(json.dumps({"status":"OK"}), content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=500)
+                    
 class ReleaseCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self,request):
@@ -517,12 +538,13 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             else:
                 states.append("unknown")
             try:
-                focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang))
+                print release_path
+                focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang).state)
             except:
                 #import traceback
                 #print traceback.format_exc()
                 focus.append(False)
-                
+        print focus        
         context.update({'langstates':zip(context.get('releaselangs',[]),states,focus)})
         return context
     
