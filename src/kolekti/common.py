@@ -62,8 +62,12 @@ class kolektiBase(object):
             self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
-
-        # logging.debug('project path : %s'%path)
+            
+        if os.sys.platform[:3] == "win":
+            appurl = urllib.pathname2url(self._appdir)[3:]
+            os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
+            
+        # logging.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
         else:
@@ -594,7 +598,7 @@ class kolektiBase(object):
         path = self.__makepath(source)
         # logging.debug(path)
         try:
-            upath = str(path)
+            upath = urllib.pathname2url(str(path))
         except UnicodeEncodeError:
             upath = urllib.pathname2url(path.encode('utf-8'))
         if upath[:3]=='///':
