@@ -1,1 +1,0 @@
-../../../../declaration/xml1n.dcl
