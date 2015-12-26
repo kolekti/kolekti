@@ -648,7 +648,10 @@ class kolektiBase(object):
 
 
     def substitute_criteria(self, string, profile, extra={}):
-        criteria_dict = self._get_criteria_dict(profile)
+        try:
+            criteria_dict = self._get_criteria_dict(profile)
+        except AttributeError:
+            criteria_dict = {}
         criteria_dict.update(extra)
         #logging.debug(criteria_dict)
         for criterion, val in criteria_dict.iteritems():

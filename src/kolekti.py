@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser_draft = subparsers.add_parser('publish', help="assemble, filter and produce documents")
     parser_draft.add_argument('toc', action='store', help="Toc to be published")
     parser_draft.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
-    parser_draft.add_argument('-l', '--lang', action='store', help="language of sources" )
+    parser_draft.add_argument('-l', '--langs', action='store', help="comma separated languages list for sources" )
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_draft.set_defaults(**defaults)
@@ -156,27 +156,29 @@ if __name__ == '__main__':
     if args.cmd == 'publish':
         from kolekti import publish
         try:
-            p = publish.DraftPublisher(args.base, lang=args.lang)
-            toc = p.parse(args.toc)
-            if args.job:
-                job = args.job
-            else:
-                tocjob = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-                job = "/kolekti/publication-parameters/"+tocjob+'.xml'
-            for event in p.publish_draft(toc, job):
-                if event['event'] == "job":
-                    logging.info('Publishing Job %s'%event['label'])
-                if event['event'] == "profile":
-                    logging.info(' profile %s'%event['label'])
-                if event['event'] == "result":
-                    logging.info('%s complete'%event['script'])
-                    for doc in event['docs']:
-                        logging.info('[%s] %s'%(doc['type'],doc['url']))
+            langs = args.langs.split(',')
+            for lang in langs:
+                p = publish.DraftPublisher(args.base, lang = lang)
+                toc = p.parse(p.substitute_criteria(args.toc, profile = None))
+                if args.job:
+                    job = args.job
+                else:
+                    tocjob = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                    job = "/kolekti/publication-parameters/"+tocjob+'.xml'
+                for event in p.publish_draft(toc, job):
+                    if event['event'] == "job":
+                        logging.info('Publishing Job %s'%event['label'])
+                    if event['event'] == "profile":
+                        logging.info(' profile %s'%event['label'])
+                    if event['event'] == "result":
+                        logging.info('%s complete'%event['script'])
+                        for doc in event['docs']:
+                            logging.info('[%s] %s'%(doc['type'],doc['url']))
 
-                if event['event'] == "error":
-                    logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
-                if event['event'] == "warning":
-                    logging.info(' [W] %s\n%s'%(msg) )
+                    if event['event'] == "error":
+                        logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
+                    if event['event'] == "warning":
+                        logging.info(' [W] %s\n%s'%(msg) )
             logging.info("Publication complete")
         except:
             import traceback
