@@ -69,12 +69,13 @@ Dans les parametres des commandes les chemins sont spéficiés relativement à l
 publish : publication directe des sources
 =========================================
 
-$kolekti.py publish [-h] [-j JOB] [-l LANG] toc
+$kolekti.py publish [-h] [-j JOB] [-l LANGS] toc
 
 toc : chemin de la trame à publier
 -j JOB : chemin du fichier de paramètres de publication à utiliser, remplace la valeur présente dans la trame
--l LANG : code langue des sources à utiliser pour la publication
+-l LANGS : liste des codes langue à publier, séparés par des virgules
 
+Une substitution de la chaine {LANG} est systématiquement faite dans l'argument toc avant l'execution de la commande. 
 
 make_release : création d'une version
 =====================================
