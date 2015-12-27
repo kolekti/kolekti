@@ -815,6 +815,7 @@ var kolekti_browser = function(args) {
     if (drop_files) {
 	$(parent).on('dragenter', '.panel', function() {
             $(this).addClass('panel-danger');
+	    $(this).addClass('drop');
             return false;
 	});
 	
@@ -822,6 +823,7 @@ var kolekti_browser = function(args) {
             e.preventDefault();
             e.stopPropagation();
             $(this).addClass('panel-danger');
+	    $(this).addClass('drop');
 	    return false;
 	});
 	
@@ -829,6 +831,7 @@ var kolekti_browser = function(args) {
             e.preventDefault();
             e.stopPropagation();
 	    $(this).removeClass('panel-danger');
+	    $(this).removeClass('drop');
             return false;
 	});
 	
@@ -839,11 +842,13 @@ var kolekti_browser = function(args) {
                     e.preventDefault();
                     e.stopPropagation();
 		    $(this).removeClass('panel-danger');		
+		    $(this).removeClass('drop');
                     // Main function to upload
                     upload(e.originalEvent.dataTransfer.files);
 		}  
             }
             else {
+		$(this).removeClass('drop');
 		$(this).removeClass('panel-danger');		
             }
             return false;
