@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser_draft = subparsers.add_parser('publish', help="assemble, filter and produce documents")
     parser_draft.add_argument('toc', action='store', help="Toc to be published")
     parser_draft.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
-    parser_draft.add_argument('-l', '--langs', action='store', help="comma separated languages list for sources" )
+    parser_draft.add_argument('-l', '--languages', required=True, action='store', help="comma-separated list of languages to publish")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_draft.set_defaults(**defaults)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser_pub = subparsers.add_parser('publish_release', help="publish a release")
     parser_pub.add_argument('name', action='store', help="the release name")
 #    parser_pub.add_argument('assembly', action='store')
-    parser_pub.add_argument('-l', '--langs', action='store', help="comma-separated list of languages to publish")
+    parser_pub.add_argument('-l', '--languagess', action='store', help="comma-separated list of languages to publish")
     defaults=config.get("publish_release",{})
     defaults.update({'cmd':'publish_release'})
     parser_pub.set_defaults(**defaults)
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     if args.cmd == 'publish':
         from kolekti import publish
         try:
-            langs = args.langs.split(',')
+            langs = args.languages.split(',')
             for lang in langs:
                 p = publish.DraftPublisher(args.base, lang = lang)
                 toc = p.parse(p.substitute_criteria(args.toc, profile = None))
@@ -178,7 +178,8 @@ if __name__ == '__main__':
                     if event['event'] == "error":
                         logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                     if event['event'] == "warning":
-                        logging.info(' [W] %s\n%s'%(msg) )
+                        logging.warning(' [W] %s'%(event['msg'],) )
+                        logging.debug(' [W] %s'%(event['stacktrace'],) )
             logging.info("Publication complete")
         except:
             import traceback
@@ -208,7 +209,7 @@ if __name__ == '__main__':
         from kolekti import publish
         try:
             release = '/releases/' + args.name
-            p = publish.ReleasePublisher(release, args.base, langs = args.langs.split(','))
+            p = publish.ReleasePublisher(release, args.base, langs = args.languages.split(','))
 
             for event in p.publish_assembly(args.name + "_asm"):
                 if event['event'] == "job":
