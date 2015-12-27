@@ -172,30 +172,31 @@ Defines events for languages and release state in toolbar
 	$('#illust_pane').removeClass('hidden')
 	console.log($('#main').data('release'))
 	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
-		     'parent':"#illust_pane",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'create_actions':'yes',
-		     'create_builder':upload_image_builder_builder()
-		    })
-	.select(
-	    function(path) {
-		$.get('/images/details?path='+path)
-		    .done(
-			function(data) {
-			    $('#preview').html([
-				$('<h4>',{'html':displayname(path)}),
-				data
-			    ]);
-			    $('#preview img').attr('src',path);
-			    $('#preview').parent().removeClass('hidden');
-			}
-		    )
-	    })
-	.create(upload_image)
+			 'parent':"#illust_pane",
+			 'title':" ",
+			 'titleparent':".title",
+			 'mode':"selectonly",
+			 'modal':"no",
+			 'drop_files':true,
+			 'os_actions':'yes',
+			 'create_actions':'yes',
+			 'create_builder':upload_image_builder_builder()
+			})
+	    .select(
+		function(path) {
+		    $.get('/images/details?path='+path)
+			.done(
+			    function(data) {
+				$('#preview').html([
+				    $('<h4>',{'html':displayname(path)}),
+				    data
+				]);
+				$('#preview img').attr('src',path);
+				$('#preview').parent().removeClass('hidden');
+			    }
+			)
+		})
+	    .create(upload_image)
 	
     })
 
