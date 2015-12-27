@@ -168,3 +168,7 @@ label {
 .browser tr.dir.ui-state-hover {
     background-color: #D0D0D0;
 }
+
+.panel.drop {
+    background-color:rgba(12,255,55,.05);
+}
