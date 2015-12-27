@@ -531,21 +531,24 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         focus = []
         release_path = context.get('release_path')
         assembly_name = context.get('assembly_name')
+        assembly_lang = context.get('lang')
+        langstate = None
         for lang in context.get('releaselangs',[]):
             tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
                 states.append(self.syncMgr.propget('release_state',tr_assembly_path))
             else:
                 states.append("unknown")
+            if lang == assembly_lang:
+                langstate = states[-1]
             try:
-                print release_path
                 focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang).state)
             except:
                 #import traceback
                 #print traceback.format_exc()
                 focus.append(False)
         print focus        
-        context.update({'langstates':zip(context.get('releaselangs',[]),states,focus)})
+        context.update({'langstate':langstate,'langstates':zip(context.get('releaselangs',[]),states,focus)})
         return context
     
     def get(self, request):
