@@ -5,6 +5,7 @@ $(document).ready(function() {
 	$('.selectentry').prop('checked',$(this).prop('checked'))
 	check_action()
     });
+    
     var check_action = function(e) {
 	if ($('.selectentry').length) {
 	    var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
@@ -27,7 +28,13 @@ $(document).ready(function() {
 	    $("#commitmsg").hide();
 	}
     });
-		 
+    
+    $('form').on('submit', function() {
+	console.log("submit form");
+	$('#modal_processing').modal('show')
+    })
+		  
+    /*		 
     $('body').on('click','.btn-select-merge',function(e) {
 	action = $('.select-merge').val();
 	console.log(action);
@@ -60,7 +67,7 @@ $(document).ready(function() {
 		    $('.modal-body').append($(data))
 		});
 	    $('.modal-title').html('Synchronisation')		
-	    $('.modal-footer').html(
+	    $  ('.modal-footer').html(
 		$('<button>',{
 		    "class":"btn btn-default", 
 		    "html":"fermer"})
@@ -69,6 +76,6 @@ $(document).ready(function() {
 	    $('.modal').modal();
 	});
     });
-
+*/
     $('#syncromsg').focus()    
 })
