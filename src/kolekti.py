@@ -165,7 +165,12 @@ if __name__ == '__main__':
                 else:
                     tocjob = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
                     job = "/kolekti/publication-parameters/"+tocjob+'.xml'
-                for event in p.publish_draft(toc, job):
+                xjob = p.parse(job)
+                pubdir = toc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.pubdir"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                print pubdir
+                xjob.getroot().set('pubdir',pubdir)
+                                   
+                for event in p.publish_draft(toc, xjob):
                     if event['event'] == "job":
                         logging.info('Publishing Job %s'%event['label'])
                     if event['event'] == "profile":
