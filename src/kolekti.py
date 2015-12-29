@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser_pub = subparsers.add_parser('publish_release', help="publish a release")
     parser_pub.add_argument('name', action='store', help="the release name")
 #    parser_pub.add_argument('assembly', action='store')
-    parser_pub.add_argument('-l', '--languagess', action='store', help="comma-separated list of languages to publish")
+    parser_pub.add_argument('-l', '--languages', action='store', help="comma-separated list of languages to publish")
     defaults=config.get("publish_release",{})
     defaults.update({'cmd':'publish_release'})
     parser_pub.set_defaults(**defaults)
