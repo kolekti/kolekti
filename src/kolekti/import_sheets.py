@@ -255,7 +255,7 @@ class Importer(common.kolektiBase):
     def _generate_toc(self, lines, path, topicspath, job):
         outpath = '/sources/'+ self._lang + '/tocs/' + path
         topicspath = '/sources/'+ self._lang + '/topics/' + topicspath
-        self.makedirs(self.dirname(outpath))
+        self.makedirs(self.dirname(outpath), sync=True)
         
         buf = """<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -288,7 +288,7 @@ class Importer(common.kolektiBase):
         outpath = '/sources/'+ self._lang + '/topics/' + path + "/"
         tplpath = '/sources/'+ self._lang + '/templates/' + template
         
-        self.makedirs(outpath)
+        self.makedirs(outpath, sync=True)
         nl = 0
         for l in lines[1:]:
             nl +=1 

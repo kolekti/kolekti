@@ -53,10 +53,10 @@ $(document).ready(function() {
 	    var varname = $(row).find('th').first().find('span').first().html();
 	    buf +='<variable code="' + varname + '">';
 	    $(row).find('td').each(function(j,cell) {
-		if(j < conditions.length) { 
+		if(j < conditions.length || conditions.length == 0) { 
 		    var varval = $(cell).find('span').first().html();
 		    buf +='<value>'
-		    buf += conditions[j]
+		    buf += conditions.length?conditions[j]:''
 		    buf += '<content>' + varval.replace('&nbsp;','&#160;') + '</content>'
 		    buf += '</value>'
 		}
@@ -145,6 +145,7 @@ $(document).ready(function() {
 				    'html':$('<th>',{
 					'class':'varname',
 					'html':$('<span>',{
+					    'class':'var_name',
 					    'html':$(variable).attr('code')})
 				    })
 				}));
@@ -360,6 +361,10 @@ $(document).ready(function() {
 	disable_commands();
     };
     
+
+    $('#main').on('mouseenter', '.varname', function() {
+	$(this).next().show()
+    });
     
     $('#main').on('click', '.var_name_edit', var_edit);
 
@@ -394,6 +399,7 @@ $(document).ready(function() {
 	    'html':$('<th>',{
 		'class':'varname',
 		'html':$('<span>',{
+		    'class':'var_name',
 		    'html':""})
 	    })
 	}));

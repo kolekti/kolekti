@@ -23,6 +23,7 @@ class PublisherMixin(object):
         # intercept lang & draft parameters
 
         self._publang = None
+#        print "mixin",kwargs
         if kwargs.has_key('lang'):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
@@ -156,3 +157,13 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def upper_case(self, _, *args):
         path = args[0]
         return path.upper()
+
+class ReleasePublisherExtensions(PublisherExtensions):
+    def __init__(self, *args, **kwargs):
+        if kwargs.has_key('release'):
+            self._release = kwargs.get('release')
+            kwargs.pop('release')
+        super(ReleasePublisherExtensions,self).__init__(*args, **kwargs)
+
+    def process_path(self, path):
+        return self._release + '/' + super(ReleasePublisherExtensions, self).process_path(path)

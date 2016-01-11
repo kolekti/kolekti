@@ -13,7 +13,7 @@ import logging
 import json
 from lxml import etree as ET
 
-from publish_utils import PublisherMixin, PublisherExtensions
+from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 from kolekti import plugins
 
@@ -30,8 +30,10 @@ class Publisher(PublisherMixin, kolektiBase):
         
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
-        
-        
+
+    def getPublisherExtensions(self):        
+        return PublisherExtensions
+    
     def _variable(self, varfile, name):
         """returns the actual value for a variable in a given xml variable file"""
         fvar = self.get_base_variable(varfile)
@@ -60,7 +62,7 @@ class Publisher(PublisherMixin, kolektiBase):
         for refmod in xtoc.xpath("//h:a[@rel = 'kolekti:topic']/@href",namespaces=self.nsmap):
             try:
                 path = self.process_path(refmod)
-                self.parse(path)
+                self.parse_html(path)
             except IOError:
                 import traceback
                 yield  {
@@ -108,6 +110,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/sources/" + self._publang + "/assembly")
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le dossier destination",
@@ -116,13 +119,13 @@ class Publisher(PublisherMixin, kolektiBase):
                         })
 
             logging.debug("W: unable to create assembly directory")
-            import traceback
             logging.debug(traceback.format_exc())
             return assembly, assembly_dir, pubname, events
 
         try:
             self.xwrite(assembly, assembly_dir + "/sources/"+ self._publang + "/assembly/" + pubname + ".html")
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le fichier assemblage",
@@ -137,6 +140,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.create_settings(xjob, pubname, assembly_dir)
         except:
+            import traceback
             events.append({
                         'event':'error',
                         'msg':"Impossible de créer le fichier de parametres",
@@ -155,6 +159,9 @@ class Publisher(PublisherMixin, kolektiBase):
             for event in self.copy_media(fassembly, profile, assembly_dir):
                 events.append(event)
 
+            for event in self.copy_variables(fassembly, profile, assembly_dir):
+                events.append(event)
+
             # copy scripts resources
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
                 try:
@@ -170,7 +177,6 @@ class Publisher(PublisherMixin, kolektiBase):
 
                     logging.error("resources for script %s not found"%script.get('name'))
                     logging.debug(traceback.format_exc())
-                    
 
         return assembly, assembly_dir, pubname, events 
 
@@ -246,13 +252,13 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             # logging.debug(assembly)
             # criteria
-            s = self.get_xsl('criteria', PublisherExtensions, profile=profile, lang=self._publang)
+            s = self.get_xsl('criteria', self.getPublisherExtensions(), profile=profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
             
             # filter
             logging.debug("filter on profile")
-            s = self.get_xsl('filter', PublisherExtensions, profile=profile, lang=self._publang)
+            s = self.get_xsl('filter', self.getPublisherExtensions(), profile=profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
             
@@ -261,12 +267,12 @@ class Publisher(PublisherMixin, kolektiBase):
             self.log_xsl(s.error_log)            
 
             # substvars
-            s = self.get_xsl('variables', PublisherExtensions, profile = profile, lang=self._publang)
+            s = self.get_xsl('variables', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
 
             # process links
-            s = self.get_xsl('links', PublisherExtensions, profile = profile, lang=self._publang)
+            s = self.get_xsl('links', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
 
@@ -288,7 +294,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
             # cleanup title levels
             
-            # s = self.get_xsl('titles', PublisherExtensions, profile = profile, lang=self._publang)
+            # s = self.get_xsl('titles', self.getPublisherExtensions(), profile = profile, lang=self._publang)
             # assembly = s(assembly)
             
         except ET.XSLTApplyError, e:
@@ -299,8 +305,8 @@ class Publisher(PublisherMixin, kolektiBase):
             raise
 
         except:
-            logging.debug(s.error_log)
             import traceback
+            print traceback.format_exc()
             logging.debug(traceback.format_exc())
             logging.error("Error in publication process")
             raise
@@ -313,10 +319,48 @@ class Publisher(PublisherMixin, kolektiBase):
 
     # create settings.xml file in assembly directory
     def create_settings(self, xjob, pubname, assembly_dir):
-        pass
+        try:
+            self.makedirs(assembly_dir + "/kolekti")
+        except:
+            logging.debug("W: unable to create kolekti subdirectory")
+            import traceback
+            logging.debug(traceback.format_exc())
 
 
- 
+    # copy used variables xml files into assembly space
+    def copy_variables(self, assembly, profile, assembly_dir):
+        for varelt in assembly.xpath('//h:var[contains(@class,":")]', namespaces=self.nsmap):
+            vardecl = varelt.get('class')
+            varfile, varname = vardecl.split(':')
+            if '/' in varfile:
+                srcfile = varfile
+            else:
+                srcfile = '/' + "/".join(['sources',self._publang,'variables',varfile])
+            srcfile = self.substitute_criteria(srcfile,profile) + ".xml"
+            try:
+                self.makedirs(self.dirname(assembly_dir + "/" +srcfile))
+            except OSError:
+                logging.debug('makedir failed')
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"impossible de créer le dossier de variables",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                logging.debug(traceback.format_exc())
+            try:
+                self.copyFile(srcfile, assembly_dir + '/' + srcfile)
+                
+            except:
+                import traceback
+                yield {
+                        'event':'warning',
+                        'msg':"fichier introuvable %s"%(srcfile.encode('utf-8'),),
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+
             
     # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
@@ -392,17 +436,30 @@ class Publisher(PublisherMixin, kolektiBase):
                                                 '%s/%s'%(label,copyto))
                             
                     else:
-                        self.script_copy(filer = pval,
-                                         srcdir = srcdir,
-                                         targetroot = assembly_dir,
-                                         ext = pdef.get('ext'))
+                        try:
+                            self.script_copy(filer = pval,
+                                            srcdir = srcdir,
+                                            targetroot = assembly_dir,
+                                            ext = pdef.get('ext'))
+                        except:
+                            #only raise an exception if onfail attribute = silent
+                            if pdef.get('onfail') != 'silent':
+                                raise
+                            
                 if pdef.get('type')=='resource':
-                    filer = unicode(pdef.get('file'))
+                    filer = pdef.get('file')
+                    if not filer is None:
+                        filer = unicode(filer)
                     srcdir = unicode(self.substitute_criteria(pdef.get('dir'), profile))
-                    self.script_copy(filer = filer,
-                                     srcdir = srcdir,
-                                     targetroot = assembly_dir,
-                                     ext = pdef.get('ext'))
+                    try:
+                        self.script_copy(filer = filer,
+                                        srcdir = srcdir,
+                                        targetroot = assembly_dir,
+                                        ext = pdef.get('ext'))
+                    except:
+                        #only raise an exception if onfail attribute = silent
+                        if pdef.get('onfail') != 'silent':
+                            raise
 
         except:
             import traceback
@@ -676,32 +733,37 @@ class Publisher(PublisherMixin, kolektiBase):
             self.makedirs(destpath)
         except OSError:
             pass
-        try:
-            source= u"%s/%s.%s"%(srcdir,filer,ext)
-            dest=   u"%s/%s.%s"%(destpath,filer,ext)
-            logging.debug('copy resource %s -> %s'%(source, dest))
-            self.copyFile(source,dest)
-        except:
-            import traceback
-            logging.error("Impossible de copier la ressource %s"%source)
-            logging.debug(traceback.format_exc())
-            raise
+        if filer is None:
+            self.copyDirs(srcdir, destpath)
+        else:
+            try:
+                source= u"%s/%s.%s"%(srcdir,filer,ext)
+                dest=   u"%s/%s.%s"%(destpath,filer,ext)
+                logging.debug('copy resource %s -> %s'%(source, dest))
+                self.copyFile(source,dest)
+            except:
+                import traceback
+                logging.error("Impossible de copier la ressource %s"%source)
+                logging.debug(traceback.format_exc())
+                print traceback.format_exc()
+                raise
         
-        try:
-            source=u"%s/%s.parts"%(srcdir,filer)
-            if self.exists(source):
-                target=u"%s/%s.parts"%(destpath,filer)
-                try:
-                    self.rmdir(target)
-                except:
-                    pass
-                self.copyDirs(source,target)
+            try:
+                source=u"%s/%s.parts"%(srcdir,filer)
+                if self.exists(source):
+                    target=u"%s/%s.parts"%(destpath,filer)
+                    try:
+                        self.rmdir(target)
+                    except:
+                        pass
+                    self.copyDirs(source,target)
 
-        except:
-            import traceback
-            logging.error("Impossible de copier la ressource %s"%source)
-            logging.debug(traceback.format_exc())
-            raise
+            except:
+                import traceback
+                logging.error("Impossible de copier la ressource %s"%source)
+                logging.debug(traceback.format_exc())
+                print traceback.format_exc()
+                raise
 
 
 
@@ -778,12 +840,14 @@ class DraftPublisher(Publisher):
             return
         try:
             first_sep = ""
+            mfmode = "w"
             if os.path.exists(manifest):
                 first_sep = ","
-            with open(manifest, 'a') as mf:
+                mfmode = "a"
+            with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
-                mf.write('{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc)))
-
+                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc))
+                mf.write(ev.encode('utf-8'))
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
                     yield event
@@ -792,6 +856,8 @@ class DraftPublisher(Publisher):
                 for pubres in self.publish_job(assembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
+                yield {"event":"publication_dir", "path":assembly_dir}
+
                 try:
                     pass
                 # self.cleanup_assembly_dir(xjob.getroot())
@@ -839,7 +905,7 @@ class Releaser(Publisher):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        release_name = xjob.get('pubdir')
+        release_name = xjob.get('pubdir', release_name)
         xjob.set('id',release_name + '_asm')
 
         xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
@@ -858,20 +924,20 @@ class Releaser(Publisher):
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/kolekti/publication-parameters/"+release_name+".json")
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
-        if self.syncMgr is not None :
-            try:
-                self.syncMgr.propset("release_state","edition",assembly_path)
+        #if self.syncMgr is not None :
+        #    try:
+        #        self.syncMgr.propset("release_state","sourcelang",assembly_path)
         #            self.syncMgr.add_resource(assembly_path)
-                self.syncMgr.commit(assembly_path, "Release Creation")
+        #            self.syncMgr.commit(assembly_path, "Release Creation")
         #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
-            except:
-                import traceback
-                res.append({
-                    'event':'error',
-                    'msg':"Erreur de synchronisation",
-                    'stacktrace':traceback.format_exc(),
-                    'time':time.time(),
-                    })
+        #    except:
+        #        import traceback
+        #        res.append({
+        #            'event':'error',
+        #            'msg':"Erreur de synchronisation",
+        #            'stacktrace':traceback.format_exc(),
+        #            'time':time.time(),
+        #            })
                    
         return res
 
@@ -891,37 +957,52 @@ class Releaser(Publisher):
 
 
 class ReleasePublisher(Publisher):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, release_dir, *args, **kwargs):
+        self._publangs = None
         if kwargs.has_key('langs'):
             self._publangs = kwargs.get('langs')
             kwargs.pop('langs')
+        self._release_dir = release_dir
         super(ReleasePublisher, self).__init__(*args, **kwargs)
+        if self._publangs is None:
+            self._publangs = self._project_settings.xpath("/settings/releases/lang/text()")
+    def getPublisherExtensions(self):        
+        return ReleasePublisherExtensions
 
-    def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
-        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
-        assembly_dir = "/releases/" + assembly_dir
-        return assembly_dir
+    def get_extensions(self, extclass, **kwargs):
+        kwargs.update({"release":self._release_dir})
+        return super(ReleasePublisher, self).get_extensions(extclass,  **kwargs)
+            
+    def assembly_dir(self, xjob = None):
+        return self._release_dir
+#        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
+#        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+#        assembly_dir = "/releases/" + assembly_dir
+#        return assembly_dir
 
     def cleanup_assembly_dir(self, xjob):
         pass
 
-    def publish_assembly(self, release, assembly):
+    def process_path(self, path):
+        return self.assembly_dir() + "/" + path
+    
+    def publish_assembly(self, assembly):
         """ publish an assembly"""
-        manifest = self.getOsPath(release + '/kolekti/manifest.json')
+        manifest = self.getOsPath(self._release_dir + '/kolekti/manifest.json')
         first_sep = ""
         if os.path.exists(manifest):
             first_sep = ","
         with open(manifest, 'a') as mf:
             mf.write(first_sep)
-            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(release,int(time.time())))
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir,int(time.time())))
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang
                 mf.write(',{"event":"lang", "label":"%s"}'%(lang,))
                 try:
-                    xassembly = self.parse(release + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                    xassembly = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
                 except:
+                    import traceback
                     yield {
                         'event':'error',
                         'msg':"impossible de lire l'assemblage",
@@ -929,14 +1010,15 @@ class ReleasePublisher(Publisher):
                         'time':time.time(),
                         }
                     logging.error("unable to read assembly %s"%assembly)
-                    import traceback
                     logging.debug(traceback.format_exc())
                     return
 
-                xjob = self.parse(release + '/kolekti/publication-parameters/'+ assembly +'.xml')
+                xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
-            mf.write("]}")
+            mf.write ("]}")
+            yield {"event":"publication_dir", "path":self._release_dir}
+
         return 

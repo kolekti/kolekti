@@ -14,6 +14,7 @@ margin-right: 8px;
 { 
   margin-bottom:0;
 }
+
 #menu .menu-list{
   webkit-box-shadow: 0 1px 2px rgba(0,0,0,.075);
   box-shadow: 0 1px 2px rgba(0,0,0,.075);
@@ -33,7 +34,7 @@ margin-right: 8px;
 #menu .list-group-item
 { 
   padding: 0px 15px;
-  background-color: #F5F5F5;
+ background-color: #F5F5F5;
   border : none;
 }
 
@@ -266,7 +267,7 @@ border-top-right-radius: 0px;
 }
 
 
-.menu-list
+.menu-list:last
 { 
   padding-top:.5em;
  }

@@ -45,6 +45,11 @@
          ext="css"
          copytopub="usercss"/>
 
+      <parameter name="pivot_filter" label="Filtre de pivot" 
+		 type="filelist"
+		 dir="kolekti/publication-templates/WebHelp5/filters"
+		 ext="xsl"/>
+
       <parameter name="zip" label="Créer zip" 
          type="boolean"/>
 
@@ -53,6 +58,11 @@
          dir="sources/{LANG}/variables"
          file="WebHelp5_labels"
 	 ext="xml"
+         />
+      <parameter name="generate" 
+         type="resource" 
+         dir="kolekti/publication-templates/WebHelp5/xsl"
+	 onfail="silent"
          />
     </parameters>
   </pubscript>

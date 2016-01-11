@@ -8,7 +8,9 @@
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-release.js"></script>
+<script src="/static/js/kolekti-illustrationsutils.js"></script>
+<script src="/static/js/kolekti-variablesutils.js"></script>
+<script src="/static/js/kolekti-release.js"></script>
 {% endblock %}
 
     {% block title %}
@@ -20,20 +22,27 @@
     {% endblock %}	      
 
 {% block menu %}
-    <div class="row">
+{% if langstate != "unknown" %}
+<div class="row">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified" role="group">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-default btn-save disabled" id="btn_save">Enregistrer</button>
+	  </div>
+	</div>
+      </div>
+    </div>
+
+    <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
 	  <div class="btn-group" role="group">
 	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
 	  </div>
-	  <!--
-	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish_all">Publier BAT </button>
-	  </div>
-	  -->
 	</div>
       </div>
     </div>
+
 
     <br/>
 
@@ -53,136 +62,43 @@
 	<div class="panel-body">
 	  <div class="row">
 	    <div class="col-sm-12 col-md-12">
-	      <a href="{{ release_path }}/sources/{{ active_srclang }}/assembly/{{ assembly_name }}_asm.html">
-		Assemblage [{{active_srclang}}]
+	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html">
+		Assemblage [{{lang}}]
 	      </a><br/>
-	      <a href="#" id="releaseimages">Images</a><br/>
-	      <a href="#" id="releasevar">Variables</a><br/>
+	    </div>
+	    <hr/>
+	    <div class="col-sm-12 col-md-12">
+	      <form method="POST" class="upload_form" enctype="multipart/form-data">
+		<div class="input-group">
+		  <label>
+		    Déposer un fichier assemblage
+		    <input type="file" id="dl_assembly" class="form-control upload" name="upload_file"/>
+		  </label>
+		  
+		</div>
+		<button type="submit" class="btn btn-default">Valider</button>
+	      </form>
 	    </div>
 	  </div>
 	</div>
       </div>
     </div>
 
-    
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Publier plusieurs langues
-	  </a>
-	</h4>
-      </div>
-      <div id="collapsePL" class="panel-collapse collapse on ">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="all" id="pl_all"/>
-		  Toutes
-		</label>
-	      </div>
-	    </div>
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="none" id="pl_none"/>
-		  Aucune
-		</label>
-	      </div>
-	    </div>
-	  </div>
-	  <div class="row">
-	    {% for lang in langs %}
-	    <div class="col-sm-12 col-md-4">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="{{lang.code}}" id="pl_{{lang.code}}"/>
-		  {{ lang.code }}
-		</label>
-	      </div>
-	    </div>
-	    {% endfor %} 
-	  </div>
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-primary btn_publish" id="btn_publish">Publier</button>
-	    </div>
-	  </div>
-	</div> <!-- panel body -->
-      </div>
-    </div>
-
-
-
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapseAS" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Assemblage
-	  </a>
-	</h4>
-      </div>
-      <div id="collapseAS" class="panel-collapse collapse">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_export" id="btn_export">Export</button>
-	    </div>
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_import" id="btn_import">Import</button>
-	    </div>
-	  </div>
-	</div>
-      </div>
-    </div>
-
-
-
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Dernières publications
-	  </a>
-	</h4>
-      </div>
-
-      <div id="collapsePU" class="panel-collapse collapse">
-	<div class="panel-body">
-	  {% include "publication.html" %}
-	  {#    <button class="btn btn-default btn-block" data-pubname="{{ pj.pubname }}">Republier</button>  #}
-	</div>
-      </div>
-    </div>
+    {% endif %}
 {% endblock %}
 
 
 {% block content %}
-    <div id="main" class="release" data-release="{{release_path}}/{{assembly_name}}" data-lang="{{ lang }}">
+    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ lang }}">
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 	{% for rlang, state,focus in langstates %}
 	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
-	  <a href="#release_content_{{ rlang }}"
+	 
+	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
-	     role="tab"
-	     data-toggle="tab"
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
-	     class="text-center"
+	     class="text-center {% if focus %} focus{% endif %}"
 	     {% if  state == "unknown" %}
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
@@ -191,6 +107,7 @@
 	    <br>
 	    <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
 	  </a>
+	     
 	</li>
 	{% endfor %}
       </ul>
@@ -198,9 +115,9 @@
 
       <div class="tab-content ">
 	{% for rlang, state, focus in langstates %}
+	{% if rlang == lang %}
 	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
 	  {% if state == "unknown" %}
-
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
 	      <form action="/releases/copy/" method="POST">
@@ -223,11 +140,17 @@
 	      </form>
 	    </div>
 	  </div>
-	  
 	  {% else %}
 	  
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
+	      {% if state == "unversionned" %}
+	      <p><strong>Cette langue n'a pas été synchronisée, le statut est indisponible</strong><br/>
+		<a href="/sync/">Synchroniser le projet</a>
+	      </p>
+	      {% elif state == "sourcelang" %}
+	      <p>Langue source de la version</p>
+	      {% else %}
 	      <form>
 		<div class="form-group">
 
@@ -251,21 +174,45 @@
 		    </ul>
 		  </div>
 		</div>
+		<!--
 		<div class="checkbox">
 		  <label>
 		    <input type="checkbox" id="focus_{{ lang }}"/>Focus
 		  </label>
 		</div>
+		-->
 	      </form>
+	      {% endif %}
 	    </div>
 	    <div class="panel-body">
-	      <div id="content_{{ rlang }}">
+	      <div class="row">
+		<div class="col-sm-6 col-md-6">
+		  <div class="btn-group">
+		    <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
+		      Assemblage
+		    </button>
+		    <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
+		      Images
+		    </button>
+		    <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
+		      Variables
+		    </button>
+		  </div>
+		</div>
+	      </div>
+	      <div id="content_pane" class="release-panel-part">
+	      </div>
+	      <div id="illust_pane" class="release-panel-part hidden">
+	
+	      </div>
+	      <div id="variables_pane" class="release-panel-part hidden">
 	      </div>
 	    </div>
 	    
 	  </div>
 	  {% endif %}	  
 	</div>
+	{% endif %}	  
  	{% endfor %}
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">

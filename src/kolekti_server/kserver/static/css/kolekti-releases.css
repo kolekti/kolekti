@@ -6,3 +6,8 @@
 .nav#release_tabs>li img {
     margin:0 5px;
 }
+
+
+.nav#release_tabs>li>a.focus>span.lead {
+    background-color:yellow;
+}

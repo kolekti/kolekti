@@ -3,18 +3,38 @@ $(document).ready(function() {
     
     $('#selectall').change(function() {
 	$('.selectentry').prop('checked',$(this).prop('checked'))
+	check_action()
     });
     
+    var check_action = function(e) {
+	if ($('.selectentry').length) {
+	    var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
+	    if(map.length == 0) 
+		$('.btn-action-synchro').addClass('disabled')
+	    else
+		$('.btn-action-synchro').removeClass('disabled')
+	}
+    };
+		  
+    $('body').on('change','.selectentry',check_action);
+    check_action()
+
+		  
     $('body').on('change','select',function(e) {
 	var val = $(this).val();
-	console.log(val);
-	if (val == "local") {
+	if (val == "local" || val == "merge") {
 	    $("#commitmsg").show();
 	} else {
 	    $("#commitmsg").hide();
 	}
     });
-		 
+    
+    $('form').on('submit', function() {
+	console.log("submit form");
+	$('#modal_processing').modal('show')
+    })
+		  
+    /*		 
     $('body').on('click','.btn-select-merge',function(e) {
 	action = $('.select-merge').val();
 	console.log(action);
@@ -47,7 +67,7 @@ $(document).ready(function() {
 		    $('.modal-body').append($(data))
 		});
 	    $('.modal-title').html('Synchronisation')		
-	    $('.modal-footer').html(
+	    $  ('.modal-footer').html(
 		$('<button>',{
 		    "class":"btn btn-default", 
 		    "html":"fermer"})
@@ -56,25 +76,6 @@ $(document).ready(function() {
 	    $('.modal').modal();
 	});
     });
-
-    $('body').on('click','.dosynchro',function(e) {
-	console.log('synchro');
-	
-	$.post('/sync/'+$(this).data('action'), {
-	    'syncromsg':$('#syncromsg').val()
-	})
-	    .done(function(data) {
-		$('.modal-title').html('Synchronisation')		
-		$('.modal-body').html(data)
-		$('.modal-footer').html(
-		    $('<button>',{
-			"class":"btn btn-default", 
-			"html":"fermer"})
-			.on('click',function() { window.location.reload()})
-		)
-    		$('.modal').modal();
-	    })
-    })
-
+*/
     $('#syncromsg').focus()    
 })

@@ -36,12 +36,14 @@ $(document).ready(function() {
 	    buf += "<dir value='" + $(e).find('.profile-dir').val() + "'/>";
 	    buf += "<criteria>";
 	    $(e).find(".kolekti-crit").each(function(i,c) {
-		var val = $(c).data('kolekti-crit-value');
-		if (val == '*') {
-		    buf += "<criterion code='"+ $(c).data('kolekti-crit-code') +"'/>" ;
-		}
-		else if (val != '') {
-		    buf += "<criterion code='"+ $(c).find('.kolekti-crit-code').html() +"' value='"+ val +"'/>" ;
+		if (!$(c).hasClass('disabled')) {
+		    var val = $(c).data('kolekti-crit-value');
+		    if (val == '*') {
+			buf += "<criterion code='"+ $(c).data('kolekti-crit-code') +"'/>" ;
+		    }
+		    else if (!(val === '')) {
+			buf += "<criterion code='"+ $(c).find('.kolekti-crit-code').html() +"' value='"+ val +"'/>" ;
+		    }
 		}
 	    });
 	    buf += "</criteria>";

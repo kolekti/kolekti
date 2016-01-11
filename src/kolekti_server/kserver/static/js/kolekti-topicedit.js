@@ -23,7 +23,7 @@ $(document).ready( function () {
 	    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
 	    { name: 'about', items: [ 'About' ] },
 	    '/',
-	    { name: 'tools', items: [ 'ShowBlocks' ] },
+	    { name: 'tools', items: [ 'ShowBlocks', 'editCondition', 'removeCondition' ] },
 	    { name: 'styles', items: [ 'Format' ] },
 	    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat' ] },
 	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv'] }

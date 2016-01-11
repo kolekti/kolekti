@@ -2,12 +2,14 @@
 
 {% block title %}Variables{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
+{% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-illustrations.css"></link>
 {% endblock %}
 
-{% block extrascripts %}
+    {% block extrascripts %}
+    <script src="/static/js/kolekti-variablesutils.js"></script>
     <script src="/static/js/kolekti-variableslist.js"></script>
 {% endblock %}
 

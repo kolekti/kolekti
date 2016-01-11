@@ -99,33 +99,145 @@ Defines events for languages and release state in toolbar
 	return "ko";
     });
 */
+    
+    var enable_save = function() {
+	$('#btn_save').removeClass('disabled');
+	$('#btn_save').removeClass('btn-default');
+	$('#btn_save').removeClass('hidden');
+	$('#btn_save').addClass('btn-warning');
+    };
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Version non enregistrée';
+	}
+    });
+
+
+    
     // Kolekti Release toolbar
+
+    $('.nav-tabs .active .state.lead ').on('click', function() {
+	var tab = $(this).closest('a');
+	has_focus = tab.hasClass('focus');
+	$.ajax({
+	    url:"/releases/focus/",
+	    method:'POST',
+	    data:$.param({
+		'release': $('#main').data('release'),
+		'lang'   : $('#main').data('lang'),
+		'state'  : !has_focus
+	    })
+	}).done(function(data) {
+	    if (data.status='OK')
+	    {
+		if (has_focus)
+		    tab.removeClass('focus');
+		else
+		    tab.addClass('focus');
+	    }
+	});
+    })
 
     
     $('.release-state').on('click', function() {
-	
 	var lang = $(this).closest('ul').data('target-lang');
 	var oldstate = $('.btn-lang-menu-'+lang).data('state')
+	var newstate = $(this).data('state')
 	var labelstate = $(this).find('span').html()
 	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
+	enable_save()
+	$('#release_tabs .active img').attr('src','/static/img/release_status_'+newstate+'.png')
+	$('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
+	$('.btn-lang-menu-'+lang+' .state').html(labelstate);
+
+	$('#main').data('state', newstate)
+	$('#main').attr('data-state', newstate)
+
+	
+    });
+	
+    $('#btn_assembly').on('click', function() {
+	$('#preview').parent().addClass('hidden');
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#content_pane').removeClass('hidden')
+    })
+
+    $('#btn_illust').on('click', function() {
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#illust_pane').removeClass('hidden')
+	console.log($('#main').data('release'))
+	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
+			 'parent':"#illust_pane",
+			 'title':" ",
+			 'titleparent':".title",
+			 'mode':"selectonly",
+			 'modal':"no",
+			 'drop_files':true,
+			 'os_actions':'yes',
+			 'create_actions':'yes',
+			 'create_builder':upload_image_builder_builder()
+			})
+	    .select(
+		function(path) {
+		    $.get('/images/details?path='+path)
+			.done(
+			    function(data) {
+				$('#preview').html([
+				    $('<h4>',{'html':displayname(path)}),
+				    data
+				]);
+				$('#preview img').attr('src',path);
+				$('#preview').parent().removeClass('hidden');
+			    }
+			)
+		})
+	    .create(upload_image)
+	
+    })
+
+    $('#btn_variables').on('click', function() {
+	$('#preview').parent().addClass('hidden');
+	$('.btn-release-pane').removeClass('active')
+	$(this).addClass('active')
+	$('.release-panel-part').addClass('hidden')
+	$('#variables_pane').removeClass('hidden')
+	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
+		     'parent':"#variables_pane",
+		     'title':" ",
+		     'titleparent':".title",
+		     'mode':"selectonly",
+		     'modal':"no",
+		     'os_actions':'yes',
+		     'create_actions':'yes',
+		     'create_builder':upload_variable_builder_builder()
+		    })
+	.select(
+	    function(path) {
+		
+	    })
+	.create(upload_varfile)
+	.setup_file(setup_varfile);
+    })
+
+    $('#btn_save').on('click', function() {
 	$.ajax({
 	    url:"/releases/state/",
 	    method:'POST',
 	    data:$.param({
-		'release' :$(this).closest('#main').first().data('release'),
-		'state' : $(this).data('state'),
-		'lang'  : lang
+		'release': $('#main').data('release'),
+		'state' :  $('#main').data('state'),
+		'lang'  :  $('#main').data('lang')
 	    })
 	}).done(function(data) {
-	    $('#release_tabs .active img').attr('src','/static/img/release_status_'+data+'.png')
-	    $('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+data)
-	    $('.btn-lang-menu-'+lang).data('state', data)
-	    $('.btn-lang-menu-'+lang).attr('data-state', data)
-	    $('.btn-lang-menu-'+lang+' .state').html(labelstate);
-	    
-	})
-	
+	    $('#btn_save').addClass('disabled');
+	    $('#btn_save').addClass('btn-default');
+	    $('#btn_save').removeClass('btn-warning');
+	});
     })
 
     var get_publish_languages = function(all_languages) {
@@ -140,8 +252,9 @@ Defines events for languages and release state in toolbar
 	}
     }
 
-
+    /*
     $('#release_tabs a').click(function (e) {
+
 	e.preventDefault()
 	var lang  = $(this).data('lang');
 	var state = $(this).data('state');
@@ -153,6 +266,7 @@ Defines events for languages and release state in toolbar
 	    $('#panel_download').hide()
 	}
     })
+	*/
 
     // content loading function
     var load_assembly = function() {
@@ -160,9 +274,10 @@ Defines events for languages and release state in toolbar
 	    'release':$('#main').data('release'),
 	    'lang':$('#main').data('lang')
 	}).success(function(data) {
-	    $('#content_'+$('#main').data('lang')).html(data)
+	    $('#content_pane').html(data)
 	})
     }
+    
     load_assembly();
 
 
@@ -178,8 +293,11 @@ Defines events for languages and release state in toolbar
 	$('.modal-title').html('Publication');
 	$('.modal-footer button').html('fermer');
 	$('.modal').modal();
-	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>').appendTo($('#pubresult'));
+	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>').appendTo($('#pubresult'));
 	//params = get_publish_params(job)
+
+	$('#pub_end').hide();
+	
 	var params = {}
 	var release = $('#main').data('release')
 	params['release']=release;
@@ -227,7 +345,10 @@ Defines events for languages and release state in toolbar
 	    ]);
 	}).always(function() {
 	    $('#pub_progress').remove();
+	    $('#pub_end').show();
 	});
     })
+
+    
 
 })

@@ -49,7 +49,28 @@ class plugin(PublisherMixin,kolektiBase):
         logging.debug("*********** init plugin with extension %s"%self.__ext)
         self._draft = True
         
-    def get_xsl(self,xslfile, **kwargs):
+    def get_xsl(self, xslfile, **kwargs):
+        logging.debug("get xsl from plugin %s"%self._plugindir)
+        try:
+            xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
+            xsl = super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
+                                                xsldir = xslpath,
+                                                system_path = False,
+                                                resdir = self.assembly_dir,
+                                                **kwargs)
+    
+        except:
+            import traceback
+            print traceback.format_exc()
+            xsl = super(plugin,self).get_xsl(xslfile,
+                                            extclass = self.__ext,
+                                            xsldir = os.path.join(self._plugindir,'xsl'),
+                                            system_path = True,
+                                            resdir = self.assembly_dir,
+                                            **kwargs)
+        return xsl
+    
+    def get_project_xsl(self,xslfile, **kwargs):
         logging.debug("get xsl from plugin %s"%self._plugindir)
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,

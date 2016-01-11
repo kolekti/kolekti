@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block current_tools %}menu-current{% endblock %}
+{% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-variables.css"></script>
@@ -15,7 +16,7 @@
 {% block content %}
 <h2>Variables : {{ name }}</h2>
 <div id="main">
-  <table class="table ">
+  <table class="table  table-condensed table-responsive">
     <thead>
     </thead>
     <tbody>

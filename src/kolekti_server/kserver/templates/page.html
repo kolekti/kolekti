@@ -56,7 +56,7 @@
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">          
-	    <li><a href="http://www.kolekti.org/projects/kolekti/wiki" target="_blank">Wiki</a></li>
+	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
@@ -77,7 +77,7 @@
 <!--
       <div class="collapse navbar-collapse" id="navbar2">
 	<ul class="nav navbar-nav">
-	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncinfo.revision.number }}]</span></a></li>
+	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncnum.revision.number }}]</span></a></li>
 	</ul>
       </div>
 -->
@@ -104,7 +104,7 @@
 	    </div>
 	    <div class="btn-group" role="group">
 	      <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
-		rev {{ syncinfo.revision.number }}
+		rev {{ syncnum.revision.number }}
 	      </button>
 	    </div>
 	    {% block infobuttons_lang %}
@@ -125,11 +125,6 @@
 	    {% endcomment %}
 	    {% endblock %}
 
-	    <div class="btn-group" role="group">
-	    <button class="btn btn-xs btn-default" type="button" >
-		  Aide
-	    </button>
-	    </div>
 	      {% endblock %}
 	    </div>
 	  </div>
@@ -161,6 +156,7 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="/static/jquery.js"></script>
+    <script src="/static/jquery-ui.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/settings.js"></script>

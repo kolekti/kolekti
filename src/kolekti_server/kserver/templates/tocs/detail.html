@@ -2,6 +2,7 @@
 {% load ostags %}
 
 {% block current_trames %}class="menu-current"{% endblock %}
+{% block help-topic %}toc{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></link>
@@ -33,11 +34,15 @@
 
 
     <div class="row top-margin">
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
-      </div>
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Créer une version</button>
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_draft">Publier</button>
+	  </div>
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-default btn_publish" id="btn_release">Créer version</button>
+	  </div>
+	</div>
       </div>
     </div>
     <br/>
@@ -50,7 +55,7 @@
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
 	    </small>
-	    Paramètres de publication
+	    Paramétrage de la publication
 	  </a>
 	</h4>
       </div>
@@ -78,7 +83,13 @@
 	  </h5>
 	  <span class="btn-group">
 	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
-	      <span class="label_job">{{ tocmeta.kolekti_job|urlbasename }}</span>
+	      <span class="label_job">
+		{% if tocmeta.kolekti_job %}
+		{{ tocmeta.kolekti_job|urlbasename }}
+		{% else %}
+		<em>Selectionnez...</em>
+		{% endif %}
+	      </span>
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
@@ -93,55 +104,54 @@
 	    </ul>
 	  </span>
 	  
-	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"><span class="glyphicon glyphicon-cog"> </span></a>
+	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"
+	     {% if not tocmeta.kolekti_job %}class="hidden"{% endif %}>
+	    <span class="glyphicon glyphicon-cog"> </span></a>
 
-	  
-	  <h5>
-	  Sélection rapide
-	  </h5>
+	  <div id="quickselect"{% if not tocmeta.kolekti_job %} class="hidden"{% endif %}>
+	    <h5>
+	      Sélection rapide
+	    </h5>
 
-	  {% for job in jobs %}
+	    {% for job in jobs %}
 
 
-	  <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
-	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
-	    <div class="col-sm-12 col-md-12">
-
-	      <h6>Profils</h6>
-	    </div>
-	    {% for profile in job.profiles %}
-
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox" checked>
-		<label>
-  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
-			 {% if profile.1 == "1"%}checked{% endif %}/>
-		  {{ profile.0 }}
-		</label>
+	    <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
+	      <div class="col-sm-12 col-md-12">
+		
+		<h6>Profils</h6>
 	      </div>
+	      {% for profile in job.profiles %}
+	      
+	      <div class="col-sm-6 col-md-6">
+		<div class="checkbox" checked>
+		  <label>
+  		    <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
+			   {% if profile.1 == "1"%}checked{% endif %}/>
+		    {{ profile.0 }}
+		  </label>
+		</div>
+	      </div>
+	      {% endfor %}
+	      <div class="col-sm-12 col-md-12">
+		<h6>Sorties</h6>
+	      </div>
+	      {% for script in job.scripts %}
+	      <div class="col-sm-6 col-md-6">
+		<div class="checkbox">
+		  <label>
+  		    <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
+			   {% if script.1 == "1"%} checked{% endif %}/>
+		    {{ script.0 }}
+		  </label>
+		</div>
+	      </div>
+	      {% endfor %}
+
 	    </div>
 	    {% endfor %}
-	    <div class="col-sm-12 col-md-12">
-	      <h6>Sorties</h6>
-	    </div>
-	    {% for script in job.scripts %}
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
-			 {% if script.1 == "1"%} checked{% endif %}/>
-		  {{ script.0 }}
-		</label>
-	      </div>
-	    </div>
-	    {% endfor %}
-	    {% comment %}
-	    <div class="col-sm-12 col-md-12 top-margin">
-	      <a id="editjoblink" class="btn btn-default btn-block" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres">Paramètres avancés...</a>
-	    </div>
-	    {% endcomment %}
 	  </div>
-	  {% endfor %}
 	</div>
       </div>
     </div>

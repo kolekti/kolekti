@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
     url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
+    url(r'^releases/focus/', ReleaseFocusView.as_view(), name='releasefocus'),
     url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
     url(r'^releases/publish', ReleasePublishView.as_view(),name="releasepublish"),
     url(r'^releases/assembly', ReleaseAssemblyView.as_view(),name="releaseassembly"),
@@ -37,11 +38,16 @@ urlpatterns = patterns('',
 
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
+    url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
+    url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
-
+    url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
+    url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
+    
     url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
     url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
+    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+    url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
@@ -62,6 +68,7 @@ urlpatterns = patterns('',
     url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
     url(r'^browse/ckbrowser$', BrowserCKView.as_view(),name="kolekti_ckbrowser"),
     url(r'^browse/ckupload$', BrowserCKUploadView.as_view(),name="kolekti_ckupload"),
+    url(r'^browse/upload$', BrowserUploadView.as_view(), name='kolekti_browser_upload'),
     url(r'^browse/releases/', BrowserReleasesView.as_view(),name="kolekti_browser_releases"),
     url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
 
@@ -77,6 +84,7 @@ urlpatterns = patterns('',
     url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
     url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),
+    url(r'^publications/zip/$', PublicationsZipView.as_view(),name="publications_zip"),
     url(r'^releases/publications/list.json', ReleasesPublicationsListJsonView.as_view(),name="releases_publications_list_json"),
 
 
@@ -91,4 +99,5 @@ urlpatterns = patterns('',
                        
 #    (r'^admin/', include(admin.site.urls)),
 )
+
 

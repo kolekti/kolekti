@@ -4,12 +4,36 @@ import shutil
 import logging
 import urllib2
 import pysvn
-
+import locale
 import sys
+
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
 from exceptions import ExcSyncNoSync
 
+
+def initLocale():
+    # init the locale
+    if sys.platform in ['win32','cygwin']:
+        locale.setlocale( locale.LC_ALL, '' )
+
+    else:
+        language_code, encoding = locale.getdefaultlocale()
+        if language_code is None:
+            language_code = 'en_GB'
+
+        if encoding is None:
+            encoding = 'UTF-8'
+        if encoding.lower() == 'utf':
+            encoding = 'UTF-8'
+
+        try:
+            # setlocale fails when params it does not understand are passed
+            locale.setlocale( locale.LC_ALL, '%s.%s' % (language_code, encoding) )
+        except locale.Error:
+            # force a locale that will work
+            locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
+initLocale()
 
 class SynchroManager(object):
     statuses_modified = [
@@ -68,10 +92,28 @@ class SynchroManager(object):
     def history(self):
         return self._client.log(self._base)
 
-    def state(self):
+    def rev_number(self):
         #headrev = self._client.info(self._base)
         headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
         return {"revision":{"number":headrev}}
+    
+    def rev_state(self):
+        #headrev = self._client.info(self._base)
+        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        statuses = self.statuses()
+        status = "N"
+        if len(statuses['error']):
+            status = "E"
+        if len(statuses['conflict']):
+            status = "C"
+        if len(statuses['merge']):
+            status = "M"
+        if len(statuses['commit']):
+            status = "*"
+        if len(statuses['update']):
+            status = "U"
+            
+        return {"revision":{"number":headrev,"status":status}}
 
     
     def revision_info(self, revision):
@@ -96,18 +138,22 @@ class SynchroManager(object):
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         
-    def statuses(self):
-        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[]}
-        statuses = self._client.status(self._base,
-                                       recurse = True,
+    def statuses(self, path="", recurse = True):
+        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
+        statuses = self._client.status(self.__makepath(path),
+                                       recurse = recurse,
                                        get_all = True,
                                        update = True)
         for status in statuses:
             path = status.path[len(self._base):]
             item = {"path":path,
-                    "rstatus":status.repos_text_status,
-                    "wstatus":status.text_status,
+                    "basename":os.path.basename(path),
+                    "rstatus":str(status.repos_text_status),
+                    "wstatus":str(status.text_status),
+                    "rpropstatus":str(status.repos_prop_status),
+                    "wpropstatus":str(status.prop_status),
                     }
+
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
                              "author":status.entry.commit_author})
@@ -115,22 +161,32 @@ class SynchroManager(object):
                 item.update({"kind":"none"})
             if status.text_status == pysvn.wc_status_kind.ignored:
                 pass
+
             elif status.text_status == pysvn.wc_status_kind.unversioned and status.repos_text_status == pysvn.wc_status_kind.none:
-                pass
+                res['unversioned'].append(item)
+
             elif status.repos_text_status in self.statuses_modified:
                 if status.text_status == pysvn.wc_status_kind.added:
                     res['conflict'].append(item)
                 elif status.text_status == pysvn.wc_status_kind.unversioned:
                     res['conflict'].append(item)
                 elif status.text_status in self.statuses_modified:
-                    if self.merge_dryrun(status.path):
-                        res['merge'].append(item)
-                    else:
+                    if (status.repos_text_status == pysvn.wc_status_kind.deleted) and (status.text_status == pysvn.wc_status_kind.deleted or status.text_status == pysvn.wc_status_kind.unversioned):
+                        res['update'].append(item)
+                    elif status.repos_text_status == pysvn.wc_status_kind.deleted:
                         res['conflict'].append(item)
+                    else:
+                        if self.merge_dryrun(status.path):
+                            res['merge'].append(item)
+                        else:
+                            res['conflict'].append(item)
+                            
                 elif status.text_status in self.statuses_absent:
                     res['update'].append(item)
+                    
                 elif status.text_status in self.statuses_normal:
                     res['update'].append(item)
+                    
                 else:
                     res['error'].append(item)
                     
@@ -141,12 +197,21 @@ class SynchroManager(object):
                     res['commit'].append(item)
                 elif status.text_status in self.statuses_normal:
                     res['ok'].append(item)
+                    
                 else:
                     res['error'].append(item)
             else:
                 res['error'].append(item)
-
-
+            
+            
+            if status.prop_status in self.statuses_modified:
+                if status.repos_prop_status in self.statuses_modified:
+                    res['conflict'].append(item)
+                else:
+                    res['commit'].append(item)
+            else:
+                if status.repos_prop_status in self.statuses_modified:
+                    res['update'].append(item)
         return res
 
 
@@ -195,7 +260,7 @@ class SynchroManager(object):
             }
 
     def resolved(self, file):
-        self._client.resolved(file)
+        self._client.resolved(self.__makepath(file))
 
     def update_all(self):
 #        print "update_all"
@@ -204,7 +269,11 @@ class SynchroManager(object):
         return update_revision
 
     def update(self, files):
-        update_revision = self._client.update(files, recurse = True)
+        osfiles = []
+        for f in files:
+            osfiles.append(self.__makepath(f))
+        update_revision = self._client.update(osfiles)
+        
         return update_revision
 
     def revert(self, files):
@@ -261,6 +330,10 @@ class SynchroManager(object):
     def add_resource(self,path):
         ospath = self.__makepath(path)
         self._client.add(ospath)
+
+    def remove_resource(self,path):
+        ospath = self.__makepath(path)
+        self._client.remove(ospath,keep_local=True,force=True)
 
     def delete_resource(self,path):
         ospath = self.__makepath(path)

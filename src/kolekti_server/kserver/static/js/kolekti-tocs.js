@@ -8,6 +8,12 @@ $(document).ready( function () {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    var disable_save = function() {
+	$('#btn_save').addClass('disabled');
+	$('#btn_save').addClass('btn-default');
+	$('#btn_save').removeClass('btn-warning');
+    }
+    
     $(window).on('beforeunload', function(e) {
 	if($('#btn_save').hasClass('btn-warning')) {
             return 'Trame non enregistrée';
@@ -29,7 +35,10 @@ $(document).ready( function () {
 	    buf += "rel='" + elt.data('kolekti-topic-rel') + "'/>";
 	}
 	else if (elt.hasClass('section')) {
-	    buf+="<div class='section'>";
+	    buf+="<div class='section'";
+	    if (elt.attr('data-hidden') == 'true')
+		buf+=" data-hidden='true'";
+	    buf+=">";
 	    elt.children('.panel-heading').children().each(function(i,e) {
 		buf += process_toc($(e));
 	    });
@@ -157,8 +166,11 @@ $(document).ready( function () {
 					    'tabindex':"-1",
 					    'href':"#",
 					    'class':"btn_section_toc_exclude",
-					    'html':"Exclure du sommaire"
-					})
+					    'html':["Exclure du sommaire",
+						topic.attr('data-hidden')=='true'?' ':'',
+						topic.attr('data-hidden')=='true'?$('<span>',{'class':"glyphicon glyphicon-ok"}):null,
+					       ]
+					}),
 				    }):null,
 				    
 				    $('<li>', {
@@ -288,9 +300,7 @@ $(document).ready( function () {
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
-	    $('#btn_save').addClass('disabled');
-	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').removeClass('btn-warning');
+	    disable_save()
 	});
     })
 
@@ -340,7 +350,6 @@ $(document).ready( function () {
 
     $('.publish_job').on('click', function(e) {
 	$('#collapse_'+$(this).attr('id')).collapse('toggle');
-	
     })
 
     
@@ -396,9 +405,10 @@ $(document).ready( function () {
 	var do_publish = function() {
 	    $('.modal-footer button').html('fermer');
 	    $('.modal').modal();
-	    $('#pubresult').html('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div></div></div>');
+	    $('#pubresult').html('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>');
 	    
-		
+	    $('#pub_end').hide();
+
 	    var streamcallback = function(data) {
 		//		console.log(data);
 		$("#pub_results").html(data);
@@ -441,6 +451,7 @@ $(document).ready( function () {
 		]);
 	    }).always(function() {
 		$('#pub_progress').remove();
+		$('#pub_end').show();
 	    });
 	};
 	
@@ -509,6 +520,9 @@ $(document).ready( function () {
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
+	$('#editjoblink').show();
+	$('#editjoblink').removeClass('hidden')
+	$('#quickselect').removeClass('hidden')
 
 	$('#toc_root').data('kolekti-meta-kolekti_job',name)
 	$('#toc_root').attr('data-kolekti-meta-kolekti_job',name)
@@ -536,28 +550,50 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_section_rename', function(e) {
 	// get section title
+	e.preventDefault();
+	disable_save()
+	
 	var title_elt = $(this).closest('.section')
 	    .children('.panel-heading')
 	    .children('')
 	    .children('a');
-
-	title_elt.after(
-	    $('<input>',{
-		"type":'text',
-		"value":title_elt.children('span').html()
-	    }).on('focusout',function(e){
-		if ($(this).closest('tr').data('name')!= $(this).val()) {
-		    var new_title=$(this).val();
-		    title_elt.children('span').html(new_title);
+	
+	var i = $('<input>',{
+	    "type":'text',
+	    "value":title_elt.children('span').html()
+	});
+	
+	i.on('focusout',function(e){
+	    if ($(this).closest('tr').data('name')!= $(this).val()) {
+		var new_title=$(this).val();
+		title_elt.children('span').html(new_title);
 		    enable_save();
 		    $(this).remove();
 		}
 	    })
-	);
+	title_elt.after(i);
+	i.focus();
+   
 	title_elt.children('span').html('');
     });	
     
 
+    $('body').on('click', '.btn_section_toc_exclude', function(e) {
+	var section = $(this).closest('.section')
+	if ($(this).data("state") == 'on')
+	{
+	    $(this).data("state",'off');
+	    $(this).parent().find('span').remove();
+	    section.removeAttr('data-hidden')
+	} else {
+	    $(this).data("state",'on');
+	    $(this).append([' ',$('<span>',{'class':"glyphicon glyphicon-ok"})]);
+	    section.attr('data-hidden', 'true')
+	}
+	enable_save();
+    })
+
+    
     // move topic
 
     $('body').on('click', '.btn_topic_up', function(e) {
@@ -920,7 +956,7 @@ $(document).ready( function () {
 		refcomp.after(section_obj);
 	    else 
 		if (isinside) {
-		    refcomp.find('.panel-body').prepend(section_obj);
+		    refcomp.find('.panel-body').first().prepend(section_obj);
 		    show_section(refcomp);
 		} else {
 		    refcomp.before(section_obj)
