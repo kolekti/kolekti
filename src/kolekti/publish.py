@@ -1011,13 +1011,14 @@ class ReleasePublisher(Publisher):
     
     def publish_assembly(self, assembly, xjob=None):
         """ publish an assembly"""
+        print type(self._release_dir), self._release_dir
         manifest = self.getOsPath(self._release_dir + '/kolekti/manifest.json')
         first_sep = ""
         if os.path.exists(manifest):
             first_sep = ","
         with open(manifest, 'a') as mf:
             mf.write(first_sep)
-            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir,int(time.time())))
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir.encode('utf-8'),int(time.time())))
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang

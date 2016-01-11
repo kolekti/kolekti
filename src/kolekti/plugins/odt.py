@@ -102,7 +102,7 @@ class plugin(pluginBase.plugin):
                 iter = 0
                 try:
                     for img in pivot.xpath('/h:html/h:body//h:img', namespaces=self._ns):
-                        newsrc = img.get('src').encode('utf-8')
+                        newsrc = img.get('src')
                         print 'image',newsrc
                         if odtids.get(newsrc, '') == '':
                             # get an uuid for the image
@@ -163,7 +163,7 @@ class plugin(pluginBase.plugin):
                 tmeta=ET.XML(zipin.read('meta.xml'))
                 try:
                     xslx=self.get_plugin_xsl('generate-meta')
-                    doc=xslx(tmeta, pivot="'%s'"%urllib.quote(tmppivot))
+                    doc=xslx(tmeta, pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')))
                 except:
                     import traceback
                     print traceback.format_exc()
@@ -179,7 +179,7 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_plugin_xsl('generate-styles')
                 doc=xslx(styles,
-                        pivot="'%s'"%urllib.quote(tmppivot))
+                        pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')))
 
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
@@ -191,9 +191,9 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_plugin_xsl('generate')
                 content=xslx(template,
-                         pivot="'%s'"%urllib.quote(tmppivot),
-                         styles="'%s'"%urllib.quote(tmpstyles),
-                         mapping="'%s'"%urllib.quote(mapfile))
+                         pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')),
+                         styles="'%s'"%urllib.quote(tmpstyles.encode('utf-8')),
+                         mapping="'%s'"%urllib.quote(mapfile.encode('utf-8')))
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
 
