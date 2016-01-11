@@ -1,5 +1,71 @@
 $(document).ready(function() {
     
+    var chartoptions = function(kind, yunit) {
+
+	var cb = function (tickValue, index, ticks) {
+	    //return "Foof"
+	    var delta = ticks[1] - ticks[0];
+	    
+	    // If we have a number like 2.5 as the delta, figure out how many decimal places we need
+	    if (Math.abs(delta) > 1) {
+		if (tickValue !== Math.floor(tickValue)) {
+		    // not an integer
+		    delta = tickValue - Math.floor(tickValue);
+		}
+	    }
+	    
+	    var logDelta = Chart.helpers.log10(Math.abs(delta));
+	    var tickString = '';
+	    
+	    if (tickValue !== 0) {
+		if (yunit == "%") {
+		    tv = 100 * tickValue;
+		    tickString = tv.toFixed(0) + " %";
+		} else {
+		    var numDecimal = -1 * Math.floor(logDelta);
+		    numDecimal = Math.max(Math.min(numDecimal, 20), 0); // toFixed has a max of 20 decimal places
+		    tickString = tickValue.toFixed(numDecimal);
+		}
+		if (yunit == "€") {
+		    tickString = tickString + " €";
+		}
+	    } else {
+		tickString = '0'; // never show decimal places for 0
+	    }
+
+	    return tickString;
+	    
+	}
+	
+	var _chartoptions = {
+	    'Line':{
+		'scales':{'yAxes':[{
+		    'ticks':{
+			
+			'userCallback': cb
+		    }
+		}]}
+	    },
+	    'Bar':{
+		'scales':{'yAxes':[{
+		    'ticks':{
+			'suggestedMin':0,
+			'userCallback': cb
+		    }
+		}]}
+	    }
+	};
+
+	if (yunit != "%" && yunit != "€") {
+	    _chartoptions[kind].scales['yAxes'][0].scaleLabel={
+		"display":true,
+		"labelString": yunit
+	    }
+	}
+	
+	return _chartoptions[kind];
+    }
+
 
     // collapse : close open collapse when an otherone is open
     $(".collapseTopic").on('show.bs.collapse', function() {
@@ -16,29 +82,36 @@ $(document).ready(function() {
     
     // affichage diagrammes
     Chart.defaults.global.responsive = true;
+
+    Chart.defaults.global.legend.position = 'bottom';
     var chartcolors = ['220,51,51', '51,51,220', '51,220,61'];
-    
+
     var make_chart  = function(chartid, kind, data) {
 	var chart = document.getElementById(chartid)
 	var canvasid = 'canvas_' + chartid
-	$(chart).find('canvas').remove()
+	chart.Chart && chart.Chart.destroy()
+	//$(chart).find('canvas').remove()
+	
 	if (data != 'no data') {
-	    $(chart).prepend($('<canvas>', {'id':canvasid}))
+	    if($(chart).find('canvas').length == 0)
+		$(chart).prepend($('<canvas>', {'id':canvasid}))
 	
             for (s=0; s < data['seriescount']; s++) {
-		data['datasets'][s]["highlightStroke"] = "rgba("+chartcolors[s]+",1)";
-  		data['datasets'][s]["strokeColor"] = "rgba("+chartcolors[s]+",0.8)";
+		data['datasets'][s]["borderColor"] = "rgba("+chartcolors[s]+",1)";
 		if (kind == "Bar") {
-		    data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.75)";
- 		    data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.5)";
+		    data['datasets'][s]["backgroundColor"] = "rgba("+chartcolors[s]+",0.75)";
 		}
 		if (kind == "Line") {
-		    data['datasets'][s]["highlightFill"] = "rgba("+chartcolors[s]+",0.2)";
- 		    data['datasets'][s]["fillColor"] = "rgba("+chartcolors[s]+",0.1)";
+		    data['datasets'][s]["backgroundColor"] = "rgba("+chartcolors[s]+",0.2)";
 		}
 	    }
             var ctx = document.getElementById(canvasid).getContext("2d");
-	    var myNewChart = new Chart(ctx)[kind](data);
+
+	    //	    var myNewChart = new Chart(ctx)[kind](data, chartoptions[kind]);
+	    chart.Chart = new Chart(ctx, {
+		type: kind.toLowerCase(),
+		data:data,
+		options:chartoptions(kind, data['unit'])});
 	}
     }
 
@@ -58,6 +131,7 @@ $(document).ready(function() {
 	if (data == "no data") {
 	    $(this).find('.legend').append($('<p class="error">Aucune donnée pour cet indicateur</p>'))
 	}else{
+	    return;
 	    $(this).find('.legend').append(
 	    
 	    $.map(data.datasets, function(s,i) {
