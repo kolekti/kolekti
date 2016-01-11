@@ -85,114 +85,6 @@
     </div>
 
     {% endif %}
-    {% comment %}
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Publier plusieurs langues
-	  </a>
-	</h4>
-      </div>
-      <div id="collapsePL" class="panel-collapse collapse on ">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="all" id="pl_all"/>
-		  Toutes
-		</label>
-	      </div>
-	    </div>
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="none" id="pl_none"/>
-		  Aucune
-		</label>
-	      </div>
-	    </div>
-	  </div>
-	  <div class="row">
-	    {% for lang in langs %}
-	    <div class="col-sm-12 col-md-4">
-	      <div class="checkbox">
-		<label>
-		  <input type="checkbox" class="publangs" name="pl_lang" value ="{{lang.code}}" id="pl_{{lang.code}}"/>
-		  {{ lang.code }}
-		</label>
-	      </div>
-	    </div>
-	    {% endfor %} 
-	  </div>
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-primary btn_publish" id="btn_publish">Publier</button>
-	    </div>
-	  </div>
-	</div> <!-- panel body -->
-      </div>
-    </div>
-
-
-
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapseAS" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Assemblage
-	  </a>
-	</h4>
-      </div>
-      <div id="collapseAS" class="panel-collapse collapse">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_export" id="btn_export">Export</button>
-	    </div>
-	    <div class="col-sm-6 col-md-6">
-	      <button type="button" class="btn btn-block btn-default btn_import" id="btn_import">Import</button>
-	    </div>
-	  </div>
-	</div>
-      </div>
-    </div>
-    {% endcomment %}
-    
-    <div class="panel panel-default hidden">
-      <div class="panel-body" id="preview">
-      </div>
-    </div>
-
-    <div class="panel panel-default hidden">
-      <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Dernières publications
-	  </a>
-	</h4>
-      </div>
-
-      <div id="collapsePU" class="panel-collapse collapse">
-	<div class="panel-body">
-	  {% include "publication.html" %}
-	  {#    <button class="btn btn-default btn-block" data-pubname="{{ pj.pubname }}">Republier</button>  #}
-	</div>
-      </div>
-    </div>
 {% endblock %}
 
 
@@ -204,10 +96,6 @@
 	 
 	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
-	     {% comment %}
-	     role="tab"
-	     data-toggle="tab"
-	     {% endcomment %}
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
 	     class="text-center {% if focus %} focus{% endif %}"
@@ -230,7 +118,6 @@
 	{% if rlang == lang %}
 	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
 	  {% if state == "unknown" %}
-
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
 	      <form action="/releases/copy/" method="POST">
@@ -253,11 +140,17 @@
 	      </form>
 	    </div>
 	  </div>
-	  
 	  {% else %}
 	  
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
+	      {% if state == "unversionned" %}
+	      <p><strong>Cette langue n'a pas été synchronisée, le statut est indisponible</strong><br/>
+		<a href="/sync/">Synchroniser le projet</a>
+	      </p>
+	      {% elif state == "sourcelang" %}
+	      <p>Langue source de la version</p>
+	      {% else %}
 	      <form>
 		<div class="form-group">
 
@@ -289,6 +182,7 @@
 		</div>
 		-->
 	      </form>
+	      {% endif %}
 	    </div>
 	    <div class="panel-body">
 	      <div class="row">

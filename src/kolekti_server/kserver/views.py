@@ -1173,7 +1173,7 @@ class ReleaseView(PublicationView):
         }
         if self.syncMgr is not None :
             
-            self.syncMgr.propset("release_state","edition","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasename']+'_asm.html']))
+            self.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasename']+'_asm.html']))
         p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.user_settings.active_srclang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
