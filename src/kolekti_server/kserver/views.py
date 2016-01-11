@@ -1385,5 +1385,6 @@ class SyncRemoveView(kolektiMixin, View):
                         
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
-        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
-        return serve(request, urllib.quote(path), projectpath)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        return serve(request, path, projectpath)
+#        return serve(request,urllib.quote(path.encode('utf-8')), projectpath)
