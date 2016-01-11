@@ -260,7 +260,7 @@
   <xsl:template match="html:p[@class='kolekti-sparql-result-chartjs']">
     <div class="kolekti-sparql-result-chartjs" data-chartjs-data='{.}' id="chart_{ancestor::html:div[@class='topic']/@id}">
       <xsl:copy-of select='@data-chartjs-kind'/>
-      <canvas id="canvas_{ancestor::html:div[@class='topic']/@id}"></canvas>
+      <!--      <canvas id="canvas_{ancestor::html:div[@class='topic']/@id}"></canvas> -->
       <div class="legend">
       </div>
     </div>
