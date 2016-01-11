@@ -2,18 +2,19 @@ $(document).ready(function() {
     var widgets=[];					    
     var widget = function(wdef) {
 	var w = $('<div>', {
-	    "class":"col-xs-12 col-sm-6 col-md-4",
+	    "class":"col-md-8",
 	    "html":$('<div>', {
 		"class":"panel panel-primary",
 		"html":[
-		    $('<div>', {
-			"class":"panel-heading",
+		    $('<h4>', {
+			"class":"panel-body text-primary ",
 			"html":wdef.title
 		    }),
 		    wdef.content()
 		]
 	    })
 	})
+	
 	$('#widgets').append(w);
 	return w
     }
@@ -83,7 +84,7 @@ $(document).ready(function() {
 			    return publication_widget_builder('/publications/list.json');
 			}
 		       },
-	'releases':{'title':'Dernières publications (versions)',
+	'releases':{'title':'Dernières versions',
 		    'content':function() {
 			return publication_widget_builder('/releases/publications/list.json')
 		    }
