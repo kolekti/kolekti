@@ -143,6 +143,7 @@ class kolektiSparQL(object):
             except KeyError:
                 series[place]=[item[u'xapprox']['value']]
         res = {
+            "unit":reslist[0].get('valueLabel',{'value':''}).get('value'),
             "seriescount":len(series.keys()),
             "labels":sorted(list(years)),
             "datasets":[{
