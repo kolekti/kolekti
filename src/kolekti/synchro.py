@@ -345,10 +345,11 @@ class SynchroManager(object):
         
     def propget(self, name, path):
         ospath = self.__makepath(path)
+        print "GETPROP",path,ospath
         try:
             props = self._client.propget(name, ospath)
-#            print props
-            return props.get(ospath,'unversionned')
+            print props
+            return props.get(ospath.replace('\\','/'),'unversionned')
         except:
             import traceback
             print traceback.format_exc()

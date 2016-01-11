@@ -515,7 +515,7 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
             release_path = request.GET.get('release')
             assembly_name = release_path.rsplit('/',1)[1]
             lang = request.GET.get('lang', self.user_settings.active_srclang)
-            assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+            assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path=release_path),
         except:
             import traceback
@@ -556,7 +556,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         release_path = request.GET.get('release')
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_name = self.basename(release_path)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+        assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
