@@ -509,6 +509,13 @@ $(document).ready( function () {
 	enable_save()
     })
 
+    $('body').on('change','#input_toc_author', function(e) {
+	var author = $.trim($(this).val());
+	$('#toc_root').data('kolekti-author', author)
+	$('#toc_root').attr('data-kolekti-author', author)
+	enable_save()
+    })
+
 
     $('body').on('change','#input_toc_pubdir', function(e) {
 	var title = $.trim($(this).val());

@@ -138,23 +138,23 @@
     <div class="panel panel-default job-comp profile">
       <div class="panel-body">
 	<div class="row">
-	  <div class="col-md-8 col-sm-12">
+	  <div class="col-sm-9">
 	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
+	      <div class="col-sm-4">
 		<label for="profil_name_{generate-id()}"><strong>Nom du profil</strong></label>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="profile_name" class="profile-name" value="{label}" id="profil_name_{generate-id()}"/>
+	      <div class="col-sm-8">
+		<input type="text" name="profile_name" class="profile-name form-control" value="{label}" id="profil_name_{generate-id()}"/>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
+	      <div class="col-sm-4">
 		<label for="profil_dir_{generate-id()}">Dossier</label>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="profile_dir" class="profile-dir" value="{dir/@value}" id="profil_dir_{generate-id()}" />
+	      <div class="col-sm-8">
+		<input type="text" name="profile_dir" class="profile-dir form-control" value="{dir/@value}" id="profil_dir_{generate-id()}" />
 	      </div>
 	    </div>
 	  </div>
-	  <div class="col-md-4 col-sm-12">
+	  <div class="col-sm-3">
 	    <div class="checkbox">
 	      <label>
 		<input type="checkbox" class="profile-enabled">
@@ -175,7 +175,7 @@
 	</xsl:apply-templates>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
@@ -221,12 +221,12 @@
 	  <xsl:with-param name="userselect" select="'*'"/>
 	</xsl:call-template>
       </xsl:attribute>
-      <div class="col-sm-3 col-xs-12 kolekti-crit-code">
+      <div class="col-xs-3 kolekti-crit-code">
 	<xsl:value-of select="@code"/>
       </div>
-      <div class="col-sm-9 col-xs-12">
+      <div class="col-xs-9">
 	<div class="btn-group">
-	  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	  <button type="button" class="btn btn-default dropdown-toggle form-control" data-toggle="dropdown" aria-expanded="false">
 	    <span class="kolekti-crit-value-menu">
 	      <xsl:call-template name="criterion-value">
 		<xsl:with-param name="profile" select="$profile"/>
@@ -262,24 +262,21 @@
   <xsl:template match="script">
     <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
       <div class="panel-body">
-	<div class="row">
-	  <div class="col-sm-9 col-xs-12">
-	    <h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>	    
-	  </div>
-	</div>
+	<h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
 
 	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-sm-9">
 	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
-		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
+	      <div class="col-sm-4">
+		<label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value="{filename}"/>
+	      <div class="col-sm-8">
+		<input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
 	      </div>
 	    </div>
 	  </div>
-	  <div class="col-sm-6 col-xs-12">
+	  
+	  <div class="col-sm-3">
 	    <div class="checkbox">
 	      <label>
 		<input type="checkbox" class="script-enabled">
@@ -295,7 +292,7 @@
 	<xsl:apply-templates select="parameters"/>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
@@ -314,25 +311,21 @@
   <xsl:template match="pubscript"> <!-- template for new scripts -->
     <div class="panel panel-default job-comp script {@id}" data-kolekti-script-id="{@id}">
       <div class="panel-body">
-	<div class="row">
-	  <div class="col-sm-9 col-xs-12">
-	    <h5><strong><xsl:value-of select="name"/></strong></h5>
-	  </div>
-	</div>
+	<h5><strong><xsl:value-of select="name"/></strong></h5>
 	
 	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-sm-9">
 	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
+	      <div class="col-sm-4">
 		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
 	      </div>
-	      <div class="col-sm-6  col-xs-12">
-		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value=""/>
+	      <div class="col-sm-8">
+		<input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
 	
 	      </div>
 	    </div>
 	  </div>
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-sm-3">
 	    <div class="checkbox">
 	      <label>
 		<input type="checkbox" class="script-enabled" checked="checked"/>
@@ -344,7 +337,7 @@
 	<xsl:apply-templates select="parameters/parameter"/>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
@@ -356,16 +349,16 @@
     <xsl:param name="value" select="''"/>
 
     <div class="row script-parameter" data-script-param-name='{@name}' data-script-param-type='{@type}' data-kolekti-param-value="{$value}">
-      <div class="col-sm-3 col-xs-12">
+      <div class="col-xs-3">
 	<label for="script-param_{generate-id()}">
 	  <xsl:value-of select="@label"/>
 	</label>
       </div>
-      <div class="col-sm-9 col-xs-12">
+      <div class="col-xs-9">
 	<xsl:choose>
 	  <xsl:when test="@type='filelist'">
 	    <div class="btn-group kolekti-param-menu">
-	      <button type="button" class="btn btn-default btn-sm dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
+	      <button type="button" class="btn btn-default dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
 		<span class="kolekti-param-value-menu">
 		  <xsl:value-of select="$value"/>
 		  <xsl:text> </xsl:text>

@@ -136,7 +136,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xtoc = self.parse(path)
         tocmeta = {}
         toctitle = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.title"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
-
+        tocauthor = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.author"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         if len(toctitle) == 0:
             toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         for meta in xtoc.xpath('/html:html/html:head/html:meta', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
@@ -151,7 +151,8 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             print traceback.format_exc()
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
-        return toctitle, tocmeta, str(etoc)
+        print tocmeta
+        return toctitle, tocauthor, tocmeta, str(etoc)
 
     def localname(self,e):
         return re.sub('\{[^\}]+\}','',e.tag)
@@ -396,16 +397,18 @@ class TocView(kolektiMixin, View):
         tocpath = request.GET.get('toc')
         tocfile = tocpath.split('/')[-1]
         tocdisplay = os.path.splitext(tocfile)[0]
-        toctitle, tocmeta, toccontent = self.get_toc_edit(tocpath)
+        toctitle, tocauthor, tocmeta, toccontent = self.get_toc_edit(tocpath)
+        
         context.update({'tocfile':tocfile,
                         'tocdisplay':tocdisplay,
                         'toctitle':toctitle,
+                        'tocauthor':tocauthor,
                         'toccontent':toccontent,
                         'tocpath':tocpath,
                         'tocmeta':tocmeta})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
-        #print context
+        print context['tocmeta']
         return self.render_to_response(context)
     
     def post(self, request):
@@ -515,7 +518,7 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
             release_path = request.GET.get('release')
             assembly_name = release_path.rsplit('/',1)[1]
             lang = request.GET.get('lang', self.user_settings.active_srclang)
-            assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+            assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path=release_path),
         except:
             import traceback
@@ -556,7 +559,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         release_path = request.GET.get('release')
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_name = self.basename(release_path)
-        assembly_path = os.path.join(release_path,"sources",lang,"assembly",assembly_name+"_asm.html")
+        assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),

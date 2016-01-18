@@ -105,7 +105,7 @@
     <xsl:call-template name="trquot">
       <xsl:with-param name="text" select="$modtitle" />
     </xsl:call-template>
-    <xsl:text>';&#x0A;</xsl:text>
+    <xsl:text>';</xsl:text>
   </xsl:template>
 
   <xsl:template match="html:div[@class='topic']" mode="textcontent">
@@ -116,7 +116,7 @@
     <xsl:value-of select="$filename" />
     <xsl:text>'] = '</xsl:text>
     <xsl:apply-templates mode="textcontent" select="node()[not(@class='topicinfo')]" />
-    <xsl:text>';&#x0A;</xsl:text>
+    <xsl:text>';</xsl:text>
   </xsl:template>
 
   <xsl:template match="text()" mode="textcontent">
@@ -140,7 +140,9 @@
       <xsl:variable name="modtitle">
         <xsl:call-template name="modtitle" />
       </xsl:variable>
-      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;</xsl:text>
+<xsl:text>
+</xsl:text>
       <html>
         <head>
           <xsl:call-template name="genhtmlheader" />
@@ -186,7 +188,7 @@
       <xsl:variable name="modtitle">
         <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
       </xsl:variable>
-      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;</xsl:text>
       <html>
         <head>
           <xsl:call-template name="genhtmlheader" />
@@ -482,7 +484,7 @@
 
    <xsl:text disable-output-escaping='yes'>&lt;!--[if lt IE 9]&gt;</xsl:text>
    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript">
-     <xsl:text>&#x0D;</xsl:text>
+     <xsl:comment> </xsl:comment>
    </script>
    <xsl:text disable-output-escaping='yes'>&lt;![endif]--&gt;</xsl:text>
    <style type="text/css">
@@ -499,26 +501,26 @@
 
  <xsl:template name="genhtmlfooter">
      <script src="lib/js/jquery-2.1.1.min.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/filteredview.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/bootstrap.min.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
      <script src="js/modcodes.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="js/modtexts.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="js/index.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/search.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
 
@@ -528,7 +530,7 @@
    </script>
 
      <script src="lib/js/events.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
    <script type="text/javascript">
