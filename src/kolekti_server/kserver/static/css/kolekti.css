@@ -69,7 +69,14 @@ a[data-toggle=collapse] small
 
 .side h5 {
     margin-top:16px;
+    font-weight:bold;
     border-bottom:1px solid #D0D0D0;
+}
+
+.side h6 {
+    font-weight:normal;
+    font-style:italic;
+
 }
 
 .side {
@@ -102,11 +109,11 @@ a.pathstep:active,
 a.pathstep {
 color:black;
 }
-
+/*
 label {
     font-weight:100;
 }
-
+*/
 
 .navbar-inverse {
  background-color: #428BCA;   
