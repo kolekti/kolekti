@@ -321,7 +321,7 @@ var kolekti_browser = function(args) {
 			if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
 			    $.post('/browse/delete',{"path": path + "/" + item})
 				.done(function(data) {
-				    // console.log(data)
+				    closure_remove(item);
 				    update();
 				})
 			}
@@ -586,6 +586,7 @@ var kolekti_browser = function(args) {
 	    if (modal)
 		$('.modal').modal();
 	});
+
     } // end update function
 
     var browser_move_dialog = function(filename, newpath, newfilename) {
@@ -682,6 +683,10 @@ var kolekti_browser = function(args) {
 	    resfuncs['create']=f;
 	    return return_functions;
 	},
+	'remove':function(f) {
+	    resfuncs['remove']=f;
+	    return return_functions;
+	},
 	'setup_file':function(f) {	
 	    resfuncs['setup_file']=f;
 	    return return_functions;
@@ -695,6 +700,9 @@ var kolekti_browser = function(args) {
     };	
     var closure_create = function() {
 	resfuncs['create'] && resfuncs['create']($(parent), path, update);
+    };
+    var closure_remove = function(e) {
+	resfuncs['remove'] && resfuncs['remove'](e, path);
     };
     var promise_setup_file = function(e) {
 	var f = $(e).data('name'); 
