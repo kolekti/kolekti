@@ -136,6 +136,13 @@ def main():
     parser_sync_update = subparsers_sync.add_parser('update', help="get synchro status")
     parser_sync_update.set_defaults(cmdsync='update')
 
+    # fixture
+    parser_fixture = subparsers.add_parser('fixture', help="fixture")
+    parser_fixture.add_argument('number', action='store')
+    defaults=config.get("fixture",{})
+    defaults.update({'cmd':'fixture'})
+    parser_fixture.set_defaults(**defaults)
+    
         #parser_sync_status.add_argument('synccmd', action='store')
 
     defaults=config.get("sync",{})
@@ -297,6 +304,12 @@ def main():
         if args.cmdsync == "update":
             updates = sync.update()
             print updates
+
+    if args.cmd == 'fixture':
+        from kolekti import fixture
+        fix = fixture.fixture(args.base)
+        fix.apply(args.number)
+        
 
             
 if __name__ == '__main__':
