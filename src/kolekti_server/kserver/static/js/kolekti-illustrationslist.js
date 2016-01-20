@@ -42,7 +42,10 @@ $(document).ready(function() {
 		    )
 	    })
 	.create(upload_image)
-
+	.remove(function(e, path) {
+	    $('#preview').html('')
+	})
+    
 
 			
     kolekti_browser({'root':'/sources/share/pictures',
@@ -74,7 +77,10 @@ $(document).ready(function() {
 		    )
 	    }
 	)
-	.create(upload_image);
+	.create(upload_image)
+    	.remove(function(e, path) {
+	    $('#preview').html('')
+	});
 
     
 });
