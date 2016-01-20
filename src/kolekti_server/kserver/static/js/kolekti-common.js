@@ -5,7 +5,7 @@ $(function() {
     })
     $.get('/sync/status').done(function(data){
 	var color="default";
-	console.log(data.revision.status);
+	// console.log(data.revision.status);
 	switch(data.revision.status) {
 	case '*':
 	    color="info"
