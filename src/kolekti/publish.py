@@ -170,12 +170,12 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     events.append({
                         'event':'error',
-                        'msg':"Impossible de copier les parametres du script %s"%script.get('name'),
+                        'msg':"Impossible de copier les parametres du script %s"%script.find('label').text,
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         })
 
-                    logging.error("resources for script %s not found"%script.get('name'))
+                    logging.error("resources for script %s not found"%script.find('label').text)
                     logging.debug(traceback.format_exc())
 
         return assembly, assembly_dir, pubname, events 
@@ -217,16 +217,16 @@ class Publisher(PublisherMixin, kolektiBase):
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
                         yield {
                             'event':'result',
-                            'script':script.get('name'),
+                            'script':script.find('label').text,
                             'docs':resscript,
                             'time':time.time(),
                             }
                     except:
                         import traceback
-                        logging.error("Script %s finished with errors"%script.get('name'))
+                        logging.error("Script %s finished with errors"%script.find('label').text)
                         yield {
                             'event':'error',
-                            'msg':"Erreur d'execution du script %s"%script.get('name'),
+                            'msg':"Erreur d'execution du script %s"%script.find('label').text,
                             'stacktrace':traceback.format_exc(),
                             'time':time.time(),
                             }
@@ -395,7 +395,8 @@ class Publisher(PublisherMixin, kolektiBase):
                 
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
-        name=script.get('name')
+        name = script.get('name')
+        scriptlabel = script.find('label').text
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
@@ -464,7 +465,7 @@ class Publisher(PublisherMixin, kolektiBase):
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("[Script %s] could not copy resources"%name)
+            logging.error("[Script %s] could not copy resources"%scriptlabel)
             raise
         
         
@@ -475,6 +476,7 @@ class Publisher(PublisherMixin, kolektiBase):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
+        scriptlabel = script.find('label').text
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
             
         name=script.get('name')
@@ -486,7 +488,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
-            logging.error("Impossible de trouver le script: %s" %label)
+            logging.error("Impossible de trouver la définition du script: %s" %scriptlabel)
             raise
 
         
@@ -525,13 +527,13 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     plugin = self.get_script(plugname)
                 except:
-                    logging.error("Impossible de charger le script %(label)s"%{'label': plugname.encode('utf-8')})
+                    logging.error("Impossible de charger le script %(label)s"%{'label': scriptlabel.encode('utf-8')})
                     import traceback
                     logging.debug(traceback.format_exc())
                     raise
 
                 res = plugin(script, profile, assembly_dir, fpivot)
-                logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
+                logging.debug("%(label)s ok"% {'label': scriptlabel.encode('utf-8')})
 
                 
             elif stype=="shell":
@@ -585,12 +587,12 @@ class Publisher(PublisherMixin, kolektiBase):
                         outfile=self.__substscript(xl.get('name'), subst, profile)
                         outref=self.__substscript(xl.get('ref'), subst, profile)
                         outtype=xl.get('type')
-                        logging.debug("Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')})
+                        logging.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
                         res=[{"type":outtype, "label":outfile, "url":outref}]
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
-                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
                     raise
 
                 finally:
@@ -659,13 +661,13 @@ class Publisher(PublisherMixin, kolektiBase):
                     #                         '/'.join((self.model.local2url(self.model.pubpath), zipname))))
             
                 except:
-                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
                     raise
             
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
+            logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': scriptlabel.encode('utf-8')})
             raise
         return res
 

@@ -59,6 +59,8 @@ $(document).ready(function() {
 		buf += "0"
 	    }
 	    buf += "'>"
+	    var label = $(e).find('.script-name').val();
+	    buf +='<label>' + label + '</label>';
 	    var filename = $(e).find('.script-filename').val();
 	    buf +='<filename>' + filename + '</filename>';
 	    buf += "<parameters>";

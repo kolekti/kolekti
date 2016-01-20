@@ -263,19 +263,17 @@
     <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
       <div class="panel-body">
 	<h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
-
 	<div class="row">
 	  <div class="col-sm-9">
 	    <div class="row">
 	      <div class="col-sm-4">
-		<label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+		<label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
 	      </div>
 	      <div class="col-sm-8">
-		<input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
+		<input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
 	      </div>
 	    </div>
 	  </div>
-	  
 	  <div class="col-sm-3">
 	    <div class="checkbox">
 	      <label>
@@ -287,6 +285,12 @@
 		<xsl:text> Sortie active</xsl:text>
 	      </label>
 	    </div>
+	  </div>
+	  <div class="col-sm-3">
+	    <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	  </div>
+	  <div class="col-sm-9">
+	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
 	  </div>
 	</div>
 	<xsl:apply-templates select="parameters"/>
@@ -317,11 +321,10 @@
 	  <div class="col-sm-9">
 	    <div class="row">
 	      <div class="col-sm-4">
-		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
+		<label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
 	      </div>
 	      <div class="col-sm-8">
-		<input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
-	
+		<input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
 	      </div>
 	    </div>
 	  </div>
@@ -333,7 +336,15 @@
 	      </label>
 	    </div>
 	  </div>
+	  <div class="col-sm-3">
+	    <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	  </div>
+	  <div class="col-sm-9">
+	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
+	    
+	  </div>
 	</div>
+
 	<xsl:apply-templates select="parameters/parameter"/>
 	<hr/>
 	<div class="pull-right">
@@ -354,10 +365,10 @@
 	  <xsl:value-of select="@label"/>
 	</label>
       </div>
-      <div class="col-xs-9">
+      <div class="col-xs-4">
 	<xsl:choose>
 	  <xsl:when test="@type='filelist'">
-	    <div class="btn-group kolekti-param-menu">
+	    <div class="btn-group  kolekti-param-menu">
 	      <button type="button" class="btn btn-default dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
 		<span class="kolekti-param-value-menu">
 		  <xsl:value-of select="$value"/>
