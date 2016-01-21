@@ -92,7 +92,7 @@ class plugin(PublisherMixin,kolektiBase):
         self.publication_file = self.substitute_criteria(pubfile, profile)
 
         self.publication_dir = self.pubdir(assembly_dir, profile)
-        self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file + "_" + self.scriptname
+        self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file #+ "_" + self.scriptname
         try:
             self.makedirs(self.publication_plugin_dir)
         except:
