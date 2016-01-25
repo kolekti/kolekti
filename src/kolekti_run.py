@@ -64,6 +64,7 @@ def main():
     parser_draft.add_argument('toc', action='store', help="Toc to be published")
     parser_draft.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
     parser_draft.add_argument('-l', '--languages', required=True, action='store', help="comma-separated list of languages to publish")
+    parser_draft.add_argument('--nocleanup', action='store_true', help="do not remove temporary files after publication")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_draft.set_defaults(**defaults)
@@ -167,7 +168,7 @@ def main():
         try:
             langs = args.languages.split(',')
             for lang in langs:
-                p = publish.DraftPublisher(basepath, lang = lang)
+                p = publish.DraftPublisher(basepath, lang = lang, cleanup = not(args.nocleanup))
                 toc = p.parse(p.substitute_criteria(args.toc, profile = None))
                 if args.job:
                     job = args.job

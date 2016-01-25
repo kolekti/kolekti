@@ -27,7 +27,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # moved to PublisherMixin init
         #if self._publang is None:
         #    self._publang = self._config.get("sourcelang","en")
-        
+        self._cleanup = True
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
 
@@ -231,11 +231,10 @@ class Publisher(PublisherMixin, kolektiBase):
                             'time':time.time(),
                             }
                         logging.debug(traceback.format_exc())
+                if self._cleanup:
+                    self.delete_resource(self.pubdir(assembly_dir, profile)+ "/document.xhtml")
 
-#                res.append({'profile':profile.find('label').text,
-#                            'scripts':resscripts,
-#                            'time':time.time(), #datetime.now(),
-#                            })
+
         return 
 
 
@@ -499,9 +498,9 @@ class Publisher(PublisherMixin, kolektiBase):
             xf = self.get_xsl(xfilter, xsldir = xdir)
             fpivot = xf(pivot)
             self.log_xsl(xf.error_log)
-
+            
             pivfile = pubdir + "/filtered_" + pubname + ".xhtml"
-            self.xwrite(fpivot, pivfile, pretty_print = False)
+            self.xwrite(fpivot, pivfile, pretty_print = False, sync = False)
         else:
             fpivot = pivot
             pivfile = pubdir + "/document.xhtml"
@@ -669,6 +668,9 @@ class Publisher(PublisherMixin, kolektiBase):
             logging.debug(traceback.format_exc())
             logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': scriptlabel.encode('utf-8')})
             raise
+        finally:
+            if self._cleanup and 'pivot_filter' in params :
+                self.delete_resource(pivfile)
         return res
 
 
@@ -776,9 +778,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     
 class DraftPublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        cleanup = True
+        if kwargs.has_key('cleanup'):
+            cleanup = kwargs.get('cleanup')
+            kwargs.pop('cleanup')
         super(DraftPublisher, self).__init__(*args, **kwargs)
         self._draft = True
-
+        self._cleanup = cleanup
+        
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
@@ -859,12 +866,11 @@ class DraftPublisher(Publisher):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
                 yield {"event":"publication_dir", "path":assembly_dir}
-
-                try:
-                    pass
-                # self.cleanup_assembly_dir(xjob.getroot())
-                except:
-                    logging.debug('Warning: could not remove tmp dir')
+                if self._cleanup:
+                    try:
+                        self.cleanup_assembly_dir(xjob.getroot())
+                    except:
+                        logging.debug('Warning: could not remove tmp dir')
                 mf.write("]}\n")
         except:
             import traceback
@@ -880,6 +886,7 @@ class DraftPublisher(Publisher):
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
+        self._cleanup = False
 
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
@@ -968,6 +975,8 @@ class ReleasePublisher(Publisher):
         super(ReleasePublisher, self).__init__(*args, **kwargs)
         if self._publangs is None:
             self._publangs = self._project_settings.xpath("/settings/releases/lang/text()")
+        self._cleanup = False
+        
     def getPublisherExtensions(self):        
         return ReleasePublisherExtensions
 
