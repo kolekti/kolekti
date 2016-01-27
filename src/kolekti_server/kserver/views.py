@@ -199,7 +199,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
                         'scripts':[(s.find('label').text, s.get('enabled')) for s in xj.xpath('/job/scripts/script')],
                         })
             res.append(job)
-        return res
+        return sorted(res, key = lambda j: j['name'])
 
     def get_job_edit(self,path):
         xjob = self.parse(path)
@@ -407,7 +407,7 @@ class TocView(kolektiMixin, View):
                         'tocmeta':tocmeta})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
-        print context['tocmeta']
+
         return self.render_to_response(context)
     
     def post(self, request):
