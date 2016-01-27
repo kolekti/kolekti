@@ -1,4 +1,7 @@
 $(function() {
+
+    // sets revision number
+    
     $('#btn_rev').click(function(e) {
 	var url = '/sync/';
 	window.location.href = url;
@@ -28,6 +31,12 @@ $(function() {
 	}
 	$('#btn_rev').removeClass('btn-success btn-default btn-warning btn-danger btn-info')
 	$('#btn_rev').addClass('btn-'+color)
+    })
+
+    // history
+
+    $('.btn-back').on('click', function() {
+	window.history.back();
     })
 	
 })
