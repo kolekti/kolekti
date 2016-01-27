@@ -6,6 +6,12 @@ $(document).ready(function() {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Paramètres non enregistrés';
+	}
+    });
+
     var serialize = function() {
 	buf = "<job id='";
 	buf += $('#job_id').html();

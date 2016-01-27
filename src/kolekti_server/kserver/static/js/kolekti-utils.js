@@ -180,6 +180,10 @@ var streamedTransport = function(streamCallback) {
 }
 
 
+
+
+
+
 /* kolekti objects browser
    inserts a browsable view of the server files in the kolekti interface
    parmaters passed to the browser:
@@ -716,6 +720,7 @@ var kolekti_browser = function(args) {
 	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	} else {
 	    set_browser_value(path + '/' + $(this).html())
@@ -730,6 +735,7 @@ var kolekti_browser = function(args) {
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
 	    path = newpath;
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	}
     })
@@ -759,6 +765,8 @@ var kolekti_browser = function(args) {
 		e.stopImmediatePropagation();
 	folderpath = path + "/" + $(parent).find(".foldername").val();
 	$.post("/browse/mkdir",{path : folderpath}, function(data) {
+	    path = folderpath
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	})
     })
@@ -928,8 +936,26 @@ var kolekti_browser = function(args) {
 	}).done(update)
 	    
     })
+    
+    // pop curent directory from history
+    var currentState = window.history.state;
+    if(currentState && currentState.path) {
+	path = currentState.path
+    }
+    
+    window.onpopstate = function(event) {
+	if(event.state && event.state.path) {
+	    path = event.state.path;
+	    update();
+	} else {
+	    path = root;
+	    update()
+	}
+	
+    };
+    
     // fetch directory
-
+    
     update()
     
     // return functions
