@@ -4,7 +4,7 @@ $(document).ready( function () {
 	autoGrow_onStartup : true,
 	fullPage:true,
 	contentsCss : '/criteria.css',
-	skin : 'office2013',
+	skin : 'moonocolor',
 	extraPlugins : 'codemirror,textselection,conditions,docprops',
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
