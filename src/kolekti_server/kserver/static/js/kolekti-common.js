@@ -35,11 +35,12 @@ $(function() {
 	    $('#btn_rev').attr('title', 'mise a jour disponible')
 	    break;
 	}
-	$('#btn_rev span').removeClass('strong text-success text-default text-warning text-danger text-info')
-	$('#btn_rev span').addClass('text-'+color)
-	if (color != 'default')
-	    $('#btn_rev span').addClass('strong')
-
+	$('#btn_rev>span span').hide()
+	$('#btn_rev>span').removeClass('strong text-success text-default text-warning text-danger text-info')
+	$('#btn_rev>span').addClass('text-'+color)
+	if (color != 'default') {
+	    $('#btn_rev>span span').show()
+	}
     })
 
     // history
