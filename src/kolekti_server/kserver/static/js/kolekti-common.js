@@ -12,25 +12,34 @@ $(function() {
 	switch(data.revision.status) {
 	case '*':
 	    color="info"
+	    $('#btn_rev').attr('title', 'vos modifications locales n\'ont pas été synchronisées')
 	    break;
 	case 'N':
 	    color="default"
+	    $('#btn_rev').attr('title', 'le projet est synchronisé')
 	    break;
 	case 'E':
 	    color="danger"
+	    $('#btn_rev').attr('title', 'une erreur est survenue')
 	    break;
 	case 'C':
 	    color="warning"
+	    $('#btn_rev').attr('title', 'le projet est en conflit')
 	    break;
 	case 'M':
 	    color="warning"
+	    $('#btn_rev').attr('title', 'des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles')
 	    break;
 	case 'U':
 	    color="info"
+	    $('#btn_rev').attr('title', 'mise a jour disponible')
 	    break;
 	}
-	$('#btn_rev').removeClass('btn-success btn-default btn-warning btn-danger btn-info')
-	$('#btn_rev').addClass('btn-'+color)
+	$('#btn_rev span').removeClass('strong text-success text-default text-warning text-danger text-info')
+	$('#btn_rev span').addClass('text-'+color)
+	if (color != 'default')
+	    $('#btn_rev span').addClass('strong')
+
     })
 
     // history

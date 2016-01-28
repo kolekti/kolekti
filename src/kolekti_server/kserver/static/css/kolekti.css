@@ -145,6 +145,10 @@ label {
     margin-bottom:-10px;
 }
 
+#navbar2 .strong {
+    font-weight:bold;
+}
+
 .top-margin { margin-top:10px; }
 
 
