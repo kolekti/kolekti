@@ -580,6 +580,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
+        self.update_assembly_lang(xassembly, lang)
         self.xwrite(xassembly, assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),

@@ -339,34 +339,39 @@ class kolektiBase(object):
             logging.debug('makedir failed')
         # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',**ns):
-            src_img = elt_img.get('src')
-            splitpath = src_img.split('/')
-            if splitpath[1:3] == ["sources",srclang]:
-                splitpath[2] = dstlang 
-                elt_img.set('src','/'.join(splitpath))
-        try:
-            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',dstlang)
-        except IndexError:
-            pass
-        try:
-            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',dstlang)
-        except IndexError:
-            pass
-        try:
-            body = xassembly.xpath('/h:html/h:body',**ns)[0]
-            body.set('lang',dstlang)
-            body.set('{http://www.w3.org/XML/1998/namespace}lang',dstlang)
-        except IndexError:
-            pass
+        update_assembly_lang(xassembly, dstlang)
         self.xwrite(xassembly, assembly_path)
-
+                
 #        try:
 #            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 #        except:
 #            pass
         yield assembly_path
         return
+
+    def update_assembly_lang(self, xassembly, lang):
+        for elt_img in xassembly.xpath('//h:img',**ns):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1] == "sources":
+                splitpath[2] = lang 
+                elt_img.set('src','/'.join(splitpath))
+        try:
+            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',lang)
+        except IndexError:
+            pass
+        try:
+            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',lang)
+        except IndexError:
+            pass
+        try:
+            body = xassembly.xpath('/h:html/h:body',**ns)[0]
+            body.set('lang',lang)
+            body.set('{http://www.w3.org/XML/1998/namespace}lang',lang)
+        except IndexError:
+            pass
+
+
 
                                         
     def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
