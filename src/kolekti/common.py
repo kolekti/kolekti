@@ -353,7 +353,7 @@ class kolektiBase(object):
         for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             splitpath = src_img.split('/')
-            if splitpath[1] == "sources":
+            if splitpath[1] == "sources" and splitpath[2] != 'share':
                 splitpath[2] = lang 
                 elt_img.set('src','/'.join(splitpath))
         try:
