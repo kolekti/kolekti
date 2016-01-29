@@ -134,8 +134,10 @@ def main():
     # status
     parser_sync_status = subparsers_sync.add_parser('status', help="get synchro status")
     parser_sync_status.set_defaults(cmdsync='status')
-    parser_sync_update = subparsers_sync.add_parser('update', help="get synchro status")
+    parser_sync_update = subparsers_sync.add_parser('update', help="get synchro update")
     parser_sync_update.set_defaults(cmdsync='update')
+    parser_sync_update = subparsers_sync.add_parser('history', help="get history")
+    parser_sync_update.set_defaults(cmdsync='history')
 
     # fixture
     parser_fixture = subparsers.add_parser('fixture', help="fixture")
@@ -307,6 +309,13 @@ def main():
         if args.cmdsync == "update":
             updates = sync.update()
             print updates
+
+        if args.cmdsync == "history":
+            records = sync.history()
+            for record in records:
+#                print dict(record)
+                print int(record.date), record.author, ':'
+                print record.message
 
     if args.cmd == 'fixture':
         from kolekti import fixture
