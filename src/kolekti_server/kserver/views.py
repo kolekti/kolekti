@@ -1441,3 +1441,23 @@ class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
         return serve(request, urllib.quote(path), projectpath)
+
+class WidgetView(kolektiMixin, View):
+    def get(self, request):
+        context = self.get_context_data()
+        return self.render_to_response(context)    
+
+
+class WidgetProjectHistoryView(WidgetView):
+    template_name = "widgets/project-history.html"
+    def get_context_data(self):
+        try:
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            return super(WidgetProjectHistoryView, self).get_context_data({
+                'history':sync.history()
+                })
+        except:
+            import traceback
+            print traceback.format_exc()
