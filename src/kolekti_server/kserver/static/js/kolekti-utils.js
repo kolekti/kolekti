@@ -428,13 +428,26 @@ var kolekti_browser = function(args) {
 				    switch(status) {
 				    case 'unversioned':
 					icon = $('<i>',{
-					    'class':"fa fa-ban text-"+kolekti_bootstrap_status[status]
+					    'class':"fa fa-question-circle text-"+kolekti_bootstrap_status[status]
 					})
 				   
 					break;
+				    case 'update':
+				    case 'commit':
+					icon = $('<i>',{
+					    'class':"fa fa-info-circle text-"+kolekti_bootstrap_status[status]
+					})
+					break;
+				    case 'merge':
+				    case 'conflict':
+				    case 'error':
+					icon = $('<i>',{
+					    'class':"fa fa-exclamation-circle text-"+kolekti_bootstrap_status[status]
+					})
+					break;
 				    default:
 					icon = $('<i>',{
-					    'class':"fa fa-users text-"+kolekti_bootstrap_status[status]
+					    'class':"fa fa-check text-"+kolekti_bootstrap_status[status]
 					})
 				    }
 			
