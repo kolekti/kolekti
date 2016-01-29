@@ -1,6 +1,9 @@
 $(document).ready(function() {
-    var widgets=[];					    
-    var widget = function(wdef) {
+    var list_main=[];
+    var list_side=[];
+    var widgets = [];
+    
+    var widget = function(wdef, where) {
 	var w = $('<div>', {
 	    "class":"col-md-8",
 	    "html":$('<div>', {
@@ -15,12 +18,21 @@ $(document).ready(function() {
 	    })
 	})
 	
-	$('#widgets').append(w);
+	$('#widgets_'+where).append(w);
 	return w
     }
 
-
-    var publication_widget_builder = function(url, wdiv) {
+    var widget_loader = function(url, wdiv) {
+	var wdiv = $('<div>', {
+	    "class":"widget",
+	});
+	$.get(url, function(data) {
+	    wdiv.html(data)
+	})
+	return wdiv;
+    }
+    
+    var publication_widget_builder = function(url) {
 	var wdiv = $('<ul>', {
 	    "class":"list-group panel-body ",
 	});
@@ -88,20 +100,37 @@ $(document).ready(function() {
 		    'content':function() {
 			return publication_widget_builder('/releases/publications/list.json')
 		    }
-		   }
+		   },
+	'projecthistory':{'title':'Historique du projet',
+			   'content':function() {
+			       return widget_loader('/widgets/project-history/')
+			   }
+			  }
     }
 	
     if (localStorage) {
-	var widgets_names, widgets_stored = localStorage.getItem("widgets")
-	widgets_stored = false;
-	if (widgets_stored)
-	    widgets_names = widgets_stored.split(',')
+	var sto_main = localStorage.getItem("widgets_main")
+	var sto_side = localStorage.getItem("widgets_side")
+	console.log(sto_main)
+	if (sto_main != null && sto_main.length)
+	    list_main = sto_main.split(',')
 	else
-	    widgets_names = ["publications",'releases'];
-	$.each(widgets_names, function(i,wn) {
-	    widgets.push(widget(widgets_definitions[wn]))
+	    list_main = ["publications",'releases'];
+	
+	if (sto_side != null && sto_side.length)
+	    list_side = sto_side.split(',')
+	else
+	    list_side = ['projecthistory'];
+	
+	$.each(list_main, function(i,wn) {
+	    widgets.push(widget(widgets_definitions[wn],'main'))
 	});
-	localStorage.setItem("widgets", widgets_names.join(','))
+	localStorage.setItem("widgets_main", list_main.join(','))
+	
+	$.each(list_side, function(i,wn) {
+	    widgets.push(widget(widgets_definitions[wn],'side'))
+	});
+	localStorage.setItem("widgets_side", list_side.join(','))
     }
 })
 
