@@ -251,21 +251,34 @@ $(document).ready(function() {
 
     var ref_communes = {}
 
+    var get_ref_communes = function() {
+	var ref = $("#ecorse_select_referentiel").val();
+	if (!ref_communes.hasOwnProperty(ref))
+	    $.get('/ecorse/communes',{'referentiel':ref})
+	    .done(function(data) {
+		ref_communes[ref] = data;
+	    })
+    }
+    
     $('.typeahead').typeahead({source:function(query, process) {
 	var ref = $("#ecorse_select_referentiel").val();
 	if (ref_communes.hasOwnProperty(ref))
 	    return process(ref_communes[ref]);
 	else {
+	    return process([]);
+	    /*
 	    $.get('/ecorse/communes',{'referentiel':ref})
 		.done(function(data) {
 		    ref_communes[ref] = data;
 		    return process(data)
 		})
+	    */
 	}
     }})
 
     $('#ecorse_select_referentiel').on('change', function() {
 	$('.typeahead').val('')
+	get_ref_communes();
     });
     
     // typeahead
@@ -278,6 +291,7 @@ $(document).ready(function() {
 		    $('<option>',{'value':v, 'html':v.replace('.html','')})
 		);
 	    });
+	    get_ref_communes();
 	});
 	$('.typeahead').each(function(){
 	    $(this).val('')
