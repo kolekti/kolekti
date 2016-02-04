@@ -18,16 +18,11 @@ $(document).ready(function() {
 	    var tickString = '';
 	    
 	    if (tickValue !== 0) {
-		if (yunit == "%") {
-		    tv = 100 * tickValue;
-		    tickString = tv.toFixed(0) + " %";
-		} else {
-		    var numDecimal = -1 * Math.floor(logDelta);
-		    numDecimal = Math.max(Math.min(numDecimal, 20), 0); // toFixed has a max of 20 decimal places
-		    tickString = tickValue.toFixed(numDecimal);
-		}
-		if (yunit == "€") {
-		    tickString = tickString + " €";
+		var numDecimal = -1 * Math.floor(logDelta);
+		numDecimal = Math.max(Math.min(numDecimal, 20), 0); // toFixed has a max of 20 decimal places
+		tickString = tickValue.toFixed(numDecimal);
+		if (yunit == "€"  || yunit == "%") {
+		    tickString = tickString + " " + yunit;
 		}
 	    } else {
 		tickString = '0'; // never show decimal places for 0
