@@ -2,23 +2,34 @@ $(document).ready(function() {
     var list_main=[];
     var list_side=[];
     var widgets = [];
-    
-    var widget = function(wdef, where) {
+    // global variable for time range in graph
+    var timegraph = {
+	period : "month",
+    }
+	
+    var widget = function(wdef, wname, wcol) {
+	wwidth = 4* (wdef.width || 1)
 	var w = $('<div>', {
-	    "class":"col-md-8",
+	    "class":"col-lg-" + wwidth,
+	    "data-widget":wname,
 	    "html":$('<div>', {
-		"class":"panel panel-primary",
+		"class":"panel panel-default",
 		"html":[
-		    $('<h4>', {
-			"class":"panel-body text-primary ",
+		    $('<div>', {
+			"class":"panel-heading",
 			"html":wdef.title
 		    }),
-		    wdef.content()
+		    $('<div>', {
+			"class":"panel-body",
+			"html":	wdef.content()
+		    })
 		]
 	    })
 	})
-	
-	$('#widgets_'+where).append(w);
+
+	$('#widgets_main').append(w);
+//	$('#col_'+wcol).append(w);
+	wdef.render && wdef.render(w)
 	return w
     }
 
@@ -31,7 +42,149 @@ $(document).ready(function() {
 	})
 	return wdiv;
     }
+
+    var graph_widget_loader = function() {
+	wdiv  = $('<div>', {
+	    "class":"widget",
+	    "html":[
+		$('<div>', {
+		    "class":"col-md-8",
+		    "id":"mychart"
+		}),
+		$('<div>', {
+		    "class":"col-md-4",
+		    "id":"mychartdetails"
+		})
+	    ]
+	});
+	return wdiv;
+    }
+
+
     
+	/* Now we can specify multiple responsive settings that will override the base settings based on order and if the media queries match. In this example we are changing the visibility of dots and lines as well as use different label interpolations for space reasons. */
+    var graph_widget_render = function(w, url) {
+
+
+	// Parse the date / time
+	var fmtDate = d3.time.format("%Y-%m-%d");
+	
+	var compute_timegraph = function() {
+	    timegraph.end = d3.time.week.offset(d3.time.week(new Date()), 1);
+	    timegraph.start = d3.time.month.offset(timegraph.end, -2);
+	}
+	
+	var render_timegraph = function() {
+	    var wwidth = $(w).width()
+	    if ($('body').width() > 980)
+		wwidth = wwidth/ 3 * 2;
+	    var wheight = wwidth / 2;
+	    if (wheight > 400)
+		wheight = 400;
+	    
+	    var margin = {top: 20, right: 20, bottom: 50, left: 20},
+		width = wwidth - margin.left - margin.right,
+		height = wheight - margin.top - margin.bottom;
+	    
+	    var barWidth = (width / 60) -2;
+	    $('#mychartdetails').css('max-height', wheight)
+	    var svg = d3.select("#mychart").append('svg')
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform",
+		      "translate(" + margin.left + "," + margin.top + ")");
+
+	    var x = d3.time.scale()
+		.rangeRound([0, width - margin.left - margin.right]);
+	    
+	    var y = d3.scale.linear().range([height, 0]);
+
+	    // set range of time
+	    
+	    x.domain([timegraph.start, timegraph.end])
+
+	    y.domain([0, d3.max(timegraph.commitsByDay, function(d) { return d.values; })]);
+	    
+	    var xAxis = d3.svg.axis()
+		.scale(x)
+		.orient("bottom")
+		.ticks(d3.time.mondays, 1)
+		.tickFormat(d3.time.format("%e %b"))
+	    
+	    
+	    svg.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis)
+		.selectAll("text")
+		.style("text-anchor", "end")
+		.attr("dx", ".5em")
+		.attr("dy", "1em")
+		.attr("transform", "rotate(-30)");
+
+	    svg.selectAll("bar")
+		.data(timegraph.commitsByDay)
+	    	.enter()
+		.append("rect")
+	       	.filter(function(d) {return x(fmtDate.parse(d.key))>=0})
+		.attr("class", "value")
+		.attr("x", function(d) { return x(fmtDate.parse(d.key)); })
+		.attr("width", barWidth)
+		.attr("y", function(d) { return y(d.values); })
+		.attr("height", function(d) { return height - y(d.values); })
+		.attr('title',function(d) {return d3.time.format("%e %b %Y")(fmtDate.parse(d.key))} )
+		.on('mousedown', function(e){
+		    $('#mychartdetails').html('')
+		    var div = d3.select('#mychartdetails').selectAll('div')
+			.data(timegraph.data.filter(function(d) {return (fmtDate(new Date(d.date * 1000)) == e.key)?this:null}))
+			.enter()
+			.append('div')
+		    	.attr('class','record')
+		    var pinfo = div.append('p')
+			.attr('class','commitinfo')
+		    pinfo.append('span')
+		    	.attr('class', 'rev label label-info')
+			.text(function(d) { return d.rev });
+		    pinfo.append('span')
+			.attr('class','date')
+			.text(function(d) {return d3.time.format('%d/%m/%Y %H:%M')(new Date(d.date * 1000))});
+		    pinfo.append('span')
+		    	.attr('class','author pull-right')
+		    	.text(function(d) {return d.user});
+		    div.append('p')
+			.attr('class', 'msg')
+			.text(function(d) {return d.message});
+		    div.append('p')
+			.attr('class', 'link')
+			.append('a')
+			.attr('href', function(d) { return '/sync/revision/'+d.rev+'/'})
+			.text('details')
+		    
+		})
+	    
+	};
+
+	$(window).on('resize', function() {
+	    $("#mychart").html('')
+	    render_timegraph()
+	}) 
+	
+    	d3.json(url, function(error, data) {
+	    timegraph.data = data
+	    var commitsByDay = d3.nest()
+		.key(function(d) { return fmtDate(d3.time.day(new Date(d.date * 1000))); })
+		.rollup(function(v) { return v.length })
+		.entries(data);
+	    timegraph.commitsByDay = commitsByDay
+	    
+	    compute_timegraph()
+	    render_timegraph()
+	});
+
+    };
+
+		  
     var publication_widget_builder = function(url) {
 	var wdiv = $('<ul>', {
 	    "class":"list-group panel-body ",
@@ -91,46 +244,68 @@ $(document).ready(function() {
 
 
     var widgets_definitions = {
-	'publications':{'title':'Dernières publications',
+	'_publications':{'title':'Dernières publications',
 			'content':function() {
 			    return publication_widget_builder('/publications/list.json');
 			}
 		       },
-	'releases':{'title':'Dernières versions',
+	'publications':{'title':'Dernières publications',
+			'content':function() {
+			    return widget_loader('/widgets/publications/');
+			}
+		       },
+	'_releases':{'title':'Dernières versions',
 		    'content':function() {
 			return publication_widget_builder('/releases/publications/list.json')
+		    }
+		   },
+	'releases':{'title':'Dernières versions',
+		    'content':function() {
+			return widget_loader('/widgets/releasepublications/')
 		    }
 		   },
 	'projecthistory':{'title':'Historique du projet',
 			   'content':function() {
 			       return widget_loader('/widgets/project-history/')
 			   }
+			 },
+	'projecthistorygraph':{'title':'Activité du projet',
+			       'width':2,
+ 			       'content':function() {
+				   return graph_widget_loader('/project/history/')
+			       },
+ 			       'render':function(w) {
+				   return graph_widget_render(w,'/project/history/')
+			       }
 			  }
     }
-	
+
+    var store_widgets = function() {
+	if (localStorage) {
+	    var sto_widgets = []
+	    $('#col1').each(function(){
+		var col = []
+		$(this).find('>div').each(function() {
+		    col.push($(this).attr('data-widget'))
+		});
+	    });
+	    localStorage.setItem("widgets_main", sto_widgets);
+	}
+    }
+    
     if (localStorage) {
-	var sto_main = localStorage.getItem("widgets_main")
-	var sto_side = localStorage.getItem("widgets_side")
-	console.log(sto_main)
-	if (sto_main != null && sto_main.length)
-	    list_main = sto_main.split(',')
-	else
-	    list_main = ["publications",'releases'];
+	var sto_widgets = localStorage.getItem("widgets_main")
+	if (sto_widgets == null || true)
+	    sto_widgets = [['projecthistorygraph','publications'],['releases']];
 	
-	if (sto_side != null && sto_side.length)
-	    list_side = sto_side.split(',')
-	else
-	    list_side = ['projecthistory'];
-	
-	$.each(list_main, function(i,wn) {
-	    widgets.push(widget(widgets_definitions[wn],'main'))
+
+	$.each(sto_widgets, function(i,wlist) {
+	    $.each(wlist, function(j, wn) {
+		widget(widgets_definitions[wn],wn,i+1)
+	    });
 	});
-	localStorage.setItem("widgets_main", list_main.join(','))
+	store_widgets()
 	
-	$.each(list_side, function(i,wn) {
-	    widgets.push(widget(widgets_definitions[wn],'side'))
-	});
-	localStorage.setItem("widgets_side", list_side.join(','))
     }
 })
 

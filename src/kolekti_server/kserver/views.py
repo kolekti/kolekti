@@ -1442,6 +1442,20 @@ class projectStaticView(kolektiMixin, View):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
         return serve(request, urllib.quote(path), projectpath)
 
+class ProjectHistoryView(kolektiMixin, View):
+    def get(self, request):
+        try:
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            hist = sync.history()
+            hisrecords = [{"timestamp":r.date,"date":r.date,"user":r.author,"message":r.message,"rev":r.revision.number} for r in hist] 
+            return HttpResponse(json.dumps(hisrecords),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+
+    
 class WidgetView(kolektiMixin, View):
     def get(self, request):
         context = self.get_context_data()
@@ -1461,3 +1475,27 @@ class WidgetProjectHistoryView(WidgetView):
         except:
             import traceback
             print traceback.format_exc()
+
+
+class WidgetPublicationsListView(kolektiMixin, View):
+    template_name = "widgets/publications.html"
+    
+    def get(self, request):
+        for p in self.get_publications():
+                print p
+        context = {
+            "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
+        }
+        return self.render_to_response(context)
+
+class WidgetReleasePublicationsListView(kolektiMixin, View):
+    template_name = "widgets/publications.html"
+
+    def get(self, request):
+        context = {
+            "publications": [p for p in sorted(self.get_releases_publications(), key = lambda a: a['time'], reverse = True) ]
+        }
+        return HttpResponse(json.dumps(context),content_type="application/json")
+        return self.render_to_response(context)
+
+          

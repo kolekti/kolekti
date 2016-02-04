@@ -249,12 +249,14 @@ class kolektiBase(object):
     def get_publications(self):
         publications = []
         for manifest in self.iterpublications:
-            yield manifest[-1]
+            if len(manifest):
+                yield manifest[-1]
         
     def get_releases_publications(self):
         publications = []
         for manifest in self.iter_releases_publications:
-            yield manifest[-1]
+            if len(manifest):
+                yield manifest[-1]
         
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
@@ -777,10 +779,10 @@ class kolektiBase(object):
                         except:
                             import traceback
                             print traceback.format_exc()
-                            yield {'event':'error',
+                            yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
-                                   }
+                                   }]
     @property
     def iter_releases_publications(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
@@ -794,10 +796,10 @@ class kolektiBase(object):
                         except:
                             import traceback
                             print traceback.format_exc()
-                            yield {'event':'error',
+                            yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
-                                   }
+                                   }]
                         
     def release_details(self, path, lang):
         res=[]

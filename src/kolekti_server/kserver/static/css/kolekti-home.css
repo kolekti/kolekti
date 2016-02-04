@@ -1,0 +1,61 @@
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.value {
+    fill: steelblue;
+}
+.value:hover{
+    fill:#24425c;
+}
+
+@media (min-width: 992px) {
+    #mychartdetails {
+	max-height:250px;
+	overflow-y:auto;
+	overflow-x:hidden;
+    }
+}
+
+#mychartdetails {
+    padding-bottom:20px;
+}
+
+#mychartdetails .date {
+    padding-left: 5px;
+}
+
+
+#mychartdetails .date,
+#mychartdetails .author {
+    font-size :80%;
+    padding-top: 12px;
+    display:inline-block;
+}
+#mychartdetails .msg {
+    font-style : italic;
+}
+
+#mychartdetails .record:first {
+    border-top : 1px solid #606060;
+}
+#mychartdetails .record {
+    border-bottom: 1px solid #606060;
+}
+#mychartdetails .link {
+    text-align:right;
+    font-size:80%
+		   
+}
+@media (min-width: 992px) {
+    #widgets_main .panel-body {
+	height:400px;
+	overflow-y:auto;
+	overflow-x:hidden;
+    }
+}
