@@ -52,6 +52,23 @@
     font-size:80%
 		   
 }
+
+.eventrect {
+    fill:transparent;
+}
+
+.valueline {
+    stroke:white;
+    stroke-width:2;
+}
+
+.area {
+    fill: lightsteelblue;
+    stroke-width: 2;
+    stroke:lightsteelblue;
+    fill-opacity:0.4;
+}
+
 @media (min-width: 992px) {
     #widgets_main .panel-body {
 	height:400px;

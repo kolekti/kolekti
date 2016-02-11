@@ -82,12 +82,19 @@ $(document).ready(function() {
 	    if (wheight > 400)
 		wheight = 400;
 	    
-	    var margin = {top: 20, right: 20, bottom: 50, left: 20},
+	    var margin = {top: 20, right: 40, bottom: 150, left: 20},
 		width = wwidth - margin.left - margin.right,
 		height = wheight - margin.top - margin.bottom;
 	    
 	    var barWidth = (width / 60) -2;
+
 	    $('#mychartdetails').css('max-height', wheight)
+	    var div = d3.select("#mychart")
+		.append("div")  // declare the tooltip div
+		.attr("class", "tooltip")              // apply the 'tooltip' class
+		.style("opacity", 0);
+            
+	    
 	    var svg = d3.select("#mychart").append('svg')
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
@@ -119,10 +126,27 @@ $(document).ready(function() {
 		.call(xAxis)
 		.selectAll("text")
 		.style("text-anchor", "end")
+	    	.style("font-size", "80%")
 		.attr("dx", ".5em")
 		.attr("dy", "1em")
 		.attr("transform", "rotate(-30)");
 
+	    var area = d3.svg.area()
+	        .x(function(d) {
+		    return x(fmtDate.parse(d.key));
+		})
+	        .y0(height)
+	        .y1(function(d) {
+		    return y(d.values);
+		});
+
+	    
+	    
+	    svg.append("path")
+	        .datum(timegraph.commitsByDay)
+	        .attr("class", "area")
+	        .attr("d", area)
+/*	    return
 	    svg.selectAll("bar")
 		.data(timegraph.commitsByDay)
 	    	.enter()
@@ -134,10 +158,54 @@ $(document).ready(function() {
 		.attr("y", function(d) { return y(d.values); })
 		.attr("height", function(d) { return height - y(d.values); })
 		.attr('title',function(d) {return d3.time.format("%e %b %Y")(fmtDate.parse(d.key))} )
-		.on('mousedown', function(e){
+*/
+	    var currentDay, selectedDay;
+	    
+	    svg.append("rect")
+		.attr('class','eventrect')
+		.attr('x', 0)
+	    	.attr('width', width)
+		.attr('y', 0)
+		.attr('height', height )
+		.on('mousemove', function(){
+		    var mouse = d3.mouse(this);
+		    var mouseDay = d3.time.day(x.invert(mouse[0]));
+		    dMouseDay = fmtDate(mouseDay)
+		    if (dMouseDay != currentDay) {
+			var commits = timegraph.data.filter(function(d) {
+			    return (fmtDate(new Date(d.date * 1000)) == dMouseDay)?this:null})
+			if(commits.length) {
+			    selectedDay = dMouseDay;
+			    valueline
+				.attr('x1', x(mouseDay))
+				.attr('x2', x(mouseDay))
+			}
+		    }
+		    currentDay = dMouseDay;
+		})
+		// .on("mouseover", function(d) {
+		//     var mouse = d3.mouse(this);
+		//     var mouseDate = x.invert(mouse[0]);
+		    
+		//     div.transition()
+		// 	.duration(500)
+		// 	.style("opacity", 0);
+		//     div.transition()
+		// 	.duration(200)
+		// 	.style("opacity", .9);
+		//     div.html(
+		// 	'<span>' +
+		// 	    fmtDate(mouseDate) +
+		// 	    "</span>")
+		// 	.style("left", (d3.event.pageX) + "px")
+		// 	.style("top", (d3.event.pageY - 28) + "px");
+	    // })
+	    
+		.on('mousedown', function(){
 		    $('#mychartdetails').html('')
 		    var div = d3.select('#mychartdetails').selectAll('div')
-			.data(timegraph.data.filter(function(d) {return (fmtDate(new Date(d.date * 1000)) == e.key)?this:null}))
+			.data(timegraph.data.filter(function(d) {
+			    return (fmtDate(new Date(d.date * 1000)) == selectedDay)?this:null}))
 			.enter()
 			.append('div')
 		    	.attr('class','record')
@@ -163,6 +231,12 @@ $(document).ready(function() {
 		    
 		})
 	    
+	    var valueline = svg.append('line')
+		.attr('class', "valueline")
+		.attr('x1', 0)
+	    	.attr('x2', 0)
+		.attr('y1', 0)
+		.attr('y2', height)
 	};
 
 	$(window).on('resize', function() {
@@ -177,7 +251,6 @@ $(document).ready(function() {
 		.rollup(function(v) { return v.length })
 		.entries(data);
 	    timegraph.commitsByDay = commitsByDay
-	    
 	    compute_timegraph()
 	    render_timegraph()
 	});
