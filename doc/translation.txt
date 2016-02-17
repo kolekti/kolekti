@@ -1,0 +1,21 @@
+Gestion de la traduction de kolekti
+
+- traduction de la partie django (dossier kolekti_server)
+-> utilise le mécanisme standard de django : https://docs.djangoproject.com/en/1.7/topics/i18n/translation/
+
+Les éléments de traduction ont été remontés au niveau src (directive dans settings.py)
+
+Pour générer le fichier django.po dans src/locale/[lg]/LC_MESSAGES/django.po, p.ex. en français :
+
+kolekti/src$ django-admin makemessages --pythonpath=$(pwd)/kolekti_server --settings=kolekti_server.settings -l fr
+
+Pour mettre à jour les messages lors d'ajouts :
+
+kolekti/src$ django-admin makemessages --pythonpath=$(pwd)/kolekti_server --settings=kolekti_server.settings -a
+
+Pour gégérer les .mo :
+kolekti/src$ django-admin compilemessages --pythonpath=$(pwd)/kolekti_server --settings=kolekti_server.settings
+
+- traduction de la partie kolekti (dossier kolekti)
+
+TODO
