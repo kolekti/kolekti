@@ -37,28 +37,28 @@
 	<div class="collapse navbar-collapse" id="navbar">
 	  <ul class="nav navbar-nav">
             <li {% block current_home %}{% endblock %}><a href="/"><i class="fa fa-home fa-3"></i></a></li>
-	    <li {% block current_trames %}{% endblock %}><a href="/tocs/">Trames</a></li>
-	    <li {% block current_topics %}{% endblock %}><a href="/topics/">Modules</a></li>
-	    <li {% block current_images %}{% endblock %}><a href="/images/">Images</a></li>
-	    <li {% block current_releases %}{% endblock %}><a href="/releases/">Versions</a></li>
+	    <li {% block current_trames %}{% endblock %}><a href="/tocs/">_(Trames)</a></li>
+	    <li {% block current_topics %}{% endblock %}><a href="/topics/">_(Modules)</a></li>
+	    <li {% block current_images %}{% endblock %}><a href="/images/">_(Images)</a></li>
+	    <li {% block current_releases %}{% endblock %}><a href="/releases/">_(Versions)</a></li>
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
 	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="/variables/">Définition des variables</a></li>
-		<li><a href="/settings/criteria">Défnition des critères</a></li>
-		<li><a href="/projects/config">Gérer les langues</a></li>
-		<li><a href="/settings/">Paramètres de publication</a></li>
+		<li><a href="/variables/">_(Définition des variables)</a></li>
+		<li><a href="/settings/criteria">_(Défnition des critères)</a></li>
+		<li><a href="/projects/config">_(Gérer les langues)</a></li>
+		<li><a href="/settings/">_(Paramètres de publication)</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/import/">Importer un tableur</a></li>
+		<li><a href="/import/">_(Importer un tableur)</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/sync/">Synchroniser</a></li>
-		<li><a href="/projects/">Gestionnaire de projets</a></li>
+		<li><a href="/sync/">_(Synchroniser)</a></li>
+		<li><a href="/projects/">_(Gestionnaire de projets)</a></li>
 	      </ul>
 	    <li>
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">          
-	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
+	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">_(Aide)</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
