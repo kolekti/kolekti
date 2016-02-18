@@ -84,7 +84,7 @@ LOCALE_PATHS = (
     )
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr'
 TIME_ZONE = KOLEKTI_CONFIG.get('InstallSettings',{'timezone':"Europe/Paris"}).get('timezone')
 #TIME_ZONE = 'UTC'
 
