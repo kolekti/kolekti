@@ -82,7 +82,7 @@ DATABASES = {
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, '..', 'locale'),
     )
-print LOCALE_PATHS
+
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = KOLEKTI_CONFIG.get('InstallSettings',{'timezone':"Europe/Paris"}).get('timezone')
