@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load ostags %}
-
+{% load i18n %}
 {% block current_tools %}menu-current{% endblock %}
 
 {% block title %}Gestion des projets{% endblock %}
@@ -54,7 +54,7 @@
 	<hr/>
 	{% endif %}
 	{% ifequal project.status "svn" %}
-	<p>{% trans "SVN deposit url %}: {{ project.url }}</p>
+	<p>{% trans "SVN deposit url" %}: {{ project.url }}</p>
 	<hr/>
 	{% endifequal  %}
 	{% if project.name != active_project %}
