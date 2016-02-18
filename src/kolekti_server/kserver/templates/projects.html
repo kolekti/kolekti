@@ -13,7 +13,7 @@
   <div class="panel panel-default list-group">
     <!--
 	<div class="panel-heading">
-	  <h4>Projets disponibles</h4>
+	  <h4>"{% trans "Available Projects" %}</h4>
 	</div>
 	-->
     {% for project in projects %}
@@ -36,7 +36,7 @@
       </span>
 		
       {% if project.name == active_project %}
-      <span class="label label-warning pull-right">Actif</span>
+      <span class="label label-warning pull-right">{% trans "Active" %}</span>
       <span>  </span>
       {% endif %}
     </div>
@@ -49,16 +49,16 @@
 	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
 	  {% endfor %}
 	  </div>
-	  <a class="btn btn-xs btn-default" href="/projects/config">Configurer les langues</a>
+	  <a class="btn btn-xs btn-default" href="/projects/config">{% trans "Configure Languages" %}</a>
 
 	<hr/>
 	{% endif %}
 	{% ifequal project.status "svn" %}
-	<p>url du dépot SVN : {{ project.url }}</p>
+	<p>{% trans "SVN deposit url %}: {{ project.url }}</p>
 	<hr/>
 	{% endifequal  %}
 	{% if project.name != active_project %}
-	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
+	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">{% trans "Activate this project" %}</a>
 	{% endif %}
       </div>      
     </div>
@@ -71,31 +71,31 @@
 {% block menu %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h4>Nouveau projet</h4>
+    <h4>{% trans "New Project" %}</h4>
   </div>
   <div class="panel-body">
     <form method="POST" action="/projects/">
       <div class="form-group">
-	<label for="project">Dossier projet</label>
-	<input type="text" class="form-control" id="project" name="projectfolder" placeholder="Entrez le nom du dossier projet" value="{{ projectfolder }}">
+	<label for="project">{% trans " Project File" %}</label>
+	<input type="text" class="form-control" id="project" name="projectfolder" placeholder="{% trans 'Enter Project File name' %}" value="{{ projectfolder }}">
       </div>
       <div class="form-group">
-	<label for="project">URL du dépot svn <br/>(laisser vide pour un projet local)</label>
-	<input type="url" class="form-control" id="svn" name="projecturl" placeholder="Entrez une URL" value="{{ projecturl }}">
+	<label for="project">{% trans "svn deposit URL"%}<br/>{% trans "(Leave blank for a local project)" %}</label>
+	<input type="url" class="form-control" id="svn" name="projecturl" placeholder="{% trans 'Insert an URL'%}" value="{{ projecturl }}">
       </div>
       {% if require_svn_auth %}
       <div class="form-group">
-	<label for="project">Utlisateur</label>
-	<input type="text" class="form-control" id="username" name="username" placeholder="Utilisateur">
+	<label for="project">{% trans "Username" %}</label>
+	<input type="text" class="form-control" id="username" name="username" placeholder="{% trans 'Username' %}">
       </div>
       <div class="form-group">
-	<label for="project">Mot de passe</label>
-	<input type="password" class="form-control" id="password" name="password">
+	<label for="project">{% trans "Password" %}</label>
+	<input type="password" class="form-control" id="password" name="{% trans 'password' %}">
       </div>
       {% endif %}
       <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-10">
-	  <button type="submit" class="btn btn-default">Créer</button>
+	  <button type="submit" class="btn btn-default">"{% trans "Create" %}</button>
 	</div>
       </div>		
     </form>

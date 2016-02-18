@@ -37,28 +37,28 @@
 	<div class="collapse navbar-collapse" id="navbar">
 	  <ul class="nav navbar-nav">
             <li {% block current_home %}{% endblock %}><a href="/"><i class="fa fa-home fa-3"></i></a></li>
-	    <li {% block current_trames %}{% endblock %}><a href="/tocs/">_(Trames)</a></li>
-	    <li {% block current_topics %}{% endblock %}><a href="/topics/">_(Modules)</a></li>
-	    <li {% block current_images %}{% endblock %}><a href="/images/">_(Images)</a></li>
-	    <li {% block current_releases %}{% endblock %}><a href="/releases/">_(Versions)</a></li>
+	    <li {% block current_trames %}{% endblock %}><a href="/tocs/">{% trans "Tocs" %}</a></li>
+	    <li {% block current_topics %}{% endblock %}><a href="/topics/">{% trans "Topics" %}</a></li>
+	    <li {% block current_images %}{% endblock %}><a href="/images/">{% trans "Images" %}</a></li>
+	    <li {% block current_releases %}{% endblock %}><a href="/releases/">{% trans "Releases" %}</a></li>
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
-	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
+	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{% trans "Project" %}<span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="/variables/">_(Définition des variables)</a></li>
-		<li><a href="/settings/criteria">_(Défnition des critères)</a></li>
-		<li><a href="/projects/config">_(Gérer les langues)</a></li>
-		<li><a href="/settings/">_(Paramètres de publication)</a></li>
+		<li><a href="/variables/">{% trans "Define Variables" %}</a></li>
+		<li><a href="/settings/criteria">{% trans  "Define Criteria" %}</a></li>
+		<li><a href="/projects/config">{% trans "Manage Languages" %}</a></li>
+		<li><a href="/settings/">{% trans "Publication Settings" %}</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/import/">_(Importer un tableur)</a></li>
+		<li><a href="/import/">{% trans "Import Table" %}</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/sync/">_(Synchroniser)</a></li>
-		<li><a href="/projects/">_(Gestionnaire de projets)</a></li>
+		<li><a href="/sync/">{% trans "Sync" %}</a></li>
+		<li><a href="/projects/">{% trans "Manage Projects" %}</a></li>
 	      </ul>
 	    <li>
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">          
-	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">_(Aide)</a></li>
+	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">{% trans "Help" %}</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
@@ -142,7 +142,7 @@
       <div class="modal-dialog modal-lg">
 	<div class="modal-content">
 	  <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{% trans "Close" %}</span></button>
             <h4 class="modal-title">{% block modal-title %}Modal title{% endblock %}</h4>
 	  </div>
 	  <form id="modalform" method="POST">
@@ -151,7 +151,7 @@
 	    </div>
 	    <div class="modal-footer">
 	      {% block modal-footer %}{% endblock %}
-              <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
 	    </div>
 	  </form>
 	</div><!-- /.modal-content -->

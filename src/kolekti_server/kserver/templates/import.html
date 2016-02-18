@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Importer un fichier tableur{% endblock %}
+{% block title %}{% trans "Import a Table File" %}{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}import{% endblock %}
 
@@ -21,14 +21,14 @@
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
 	    </small>
-	    <strong>Modèle de fichier tableur</strong>
+	    <strong>{% trans "Table file template" %}</strong>
 	  </a>
 	</h4>
       </div>
       
       <div id="collapsePL" class="panel-collapse collapse in">
 	<div class="panel-body">
-	  Choissez le modèle de module à utiliser pour créer le modèle de fichier tableur
+	  {% trans "Choose a Topic template to create a Table template" %}
 	  <form action="/import/template/" method="GET" class="form-horizontal">
 	     <div class="form-group">
 	       {% for template in templates %}
@@ -40,7 +40,7 @@
 		</div>
 		{% endfor %}
 	     </div>
-	     <button type="submit" class="btn btn-primary btn-block">Télécharger</button>
+	     <button type="submit" class="btn btn-primary btn-block">{% trans "Download" %}</button>
 	  </form>
 	</div>
       </div>
@@ -51,12 +51,12 @@
  <div class="main">
   <div id="importform" class="panel panel-info">
     <div class="panel-heading">
-      Transférer un fichier de définition de modules au format ods ou xlsx:
+      {% trans "Send a .ods or .xlsx Topic definition file" %}
       <form method="POST"  class="upload_form" enctype="multipart/form-data">
 	<input type="file" id="upload_file" name="upload_file" class="form-control upload">
 	<input type="hidden" name="path" value="/sources/fr/variables">
 	<br>
-	<button type="submit" class="btn btn-default btn-xs create-file">Valider</button>
+	<button type="submit" class="btn btn-default btn-xs create-file">{% trans "Confirm" %}</button>
       </form>
     </div>
     <div class="panel-body">

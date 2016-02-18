@@ -19,3 +19,12 @@ kolekti/src$ django-admin compilemessages --pythonpath=$(pwd)/kolekti_server --s
 - traduction de la partie kolekti (dossier kolekti)
 
 TODO
+
+
+cd ~/kolekti/src
+export PYTHONPATH=/home/alpenyeti/kolekti/src
+
+Commentaire
+
+{# Translators: COMMENTAIRE #}
+

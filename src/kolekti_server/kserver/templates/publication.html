@@ -3,8 +3,9 @@
   {% if success %}
   {% for pubresitem in pubres %}
 	{% for profileitem in pubresitem.publications %}
-	<h5>Profile {{ profileitem.profile }}</h5>
-	<p>publié le {{ profileitem.time|print_timestamp }}</p>
+	<h5>{% trans "Profile" %} {{ profileitem.profile }}</h5>
+	<p>{# Translators: Followed by a date and time #}
+{% trans "published on the" %} {{ profileitem.time|print_timestamp }}</p>
 	<ul>
 	  {% for scriptitem in profileitem.scripts %}
 	  <li>Script {{ scriptitem.script }}: 
@@ -18,16 +19,16 @@
   {% endfor %}
   {% if logger %}
   <div class="alert alert-warning">
-    <h5>Avertissements</h5>
+    <h5>{% trans "Warning" %}</h5>
     <p>{{ logger }}</p>
   </div>
   {% endif %}
   {% else %}
   <div class="alert alert-danger error">
-    <h5>Erreur à la publication</h5>
+    <h5>{% trans "Publication Error" %}</h5>
     <p>{{ logger }}</p>
   </div>
-  <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseStacktrace" aria-expanded="false" aria-controls="collapseStracktrace">Détails</a>
+  <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseStacktrace" aria-expanded="false" aria-controls="collapseStracktrace">{% trans "Details" %}</a>
   <div class="collapse" id="collapseStacktrace">
     <div class="well">
       <pre>

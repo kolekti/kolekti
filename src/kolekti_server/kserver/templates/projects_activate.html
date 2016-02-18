@@ -27,7 +27,7 @@
       <div class="container-fluid">
 	<div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
+            <span class="sr-only">{% trans "Toggle navigation" %}</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -47,10 +47,10 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-9 col-md-9 main">
-          <h1>Project activé</h1>
+          <h1>"{% trans "Activated Project" %}</h1>
 	  <div class="panel panel-default">
 	    <div class="panel-body">
-	      <p>redemarrez kolekti et retournez à l'<a href="/">accueil</a></p>
+	      <p>"{% trans "Reboot Kolekti and back to %}<a href="/">{% trans "Homepage" %}</a></p>
 	    </div>
 	  </div>
 	</div>
@@ -68,14 +68,14 @@
       <div class="modal-dialog modal-lg">
 	<div class="modal-content">
 	  <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
-            <h4 class="modal-title">Modal title</h4>
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">"{% trans "close" %}</span></button>
+            <h4 class="modal-title">"{% trans "Modal title" %}</h4>
 	  </div>
 	  <div class="modal-body">
-            <p>Generic modal</p>
+            <p>{% trans "Generic modal" %}</p>
 	  </div>
 	  <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
 	  </div>
 	</div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->
