@@ -249,7 +249,7 @@ $(document).ready(function() {
     })
 */
 
-    var ref_communes = {}
+    var ref_parameters = {}
 
     var get_ref_communes = function() {
 	var ref = $("#ecorse_select_referentiel").val();
@@ -260,7 +260,49 @@ $(document).ready(function() {
 	    })
     }
     
-    $('.typeahead').typeahead({source:function(query, process) {
+    var get_ref_parameters = function() {
+	var ref = $("#ecorse_select_referentiel").val();
+	if (!ref_parameters.hasOwnProperty(ref))
+	    $.get('/ecorse/refparameters',{'referentiel':ref})
+	    .done(function(data) {
+		ref_parameters[ref] = data;
+		build_create_fields();
+	    })
+	else
+	    build_create_fields();
+	
+    }
+    var build_create_fields = function() {
+	var ref = $("#ecorse_select_referentiel").val();
+	$('#create_form_parameters').html('')
+	$.map(ref_parameters[ref], function(v) {
+	    var input = $('<input>',{
+		'name':v.id,
+		'id':v.id,
+		'type':"text",
+		'class':"form-control typeahead",
+		'data-provide':"typeahead"})
+	    
+	    $('<div>', {
+		'class':"form-group",
+		'html':[
+		    $('<label>', {
+			'for':v.id,
+			'class':"col-sm-2 control-label",
+			'html':v.label}),
+		    $('<div>',{
+			'class':"col-sm-10",
+			'html':input
+		    })
+		]
+	    }).appendTo('#create_form_parameters')
+	    input.typeahead({source:function(query, process) {
+		return process(v.values)
+	    }})
+	})
+    }
+    
+    $('.typeahead_').typeahead({source:function(query, process) {
 	var ref = $("#ecorse_select_referentiel").val();
 	if (ref_communes.hasOwnProperty(ref))
 	    return process(ref_communes[ref]);
@@ -278,7 +320,8 @@ $(document).ready(function() {
 
     $('#ecorse_select_referentiel').on('change', function() {
 	$('.typeahead').val('')
-	get_ref_communes();
+//	get_ref_communes();
+	get_ref_parameters();
     });
     
     // typeahead
@@ -291,7 +334,8 @@ $(document).ready(function() {
 		    $('<option>',{'value':v, 'html':v.replace('.html','')})
 		);
 	    });
-	    get_ref_communes();
+   //	    get_ref_communes();
+	    get_ref_parameters();
 	});
 	$('.typeahead').each(function(){
 	    $(this).val('')
@@ -333,7 +377,10 @@ $(document).ready(function() {
 	}).fail(function(data) {
 	});
     })
-			     
+
+
+
+    
     // Action globales sur le rapport
     // Actualisation des données
     $('.ecorse-action-update-data').on('click', function() {

@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^ecorse/report/star$', EcoRSEReportStarView.as_view(), name='ecorsereportstar'),
     url(r'^ecorse/report/hide$', EcoRSEReportHideView.as_view(), name='ecorsereporthide'),
     url(r'^ecorse/report/chart$', EcoRSEReportChartView.as_view(), name='ecorsereportchart'),
+    url(r'^ecorse/refparameters$', EcoRSERefParametersView.as_view(), name='ecorserefparameters'),
 
     url(r'^ecorse/communes$', EcoRSECommunesView.as_view(), name='ecorsecommunes'),
     url(r'^ecorse/referentiels$', EcoRSEReferentielsView.as_view(), name='ecorsereferentiels'),

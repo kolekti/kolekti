@@ -90,7 +90,6 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-        print ET.tostring(assembly)[:500]
         
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)

@@ -5,7 +5,7 @@
 import os
 import json
 from lxml import etree as ET
-
+from copy import deepcopy
 from models import Settings, ReleaseFocus
 from forms import UploadFileForm
 
@@ -60,6 +60,33 @@ class EcoRSEMixin(kolektiMixin):
         content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section)) for t in body])
         return content
 
+    def get_assembly_libs(self, path, release_path="", section=None):
+        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        if section is None:
+            root = xassembly.xpath('/html:html/html:body',
+                                   namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        else:
+            root = xassembly.xpath('/html:html/html:body/html:div[@class="section"][@id="%s"]'%section, namespaces={'html':'http://www.w3.org/1999/xhtml'})
+
+        libs = {'css':'', 'scripts':''}
+        for component in self.collect_components(root[0]):
+            print component
+            xsl = self.get_xsl('components/%s'%component)
+            xlibs = xsl(self.parse_string('<libs/>')).getroot()
+            if not xlibs is None:
+                print ET.tostring(xlibs)
+                for css in xlibs.xpath('html:css/*',namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+                    libs['css'] += ET.tostring(css, method="html")
+                for scr in xlibs.xpath('html:scripts/*',namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+                    libs['scripts'] += ET.tostring(scr, method="html")
+        return libs
+    
+    def collect_components(self, root):
+        comps = set()
+        for c in root.xpath(".//*[starts-with(@class,'kolekti-component-')]/@class"):
+            comps.add(c[18:])
+        return list(comps)
+            
     def get_report(self, release_path):
         report_name = release_path.rsplit('/',1)[1]
         report_path = "/".join([release_path,"sources","fr","assembly",report_name+"_asm.html"])
@@ -79,14 +106,47 @@ class EcoRSEMixin(kolektiMixin):
         pass
 
 
+    def assembly_user_vars(self, path, section=None):
+        varset = set()
+        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        if section is None:
+            varxpath = '/html:html/html:body//html:var[startswith(@class,"uservar:")]'
+        else:
+            varxpath = '/html:html/html:body//html:div[@class="section"][@id="%s"]//html:var[startswith(@class,"uservar:")]'%section
+            
+        var_list = xassembly.xpath(varxpath, namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        
+        for v in var_list:
+            varset.add(v.get('class')[8:])
+             
+        return list(varset)
+        
+    def toc_user_vars(self, xtoc):
+        mods = []
+        varset = set()
+        for refmod in xtoc.xpath('/html:html/html:body//html:a[@rel="kolekti:topic"]',
+                        namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+            moduri = refmod.get('href').split('?')[0]
+            print moduri
+            if not moduri in mods:
+                mods.append(moduri)
+                xmod = self.parse(moduri)
+                varxpath = '/html:html/html:body//html:var[starts-with(@class,"uservar:")]'
+                var_list = xmod.xpath(varxpath, namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                for v in var_list:
+                    varset.add(v.get('class')[8:])
+        return list(varset)
+        
+    
 class EcoRSEReportCreateView(EcoRSEMixin, View):
     def post(self, request):
         try:
             title = request.POST.get('title','')
+            toc = request.POST.get('toc')
+                            
             commune1 = request.POST.get('commune1','')
             commune2 = request.POST.get('commune2','')
             commune3 = request.POST.get('commune3','')
-            toc = request.POST.get('toc')
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             xjob.getroot().set('pubdir',title)
@@ -237,17 +297,25 @@ class EcoRSEReportView(EcoRSEMixin, View):
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
             menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+            libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
         except IndexError:
             import traceback
-            print traceback.format_exc()
             content = "Selectionnez un rapport"
             menu = None
             assembly_name = ""
+            libs = {'css':'', 'scripts':''}
+        except:
+            import traceback
+            print traceback.format_exc()
+            raise
 
+        print libs
+        
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
                                         "release":release_path,
                                         "menu":menu,
+                                        "libs":libs,
                                         "releases":releases,
                                         "title":assembly_name})
     
@@ -263,21 +331,59 @@ class EcoRSEReportShareView(EcoRSEMixin, View):
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section, share = True)
             menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+            libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
+            
         except IndexError:
             import traceback
             print traceback.format_exc()
             content = "Selectionnez un rapport"
             menu = None
             assembly_name = ""
+            libs = {'css':'', 'scripts':''}
 
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
                                         "release":release_path,
                                         "menu":menu,
+                                        "libs":libs,
                                         "title":assembly_name})
     
         
 
+class EcoRSERefParametersView(EcoRSEMixin, View):
+    def get(self, request):
+        try:
+            result = []
+            parameters = ET.Element ('uservariables');
+            referentiel = request.GET.get('referentiel','')
+            xtoc = self.parse('/sources/fr/tocs/ecorse/'+referentiel)
+            parameters_path = xtoc.xpath('/html:html/html:head/html:meta[@name="kolekti.parameters"]/@content', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+            if len(parameters_path):
+                parameters_def = self.parse(parameters_path[0])
+                found_parameters = self.toc_user_vars(xtoc)
+                for query in parameters_def.xpath('/uservariables/query'):
+                    parameters.append(deepcopy(query))
+                for param in parameters_def.xpath('/uservariables/variable'):
+                    param_name = param.get("name")
+                    if param_name in found_parameters:
+                        parameters.append(deepcopy(param))
+                                        
+                endpoint = self._project_settings.find('sparql').get('endpoint')
+                endpoint = endpoint + xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                from kolekti.publish_queries import kolektiSparQL
+                sp = kolektiSparQL(endpoint)
+                sp.instanciate_parameters(parameters)
+                for param in parameters.xpath('variable'):
+                    result.append(
+                        {'id':param.get('name'),
+                        'label':param.get('label'),
+                        'values':[{'name':val.get('label'),'id':val.get('data')} for val in param.xpath('values/value')]}
+                        )
+        except:
+            import traceback
+            print traceback.format_exc()
+        return HttpResponse(json.dumps(result),content_type="application/json")
+    
 class EcoRSECommunesView(EcoRSEMixin, View):
     def get(self, request):
         referentiel = request.GET.get('referentiel','')

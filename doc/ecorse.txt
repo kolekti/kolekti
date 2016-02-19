@@ -1,0 +1,151 @@
+I. Définition des variables
+===========================
+
+- le systeme de variables de kolekti reste valable (variabilité de contenu en fonction des critères de filtrage)
+
+- Parametres de modules : ces parametres sont spécifiés dans les références aux modules, en utlilisant le formalisme des url. 
+
+Dans les modules, les éléments <var> dont l'attribut class est préfixé par la chaine "topicvar:" sont substitués par le parametre correspondant.
+Dans l'assemblage ces éléments var ne sont plus présents.
+
+
+- Parametres utilisateur : ces paramètres sont spécifiés dans un fichier de déclaration de variables référencé depuis la méta donnée kolekti:uservar de la trame,
+
+dans les modules, les éléments <var> dont l'attribut class est préfixé par la chaine "uservar:" sont substitués par le parametre correspondant, ces éléments ne sont pas filtrés par le processus d'assemblage, leur contenu est substitué par la valeur de la variable, elle peut être changée à posteriori dans l'assemblage (dans le rapport) par l'utilisateur.
+
+syntaxe du fichier de déclaration de variables :
+
+<uservariables>
+  [ déclaration des requetes ]
+  [ déclaration des variables ]
+</uservariable>
+
+[déclaration des requêtes]
+<query id="query_1">
+  <sparql>
+    select....
+  </sparql>
+</query>
+
+Les requêtes utilisée dans les défintions de variable doivent retourner une liste de resultats dont les enregistrement contiennent les attributs valueLabel et valueData 
+
+[déclaration des variables]
+
+* Domaine de valeurs explicite :
+
+<variable name="mavariable" label="Ma Variable">
+  <values>
+    <value label="Valeur 1" data="val1"/>
+    <value label="Valeur 2" data="val2"/>
+  </values>
+</variable>
+
+* Domaine de valeurs résultant d'une requête sparql :
+
+<variable name="mavariable" label="Ma Variable">
+  <values>
+    <query ref="query_1"/> 
+  </values>
+</variable>
+
+Instanciation des variables utilisateur :
+
+- a la création d'un rapport (assemblage), l'ensemble des variables effectivement utilisées dans les modules référencés depuis la trame est calculé. Les définitions de ces variables sont traitées, effectuant les requêtes sparql des défintions utilisant une requête. Les définitions sont utilisées pour contruire le dialogue de saisie des parametres du rapport.
+
+- ce processus est également appliqué lors de la configuratoin d'une section d'un rapport existant [TODO]
+
+au cours de l'assemblage (ou de la mise à jour du rapport/d'une section suite à une configuration), la valeur selectionnée par l'utilisateur est insérée dans l'élément <var>, ce dernier est conservé dans l'assemblage, afin de préserver la référence à la variable permettant se modification.
+
+II. Requetes sparql dans les modules :
+
+Au cours de l'assemblage et la mise à jour d'un rapport, les éléments identifiant des requêtes sparql sont traités pour résoudre les requêtes.
+
+1. Eléments dynamiques sparql :
+
+Au sein d'un module, les éléments div portant un attribut class égal ) "kolekti-sparql" sont identifiés comme étant des conteneurs de requête sparql, chacun de ces éléments :
+
+- doit contenir un sous élément div portant un attribut class=kolekti-sparql-query
+- peut contenir un sous-élément portant un attribut class=kolekti-sparql-template
+
+Lors de la résolution des requêtes (mise à jour / assemblage d'un rapport) :
+
+- les éléments de resultat existant sont supprimés
+
+- pour chaque div[kolekti-sparql] présent dans l'assemblage :
+  * le contenu de l'element div[kolekti-sparql-query] fils est interprété comme une requête sparql (les éléments <var> présents - représentant les parametres utilisateurs sont ignorés,mais leur contenu est préservé).
+
+  * un élément div[kolekti-sparql-result] est créé comme dernier fils de l'éléments div[kolekti-sparql]. L'ensemble des éléments résultant de l'évaluation de la requête de l'instanciation du template seront insérés dans cet élément.
+
+  * si la requête sparql n'a pas pu être correctement évaluée, un élément div[kolekti-sparql-error] est créé. Cet element porte un attribut msg contenant un bref message d'erreur, le contenu l'élément contient les informations détaillées sur l'erreur (stacktrace python)
+
+  * si la requête sparql a été correctement executée, un élément div[kolekti-sparql-result-json] est créé comme fils de l'élément div[kolekti-sparql-result], cet élément contient le json retourné par le serveur sparql
+
+  * si l'élément div[kolekti-sparql] contient un élément div[kolekti-sparql-template], une itération sur la collection résultat est effectuée, a chque itération, l'élément kolekti-sparql-template est cloné est inséré comme dernier fils de l'élément div[kolekti-sparql-result], son attribut class est fixé à la valeur kolekti-sparql-result-template.
+    L'élément clone du template créé est parcouru et toutes les expressions de la forme {field} - où field est un champ appartenant à un enregistrement de la collection retournée par la requete sparql - sont substituées par la valeur du champ pour cet enregistrement.
+
+  * [TODO] : interpretation des requêtes dans les templates (requetes imbriquées)
+
+Affichage des rapports
+
+Le traitement relatif à l'affichage des rapports
+
+2. Composants :
+
+Les composants sont indépendants du traitement des requetes, ils sont identifiés par un élément div contant un attribut class de la forme koletki-component-[compname] ou [compname] est le nom du composant
+
+Chaque composant définit un traitement spécifique du contenu,
+- lors de l'assemblage / mise à jour du rapport :
+  - traitement python sur la structure du rapport après interprétation des requetes sparql
+  
+- lors de l'affichage dans l'interface expert
+
+  - traitement xslt de l'assemblage
+  - 
+  - elements à intégrer :
+     - dans le corps du topic
+     - dans la partie repliable (avec contenu bouton)
+     - dans le menu bouton/menu...
+     
+  - association d'une feuille de style css spécifique
+  - association d'un script js particulier
+  - association de bibliothèques js
+  
+- lors de la génération du rapport pour le client final
+  - traitement xslt de l'assemblage
+  - sortie HTML5 :
+    - element à intégrer dans corps / collapse / menu
+    - association d'une feuille de style css spécifique
+    - association d'un script js particulier
+    - association de bibliothèques js
+  - sortie PDF
+  - sortie Word (odt)
+  - sortie Presentation (ods)
+
+
+Definition générique des composants:
+  - kolekti/components/[compname].py
+  - kolekti/components/[compname].xsl	
+  
+  - kolekti_server/static/components/[compname]/report.css
+  - kolekti_server/static/components/[compname]/common.css
+  - kolekti_server/static/components/[compname]/export.css
+  
+  - kolekti_server/static/components/[compname]/report.js
+  - kolekti_server/static/components/[compname]/common.js
+  - kolekti_server/static/components/[compname]/export.js
+
+  
+Composants :
+
+- Details
+
+- Chart
+
+- Svg
+
+- D3js
+
+- map
+
+
+

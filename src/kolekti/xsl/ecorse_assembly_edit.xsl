@@ -31,10 +31,12 @@
                indent="yes"
 	       omit-xml-declaration="yes"
 	       />
-  
+
   <xsl:param name="path"/>
   <xsl:param name="section" select="''"/>
   <xsl:param name="share" select="'False'"/>
+
+  <xsl:include href="ecorse_components.xsl"/>
   
   <xsl:template match="text()|@*">
     <xsl:copy/>
@@ -57,12 +59,6 @@
     <xsl:element name="h{count(ancestor::html:div[@class='section']) + 1}" namespace="http://www.w3.org/1999/xhtml">
       <xsl:apply-templates select="@*|node()"/>
     </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="html:div[@class='topic']/html:h1">
-    <h5>
-      <xsl:apply-templates select="node()|@*"/>
-    </h5>
   </xsl:template>
   
   <xsl:template match = "html:div[@class='section']">
@@ -110,21 +106,43 @@
 <!--      </xsl:copy>-->
   </xsl:template>
 
+  <xsl:template match="node()|@*" mode="topicbody">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='topic']/html:h1" mode="topicbody">
+    <h5>
+      <xsl:apply-templates select="node()|@*"/>
+    </h5>
+  </xsl:template>
+
+  
   <xsl:template match = "html:div[@class='topic']">
     <div class="col-sm-12 col-lg-6">
       <div class="thumbnail">
 	<xsl:copy>
 	  <xsl:apply-templates select="@*"/>
-	  <xsl:apply-templates select="html:div[@class='kolekti-sparql']"/>
+
+	  <!-- création du corps du topic -->
+	  <xsl:apply-templates mode="topicbody"/>
+
+	  <!-- pied de topic : collapse / boutons action-->
 	  <div class="caption">
-	    <xsl:apply-templates select="html:h1"/>
-	    <hr/>
 	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
 
+	      <!-- bouttons de controle -->
 	      <xsl:call-template name="topic-controls"/>
-	      <xsl:apply-templates select="html:div[@class='details']"/>
+
+	      <!-- panneaux -->
+	      <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
+				   mode="topicpanel"/>
+	      
+<!--	      <xsl:apply-templates select="html:div[@class='details']"/>
 	      <xsl:call-template name="topic-analyse"/>
 	      <xsl:call-template name="topic-visuels"/>
+-->
 	    </div>
 	  </div>
 	</xsl:copy>
@@ -132,41 +150,37 @@
     </div>
   </xsl:template>
 
-  <xsl:template match = "html:div[@class='topicinfo']"/>
 
-  <xsl:template match = "html:div[@class='kolekti-sparql-foreach']">
-    <xsl:apply-templates/>
-  </xsl:template>
   
-  <xsl:template match = "html:p[@class='kolekti-sparql-foreach-query']"/>
-  <xsl:template match = "html:div[@class='kolekti-sparql-foreach-template']"/>
-  <xsl:template match = "html:div[@class='kolekti-sparql-results']">
-    <xsl:apply-templates/>
-  </xsl:template>
+  <xsl:template match = "html:div[@class='topicinfo']" mode="topicbody"/>
 
-  <xsl:template match = "html:div[@class='kolekti-sparql']">
-    <xsl:apply-templates/>
-  </xsl:template>
-  <xsl:template match = "html:p[@class='kolekti-sparql-query']"/>
-  <xsl:template match = "html:p[@class='kolekti-sparql-result-json']"/>
+
 
 
   <xsl:template name="topic-controls">
     <span class="btn-group">
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseDetails{@id}" aria-expanded="false" aria-controls="collapseDetails{@id}">
+      <xsl:apply-templates  select="html:div[starts-with(@class,'kolekti-component-')]"
+				   mode="topicpanelbutton"/>
+	       
+      <!--
+	  <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseDetails{@id}" aria-expanded="false" aria-controls="collapseDetails{@id}">
 	<i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
       </a>
+
       <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseAnalyse{@id}" aria-expanded="false" aria-controls="collapseAnalyse{@id}">
 	<i class="fa fa-pencil"></i>
 	<xsl:text> Analyse</xsl:text>
       </a>
+      
       <xsl:if test="$share='False'">
       <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapsePictures{@id}" aria-expanded="false" aria-controls="collapsePictures{@id}">
 	<i class="fa fa-picture-o"></i>
 	<xsl:text> Visuels</xsl:text>
       </a>
       </xsl:if>
+      -->
     </span>
+    
     <xsl:if test="$share='False'">
     <span class="btn-group pull-right">
       <button title="A la une">
@@ -181,9 +195,14 @@
 	  
 	<i class="fa fa-star-o"></i>
       </button>
+      
       <button title="Supprimer" class="btn btn-xs btn-default  ecorse-action-hide">
 	<i class="fa fa-trash-o"></i>
       </button>
+      
+      <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
+			   mode="topicpanelaction"/>
+<!--	      
       <span class="btn-group">
 	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
 	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
@@ -207,11 +226,13 @@
 	  <li role="presentation" class="divider"/>
 	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_options">Options...</a></li>
 	</ul>
-      </span>
+	</span>
+	-->
     </span>
     </xsl:if>
   </xsl:template>
-  
+
+<!--
   <xsl:template match="html:div[@class='kolekti-sparql-foreach-results']">
     <div class="collapse collapseDetails collapseTopic" id="collapseDetails{ancestor::html:div[@class='topic']/@id}" role="tabpanel">
       <div class="well">
@@ -260,12 +281,11 @@
   <xsl:template match="html:p[@class='kolekti-sparql-result-chartjs']">
     <div class="kolekti-sparql-result-chartjs" data-chartjs-data='{.}' id="chart_{ancestor::html:div[@class='topic']/@id}">
       <xsl:copy-of select='@data-chartjs-kind'/>
-      <!--      <canvas id="canvas_{ancestor::html:div[@class='topic']/@id}"></canvas> -->
       <div class="legend">
       </div>
     </div>
   </xsl:template>
-
+-->
   
   <xsl:template match="html:img/@src">
     <xsl:attribute name="src">

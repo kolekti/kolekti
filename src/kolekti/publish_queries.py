@@ -12,6 +12,7 @@ import copy
 import logging
 import json
 from copy import deepcopy
+
 from lxml import etree as ET
 from SPARQLWrapper import SPARQLWrapper, JSON
 
@@ -33,18 +34,51 @@ class kolektiSparQL(object):
               BIND (concat(str(?placeLabel),if(bound(?codeINSEE),concat(' (',str(?codeINSEE),')'),'')) AS ?placeLabelFull)
         }
         """
+        
         self.sparql.setQuery(query)
         self.sparql.setReturnFormat(JSON)
-        results = self.sparql.query().convert()
+        try:
+            res = self.sparql.query()
+        except:
+            import traceback
+            print traceback.format_exc()
+        results = res.convert()
         return [{"id":e.get('placeURI').get('value'), "name":e.get('placeLabelFull').get('value')} for e in results['results']['bindings']]
     
-        
+
+    def instanciate_parameters(self, vardef):
+        query_results={}
+        for dquery in vardef.xpath("/uservariables/variable/values[query]"):
+            idq = dquery.find('query').get('ref')
+            results = None
+            if idq is None: 
+                query = dquery.xpath("string(query/sparql)")
+            else:
+                query = vardef.xpath("string(/uservariables/query[@id='%s']/sparql)"%idq)
+                results = query_results.get(idq, None)
+
+            if results is None:
+                try:
+                    self.sparql.setQuery(query)
+                    self.sparql.setReturnFormat(JSON)
+                    results = self.sparql.query().convert()
+                    results = results['results']['bindings']
+                    if not idq is None:
+                        query_results[idq] = results
+                except:
+                    import traceback
+                    print traceback.format_exc()
+                        
+            for result in results:
+                    ET.SubElement(dquery,'value', attrib = {'label':result.get('valueLabel').get('value'),
+                                                            'data':result.get('valueData').get('value')})
+                
     def process_queries(self, assembly):
-        for oldres in assembly.xpath("//h:div[@class='kolekti-sparql-result' or @class='kolekti-sparql-foreach-results']", namespaces=self.nsmap):
+        for oldres in assembly.xpath("//*[@class='kolekti-sparql-result']", namespaces=self.nsmap):
             oldres.getparent().remove(oldres)
             
-        for dquery in assembly.xpath("//h:div[@class='kolekti-sparql']", namespaces=self.nsmap):
-            query = dquery.xpath("string(h:p[@class='kolekti-sparql-query'])",  namespaces=self.nsmap)
+        for dquery in assembly.xpath("//*[@class='kolekti-sparql']", namespaces=self.nsmap):
+            query = dquery.xpath("string(*[@class='kolekti-sparql-query'])",  namespaces=self.nsmap)
             self.sparql.setQuery(query)
             self.sparql.setReturnFormat(JSON)
             results = self.sparql.query().convert()
@@ -53,41 +87,28 @@ class kolektiSparQL(object):
                 topic.set("data-chart-kind","Bar")
             if not len(results['results']['bindings']):
                 topic.set('data-hidden','yes')
+                topic.set('data-kolekti-sparql-empty','yes')
                 print "No result for query"
                 print query
                 
             else:
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})
-                pjson = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-json"})
-                pjson.text = json.dumps(results)
-                phisto = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}p', attrib = {"class":"kolekti-sparql-result-chartjs"})
-                
+                resjson = ET.SubElement(resdiv,'{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result-json"})
+                resjson.text = json.dumps(results)
+
                 try:
-                    phisto.text = self._to_json_chartjs(results)
-                except:
-                    print "error parsing results"
-                    print query
-                    phisto.text = "no data"
+                    template = dquery.xpath(".//*[@class='kolekti-sparql-template']",  namespaces=self.nsmap)[0]
+                    for result in results['results']['bindings']:
+                        elt = deepcopy(template)
+                        elt.set('class' ,"kolekti-sparql-result-template")
+                        resdict = dict([(z.encode('utf-8'),v['value'].encode('utf-8')) for z,v in result.iteritems()])
+                        self._instanciate(elt, resdict, True)
+                        resdiv.append(elt)
+
+                except IndexError:
+                    print "no template for query"
 
                 dquery.append(resdiv)
-            
-                
-        for dquery in assembly.xpath("//h:div[@class='kolekti-sparql-foreach']", namespaces=self.nsmap):
-            query = dquery.xpath("string(h:p[@class='kolekti-sparql-foreach-query'])",  namespaces=self.nsmap)
-            self.sparql.setQuery(query)
-            self.sparql.setReturnFormat(JSON)
-            results = self.sparql.query().convert()
-            template = dquery.xpath("h:div[@class='kolekti-sparql-foreach-template']",  namespaces=self.nsmap)[0]
-            dres = ET.SubElement(dquery,'{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-foreach-results"})
-
-            
-            for result in results['results']['bindings']:
-                elt = deepcopy(template)
-                elt.set('class' ,"kolekti-sparql-foreach-result")
-                resdict = dict([(z.encode('utf-8'),v['value'].encode('utf-8')) for z,v in result.iteritems()])
-                self._instanciate(elt, resdict, True)
-                dres.append(elt)
-                
         return assembly
 
     def _instanciate(self, elt, values, root = False):

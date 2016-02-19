@@ -75,11 +75,26 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return self.__cache[path]
         
     def gettopic(self, _, *args):
-        modid = args[0]
+        try:
+            modid, params = args[0].split('?')
+        except ValueError:
+            modid = args[0]
         path = self.process_path(modid)
         upath = self.getUrlPath(path)
         logging.debug("get topic %s -> %s"%(modid,upath))
         return upath
+
+    def gettopicparameters(self, _, *args):
+        try:
+            modid, params = args[0].split('?')
+        except ValueError:
+            return []
+        lparams = params.split('&')
+        res = []
+        for param in lparams:
+            pname, pvalue = param.split("=")
+            res.append(ET.Element('urlparam',attrib={'name':pname, 'value':urllib.unquote(pvalue)}))
+        return res
 
     def gettopic2(self, _, *args):
         modid = args[0]
