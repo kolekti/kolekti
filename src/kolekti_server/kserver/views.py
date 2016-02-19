@@ -151,7 +151,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             print traceback.format_exc()
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
-        print tocmeta
         return toctitle, tocauthor, tocmeta, str(etoc)
 
     def localname(self,e):
@@ -475,7 +474,6 @@ class ReleaseFocusView(kolektiMixin, TemplateView):
             path, assembly_name = release.rsplit('/',1)
             state = request.POST.get('state')
             lang = request.POST.get('lang')
-            print state
             try:
                 rf = ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang)
             except ReleaseFocus.DoesNotExist:
@@ -550,7 +548,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                 #import traceback
                 #print traceback.format_exc()
                 focus.append(False)
-        print focus        
         context.update({'langstate':langstate,'langstates':zip(context.get('releaselangs',[]),states,focus)})
         return context
     
@@ -1098,7 +1095,7 @@ class DraftView(PublicationView):
                 else:
                     jprofile.set('enabled',"1")
             for jscript in xjob.xpath('/job/scripts/script'):
-                if not jscript.get('name') in scripts:
+                if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
                 else:
                     jscript.set('enabled',"1")
@@ -1138,8 +1135,10 @@ class ReleaseView(PublicationView):
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
             for jscript in xjob.xpath('/job/scripts/script'):
-                if not jscript.get('name') in scripts:
+                if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
+                else:
+                    jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
