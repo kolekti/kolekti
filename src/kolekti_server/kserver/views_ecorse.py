@@ -143,19 +143,20 @@ class EcoRSEReportCreateView(EcoRSEMixin, View):
         try:
             title = request.POST.get('title','')
             toc = request.POST.get('toc')
-                            
-            commune1 = request.POST.get('commune1','')
-            commune2 = request.POST.get('commune2','')
-            commune3 = request.POST.get('commune3','')
+            print dict(request.POST)
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             xjob.getroot().set('pubdir',title)
             lang=self.user_settings.active_srclang
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             criteria = xjob.xpath('/job/criteria')[0]
-            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI1","value":commune1})
-            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
-            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI3","value":commune3})
+            for uservar in request.POST.keys():
+                if uservar[:8] == 'uservar_':
+                    ET.SubElement(criteria, 'criterion', attrib={"code":"uservar:%s"%uservar[9:],"value":request.POST.get(uservar)})
+        
+#            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI1","value":commune1})
+#            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
+#            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI3","value":commune3})
             r = publish.Releaser(projectpath, lang = lang)
             pp = r.make_release(tocpath, xjob)
         except:
@@ -297,7 +298,10 @@ class EcoRSEReportView(EcoRSEMixin, View):
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
             menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
-            libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
+            if not section is None:
+                libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
+            else:
+                libs = {'css':'', 'scripts':''}
         except IndexError:
             import traceback
             content = "Selectionnez un rapport"

@@ -31,8 +31,8 @@
 	<style rel="stylesheet" type="text/css" href="/static/components/css/chart.css"/>
       </css>
       <scripts>
-	<script src="/static/components/js/chart.js"/>
 	<script src="/static/d3.min.js"/>
+	<script src="/static/components/js/chart.js"/>
       </scripts>
     </libs>
   </xsl:template>

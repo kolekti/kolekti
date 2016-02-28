@@ -75,7 +75,9 @@
 
       <xsl:when test="starts-with(@class,'uservar:')">
 	<xsl:copy>
-	  <xsl:apply-templates select="node()|@*"/>
+	  <xsl:apply-templates select="@*"/>
+          <xsl:variable name="res" select="kfp:replace_criteria(concat('{',@class,'}'))"/>
+          <xsl:value-of select="$res"/>
 	</xsl:copy>
       </xsl:when>
 

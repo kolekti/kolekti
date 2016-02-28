@@ -79,6 +79,7 @@ class kolektiSparQL(object):
             
         for dquery in assembly.xpath("//*[@class='kolekti-sparql']", namespaces=self.nsmap):
             query = dquery.xpath("string(*[@class='kolekti-sparql-query'])",  namespaces=self.nsmap)
+            print query
             self.sparql.setQuery(query)
             self.sparql.setReturnFormat(JSON)
             results = self.sparql.query().convert()

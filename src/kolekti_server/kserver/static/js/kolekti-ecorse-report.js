@@ -70,64 +70,6 @@ $(document).ready(function() {
     }
 
         
-    CKEDITOR.disableAutoInline = true;
-    // CKEDitor Behavior
-    // The "instanceCreated" event is fired for every editor instance created.
-    CKEDITOR.on( 'instanceCreated', function ( event ) {
-	var editor = event.editor,
-	    element = editor.element;
-	
-	// Customize editors for headers and tag list.
-	// These editors do not need features like smileys, templates, iframes etc.
-	// Customize the editor configuration on "configLoaded" event,
-	// which is fired after the configuration file loading and
-	// execution. This makes it possible to change the
-	// configuration before the editor initialization takes place.
-	editor.on( 'configLoaded', function () {
-	    
-	    // Remove redundant plugins to make the editor simpler.
-	    editor.config.removePlugins = 'colorbutton,find,flash,font,' +
-		'forms,iframe,newpage,removeformat,' +
-		'smiley,specialchar,stylescombo,templates';
-	    
-	    // Rearrange the toolbar layout.
-	    editor.config.toolbarGroups = [
-		{ name: 'editing', groups: [ 'basicstyles', 'links', 'image' ] },
-		{ name: 'undo' },
-		{ name: 'clipboard', groups: [ 'selection', 'clipboard' ] },
-		{ name :"paragraph", groups :['list','blocks']},
-		{ name: 'about' }
-	    ];
-	    
-	    editor.config.removeButtons='Strike,Anchor,Styles,Specialchar,CreateDiv,SelectAll'
-	} );
-	editor.on('change', function() {
-	    editor.ecorse_state = true
-	});
-	editor.on( 'blur', function () {
-	    if (editor.ecorse_state) {
-		var release = $('.report').data('release')
-		var topicid = $(editor.element.$).closest('.topic').attr('id')
-		var data = editor.getData()
-		$.ajax({
-		    url:"/ecorse/report/analysis",
-		    method:'POST',
-		    data:$.param({
-			'release': release,
-			'topic' : topicid,
-			'data':data
-		    })
-		}).done(function(data) {
-		    if (data.status == 'ok') {
-			editor.ecorse_state = false;
-		    }
-		}).fail(function(data) {
-		});
-		
-	    }
-	});
-    } );
-    
 
     // collapse : close open collapse when an otherone is open
     $(".collapseTopic").on('show.bs.collapse', function() {
@@ -147,18 +89,7 @@ $(document).ready(function() {
 	$(this).addClass('active')
     })
     
-    // collapse : initialisation CKEditor sur déroulé
-    $('.collapseAnalyse').on('shown.bs.collapse', function () {
-	var editor, edid = $(this).find('.anaeditor').attr('id')
-	if (CKEDITOR.instances[edid] == undefined)
-	    editor = CKEDITOR.inline(edid,{startupFocus : true})
-	else {
-	    editor = CKEDITOR.instances[edid]
-	    editor.focus()
-	}
-	editor.ecorse_state = false
-    })
-    
+/*    
     // affichage diagrammes
     Chart.defaults.global.responsive = true;
     
@@ -195,7 +126,7 @@ $(document).ready(function() {
 		options:chartoptions(kind, data['unit'])});
 	}
     }
-
+*/
 
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {
 	if ($(e.target).hasClass('section-content'))
@@ -272,6 +203,18 @@ $(document).ready(function() {
 	    build_create_fields();
 	
     }
+
+    var get_selected_parameters = function() {
+	var ref = $("#ecorse_select_referentiel").val();
+	var parameters =  {};
+	$.map(ref_parameters[ref], function(v) {
+	    var val = $('#'+v.id).typeahead("getActive")
+	    if (!val) val = {'id':''}
+	    parameters['uservar_'+v.id] = val;
+	})
+	return parameters;
+    }
+    
     var build_create_fields = function() {
 	var ref = $("#ecorse_select_referentiel").val();
 	$('#create_form_parameters').html('')
@@ -347,28 +290,15 @@ $(document).ready(function() {
     $('#modal_create_ok').on('click', function () {
 	var referentiel = $("#ecorse_select_referentiel").val();
 	var title = $('#titre_rapport').val()
-	var commune1 = $('#commune1').typeahead("getActive")
-	var commune2 = $('#commune2').typeahead("getActive")
-	var commune3 = $('#commune3').typeahead("getActive")
-	if (!commune1)
-	    commune1 = {'id':''}
-	if (!commune2)
-	    commune2 = {'id':''}
-	if (!commune3)
-	    commune3 = {'id':''}
-
+	var params = get_selected_parameters();
+	params['title'] = title;
+	params['toc'] = referentiel; 
 	$('#modal_create').hide()
 	$('#modal_create_processing').show()
 	$.ajax({
 	    url:"/ecorse/report/create",
 	    method:'POST',
-	    data:$.param({
-		'title': title,
-		'toc': referentiel,
-		'commune1':commune1.id,
-		'commune2':commune2.id,
-		'commune3':commune3.id
-	    })
+	    data:$.param(params)
 	}).done(function(data) {
 	    if (data.length) {
 		var url = window.location.origin + window.location.pathname + '?release=/releases/' + data[0].releasename 
