@@ -103,6 +103,7 @@ class kolektiBase(object):
             import traceback
             logging.debug(traceback.format_exc() )
         self._version = self._config['version']
+        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logging.debug("kolekti v%s"%self._version)
 
         # instanciate synchro & indexer classes

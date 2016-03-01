@@ -4,7 +4,7 @@
 #define BuildDir "F:\Bureau\kolekti\sources\0.7\kolekti\src"
 
 #define MyAppName "Kolekti"
-#define MyAppVersion "0.7"
+#define MyAppVersion "0.7.1"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
 #define MyAppExeName "kolekti_server.exe"
@@ -51,6 +51,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [INI]
 Filename: "{userappdata}\kolekti\kolekti.ini"; Section: "InstallSettings"; Key: "projectsPath"; String: "{%HOMEDRIVE}{%HOMEPATH}\kolekti-projects"
 Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "installdir"; String: "{app}"
+Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "kolektiversion"; String: "{#MyAppVersion}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

@@ -30,6 +30,15 @@
 {% endblock %}
 
 
+{% block footer %}
+<footer class="footer navbar-fixed-bottom navbar-inverse">
+  <div class="container-fluid">
+    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+  </div>
+</footer>
+{% endblock %}
+
+
 {% block extrascripts %}
 <script src="/static/js/kolekti-home.js"></script>
 <script src="/static/d3.min.js"></script>

@@ -129,6 +129,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
         context['syncnum'] = self._syncnumber
+        context['kolektiversion'] = self._kolektiversion
         context.update(data) 
         return context
 

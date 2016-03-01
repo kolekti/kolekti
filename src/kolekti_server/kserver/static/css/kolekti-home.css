@@ -46,3 +46,10 @@
 	overflow-x:hidden;
     }
 }
+.footer {
+    bottom: 0;
+    height: 22px;
+    width: 100%;
+}
+
+
