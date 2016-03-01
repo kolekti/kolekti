@@ -451,8 +451,8 @@ var kolekti_browser = function(args) {
 					})
 				    }
 			
-				    cell.html($('<a>',{
-					'href':"#",
+				    cell.html($('<span>',{
+//					'href':"#",
 					'class':status,
 					'data-status':status,
 					'data-rstatus':entry.rstatus,
@@ -467,7 +467,7 @@ var kolekti_browser = function(args) {
 			});
 		    });
 		    
-		    var sync_popover = $('.kolekti-browser-sync a').popover({
+		    var sync_popover = $('.kolekti-browser-sync span').popover({
 			'content':function(){
 			    var msg = "",
 				linksync = false,

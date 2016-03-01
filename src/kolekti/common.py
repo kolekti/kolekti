@@ -341,7 +341,7 @@ class kolektiBase(object):
             logging.debug('makedir failed')
         # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        update_assembly_lang(xassembly, dstlang)
+        self.update_assembly_lang(xassembly, dstlang)
         self.xwrite(xassembly, assembly_path)
                 
 #        try:

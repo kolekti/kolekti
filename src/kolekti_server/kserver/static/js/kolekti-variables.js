@@ -66,6 +66,7 @@ $(document).ready(function() {
 	    contentType:'text/xml'
 	}).success(function(data) {
 	    disable_save()
+	    kolekti_recent(displayname(path),'variables','/variables/detail/?path='+path);
 	});
     });
     

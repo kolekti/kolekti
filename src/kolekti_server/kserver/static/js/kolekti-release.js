@@ -237,6 +237,7 @@ Defines events for languages and release state in toolbar
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
 	    $('#btn_save').removeClass('btn-warning');
+	    kolekti_recent(displayname($('#main').data('release')), 'version', '/releases/detail/?release=' + $('#main').data('release') + '&lang=' + $('#main').data('lang'))
 	});
     })
 
@@ -252,6 +253,11 @@ Defines events for languages and release state in toolbar
 	}
     }
 
+    $('.upload_form').on('submit', function(e) {
+	kolekti_recent(displayname($('#main').data('release')), 'version', '/releases/detail/?release=' + $('#main').data('release') + '&lang=' + $('#main').data('lang'))
+    })
+			 
+    
     /*
     $('#release_tabs a').click(function (e) {
 

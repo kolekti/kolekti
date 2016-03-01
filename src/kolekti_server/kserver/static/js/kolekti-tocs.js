@@ -294,13 +294,16 @@ $(document).ready( function () {
     // save
 
     $('#btn_save').on('click', function() {
+	var path = $('#toc_root').data('kolekti-path');
 	$.ajax({
 	    url:'/tocs/edit/',
 	    type:'POST',
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
-	    disable_save()
+	    disable_save();
+	    kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
+	    
 	});
     })
 
@@ -322,6 +325,7 @@ $(document).ready( function () {
 		$('#btn_save').addClass('disabled');
 		$('#btn_save').addClass('btn-default');
 		$('#btn_save').removeClass('btn-warning');
+		kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
 		document.location.href = '/tocs/edit/?toc='+path
 	    });
 	}).always(function(data) {

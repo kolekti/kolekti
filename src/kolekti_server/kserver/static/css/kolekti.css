@@ -161,7 +161,7 @@ label {
     background-color: #f9f9f9;
 }
 
-.kolekti-browser-sync a {
+.kolekti-browser-sync span {
     cursor: pointer;
 }
 
@@ -185,3 +185,54 @@ label {
 .panel.drop {
     background-color:rgba(12,255,55,.05);
 }
+
+
+/* widgets */
+
+.history {
+    padding-bottom:20px;
+}
+
+.widget .date ,
+.history .date {
+    padding-left: 5px;
+}
+
+.widget .info {
+    padding-left: 8px;
+    padding-top: 12px;
+    display:inline-block;
+}
+
+.widget .date,
+.widget .author,
+.history .date,
+.history .author {
+    font-size :80%;
+    padding-top: 12px;
+    display:inline-block;
+}
+
+.widget .msg,
+.history .msg {
+    font-style : italic;
+}
+
+.widget .record:first,
+.history .record:first {
+    border-top : 1px solid #606060;
+}
+
+.widget .record,
+.history .record {
+    border-bottom: 1px solid #606060;
+}
+
+.widget .link,
+.history .link {
+    text-align:right;
+    font-size:80%
+		   
+}
+
+

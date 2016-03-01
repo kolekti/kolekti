@@ -194,8 +194,24 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         res = []
         for job in self.iterjobs:
             xj = self.parse(job['path'])
-            job.update({'profiles':[(p.find('label').text, p.get('enabled')) for p in xj.xpath('/job/profiles/profile')],
-                        'scripts':[(s.find('label').text, s.get('enabled')) for s in xj.xpath('/job/scripts/script')],
+            profiles = []
+            scripts  = []
+            
+            for p in xj.xpath('/job/profiles/profile'):
+                label = p.find('label').text
+                enabled = p.get('enabled')
+                profiles.append((label, enabled))
+                
+            for s in xj.xpath('/job/scripts/script'):
+                try:
+                    label = s.find('label').text
+                except:
+                    continue
+                enabled = s.get('enabled')
+                scripts.append((label, enabled))
+                
+            job.update({'profiles': profiles,
+                        'scripts':scripts,
                         })
             res.append(job)
         return sorted(res, key = lambda j: j['name'])
@@ -341,7 +357,7 @@ class ProjectsConfigView(kolektiMixin, View):
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect = ''
+        redirect =request.GET.get('redirect','')
         #        redirect = request.META.get('HTTP_REFERER', '')
         self.project_activate(project)
         if redirect == '':
@@ -500,6 +516,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
                 pass
             assembly = "/".join(['/releases',assembly_name,"sources",dstlang,"assembly",assembly_name+'_asm.html'])
             self.syncMgr.propset("release_state",'edition', assembly)
+            self.syncMgr.propset("release_srclang", srclang, assembly)
             # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 
 
@@ -556,6 +573,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_name = self.basename(release_path)
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
+        srclang = self.syncMgr.propget('release_srclang', assembly_path)
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
@@ -563,6 +581,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
+            'srclang':srclang,
         })
         return self.render_to_response(context)
     
@@ -579,12 +598,14 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.update_assembly_lang(xassembly, lang)
         self.xwrite(xassembly, assembly_path)
+        srclang = self.syncMgr.propget('release_srclang', assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
             'success':True,
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
+            'srclang':srclang,
         })
         return self.render_to_response(context)
 
@@ -1309,7 +1330,7 @@ class SyncView(kolektiMixin, View):
             commitmsg = "unspecified"
         if action == "conflict":
             resolve = request.POST.get('resolve')
-            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            files = request.POST.getlist('fileselect',[])
             if resolve == "local":
                 sync.update(files)
                 for file in files:
@@ -1341,7 +1362,7 @@ class SyncView(kolektiMixin, View):
             
         elif action == "commit":
             sync.update_all()
-            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            files = request.POST.getlist('fileselect',[])
             sync.commit(files,commitmsg)
             
             
@@ -1439,7 +1460,7 @@ class SyncRemoveView(kolektiMixin, View):
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
-        return serve(request, urllib.quote(path), projectpath)
+        return serve(request, path, projectpath)
 
 class ProjectHistoryView(kolektiMixin, View):
     def get(self, request):

@@ -855,7 +855,7 @@ class DraftPublisher(Publisher):
                 mfmode = "a"
             with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
-                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc))
+                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir.encode('utf-8'), self.basename(pubname),  pubtitle, int(time.time()),str(toc))
                 mf.write(ev.encode('utf-8'))
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
@@ -1005,7 +1005,7 @@ class ReleasePublisher(Publisher):
             first_sep = ","
         with open(manifest, 'a') as mf:
             mf.write(first_sep)
-            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir,int(time.time())))
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir.encode('utf-8'),int(time.time())))
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang

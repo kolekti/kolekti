@@ -1,4 +1,6 @@
 {% load timetags %}
+
+{% comment %}
 <div>
   {% for commit in history %}
 <div class="list-group">
@@ -8,6 +10,23 @@
   <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item list-group-item-info">
     {{commit.message}}
   </a>
+</div>
+{% endfor %}
+</div>
+{% endcomment %}
+
+<div class="history">
+  {% for commit in history %}
+  <div class="record">
+    <p class="commitinfo">
+      <span class='rev label label-info'>{{commit.revision.number}}</span>
+      <span class="date">{{commit.date|print_timestamp}}</span>
+      <span class="author pull-right">{{commit.author}}</span>
+    </p>
+    <p class="msg">{{commit.message}}</p>
+    <p class="link">  
+      <a href="/sync/revision/{{commit.revision.number}}/">détails</a>
+    </p>
 </div>
 {% endfor %}
 </div>

@@ -95,8 +95,9 @@ $(document).ready(function() {
     };
 
     $('#btn_save').on('click', function(e){
+	var path = $(this).data('path');
 	$.ajax({
-	    url:'/settings/job?path='+$(this).data('path'),
+	    url:'/settings/job?path='+path,
 	    type:'POST',
 	    data:serialize(),
 	    contentType:'text/xml'
@@ -104,6 +105,8 @@ $(document).ready(function() {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
 	    $('#btn_save').removeClass('btn-warning');
+	    kolekti_recent(displayname(path), 'paramètres', '/settings/job?path='+path)
+
 	});
     });
     

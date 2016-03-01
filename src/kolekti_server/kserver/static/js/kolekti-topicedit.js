@@ -65,7 +65,8 @@ $(document).ready( function () {
 	}).success(function(data) {
 	    savestate = 0;
 	    event.editor.commands.save.disable();
-//	    console.log('save ok')
+	    //	    console.log('save ok')
+	    kolekti_recent(displayname(window.location.search),'module',window.location.pathname+window.location.search);
 	});
 
 	event.cancel();

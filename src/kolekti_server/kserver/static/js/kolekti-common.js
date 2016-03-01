@@ -56,3 +56,12 @@ var formatTime = function(unixTimestamp) {
 
     return dt.toLocaleString();
 }
+
+var kolekti_recent = function(name, info, url) {
+    if (localStorage) {
+	var stored = JSON.parse(localStorage.getItem("kolekti-recent"))
+	if (stored == null) stored = [];
+	stored.unshift({'name':name, 'info':info, 'url':url, 'time':Date.now()/1000})
+	localStorage.setItem("kolekti-recent", JSON.stringify(stored))
+    }
+}

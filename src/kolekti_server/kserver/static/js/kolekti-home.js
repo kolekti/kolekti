@@ -52,7 +52,7 @@ $(document).ready(function() {
 		    "id":"mychart"
 		}),
 		$('<div>', {
-		    "class":"col-md-4",
+		    "class":"col-md-4 history",
 		    "id":"mychartdetails"
 		})
 	    ]
@@ -257,7 +257,51 @@ $(document).ready(function() {
 
     };
 
-		  
+
+
+    var localstorage_widget_builder = function(name) {
+	var wdiv = $('<div>', {
+	    "class":"widget",
+	});
+	if (localStorage) {
+	    var storedref = JSON.parse(localStorage.getItem(name));
+	    if (storedref == null)
+		storedref = []
+	    var seen = []
+	    $.each(storedref, function(i,filepath) {
+		if (seen.indexOf(filepath.url)<0) {
+		    seen.push(filepath.url);
+		    wdiv.append($('<div>', {
+			"class":"widget-group-item record",
+			"html":[
+			    $('<p>',{
+			    'html':[
+				$('<span>',{
+				    'class':"rev label label-info",
+				    'html':filepath.info
+				}),
+				$('<span>',{
+				    'class':"info",
+				    'html': $('<a>',{'href':filepath.url,
+						     'html':filepath.name})
+				}),
+				$('<span>',{
+				    'class':'author pull-right',
+				    'html':formatTime(filepath.time)
+				    
+				})
+			    ]
+			    })
+			    
+			]}))
+		}
+		
+	    });
+	};
+	return wdiv;
+    };
+
+    
     var publication_widget_builder = function(url) {
 	var wdiv = $('<ul>', {
 	    "class":"list-group panel-body ",
@@ -317,11 +361,21 @@ $(document).ready(function() {
 
 
     var widgets_definitions = {
-	'_publications':{'title':'Dernières publications',
-			'content':function() {
-			    return publication_widget_builder('/publications/list.json');
+	'recent':{'title':'Vos modifications',
+		  'content':function() {
+			 return localstorage_widget_builder('kolekti-recent');
 			}
-		       },
+		    },
+	'history':{'title':'Historique du projet',
+			   'content':function() {
+			       return widget_loader('/widgets/project-history/')
+			   }
+			 },
+	'_history':{'title':'Dernières modifications',
+		   'content':function() {
+		       return widget_loader('kolekti-history');
+		   }
+		  },
 	'publications':{'title':'Dernières publications',
 			'content':function() {
 			    return widget_loader('/widgets/publications/');
@@ -337,12 +391,7 @@ $(document).ready(function() {
 			return widget_loader('/widgets/releasepublications/')
 		    }
 		   },
-	'projecthistory':{'title':'Historique du projet',
-			   'content':function() {
-			       return widget_loader('/widgets/project-history/')
-			   }
-			 },
-	'projecthistorygraph':{'title':'Activité du projet',
+	'activity':{'title':'Activité du projet',
 			       'width':2,
  			       'content':function() {
 				   return graph_widget_loader('/project/history/')
@@ -368,9 +417,10 @@ $(document).ready(function() {
     
     if (localStorage) {
 	var sto_widgets = localStorage.getItem("widgets_main")
-	if (sto_widgets == null || true)
-	    sto_widgets = [['projecthistorygraph','publications'],['releases']];
-	
+	if (sto_widgets == null)
+	    sto_widgets = [['recent','history','publications'],['activity', 'releases']];
+
+	sto_widgets = [['recent','history','publications']];
 
 	$.each(sto_widgets, function(i,wlist) {
 	    $.each(wlist, function(j, wn) {
