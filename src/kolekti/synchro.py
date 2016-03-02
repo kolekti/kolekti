@@ -136,7 +136,8 @@ class SynchroManager(object):
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
-                               )
+                               header_encoding="utf-8")
+
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         

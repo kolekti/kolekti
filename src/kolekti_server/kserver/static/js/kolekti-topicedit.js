@@ -66,7 +66,7 @@ $(document).ready( function () {
 	    savestate = 0;
 	    event.editor.commands.save.disable();
 	    //	    console.log('save ok')
-	    kolekti_recent(displayname(window.location.search),'module',window.location.pathname+window.location.search);
+	    kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
 	});
 
 	event.cancel();
