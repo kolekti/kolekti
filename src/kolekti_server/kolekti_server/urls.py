@@ -4,10 +4,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.views.static import serve as staticView
+from django.views.i18n import javascript_catalog
 
 #from django.contrib import admin
 #admin.autodiscover()
 
+js_info_dict = {
+        'packages': ('kserver','kolekti'),
+        }
+    
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', HomeView.as_view(), name='home'),
@@ -96,11 +101,15 @@ urlpatterns = patterns('',
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
+    url(r'^jsi18n/$', javascript_catalog, js_info_dict, name='javascript-catalog'),
+
+    
     url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
 
-#    url(r'^publications', staticView, name="kolekti_raw_publication"),
-#    url(r'^drafts', staticView, name="kolekti_raw_draft"),
+    #    url(r'^publications', staticView, name="kolekti_raw_publication"),
+    #    url(r'^drafts', staticView, name="kolekti_raw_draft"),
+
 
                        
 #    (r'^admin/', include(admin.site.urls)),
