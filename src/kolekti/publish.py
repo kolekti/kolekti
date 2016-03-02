@@ -474,9 +474,9 @@ class Publisher(PublisherMixin, kolektiBase):
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
-        label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
+        label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile, {"LANG":self._publang})
         scriptlabel = script.find('label').text
-        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
+        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
             
         name=script.get('name')
         params = {}
