@@ -50,6 +50,7 @@
       <head>
 	<title><xsl:value-of select="@data-kolekti-title"/></title>
 	<meta name="DC.title" content="{@data-kolekti-title}"/>
+	<meta name="DC.creator" content="{@data-kolekti-author}"/>
 	<xsl:for-each select="@*[starts-with(name(),'data-kolekti-meta-kolekti_')]">
 	  <xsl:element namespace='http://www.w3.org/1999/xhtml' name="meta">
 	    <xsl:attribute name="name">kolekti.<xsl:value-of select="substring(name(),27)"/></xsl:attribute>

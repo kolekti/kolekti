@@ -21,7 +21,7 @@ mimetypes.init()
 
 
 
-if __name__ == '__main__':
+def main():
     
     metaparser = argparse.ArgumentParser(add_help=False)
     metaparser.add_argument('-C','--config', help="alternative config file", metavar="FILE")
@@ -297,3 +297,8 @@ if __name__ == '__main__':
         if args.cmdsync == "update":
             updates = sync.update()
             print updates
+
+            
+if __name__ == '__main__':
+    main()
+    
