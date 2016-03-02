@@ -1,0 +1,279 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Kolekti\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-02-18 18:52+0100\n"
+"PO-Revision-Date: 2016-02-18 18:53+0100\n"
+"Last-Translator: Josselin PEREZ <josselin.perez@ymail.com>\n"
+"Language-Team: Exselt <contact@exselt.fr>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: kolekti_server/kserver/templates/import.html:3
+msgid "Import a Table File"
+msgstr "Importer un fichier tableur"
+
+#: kolekti_server/kserver/templates/import.html:24
+msgid "Table file template"
+msgstr "Modèle de fichier tableur"
+
+#: kolekti_server/kserver/templates/import.html:31
+msgid "Choose a Topic template to create a Table template"
+msgstr ""
+"Choissez le modèle de module à utiliser pour créer le modèle de fichier "
+"tableur"
+
+#: kolekti_server/kserver/templates/import.html:43
+msgid "Download"
+msgstr "Télécharger"
+
+#: kolekti_server/kserver/templates/import.html:54
+msgid "Send a .ods or .xlsx Topic definition file"
+msgstr "Transférer un fichier de définition de modules au format ods ou xlsx"
+
+#: kolekti_server/kserver/templates/import.html:59
+msgid "Confirm"
+msgstr "Valider"
+
+#: kolekti_server/kserver/templates/page.html:41
+msgid "Tocs"
+msgstr "Trames"
+
+#: kolekti_server/kserver/templates/page.html:42
+msgid "Topics"
+msgstr "Modules"
+
+#: kolekti_server/kserver/templates/page.html:43
+msgid "Images"
+msgstr "Images"
+
+#: kolekti_server/kserver/templates/page.html:44
+msgid "Releases"
+msgstr "Versions"
+
+#: kolekti_server/kserver/templates/page.html:46
+msgid "Project"
+msgstr "Projet"
+
+#: kolekti_server/kserver/templates/page.html:48
+msgid "Define Variables"
+msgstr "Définition des variables"
+
+#: kolekti_server/kserver/templates/page.html:49
+msgid "Define Criteria"
+msgstr "Définition des critères"
+
+#: kolekti_server/kserver/templates/page.html:50
+msgid "Manage Languages"
+msgstr "Gérer les langues"
+
+#: kolekti_server/kserver/templates/page.html:51
+msgid "Publication Settings"
+msgstr "Paramètres de publication"
+
+#: kolekti_server/kserver/templates/page.html:53
+msgid "Import Table"
+msgstr "Importer un tableur"
+
+#: kolekti_server/kserver/templates/page.html:55
+msgid "Sync"
+msgstr "Synchroniser"
+
+#: kolekti_server/kserver/templates/page.html:56
+#: kolekti_server/kserver/templates/projects.html:6
+msgid "Manage Projects"
+msgstr "Gestionnaire de projets"
+
+#: kolekti_server/kserver/templates/page.html:62
+msgid "Help"
+msgstr "Aide"
+
+#: kolekti_server/kserver/templates/page.html:147
+#: kolekti_server/kserver/templates/window.html:36
+msgid "Close"
+msgstr "Fermer"
+
+#: kolekti_server/kserver/templates/page.html:156
+#: kolekti_server/kserver/templates/projects_activate.html:79
+#: kolekti_server/kserver/templates/window.html:43
+msgid "Cancel"
+msgstr "Annuler"
+
+#: kolekti_server/kserver/templates/projects-config.html:4
+msgid "menu-current"
+msgstr "menu-current"
+
+#: kolekti_server/kserver/templates/projects-config.html:6
+msgid "configure language"
+msgstr "configuration des langues"
+
+#: kolekti_server/kserver/templates/projects-config.html:7
+msgid "projects"
+msgstr "projets"
+
+#: kolekti_server/kserver/templates/projects-config.html:18
+msgid "Editing Language"
+msgstr "Langue d'édition"
+
+#: kolekti_server/kserver/templates/projects-config.html:25
+#: kolekti_server/kserver/templates/projects-config.html:34
+#: kolekti_server/kserver/templates/projects-config.html:55
+#: kolekti_server/kserver/templates/projects-config.html:62
+msgid "Delete"
+msgstr "Supprimer"
+
+#: kolekti_server/kserver/templates/projects-config.html:26
+#: kolekti_server/kserver/templates/projects-config.html:35
+msgid "Default Language"
+msgstr "Langue par défaut"
+
+#: kolekti_server/kserver/templates/projects-config.html:43
+#: kolekti_server/kserver/templates/projects-config.html:69
+msgid "Add"
+msgstr "Ajouter"
+
+#: kolekti_server/kserver/templates/projects-config.html:47
+msgid "Releases Languages (Translations)"
+msgstr "Langue des versions (traductions)"
+
+#: kolekti_server/kserver/templates/projects-config.html:50
+#: kolekti_server/kserver/templates/publication-iterator.html:6
+msgid "Language"
+msgstr "Langue"
+
+#: kolekti_server/kserver/templates/projects-config.html:83
+msgid "Save"
+msgstr "Enregistrer"
+
+#: kolekti_server/kserver/templates/projects.html:16
+msgid "Available Projects"
+msgstr "Projets disponibles"
+
+#: kolekti_server/kserver/templates/projects.html:39
+msgid "Active"
+msgstr "Actif"
+
+#: kolekti_server/kserver/templates/projects.html:52
+msgid "Configure Languages"
+msgstr "Configurer les langues"
+
+#: kolekti_server/kserver/templates/projects.html:57
+msgid "SVN deposit url"
+msgstr "URL du dépot svn"
+
+#: kolekti_server/kserver/templates/projects.html:61
+msgid "Activate this project"
+msgstr "Activer ce projet"
+
+#: kolekti_server/kserver/templates/projects.html:74
+msgid "New Project"
+msgstr "Nouveau projet"
+
+#: kolekti_server/kserver/templates/projects.html:79
+msgid " Project File"
+msgstr "Dossier projet"
+
+#: kolekti_server/kserver/templates/projects.html:80
+msgid "Enter Project File name"
+msgstr "Entrez le nom du dossier projet"
+
+#: kolekti_server/kserver/templates/projects.html:83
+msgid "svn deposit URL"
+msgstr "URL du dépot svn"
+
+#: kolekti_server/kserver/templates/projects.html:83
+msgid "(Leave blank for a local project)"
+msgstr "(laisser vide pour un projet local)"
+
+#: kolekti_server/kserver/templates/projects.html:84
+msgid "Insert an URL"
+msgstr "Entrez une URL"
+
+#: kolekti_server/kserver/templates/projects.html:88
+#: kolekti_server/kserver/templates/projects.html:89
+msgid "Username"
+msgstr "Utilisateur"
+
+#: kolekti_server/kserver/templates/projects.html:92
+msgid "Password"
+msgstr "Mot de Passe"
+
+#: kolekti_server/kserver/templates/projects.html:93
+msgid "password"
+msgstr "mot de passe"
+
+#: kolekti_server/kserver/templates/projects.html:98
+msgid "Create"
+msgstr "Créer"
+
+#: kolekti_server/kserver/templates/projects_activate.html:31
+msgid "Toggle navigation"
+msgstr "Activer la Navigation"
+
+#: kolekti_server/kserver/templates/projects_activate.html:51
+msgid "Activated Project"
+msgstr "Projet activé"
+
+#: kolekti_server/kserver/templates/projects_activate.html:54
+msgid "Homepage"
+msgstr "accueil"
+
+#: kolekti_server/kserver/templates/projects_activate.html:72
+msgid "close"
+msgstr "Fermer"
+
+#: kolekti_server/kserver/templates/projects_activate.html:73
+#: kolekti_server/kserver/templates/window.html:37
+msgid "Modal title"
+msgstr "Modal title"
+
+#: kolekti_server/kserver/templates/projects_activate.html:76
+#: kolekti_server/kserver/templates/window.html:40
+msgid "Generic modal"
+msgstr "Generic modal"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:18
+msgid "Release"
+msgstr "Version"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:21
+msgid "Assembly"
+msgstr "Assemblage"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:25
+#: kolekti_server/kserver/templates/publication.html:23
+msgid "Warning"
+msgstr "Avertissement"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:30
+#: kolekti_server/kserver/templates/publication.html:29
+msgid "Publication Error"
+msgstr "Erreur à la publication"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:33
+#: kolekti_server/kserver/templates/publication.html:32
+msgid "Details"
+msgstr "Détails"
+
+#: kolekti_server/kserver/templates/publication-iterator.html:44
+msgid "Zip with all the publications"
+msgstr "Zip de l'ensemble des publications"
+
+#: kolekti_server/kserver/templates/publication.html:7
+msgid "Profile"
+msgstr "Profil"
+
+#. Translators: Followed by a date and time
+#: kolekti_server/kserver/templates/publication.html:9
+msgid "published on the"
+msgstr "Publié le"
