@@ -103,6 +103,7 @@ class kolektiBase(object):
             import traceback
             logging.debug(traceback.format_exc() )
         self._version = self._config['version']
+        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logging.debug("kolekti v%s"%self._version)
 
         # instanciate synchro & indexer classes
@@ -249,12 +250,14 @@ class kolektiBase(object):
     def get_publications(self):
         publications = []
         for manifest in self.iterpublications:
-            yield manifest[-1]
+            if len(manifest):
+                yield manifest[-1]
         
     def get_releases_publications(self):
         publications = []
         for manifest in self.iter_releases_publications:
-            yield manifest[-1]
+            if len(manifest):
+                yield manifest[-1]
         
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
@@ -339,34 +342,39 @@ class kolektiBase(object):
             logging.debug('makedir failed')
         # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',**ns):
-            src_img = elt_img.get('src')
-            splitpath = src_img.split('/')
-            if splitpath[1:3] == ["sources",srclang]:
-                splitpath[2] = dstlang 
-                elt_img.set('src','/'.join(splitpath))
-        try:
-            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',dstlang)
-        except IndexError:
-            pass
-        try:
-            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',dstlang)
-        except IndexError:
-            pass
-        try:
-            body = xassembly.xpath('/h:html/h:body',**ns)[0]
-            body.set('lang',dstlang)
-            body.set('{http://www.w3.org/XML/1998/namespace}lang',dstlang)
-        except IndexError:
-            pass
+        self.update_assembly_lang(xassembly, dstlang)
         self.xwrite(xassembly, assembly_path)
-
+                
 #        try:
 #            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 #        except:
 #            pass
         yield assembly_path
         return
+
+    def update_assembly_lang(self, xassembly, lang):
+        for elt_img in xassembly.xpath('//h:img',**ns):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1] == "sources" and splitpath[2] != 'share':
+                splitpath[2] = lang 
+                elt_img.set('src','/'.join(splitpath))
+        try:
+            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',lang)
+        except IndexError:
+            pass
+        try:
+            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',lang)
+        except IndexError:
+            pass
+        try:
+            body = xassembly.xpath('/h:html/h:body',**ns)[0]
+            body.set('lang',lang)
+            body.set('{http://www.w3.org/XML/1998/namespace}lang',lang)
+        except IndexError:
+            pass
+
+
 
                                         
     def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
@@ -661,14 +669,14 @@ class kolektiBase(object):
         return string
 
         
-    def substitute_variables(self, string, profile):
-        for variable in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+    def substitute_variables(self, string, profile, extra={}):
+        for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
             # logging.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
             # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
-            value = self.variable_value(sheet, sheet_variable, profile).text
+            value = self.variable_value(sheet, sheet_variable, profile, extra).text
             string = string.replace(variable, value)
         return string
 
@@ -681,7 +689,6 @@ class kolektiBase(object):
 
         xvariables = self.parse(variables_file + '.xml')
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
-
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
         for value in values:
@@ -772,10 +779,10 @@ class kolektiBase(object):
                         except:
                             import traceback
                             print traceback.format_exc()
-                            yield {'event':'error',
+                            yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
-                                   }
+                                   }]
     @property
     def iter_releases_publications(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
@@ -789,10 +796,10 @@ class kolektiBase(object):
                         except:
                             import traceback
                             print traceback.format_exc()
-                            yield {'event':'error',
+                            yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
-                                   }
+                                   }]
                         
     def release_details(self, path, lang):
         res=[]

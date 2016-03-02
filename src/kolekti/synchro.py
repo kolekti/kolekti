@@ -79,6 +79,8 @@ class SynchroManager(object):
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
+            import traceback
+            print traceback.format_exc()
             raise ExcSyncNoSync
 
     def __makepath(self, path):
@@ -134,7 +136,8 @@ class SynchroManager(object):
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
-                               )
+                               header_encoding="utf-8")
+
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         
@@ -289,6 +292,7 @@ class SynchroManager(object):
     def commit(self, files, log_message):
         osfiles = []
         for f in files:
+            print type(f)
             osfiles.append(self.__makepath(f))
         commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
@@ -341,19 +345,20 @@ class SynchroManager(object):
 
     def propset(self, name, value, path):
         ospath = self.__makepath(path)
+        print "SETPROP",name,value,path,ospath
         self._client.propset(name, value, ospath)
         
     def propget(self, name, path):
         ospath = self.__makepath(path)
-        print "GETPROP",path,ospath
+        print "GETPROP",name,path,ospath
         try:
             props = self._client.propget(name, ospath)
             print props
-            return props.get(ospath.replace('\\','/'),'unversionned')
+            return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
             import traceback
             print traceback.format_exc()
-            return 'unversionned'
+            return None
         
 class SVNProjectManager(object):
     def __init__(self, projectsroot, username=None, password=None):

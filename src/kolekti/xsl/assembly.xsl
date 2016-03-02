@@ -22,7 +22,8 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
   xmlns="http://www.w3.org/1999/xhtml" 
   xmlns:exsl="http://exslt.org/common"
-  xmlns:html="http://www.w3.org/1999/xhtml" 
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:mathml="http://www.w3.org/1998/Math/MathML" 
   xmlns:kt="kolekti:trames"
   xmlns:kf="kolekti:extensions:functions:publication"
   extension-element-prefixes="exsl kf" 
@@ -195,7 +196,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="*" mode="aggreg">
+  <xsl:template match="*[namespace-uri() = '']" mode="aggreg">
     <xsl:param name="section_depth"/>    
     <xsl:element name="{local-name()}" namespace="http://www.w3.org/1999/xhtml">
       <xsl:apply-templates select="node()|@*" mode="aggreg">
@@ -204,6 +205,7 @@
     </xsl:element>
   </xsl:template>
 
+  
   <!-- marques d'index : normalize le contenu des entrées -->
 
   <xsl:template match="html:ins[@class='index']|html:span[@rel='index']|ins[@class='index']|span[@rel='index']" mode="aggreg">

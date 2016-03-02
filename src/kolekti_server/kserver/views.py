@@ -129,6 +129,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         context["active_project"] = prj
         context["active_srclang"] = self.user_settings.active_srclang
         context['syncnum'] = self._syncnumber
+        context['kolektiversion'] = self._kolektiversion
         context.update(data) 
         return context
 
@@ -151,7 +152,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
             print traceback.format_exc()
             self.log_xsl(xsl.error_log)
             raise Exception, xsl.error_log
-        print tocmeta
         return toctitle, tocauthor, tocmeta, str(etoc)
 
     def localname(self,e):
@@ -195,11 +195,27 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         res = []
         for job in self.iterjobs:
             xj = self.parse(job['path'])
-            job.update({'profiles':[(p.find('label').text,p.get('enabled')) for p in xj.xpath('/job/profiles/profile')],
-                        'scripts':[(s.get("name"),s.get('enabled')) for s in xj.xpath('/job/scripts/script')],
+            profiles = []
+            scripts  = []
+            
+            for p in xj.xpath('/job/profiles/profile'):
+                label = p.find('label').text
+                enabled = p.get('enabled')
+                profiles.append((label, enabled))
+                
+            for s in xj.xpath('/job/scripts/script'):
+                try:
+                    label = s.find('label').text
+                except:
+                    continue
+                enabled = s.get('enabled')
+                scripts.append((label, enabled))
+                
+            job.update({'profiles': profiles,
+                        'scripts':scripts,
                         })
             res.append(job)
-        return res
+        return sorted(res, key = lambda j: j['name'])
 
     def get_job_edit(self,path):
         xjob = self.parse(path)
@@ -343,7 +359,7 @@ class ProjectsConfigView(kolektiMixin, View):
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect = ''
+        redirect =request.GET.get('redirect','')
         #        redirect = request.META.get('HTTP_REFERER', '')
         self.project_activate(project)
         if redirect == '':
@@ -408,7 +424,7 @@ class TocView(kolektiMixin, View):
                         'tocmeta':tocmeta})
 #        context.update({'criteria':self.get_criteria()})
         context.update({'jobs':self.get_jobs()})
-        print context['tocmeta']
+
         return self.render_to_response(context)
     
     def post(self, request):
@@ -476,7 +492,6 @@ class ReleaseFocusView(kolektiMixin, TemplateView):
             path, assembly_name = release.rsplit('/',1)
             state = request.POST.get('state')
             lang = request.POST.get('lang')
-            print state
             try:
                 rf = ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang)
             except ReleaseFocus.DoesNotExist:
@@ -503,6 +518,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
                 pass
             assembly = "/".join(['/releases',assembly_name,"sources",dstlang,"assembly",assembly_name+'_asm.html'])
             self.syncMgr.propset("release_state",'edition', assembly)
+            self.syncMgr.propset("release_srclang", srclang, assembly)
             # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 
 
@@ -551,7 +567,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                 #import traceback
                 #print traceback.format_exc()
                 focus.append(False)
-        print focus        
         context.update({'langstate':langstate,'langstates':zip(context.get('releaselangs',[]),states,focus)})
         return context
     
@@ -560,6 +575,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang = request.GET.get('lang', self.user_settings.active_srclang)
         assembly_name = self.basename(release_path)
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
+        srclang = self.syncMgr.propget('release_srclang', assembly_path)
         #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
@@ -567,6 +583,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
+            'srclang':srclang,
         })
         return self.render_to_response(context)
     
@@ -581,13 +598,16 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
+        self.update_assembly_lang(xassembly, lang)
         self.xwrite(xassembly, assembly_path)
+        srclang = self.syncMgr.propget('release_srclang', assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
             'success':True,
             'release_path':release_path,
             'assembly_name':assembly_name,
             'lang':lang,
+            'srclang':srclang,
         })
         return self.render_to_response(context)
 
@@ -1098,7 +1118,7 @@ class DraftView(PublicationView):
                 else:
                     jprofile.set('enabled',"1")
             for jscript in xjob.xpath('/job/scripts/script'):
-                if not jscript.get('name') in scripts:
+                if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
                 else:
                     jscript.set('enabled',"1")
@@ -1138,8 +1158,10 @@ class ReleaseView(PublicationView):
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
             for jscript in xjob.xpath('/job/scripts/script'):
-                if not jscript.get('name') in scripts:
+                if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
+                else:
+                    jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
@@ -1291,7 +1313,7 @@ class SyncView(kolektiMixin, View):
             commitmsg = "unspecified"
         if action == "conflict":
             resolve = request.POST.get('resolve')
-            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            files = request.POST.getlist('fileselect',[])
             if resolve == "local":
                 sync.update(files)
                 for file in files:
@@ -1323,7 +1345,7 @@ class SyncView(kolektiMixin, View):
             
         elif action == "commit":
             sync.update_all()
-            files = [f.encode('utf-8') for f in request.POST.getlist('fileselect',[])]
+            files = request.POST.getlist('fileselect',[])
             sync.commit(files,commitmsg)
             
             
@@ -1421,4 +1443,62 @@ class SyncRemoveView(kolektiMixin, View):
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)        
-        return serve(request, urllib.quote(path), projectpath)
+        return serve(request, path, projectpath)
+
+class ProjectHistoryView(kolektiMixin, View):
+    def get(self, request):
+        try:
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            hist = sync.history()
+            hisrecords = [{"timestamp":r.date,"date":r.date,"user":r.author,"message":r.message,"rev":r.revision.number} for r in hist] 
+            return HttpResponse(json.dumps(hisrecords),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
+
+    
+class WidgetView(kolektiMixin, View):
+    def get(self, request):
+        context = self.get_context_data()
+        return self.render_to_response(context)    
+
+
+class WidgetProjectHistoryView(WidgetView):
+    template_name = "widgets/project-history.html"
+    def get_context_data(self):
+        try:
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(projectpath)
+            return super(WidgetProjectHistoryView, self).get_context_data({
+                'history':sync.history()
+                })
+        except:
+            import traceback
+            print traceback.format_exc()
+
+
+class WidgetPublicationsListView(kolektiMixin, View):
+    template_name = "widgets/publications.html"
+    
+    def get(self, request):
+        for p in self.get_publications():
+                print p
+        context = {
+            "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
+        }
+        return self.render_to_response(context)
+
+class WidgetReleasePublicationsListView(kolektiMixin, View):
+    template_name = "widgets/publications.html"
+
+    def get(self, request):
+        context = {
+            "publications": [p for p in sorted(self.get_releases_publications(), key = lambda a: a['time'], reverse = True) ]
+        }
+        return HttpResponse(json.dumps(context),content_type="application/json")
+        return self.render_to_response(context)
+
+          

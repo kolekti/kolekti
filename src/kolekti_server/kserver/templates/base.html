@@ -4,7 +4,12 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-9 col-md-9 main">
-          <h1 class="pagetitle">{% block title %}{% endblock %}</h1>
+          <h1 class="pagetitle">
+	      <button class="btn btn-xs btn-default btn-back" type="button">
+		<i class="fa fa-backward fa-3"></i>
+	      </button>
+
+	    {% block title %}{% endblock %}</h1>
 	  {% block content %}generic template{% endblock %}
 	</div>
 	<div class="col-sm-3 col-md-3 side">

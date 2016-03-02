@@ -1,0 +1,35 @@
+{% load timetags %}
+<div >
+  {% for publication in publications %}
+  <div>
+    <h5>{{ publication.path|slice:'14:-1'  }}
+      <span class="pull-right"><small>{{ publication.time|print_timestamp  }}</small></span>
+    </h5>
+  {% for event in publication.content %}
+    {% if event.event = "result" %}
+    <ul class="list-unstyled">
+      {% for doc in  event.docs %}
+      <li>
+	<i class="fa fa-file-{{ doc.type }}-o"></i> <a href="{{ doc.url }}" target="publications">{{ doc.label }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if event.event = "error" %}
+    <p class="text-error">Une erreur est survenue au cours de cette publication</p>
+    {% endif %}
+  {% endfor %}
+
+  {% comment %}
+  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item">
+    <span class="badge">{{commit.revision.number}}</span> par {{commit.author}}, le {{commit.date|print_timestamp}}
+  </a>
+  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item list-group-item-info">
+    {{commit.message}}
+  </a>
+  {% endcomment %}
+</div>
+<hr/>
+{% endfor %}
+</div>

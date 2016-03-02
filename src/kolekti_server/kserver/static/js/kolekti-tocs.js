@@ -294,13 +294,16 @@ $(document).ready( function () {
     // save
 
     $('#btn_save').on('click', function() {
+	var path = $('#toc_root').data('kolekti-path');
 	$.ajax({
 	    url:'/tocs/edit/',
 	    type:'POST',
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
-	    disable_save()
+	    disable_save();
+	    kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
+	    
 	});
     })
 
@@ -322,6 +325,7 @@ $(document).ready( function () {
 		$('#btn_save').addClass('disabled');
 		$('#btn_save').addClass('btn-default');
 		$('#btn_save').removeClass('btn-warning');
+		kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
 		document.location.href = '/tocs/edit/?toc='+path
 	    });
 	}).always(function(data) {
@@ -470,12 +474,15 @@ $(document).ready( function () {
 
     // display
 
+    
     $('#btn_collapse_all').on('click', function() {
 	$('.topic .collapse').collapse('hide');
+	$('.topic a[data-toggle=collapse]').addClass('collapsed');
     });
 
     $('#btn_expand_all').on('click', function() {
 	$('.topic .collapse').collapse('show');
+	$('.topic a[data-toggle=collapse]').removeClass('collapsed');
     });
 
     $('#btn_toggle_all').on('click', function(e) {
@@ -487,6 +494,18 @@ $(document).ready( function () {
 	    $(this).addClass('collapsed');
 	    $('.topic .collapse').collapse('hide');
 	    $('.topic a[data-toggle=collapse]').addClass('collapsed');
+	}
+    });
+    
+    $('#toc_meta').hide();
+
+    $('#btn_meta').on('click', function(e) {
+	if ($(this).hasClass('collapsed')) {
+	    $(this).removeClass('collapsed');
+	    $('#toc_meta').show();
+	} else {
+	    $(this).addClass('collapsed');
+	    $('#toc_meta').hide();
 	}
     });
 

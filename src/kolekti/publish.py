@@ -27,7 +27,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # moved to PublisherMixin init
         #if self._publang is None:
         #    self._publang = self._config.get("sourcelang","en")
-        
+        self._cleanup = True
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
 
@@ -170,12 +170,12 @@ class Publisher(PublisherMixin, kolektiBase):
                     import traceback
                     events.append({
                         'event':'error',
-                        'msg':"Impossible de copier les parametres du script %s"%script.get('name'),
+                        'msg':"Impossible de copier les parametres du script %s"%script.find('label').text,
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         })
 
-                    logging.error("resources for script %s not found"%script.get('name'))
+                    logging.error("resources for script %s not found"%script.find('label').text)
                     logging.debug(traceback.format_exc())
 
         return assembly, assembly_dir, pubname, events 
@@ -217,25 +217,24 @@ class Publisher(PublisherMixin, kolektiBase):
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
                         yield {
                             'event':'result',
-                            'script':script.get('name'),
+                            'script':script.find('label').text,
                             'docs':resscript,
                             'time':time.time(),
                             }
                     except:
                         import traceback
-                        logging.error("Script %s finished with errors"%script.get('name'))
+                        logging.error("Script %s finished with errors"%script.find('label').text)
                         yield {
                             'event':'error',
-                            'msg':"Erreur d'execution du script %s"%script.get('name'),
+                            'msg':"Erreur d'execution du script %s"%script.find('label').text,
                             'stacktrace':traceback.format_exc(),
                             'time':time.time(),
                             }
                         logging.debug(traceback.format_exc())
+                if self._cleanup:
+                    self.delete_resource(self.pubdir(assembly_dir, profile)+ "/document.xhtml")
 
-#                res.append({'profile':profile.find('label').text,
-#                            'scripts':resscripts,
-#                            'time':time.time(), #datetime.now(),
-#                            })
+
         return 
 
 
@@ -395,7 +394,8 @@ class Publisher(PublisherMixin, kolektiBase):
                 
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
-        name=script.get('name')
+        name = script.get('name')
+        scriptlabel = script.find('label').text
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
@@ -464,7 +464,7 @@ class Publisher(PublisherMixin, kolektiBase):
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("[Script %s] could not copy resources"%name)
+            logging.error("[Script %s] could not copy resources"%scriptlabel)
             raise
         
         
@@ -474,8 +474,9 @@ class Publisher(PublisherMixin, kolektiBase):
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
         pubdir = self.pubdir(assembly_dir, profile)
-        label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile)
-        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile)
+        label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile, {"LANG":self._publang})
+        scriptlabel = script.find('label').text
+        pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
             
         name=script.get('name')
         params = {}
@@ -486,7 +487,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
-            logging.error("Impossible de trouver le script: %s" %label)
+            logging.error("Impossible de trouver la définition du script: %s" %scriptlabel)
             raise
 
         
@@ -497,9 +498,9 @@ class Publisher(PublisherMixin, kolektiBase):
             xf = self.get_xsl(xfilter, xsldir = xdir)
             fpivot = xf(pivot)
             self.log_xsl(xf.error_log)
-
+            
             pivfile = pubdir + "/filtered_" + pubname + ".xhtml"
-            self.xwrite(fpivot, pivfile, pretty_print = False)
+            self.xwrite(fpivot, pivfile, pretty_print = False, sync = False)
         else:
             fpivot = pivot
             pivfile = pubdir + "/document.xhtml"
@@ -525,13 +526,13 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     plugin = self.get_script(plugname)
                 except:
-                    logging.error("Impossible de charger le script %(label)s"%{'label': plugname.encode('utf-8')})
+                    logging.error("Impossible de charger le script %(label)s"%{'label': scriptlabel.encode('utf-8')})
                     import traceback
                     logging.debug(traceback.format_exc())
                     raise
 
                 res = plugin(script, profile, assembly_dir, fpivot)
-                logging.debug("%(label)s ok"% {'label': plugname.encode('utf-8')})
+                logging.debug("%(label)s ok"% {'label': scriptlabel.encode('utf-8')})
 
                 
             elif stype=="shell":
@@ -585,12 +586,12 @@ class Publisher(PublisherMixin, kolektiBase):
                         outfile=self.__substscript(xl.get('name'), subst, profile)
                         outref=self.__substscript(xl.get('ref'), subst, profile)
                         outtype=xl.get('type')
-                        logging.debug("Exécution du script %(label)s réussie"% {'label': label.encode('utf-8')})
+                        logging.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
                         res=[{"type":outtype, "label":outfile, "url":outref}]
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
-                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
                     raise
 
                 finally:
@@ -659,14 +660,17 @@ class Publisher(PublisherMixin, kolektiBase):
                     #                         '/'.join((self.model.local2url(self.model.pubpath), zipname))))
             
                 except:
-                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': label.encode('utf-8')})
+                    logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
                     raise
             
         except:
             import traceback
             logging.debug(traceback.format_exc())
-            logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': label.encode('utf-8')})
+            logging.error("Impossible d'exécuter un script du job %(label)s"% {'label': scriptlabel.encode('utf-8')})
             raise
+        finally:
+            if self._cleanup and 'pivot_filter' in params :
+                self.delete_resource(pivfile)
         return res
 
 
@@ -774,9 +778,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     
 class DraftPublisher(Publisher):
     def __init__(self, *args, **kwargs):
+        cleanup = True
+        if kwargs.has_key('cleanup'):
+            cleanup = kwargs.get('cleanup')
+            kwargs.pop('cleanup')
         super(DraftPublisher, self).__init__(*args, **kwargs)
         self._draft = True
-
+        self._cleanup = cleanup
+        
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
         assembly_dir = self.substitute_criteria(assembly_dir, xjob)
@@ -846,7 +855,7 @@ class DraftPublisher(Publisher):
                 mfmode = "a"
             with open(manifest, mfmode) as mf:
                 mf.write(first_sep)
-                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir, self.basename(pubname),  pubtitle, int(time.time()),str(toc))
+                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir.encode('utf-8'), self.basename(pubname),  pubtitle, int(time.time()),str(toc))
                 mf.write(ev.encode('utf-8'))
                 for event in events:
                     mf.write(",\n" + json.dumps(event))
@@ -857,12 +866,11 @@ class DraftPublisher(Publisher):
                     mf.write(",\n" + json.dumps(pubres))
                     yield pubres
                 yield {"event":"publication_dir", "path":assembly_dir}
-
-                try:
-                    pass
-                # self.cleanup_assembly_dir(xjob.getroot())
-                except:
-                    logging.debug('Warning: could not remove tmp dir')
+                if self._cleanup:
+                    try:
+                        self.cleanup_assembly_dir(xjob.getroot())
+                    except:
+                        logging.debug('Warning: could not remove tmp dir')
                 mf.write("]}\n")
         except:
             import traceback
@@ -878,6 +886,7 @@ class DraftPublisher(Publisher):
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
+        self._cleanup = False
 
     def assembly_dir(self, xjob):
         assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
@@ -966,6 +975,8 @@ class ReleasePublisher(Publisher):
         super(ReleasePublisher, self).__init__(*args, **kwargs)
         if self._publangs is None:
             self._publangs = self._project_settings.xpath("/settings/releases/lang/text()")
+        self._cleanup = False
+        
     def getPublisherExtensions(self):        
         return ReleasePublisherExtensions
 
@@ -994,7 +1005,7 @@ class ReleasePublisher(Publisher):
             first_sep = ","
         with open(manifest, 'a') as mf:
             mf.write(first_sep)
-            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir,int(time.time())))
+            mf.write('{"event":"release_publication", "path":"/%s", "time": %s, "content":[""'%(self._release_dir.encode('utf-8'),int(time.time())))
             for lang in self._publangs:
                 yield {'event':'lang', 'label':lang}
                 self._publang = lang

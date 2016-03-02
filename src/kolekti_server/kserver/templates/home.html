@@ -4,10 +4,23 @@
 {% block current_home %}class="menu-current"{% endblock %}
 {% block help-topic %}home{% endblock %}
 
+
+{% block extracss %}
+<link href="/static/css/kolekti-home.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
-<div id="widgets">
+<div id="widgets_main">
 <!--
+  <div id="col_1" class="wcol col-lg-4">
+  </div>    
+  <div id="col_2" class="wcol col-lg-4">
+  </div>    
+  <div id="col_3" class="wcol col-lg-4">
+  </div>    
+-->
+  <!--
   <p>Projet : {{ kolekti.project }}
     <a id="editprojects" href="/projects/" title="Gestionnaire de projets"><span class="glyphicon glyphicon-cog"> </span></a>
 
@@ -16,6 +29,17 @@
 </div>
 {% endblock %}
 
+
+{% block footer %}
+<footer class="footer navbar-fixed-bottom navbar-inverse">
+  <div class="container-fluid">
+    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+  </div>
+</footer>
+{% endblock %}
+
+
 {% block extrascripts %}
 <script src="/static/js/kolekti-home.js"></script>
+<script src="/static/d3.min.js"></script>
 {% endblock %}

@@ -6,6 +6,12 @@ $(document).ready(function() {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Paramètres non enregistrés';
+	}
+    });
+
     var serialize = function() {
 	buf = "<job id='";
 	buf += $('#job_id').html();
@@ -59,6 +65,8 @@ $(document).ready(function() {
 		buf += "0"
 	    }
 	    buf += "'>"
+	    var label = $(e).find('.script-name').val();
+	    buf +='<label>' + label + '</label>';
 	    var filename = $(e).find('.script-filename').val();
 	    buf +='<filename>' + filename + '</filename>';
 	    buf += "<parameters>";
@@ -87,8 +95,9 @@ $(document).ready(function() {
     };
 
     $('#btn_save').on('click', function(e){
+	var path = $(this).data('path');
 	$.ajax({
-	    url:'/settings/job?path='+$(this).data('path'),
+	    url:'/settings/job?path='+path,
 	    type:'POST',
 	    data:serialize(),
 	    contentType:'text/xml'
@@ -96,6 +105,8 @@ $(document).ready(function() {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
 	    $('#btn_save').removeClass('btn-warning');
+	    kolekti_recent(displayname(path), 'paramètres', '/settings/job?path='+path)
+
 	});
     });
     

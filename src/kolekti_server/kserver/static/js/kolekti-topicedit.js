@@ -4,6 +4,7 @@ $(document).ready( function () {
 	autoGrow_onStartup : true,
 	fullPage:true,
 	contentsCss : '/criteria.css',
+	skin : 'moonocolor',
 	extraPlugins : 'codemirror,textselection,conditions,docprops',
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
@@ -12,6 +13,7 @@ $(document).ready( function () {
 	filebrowserBrowseUrl: '/browse/ckbrowser',
 	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
 	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
+	
 //	filebrowserUploadUrl: '/browse/ckupload',
 //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
 	
@@ -26,7 +28,7 @@ $(document).ready( function () {
 	    { name: 'tools', items: [ 'ShowBlocks', 'editCondition', 'removeCondition' ] },
 	    { name: 'styles', items: [ 'Format' ] },
 	    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat' ] },
-	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv'] }
+	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv','RemoveDiv'] }
 	],
 	toolbar:"Full"
 
@@ -63,7 +65,8 @@ $(document).ready( function () {
 	}).success(function(data) {
 	    savestate = 0;
 	    event.editor.commands.save.disable();
-//	    console.log('save ok')
+	    //	    console.log('save ok')
+	    kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
 	});
 
 	event.cancel();

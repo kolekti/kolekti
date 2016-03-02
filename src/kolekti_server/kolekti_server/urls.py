@@ -11,6 +11,12 @@ from django.views.static import serve as staticView
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', HomeView.as_view(), name='home'),
+
+    url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
+    url(r'^widgets/publications/$', WidgetPublicationsListView.as_view(), name='WidgetPublicationsList'),
+    url(r'^widgets/releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='WidgetReleasePublicationsList'),
+    url(r'^project/history/$', ProjectHistoryView.as_view(), name='projecthistory'),
+    
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),
     url(r'^tocs/edit/$', TocView.as_view(), name='tocedit'),
     url(r'^tocs/usecases/$', TocUsecasesView.as_view(), name='tocusecases'),

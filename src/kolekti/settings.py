@@ -13,7 +13,8 @@ else:
 
 default_settings ={
     "InstallSettings":{
-        "projectspath":os.path.join(userdir,'kolekti'),
+        "projectspath":os.path.join(userdir,'kolekti-projects'),
+        "kolektiversion":"0.7",
         },
 }
 

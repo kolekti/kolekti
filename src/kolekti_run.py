@@ -64,6 +64,7 @@ def main():
     parser_draft.add_argument('toc', action='store', help="Toc to be published")
     parser_draft.add_argument('-j', '--job', action='store', help="Job to be used, overrides the job associated with the toc")
     parser_draft.add_argument('-l', '--languages', required=True, action='store', help="comma-separated list of languages to publish")
+    parser_draft.add_argument('--nocleanup', action='store_true', help="do not remove temporary files after publication")
     defaults=config.get("publish",{})
     defaults.update({'cmd':'publish'})
     parser_draft.set_defaults(**defaults)
@@ -133,9 +134,18 @@ def main():
     # status
     parser_sync_status = subparsers_sync.add_parser('status', help="get synchro status")
     parser_sync_status.set_defaults(cmdsync='status')
-    parser_sync_update = subparsers_sync.add_parser('update', help="get synchro status")
+    parser_sync_update = subparsers_sync.add_parser('update', help="get synchro update")
     parser_sync_update.set_defaults(cmdsync='update')
+    parser_sync_update = subparsers_sync.add_parser('history', help="get history")
+    parser_sync_update.set_defaults(cmdsync='history')
 
+    # fixture
+    parser_fixture = subparsers.add_parser('fixture', help="fixture")
+    parser_fixture.add_argument('number', action='store')
+    defaults=config.get("fixture",{})
+    defaults.update({'cmd':'fixture'})
+    parser_fixture.set_defaults(**defaults)
+    
         #parser_sync_status.add_argument('synccmd', action='store')
 
     defaults=config.get("sync",{})
@@ -144,13 +154,15 @@ def main():
  
     args = parser.parse_args()
 
-    
+    # calculate absolute base directory
+
+    basepath = os.path.abspath(args.base)
     
     # if args.cmd == 'server':
     #    host,port = args.host.split(':')
     #    from kolekti.server.wsgi import wsgiclass
     #    from paste import httpserver
-    #    wsgi = wsgiclass(args.base)
+    #    wsgi = wsgiclass(basepath)
     #    httpserver.serve(wsgi, host, port)
         
     if args.cmd == 'publish':
@@ -158,7 +170,7 @@ def main():
         try:
             langs = args.languages.split(',')
             for lang in langs:
-                p = publish.DraftPublisher(args.base, lang = lang)
+                p = publish.DraftPublisher(basepath, lang = lang, cleanup = not(args.nocleanup))
                 toc = p.parse(p.substitute_criteria(args.toc, profile = None))
                 if args.job:
                     job = args.job
@@ -194,7 +206,7 @@ def main():
     if args.cmd == 'make_release':
         from kolekti import publish
         try:
-            p = publish.Releaser(args.base, lang=args.lang)
+            p = publish.Releaser(basepath, lang=args.lang)
             toc = p.parse(args.toc)
             if args.job:
                 job = args.job
@@ -214,7 +226,7 @@ def main():
         from kolekti import publish
         try:
             release = '/releases/' + args.name
-            p = publish.ReleasePublisher(release, args.base, langs = args.languages.split(','))
+            p = publish.ReleasePublisher(release, basepath, langs = args.languages.split(','))
 
             for event in p.publish_assembly(args.name + "_asm"):
                 if event['event'] == "job":
@@ -240,7 +252,7 @@ def main():
     if args.cmd == 'diagnostic':
         from kolekti import diagnostic
         try:
-            d = diagnostic.Diagnostic(args.base)
+            d = diagnostic.Diagnostic(basepath)
             if args.toc:
                 d.diag_toc(args.toc)
             else:
@@ -252,29 +264,29 @@ def main():
                     
     if args.cmd == 'varods':
         from kolekti import variables
-        c = variables.XMLToOds(args.base)
+        c = variables.XMLToOds(basepath)
         c.convert(args.varfile)
 
     if args.cmd == 'varxml':
         from kolekti import variables
-        c = variables.OdsToXML(args.base)
+        c = variables.OdsToXML(basepath)
         c.convert(args.varfile)
 
 
     if args.cmd == 'index':
         from kolekti import searchindex
-        ix = searchindex.indexer(args.base)
+        ix = searchindex.indexer(basepath)
         ix.indexbase()
 
     if args.cmd == 'search':
         from kolekti import searchindex
-        ix = searchindex.searcher(args.base)
+        ix = searchindex.searcher(basepath)
         for res in ix.search(args.query):
             print res
 
     if args.cmd == 'sync':
         from kolekti import synchro
-        sync = synchro.SynchroManager(args.base)
+        sync = synchro.SynchroManager(basepath)
         if args.cmdsync == "status":
             changes = sync.statuses()
             for s,l in changes.iteritems():
@@ -297,6 +309,19 @@ def main():
         if args.cmdsync == "update":
             updates = sync.update()
             print updates
+
+        if args.cmdsync == "history":
+            records = sync.history()
+            for record in records:
+#                print dict(record)
+                print int(record.date), record.author, ':'
+                print record.message
+
+    if args.cmd == 'fixture':
+        from kolekti import fixture
+        fix = fixture.fixture(basepath)
+        fix.apply(args.number)
+        
 
             
 if __name__ == '__main__':

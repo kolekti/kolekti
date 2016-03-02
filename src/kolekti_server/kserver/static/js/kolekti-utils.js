@@ -180,6 +180,10 @@ var streamedTransport = function(streamCallback) {
 }
 
 
+
+
+
+
 /* kolekti objects browser
    inserts a browsable view of the server files in the kolekti interface
    parmaters passed to the browser:
@@ -321,7 +325,7 @@ var kolekti_browser = function(args) {
 			if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
 			    $.post('/browse/delete',{"path": path + "/" + item})
 				.done(function(data) {
-				    // console.log(data)
+				    closure_remove(item);
 				    update();
 				})
 			}
@@ -424,18 +428,31 @@ var kolekti_browser = function(args) {
 				    switch(status) {
 				    case 'unversioned':
 					icon = $('<i>',{
-					    'class':"fa fa-ban text-"+kolekti_bootstrap_status[status]
+					    'class':"fa fa-question-circle text-"+kolekti_bootstrap_status[status]
 					})
 				   
 					break;
+				    case 'update':
+				    case 'commit':
+					icon = $('<i>',{
+					    'class':"fa fa-info-circle text-"+kolekti_bootstrap_status[status]
+					})
+					break;
+				    case 'merge':
+				    case 'conflict':
+				    case 'error':
+					icon = $('<i>',{
+					    'class':"fa fa-exclamation-circle text-"+kolekti_bootstrap_status[status]
+					})
+					break;
 				    default:
 					icon = $('<i>',{
-					    'class':"fa fa-users text-"+kolekti_bootstrap_status[status]
+					    'class':"fa fa-check text-"+kolekti_bootstrap_status[status]
 					})
 				    }
 			
-				    cell.html($('<a>',{
-					'href':"#",
+				    cell.html($('<span>',{
+//					'href':"#",
 					'class':status,
 					'data-status':status,
 					'data-rstatus':entry.rstatus,
@@ -450,7 +467,7 @@ var kolekti_browser = function(args) {
 			});
 		    });
 		    
-		    var sync_popover = $('.kolekti-browser-sync a').popover({
+		    var sync_popover = $('.kolekti-browser-sync span').popover({
 			'content':function(){
 			    var msg = "",
 				linksync = false,
@@ -586,6 +603,7 @@ var kolekti_browser = function(args) {
 	    if (modal)
 		$('.modal').modal();
 	});
+
     } // end update function
 
     var browser_move_dialog = function(filename, newpath, newfilename) {
@@ -682,6 +700,10 @@ var kolekti_browser = function(args) {
 	    resfuncs['create']=f;
 	    return return_functions;
 	},
+	'remove':function(f) {
+	    resfuncs['remove']=f;
+	    return return_functions;
+	},
 	'setup_file':function(f) {	
 	    resfuncs['setup_file']=f;
 	    return return_functions;
@@ -696,6 +718,9 @@ var kolekti_browser = function(args) {
     var closure_create = function() {
 	resfuncs['create'] && resfuncs['create']($(parent), path, update);
     };
+    var closure_remove = function(e) {
+	resfuncs['remove'] && resfuncs['remove'](e, path);
+    };
     var promise_setup_file = function(e) {
 	var f = $(e).data('name'); 
 	resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, path, f);
@@ -708,6 +733,7 @@ var kolekti_browser = function(args) {
 	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	} else {
 	    set_browser_value(path + '/' + $(this).html())
@@ -722,6 +748,7 @@ var kolekti_browser = function(args) {
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
 	    path = newpath;
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	}
     })
@@ -751,6 +778,8 @@ var kolekti_browser = function(args) {
 		e.stopImmediatePropagation();
 	folderpath = path + "/" + $(parent).find(".foldername").val();
 	$.post("/browse/mkdir",{path : folderpath}, function(data) {
+	    path = folderpath
+	    window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	})
     })
@@ -920,8 +949,26 @@ var kolekti_browser = function(args) {
 	}).done(update)
 	    
     })
+    
+    // pop curent directory from history
+    var currentState = window.history.state;
+    if(currentState && currentState.path) {
+	path = currentState.path
+    }
+    
+    window.onpopstate = function(event) {
+	if(event.state && event.state.path) {
+	    path = event.state.path;
+	    update();
+	} else {
+	    path = root;
+	    update()
+	}
+	
+    };
+    
     // fetch directory
-
+    
     update()
     
     // return functions
