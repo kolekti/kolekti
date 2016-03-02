@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolekti\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-18 18:52+0100\n"
+"POT-Creation-Date: 2016-03-02 10:46+0100\n"
 "PO-Revision-Date: 2016-02-18 18:53+0100\n"
 "Last-Translator: Josselin PEREZ <josselin.perez@ymail.com>\n"
 "Language-Team: Exselt <contact@exselt.com>\n"
@@ -43,65 +43,77 @@ msgstr "Send a .ods or .xlsx Topic definition file"
 msgid "Confirm"
 msgstr "Confirm"
 
-#: kolekti_server/kserver/templates/page.html:41
+#: kolekti_server/kserver/templates/page.html:32
+#: kolekti_server/kserver/templates/projects_activate.html:31
+msgid "Toggle navigation"
+msgstr "Toggle navigation"
+
+#: kolekti_server/kserver/templates/page.html:42
 msgid "Tocs"
 msgstr "Tocs"
 
-#: kolekti_server/kserver/templates/page.html:42
+#: kolekti_server/kserver/templates/page.html:43
 msgid "Topics"
 msgstr "Topics"
 
-#: kolekti_server/kserver/templates/page.html:43
+#: kolekti_server/kserver/templates/page.html:44
 msgid "Images"
 msgstr "Images"
 
-#: kolekti_server/kserver/templates/page.html:44
+#: kolekti_server/kserver/templates/page.html:45
 msgid "Releases"
 msgstr "Releases"
 
-#: kolekti_server/kserver/templates/page.html:46
+#: kolekti_server/kserver/templates/page.html:47
 msgid "Project"
 msgstr "Project"
 
-#: kolekti_server/kserver/templates/page.html:48
+#: kolekti_server/kserver/templates/page.html:49
 msgid "Define Variables"
 msgstr "Define Variables"
 
-#: kolekti_server/kserver/templates/page.html:49
+#: kolekti_server/kserver/templates/page.html:50
 msgid "Define Criteria"
 msgstr "Define Criteria"
 
-#: kolekti_server/kserver/templates/page.html:50
+#: kolekti_server/kserver/templates/page.html:51
 msgid "Manage Languages"
 msgstr "Manage Languages"
 
-#: kolekti_server/kserver/templates/page.html:51
+#: kolekti_server/kserver/templates/page.html:52
 msgid "Publication Settings"
 msgstr "Publication Settings"
 
-#: kolekti_server/kserver/templates/page.html:53
+#: kolekti_server/kserver/templates/page.html:54
 msgid "Import Table"
 msgstr "Import Table"
 
-#: kolekti_server/kserver/templates/page.html:55
+#: kolekti_server/kserver/templates/page.html:56
+#: kolekti_server/kserver/templates/browser/main.html:55
 msgid "Sync"
 msgstr "Sync"
 
-#: kolekti_server/kserver/templates/page.html:56
+#: kolekti_server/kserver/templates/page.html:57
 #: kolekti_server/kserver/templates/projects.html:6
 msgid "Manage Projects"
 msgstr "Manage Projects"
 
-#: kolekti_server/kserver/templates/page.html:62
+#: kolekti_server/kserver/templates/page.html:63
 msgid "Help"
 msgstr "Help"
 
-#: kolekti_server/kserver/templates/page.html:147
+#: kolekti_server/kserver/templates/page.html:148
 #: kolekti_server/kserver/templates/window.html:36
 msgid "Close"
 msgstr "Close"
 
-#: kolekti_server/kserver/templates/page.html:156
+#: kolekti_server/kserver/templates/page.html:153
+#: kolekti_server/kserver/templates/projects_activate.html:76
+#: kolekti_server/kserver/templates/window.html:40
+msgid "Generic modal"
+msgstr "Generic modal"
+
+#: kolekti_server/kserver/templates/page.html:157
 #: kolekti_server/kserver/templates/projects_activate.html:79
 #: kolekti_server/kserver/templates/window.html:43
 msgid "Cancel"
@@ -214,10 +226,6 @@ msgstr "password"
 msgid "Create"
 msgstr "Create"
 
-#: kolekti_server/kserver/templates/projects_activate.html:31
-msgid "Toggle navigation"
-msgstr "Toggle navigation"
-
 #: kolekti_server/kserver/templates/projects_activate.html:51
 msgid "Activated Project"
 msgstr "Activated Project"
@@ -234,11 +242,6 @@ msgstr "close"
 #: kolekti_server/kserver/templates/window.html:37
 msgid "Modal title"
 msgstr "Modal title"
-
-#: kolekti_server/kserver/templates/projects_activate.html:76
-#: kolekti_server/kserver/templates/window.html:40
-msgid "Generic modal"
-msgstr "Generic modal"
 
 #: kolekti_server/kserver/templates/publication-iterator.html:18
 msgid "Release"
@@ -275,3 +278,33 @@ msgstr "Profile"
 #: kolekti_server/kserver/templates/publication.html:9
 msgid "published on the"
 msgstr "published on the"
+
+#: kolekti_server/kserver/templates/browser/main.html:34
+msgid "New File :"
+msgstr ""
+
+#: kolekti_server/kserver/templates/browser/main.html:35
+#: kolekti_server/kserver/templates/browser/main.html:41
+msgid "ok"
+msgstr ""
+
+#: kolekti_server/kserver/templates/browser/main.html:52
+msgid "Name"
+msgstr ""
+
+#: kolekti_server/kserver/templates/browser/main.html:53
+msgid "Date"
+msgstr ""
+
+#: kolekti_server/kserver/templates/browser/main.html:54
+#, fuzzy
+msgid "Actions"
+msgstr "Active"
+
+#: kolekti_server/kserver/templates/browser/main.html:94
+msgid "Parental Directory"
+msgstr ""
+
+#, fuzzy
+#~ msgid "Synchro"
+#~ msgstr "Sync"

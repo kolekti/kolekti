@@ -284,11 +284,11 @@ $(document).ready(function() {
 					})
 				    });
 				if (ev.event == "toc" && pub.event == "publication") 
-				    return $('<p>', {"html": "Trame : " + ev.file});
+				    return $('<p>', {"html": gettext("Tocs : ") + ev.file});
 				if (ev.event == "job" && pub.event == "publication") 
-				    return $('<p>', {"html": "Parametres : " + ev.label});
+				    return $('<p>', {"html": gettext("Settings : ") + ev.label});
 				if (ev.event == "profile" && pub.event == "publication")
-				    return $('<h5>', {"html": "Profil " + ev.label});
+				    return $('<h5>', {"html": gettext("Profile ") + ev.label});
 				if (ev.event == "result") 
 				    return $('<ul>', {
 					"html":$.map(ev.docs, function(doc) {
@@ -317,32 +317,32 @@ $(document).ready(function() {
 
 
     var widgets_definitions = {
-	'_publications':{'title':'Dernières publications',
+	'_publications':{'title':gettext('Last publications'),
 			'content':function() {
 			    return publication_widget_builder('/publications/list.json');
 			}
 		       },
-	'publications':{'title':'Dernières publications',
+	'publications':{'title':gettext('Last publications'),
 			'content':function() {
 			    return widget_loader('/widgets/publications/');
 			}
 		       },
-	'_releases':{'title':'Dernières versions',
+	'_releases':{'title':gettext('Last releases'),
 		    'content':function() {
 			return publication_widget_builder('/releases/publications/list.json')
 		    }
 		   },
-	'releases':{'title':'Dernières versions',
+	'releases':{'title':gettext('Last releases'),
 		    'content':function() {
 			return widget_loader('/widgets/releasepublications/')
 		    }
 		   },
-	'projecthistory':{'title':'Historique du projet',
+	'projecthistory':{'title':gettext('Project History'),
 			   'content':function() {
 			       return widget_loader('/widgets/project-history/')
 			   }
 			 },
-	'projecthistorygraph':{'title':'Activité du projet',
+	'projecthistorygraph':{'title':gettext('Project Activity'),
 			       'width':2,
  			       'content':function() {
 				   return graph_widget_loader('/project/history/')

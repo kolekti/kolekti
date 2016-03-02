@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="browser" id="{{ id }}">
   <div class="row">
     <div class="col-sm-12 col-md-12">
@@ -30,14 +31,14 @@
 
       <div class="panel panel-info collapse newfolder_collapse" id="newfolder_collapse{{ id }}" role="tabpanel">
 	<div class="panel-heading">
-	  Nouveau dossier : <input type="text" class="form-control foldername"/>
-	  <button class="btn btn-default btn-xs create-folder">ok</button>
+	  {% trans "New File :"%} <input type="text" class="form-control foldername"/>
+	  <button class="btn btn-default btn-xs create-folder">{% trans "ok"%}</button>
 	  
 	</div>
       </div>
       <div class="panel panel-info collapse newfile_collapse" id="newfile_collapse{{ id }}" role="tabpanel">
 	<div class="panel-heading">
-	  <button class="btn btn-default btn-xs create-file">ok</button>
+	  <button class="btn btn-default btn-xs create-file">{% trans "ok"%}</button>
 	</div>
       </div>
     </div>
@@ -48,10 +49,10 @@
     <thead>
        <tr>
 	<th></th>
-	<th><a href="#" class="sortcol sortcol-name" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
-	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
-	<th>Actions</th>
-	<th style="width:5%">Synchro</th>
+	<th><a href="#" class="sortcol sortcol-name" data-sortcol="name">{% trans "Name"%} <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
+	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">{% trans "Date"%} <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
+	<th>{% trans "Actions"%}</th>
+	<th style="width:5%">{% trans "Sync"%}</th>
        </tr>
     </thead>
     <tbody>
@@ -90,7 +91,7 @@
 	      <span class="caret"></span>
 	    </button>
 	    <ul  class="dropdown-menu" role="menu">
-	      <li><a href="#" class="kolekti-action-move" data-dir=".."><i class="fa fa-arrow-up"></i> Dossier parent</a><li>
+	      <li><a href="#" class="kolekti-action-move" data-dir=".."><i class="fa fa-arrow-up"></i> {% trans "Parental Directory"%}</a><li>
 		{% for fmove in files %}
 		{% if fmove.type == "text/directory" and fmove.name != f.name %}
 	      <li><a href="#" class="kolekti-action-move" data-dir="{{fmove.name}}"><i class="fa fa-arrow-right"></i> {{fmove.name}}</a><li>
