@@ -87,9 +87,11 @@ class plugin(PublisherMixin,kolektiBase):
         self.assembly_dir = assembly_dir
         self.pivot = pivot
         
-        pubfile = scriptdef.xpath('string(filename)')
-        pubfile = self.substitute_variables(pubfile, profile)
-        self.publication_file = self.substitute_criteria(pubfile, profile)
+        #pubfile = scriptdef.xpath('string(filename)')
+        #pubfile = self.substitute_variables(pubfile, profile)
+        #self.publication_file = self.substitute_criteria(pubfile, profile)
+
+        self.publication_file = self.substitute_variables(self.substitute_criteria(unicode(scriptdef.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
 
         self.publication_dir = self.pubdir(assembly_dir, profile)
         self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file #+ "_" + self.scriptname

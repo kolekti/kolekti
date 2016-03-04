@@ -47,7 +47,7 @@ class Publisher(PublisherMixin, kolektiBase):
         """substitues all _NAME_ by its profile value in string s""" 
         for k,v in subst.iteritems():
             s = s.replace('_%s_'%k,v)
-        return self.substitute_variables(self.substitute_criteria(s,profile),profile)
+        return self.substitute_variables(self.substitute_criteria(s,profile),profile,{"LANG":self._publang})
 
     def get_script(self, plugin):
 
@@ -787,8 +787,8 @@ class DraftPublisher(Publisher):
         self._cleanup = cleanup
         
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
-        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        assembly_dir = self.substitute_criteria(xjob.xpath('string(/job/@pubdir)'), xjob)
+        assembly_dir = self.substitute_variables(assembly_dir, xjob, {"LANG":self._publang})
         assembly_dir = "/publications/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
@@ -889,8 +889,8 @@ class Releaser(Publisher):
         self._cleanup = False
 
     def assembly_dir(self, xjob):
-        assembly_dir = self.substitute_variables(xjob.xpath('string(/job/@pubdir)'),xjob)
-        assembly_dir = self.substitute_criteria(assembly_dir, xjob)
+        assembly_dir = self.substitute_criteria(xjob.xpath('string(/job/@pubdir)'),xjob)
+        assembly_dir = self.substitute_variables(assembly_dir, xjob, {"LANG":self._publang})
         assembly_dir = "/releases/" + assembly_dir
         if assembly_dir[-1] != "/":
             assembly_dir += "/"
