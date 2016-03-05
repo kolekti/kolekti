@@ -108,7 +108,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
         try:
             endpoint = self._project_settings.find('sparql').get('endpoint')
-            endpoint = endpoint + xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)', namespaces=self.nsmap)
+            # endpoint = endpoint + xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)', namespaces=self.nsmap)
             from kolekti.publish_queries import kolektiSparQL
             sp = kolektiSparQL(endpoint)
             sp.process_queries(assembly)

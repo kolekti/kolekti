@@ -446,39 +446,7 @@ $(document).ready(function() {
 
 	// selection graphique
     
-    $('.ecorse-action-chart').on('click', function(e) {
-	e.preventDefault()
-	if(!$(this).find('i').length) {
-	    var btn = $(this)
-	    var charttype = $(this).attr('data-chart-type')
-	    var topic = $(this).closest('.topic')
-	    var release = $('.report').data('release')
-	    
-	    $.ajax({
-		url:"/ecorse/report/chart",
-		method:'POST',
-		data:$.param({
-		    'release': release,
-		    'topic': topic.attr('id'),
-		    'charttype': charttype
-	    })
-	    }).done(function(data) {
-		
-		if (data.status == 'ok') {
-		    btn.closest('ul').find('i').remove();
-		    btn.append($('<i>', { 'class':'fa fa-check'}));
-		    topic.attr('data-chart-kind',charttype)
-		    var chart = btn.closest('.thumbnail').find('.kolekti-sparql-result-chartjs')
-		    var data = chart.data('chartjs-data')
-		    var chartid   = chart.attr('id')
-		    make_chart(chartid, charttype, data);
-		    
-		}
-	    }).fail(function(data) {
-	    });
-	    
-	}
-    })
+
     
 })
 		  

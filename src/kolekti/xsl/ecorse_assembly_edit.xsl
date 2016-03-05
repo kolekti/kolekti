@@ -202,32 +202,6 @@
       
       <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
 			   mode="topicpanelaction"/>
-<!--	      
-      <span class="btn-group">
-	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
-	</button>
-	<xsl:variable name="ckind" select="@data-chart-kind"/>
-	<ul class="dropdown-menu" role="menu">
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Bar">
-	    <xsl:text>Histogramme </xsl:text>
-
-	    <xsl:if test="$ckind='Bar'">
-	      <i class="fa fa-check"></i>
-	    </xsl:if>
-	  </a></li>
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chart-type="Line">
-	    <xsl:text>Linéaire </xsl:text>
-	    <xsl:if test="$ckind='Line'">
-	      <i class="fa fa-check"></i>
-	    </xsl:if>
-	  </a></li>
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
-	  <li role="presentation" class="divider"/>
-	  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_options">Options...</a></li>
-	</ul>
-	</span>
-	-->
     </span>
     </xsl:if>
   </xsl:template>

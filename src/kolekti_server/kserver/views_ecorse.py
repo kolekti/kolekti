@@ -151,8 +151,8 @@ class EcoRSEReportCreateView(EcoRSEMixin, View):
             projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
             criteria = xjob.xpath('/job/criteria')[0]
             for uservar in request.POST.keys():
-                if uservar[:8] == 'uservar_':
-                    ET.SubElement(criteria, 'criterion', attrib={"code":"uservar:%s"%uservar[9:],"value":request.POST.get(uservar)})
+                if uservar[:8] == 'uservar_' and uservar[-4:] == '[id]':
+                    ET.SubElement(criteria, 'criterion', attrib={"code":"uservar:%s"%uservar[8:-4],"value":request.POST.get(uservar)})
         
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI1","value":commune1})
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
@@ -267,20 +267,20 @@ class EcoRSEReportChartView(EcoRSEMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
-        chart =  request.POST.get('charttype','Bar')
+        kind =  request.POST.get('chartkind','bar')
         try:
             report = self.get_report(release_path)
-            topic = report.xpath("//html:div[@id = '%s']"%topicid,
+            chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
                                     namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-            topic.set('data-chart-kind', chart )
+            chart.set('data-chartkind', kind )
             self.write_report(report, release_path)
         except:
             import traceback
             print traceback.format_exc()
             return HttpResponse(json.dumps({'status':'fail',
                                             'msg':traceback.format_exc()}),content_type="application/json")
-            
-        return HttpResponse(json.dumps({'status':'ok','chart':chart}),
+        print kind    
+        return HttpResponse(json.dumps({'status':'ok','chart':kind}),
                             content_type="application/json")
 
     
@@ -372,11 +372,11 @@ class EcoRSERefParametersView(EcoRSEMixin, View):
                     if param_name in found_parameters:
                         parameters.append(deepcopy(param))
                                         
-                endpoint = self._project_settings.find('sparql').get('endpoint')
-                endpoint = endpoint + xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                sparqlserver = self._project_settings.find('sparql').get('endpoint')
+                endpoint = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
                 from kolekti.publish_queries import kolektiSparQL
-                sp = kolektiSparQL(endpoint)
-                sp.instanciate_parameters(parameters)
+                sp = kolektiSparQL(sparqlserver)
+                sp.instanciate_parameters(parameters, endpoint)
                 for param in parameters.xpath('variable'):
                     result.append(
                         {'id':param.get('name'),

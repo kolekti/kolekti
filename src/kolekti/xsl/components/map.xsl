@@ -24,22 +24,28 @@
     xmlns="http://www.w3.org/1999/xhtml" 
     exclude-result-prefixes="html"
     version="1.0">
-
+  
   <xsl:template match="/libs">
     <libs>
       <css>
-	<link rel="stylesheet" type="text/css" href="/static/components/css/xxx.css"/>
+	<link rel="stylesheet" type="text/css" href="/static/components/css/map.css"/>
+	<link href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" rel="stylesheet"/>
       </css>
       <scripts>
-	<script src="/static/somelib.min.js"/>
-	<script src="/static/components/js/xxx.js"/>
+	  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+	  <script src="/static/leaflet.min.js"/>
+	<script src="/static/components/js/map.js"/>
       </scripts>
     </libs>
   </xsl:template>
-  
-  <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicbody"/>
-  <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicpanelaction"/>
-  <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicpanelbutton"/>
-  <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicpanel"/>
+
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicbody">
+    <div class="leafletmap" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 600px; height: 400px">
+      
+    </div>
+  </xsl:template>
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelaction"/>
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelbutton"/>
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanel"/>
 
 </xsl:stylesheet>

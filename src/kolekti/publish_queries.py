@@ -16,37 +16,25 @@ from copy import deepcopy
 from lxml import etree as ET
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-class kolektiSparQL(object):
-    nsmap={"h":"http://www.w3.org/1999/xhtml"} 
-    def __init__(self, endpoint):
-        self.sparql = SPARQLWrapper(endpoint)
-        print endpoint
-
-    def get_communes(self):
-        query = """PREFIX generic_metadata: <http://ecorse.eu/schema/generic_metadata#>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        PREFIX igeo: <http://rdf.insee.fr/def/geo#>
-        SELECT DISTINCT *
-        WHERE {
-            ?placeURI a/rdfs:subClassOf* generic_metadata:territoire ;
-             rdfs:label ?placeLabel .
-             OPTIONAL {?placeURI igeo:codeINSEE ?codeINSEE}
-              BIND (concat(str(?placeLabel),if(bound(?codeINSEE),concat(' (',str(?codeINSEE),')'),'')) AS ?placeLabelFull)
-        }
-        """
-        
-        self.sparql.setQuery(query)
-        self.sparql.setReturnFormat(JSON)
-        try:
-            res = self.sparql.query()
-        except:
-            import traceback
-            print traceback.format_exc()
-        results = res.convert()
-        return [{"id":e.get('placeURI').get('value'), "name":e.get('placeLabelFull').get('value')} for e in results['results']['bindings']]
     
 
-    def instanciate_parameters(self, vardef):
+class kolektiSparQL(object):
+    nsmap={"h":"http://www.w3.org/1999/xhtml"} 
+    def __init__(self, server):
+        self.server = server
+        self.wrappers = {}
+        
+    def get_wrapper(self, endpoint):
+        try:
+            return self.wrappers[endpoint]
+        except KeyError:
+            urlendpoint = self.server + endpoint
+            wrapper =  SPARQLWrapper(urlendpoint)
+            self.wrappers.update({endpoint:wrapper})
+            return wrapper
+
+    def instanciate_parameters(self, vardef, endpoint):
+        sparql = self.get_wrapper(endpoint)
         query_results={}
         for dquery in vardef.xpath("/uservariables/variable/values[query]"):
             idq = dquery.find('query').get('ref')
@@ -59,9 +47,9 @@ class kolektiSparQL(object):
 
             if results is None:
                 try:
-                    self.sparql.setQuery(query)
-                    self.sparql.setReturnFormat(JSON)
-                    results = self.sparql.query().convert()
+                    sparql.setQuery(query)
+                    sparql.setReturnFormat(JSON)
+                    results = sparql.query().convert()
                     results = results['results']['bindings']
                     if not idq is None:
                         query_results[idq] = results
@@ -74,15 +62,22 @@ class kolektiSparQL(object):
                                                             'data':result.get('valueData').get('value')})
                 
     def process_queries(self, assembly):
+        defaultendpoint = assembly.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)', namespaces=self.nsmap)
         for oldres in assembly.xpath("//*[@class='kolekti-sparql-result']", namespaces=self.nsmap):
             oldres.getparent().remove(oldres)
             
         for dquery in assembly.xpath("//*[@class='kolekti-sparql']", namespaces=self.nsmap):
-            query = dquery.xpath("string(*[@class='kolekti-sparql-query'])",  namespaces=self.nsmap)
+            queryelt = dquery.xpath("*[@class='kolekti-sparql-query']",  namespaces=self.nsmap)[0]
+            query = queryelt.xpath("string(.)")
+            endpoint = queryelt.get('data-endpoint', defaultendpoint)
+        
+            print endpoint
             print query
-            self.sparql.setQuery(query)
-            self.sparql.setReturnFormat(JSON)
-            results = self.sparql.query().convert()
+            
+            sparql = self.get_wrapper(endpoint)
+            sparql.setQuery(query)
+            sparql.setReturnFormat(JSON)
+            results = sparql.query().convert()
             topic = dquery.xpath('ancestor::h:div[@class="topic"]',namespaces=self.nsmap)[0]
             if topic.get("data-chart-kind") is None:
                 topic.set("data-chart-kind","Bar")
@@ -90,7 +85,6 @@ class kolektiSparQL(object):
                 topic.set('data-hidden','yes')
                 topic.set('data-kolekti-sparql-empty','yes')
                 print "No result for query"
-                print query
                 
             else:
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})
