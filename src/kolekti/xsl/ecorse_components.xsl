@@ -29,8 +29,9 @@
      <xsl:include href="components/details.xsl"/>
      <xsl:include href="components/chart.xsl"/>
      <xsl:include href="components/map.xsl"/>
-  <!--
-      <xsl:include href="components/wysiwyg.xsl"/>
+     <xsl:include href="components/wysiwyg.xsl"/>
+     <!--
+
       <xsl:include href="components/pad.xsl"/>
       <xsl:include href="components/leaflet.xsl"/>
       <xsl:include href="components/d3js.xsl"/>

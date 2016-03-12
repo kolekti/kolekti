@@ -194,17 +194,9 @@ class EcoRSEReportAnalysisView(EcoRSEMixin, View):
         try:
             xdata = self.parse_html_string(data)
             report = self.get_report(release_path)
-            try:
-                ana = report.xpath("//html:div[@id = '%s']/html:div[@class='analyse']"%topicid,
-                                    namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-                for child in ana:
-                    print child
-                    ana.remove(child)
-                print ET.tostring(ana)
-            except IndexError:
-                topic = report.xpath("//html:div[@id = '%s']"%topicid,
-                                        namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-                ana = ET.SubElement(topic,'{http://www.w3.org/1999/xhtml}div', attrib = {"class":"analyse"})
+            ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-wysiwyg']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+            for child in ana:
+                ana.remove(child)
             for elt in xdata.xpath('/html/body/*'):
                 ana.append(elt)
             self.write_report(report, release_path)

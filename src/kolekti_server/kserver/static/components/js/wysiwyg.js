@@ -70,4 +70,4 @@ $(document).ready(function() {
 	editor.ecorse_state = false
     })
 
-}
+})
