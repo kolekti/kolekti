@@ -1146,16 +1146,22 @@ class ReleaseView(PublicationView):
 #        pubtitle= request.POST.get('pubtitle')
 
         # print request.POST
-
+        
         profiles = request.POST.getlist('profiles[]',[])
+        print profiles
         # print profiles
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
+        
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
+                print ET.tostring(jprofile)
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
+                else:
+                    jprofile.set('enabled',"1")
+
             for jscript in xjob.xpath('/job/scripts/script'):
                 if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
