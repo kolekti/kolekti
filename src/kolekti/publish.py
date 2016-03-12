@@ -473,11 +473,13 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
+        print "script",self._publang, ET.tostring(profile)
+        print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile, {"LANG":self._publang})
         scriptlabel = script.find('label').text
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
-            
+        print pubname
         name=script.get('name')
         params = {}
         for p in script.xpath('parameters/parameter'):
@@ -995,7 +997,7 @@ class ReleasePublisher(Publisher):
         pass
 
     def process_path(self, path):
-        return self.assembly_dir() + "/" + path
+        return self.assembly_dir() + "/" + super(ReleasePublisher,self).process_path(path)
     
     def publish_assembly(self, assembly):
         """ publish an assembly"""
