@@ -7,14 +7,16 @@ $(document).ready(function() {
 	    });
 	}
     });
+    
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {
 	if ($(e.target).hasClass('section-content')) {
 	    $(e.target).find('.ecorse-chart').each(function() {
-		drawchart(this)
+		drawchart(this, true)
 	    });
 	}
     });
-    var drawchart = function(elt) {
+    
+    var drawchart = function(elt, anim) {
 	var data = $(elt).data('chartdata').results.bindings;
 	//var series = [
 	
@@ -30,10 +32,20 @@ $(document).ready(function() {
 	var places = by_place.map(function(item) {
 	    return item.values[0].placeLabel.value;
 	})
+
+	var wwidth = $(elt).width()
+	/*
+	if ($('body').width() > 980)
+	    wwidth = wwidth/ 3 * 2;
+*/
+	var wheight = wwidth / 2;
+	if (wheight > 400)
+	    wheight = 400;
+	
 	
 	var margin = {top: 20, right: 20, bottom: 30+(20*places.length), left: 60},
-	    width = 600 - margin.left - margin.right,
-	    height = 300 - margin.top - margin.bottom;
+	    width = wwidth - margin.left - margin.right,
+	    height = wheight - margin.top - margin.bottom;
 	
 	// Parse the date / time
 	varparseDate = d3.time.format("%Y-%m").parse;
@@ -114,7 +126,7 @@ $(document).ready(function() {
 	    
 	    
 	    
-	    year.selectAll("rect")
+	    var rect = year.selectAll("rect")
 		.data(function(d) {
 		    return d.values.map(function(i) {
 			return {
@@ -129,13 +141,18 @@ $(document).ready(function() {
 		.attr("x", function(d) {
 		    return x1(d.name);
 		})
-		.attr("y", function(d) {return y(0)})
+
+	    if (anim)
+		rect.attr("y", function(d) {return y(0)})
 		.attr("height", function(d) { return 0})
-	    
 		.transition()
 		.duration(500)
-	    
 		.attr("y", function(d) {
+		    return d3.min([y(d.value),y(0)]);
+		})		
+		.attr("height", function(d) { return Math.abs(y(0) - y(d.value)); });
+	    else
+		rect.attr("y", function(d) {
 		    return d3.min([y(d.value),y(0)]);
 		})		
 		.attr("height", function(d) { return Math.abs(y(0) - y(d.value)); });
@@ -208,7 +225,16 @@ $(document).ready(function() {
     };
 
 
+    $(window).on('resize', function() {
+	$('.collapse.in').find('.ecorse-chart').each(function() {
+	    $(this).html('')
+	    drawchart(this, false)
+	});
 
+    })
+    
+
+    
     // menu selection graphique
     $('.ecorse-action-chart').on('click', function(e) {
 	e.preventDefault()
@@ -234,7 +260,7 @@ $(document).ready(function() {
 		    btn.append($('<i>', { 'class':'fa fa-check'}));
 		    chart.attr('data-chartkind',chartkind)
 		    chart.html('')
-		    drawchart(chart.get(0));
+		    drawchart(chart.get(0), true);
 		}
 	    }).fail(function(data) {
 	    });
