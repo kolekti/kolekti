@@ -28,3 +28,17 @@
     fill-opacity:0;
     stroke-width:2;
 }
+.eventrect {
+    fill-opacity:0;
+}
+
+.tooltipbg {
+    fill: white;
+    fill-opacity:0.72;
+    stroke : black;
+    strocke-with:2;
+    stroke-opacity:0.72;
+    
+		 
+}
+	    
