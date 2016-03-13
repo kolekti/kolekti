@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    console.log('init chart componenent');
+
     $('.section-content.collapse').on('hidden.bs.collapse', function(e) {
 	if ($(e.target).hasClass('section-content')) {
 	    $(e.target).find('.ecorse-chart').each(function() {
@@ -44,10 +44,10 @@ $(document).ready(function() {
 	
 	y.domain([
 	    d3.min(datadomains, function(d) {
-		return d.xapprox.value;
+		return parseFloat(d.xapprox.value);
 	    }),
 	    d3.max(datadomains, function(d) {
-		return d.xapprox.value;
+		return parseFloat(d.xapprox.value);
 	    })
 	]);
 	
