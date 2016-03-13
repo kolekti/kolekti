@@ -3,3 +3,7 @@
 .kolekti-sparql-result-json {
     display:none;
 }
+
+.topic h3 {
+    margin-left:20px
+}
