@@ -23,3 +23,8 @@
 {
     stroke:none;
 }
+
+.area {
+    fill-opacity:0;
+    stroke-width:2;
+}
