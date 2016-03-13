@@ -27,6 +27,9 @@ $(document).ready(function() {
 
 	var by_place = d3.nest()
 	    .key(function(d) { return d.placeURI.value; })
+	    .sortValues(function(a,b) {
+		return b.year.value < a.year.value ? -1 : b.year.value > a.year.value ? 1 : b.year.value >= a.year.value ? 0 :NaN
+	    })
 	    .entries(data);
 	
 	var places = by_place.map(function(item) {
