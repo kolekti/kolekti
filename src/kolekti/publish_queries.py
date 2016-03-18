@@ -114,7 +114,7 @@ class kolektiSparQL(object):
             val = elt.get(attr)
             elt.set(attr, val.format(**values))
 
-        if len(elt.text):
+        if not elt.text is None and len(elt.text):
             t = elt.text
             t = t.encode('utf-8')
             t = t.format(**values)
