@@ -770,17 +770,18 @@ class kolektiBase(object):
     def iterpublications(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
             rootparts = root.split(os.path.sep)
-            for file in files:
-                if file  == 'manifest.json':
-                    with open(os.path.join(root,file)) as f:
-
+            for mfile in files:
+                if mfile  == 'manifest.json':
+                    print mfile
+                    with open(os.path.join(root,mfile)) as f:
+                    
                         try:
                             yield json.loads('['+f.read()+']')
                         except:
                             import traceback
                             print traceback.format_exc()
                             yield [{'event':'error',
-                                   'file':os.path.join(root,file),
+                                   'file':os.path.join(root,mfile),
                                    'msg':'cannot read manifest file',
                                    }]
     @property
