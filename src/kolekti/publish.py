@@ -313,6 +313,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # write pivot
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
+        #print pivot
         self.xwrite(pivot, pivfile, sync = False)
         return pivot
 
@@ -473,13 +474,13 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def start_script(self, script, profile, assembly_dir, pivot):
         res = None
-        print "script",self._publang, ET.tostring(profile)
-        print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
+        #print "script",self._publang, ET.tostring(profile)
+        #print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile, {"LANG":self._publang})
         scriptlabel = script.find('label').text
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
-        print pubname
+        #print pubname
         name=script.get('name')
         params = {}
         for p in script.xpath('parameters/parameter'):
@@ -816,10 +817,14 @@ class DraftPublisher(Publisher):
         else:
             xtoc = self.parse(toc)
 
+            
         if pubtitle is not None:
             xtoc.xpath("/h:html/h:head/h:title", namespaces=self.nsmap)[0].text = pubtitle
 
-        publications = []
+        pubevents = [{"event":"toc",
+                    "title":xtoc.xpath("/h:html/h:head/h:title", namespaces=self.nsmap)[0].text,
+                    }]
+
         # path = self.get_base_job(job) + ".xml"
         if isinstance(job,ET._ElementTree):
             xjob = job
@@ -838,53 +843,77 @@ class DraftPublisher(Publisher):
         
         try:
             assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob.getroot())
-            manifest = self.getOsPath(assembly_dir + '/kolekti/manifest.json')
-
-        except:
-            import traceback
-            yield {
-                    'event':'error',
-                    'msg':"erreur lors de l'assemblage",
-                    'stacktrace':traceback.format_exc(),
-                    'time':time.time(),
-                }
-            return
-        try:
-            first_sep = ""
-            mfmode = "w"
-            if os.path.exists(manifest):
-                first_sep = ","
-                mfmode = "a"
-            with open(manifest, mfmode) as mf:
-                mf.write(first_sep)
-                ev = '{"event":"publication", "path":"%s","name":"%s", "title":"%s", "time": %s, "content":[{"event":"toc","file":"%s"}'%(assembly_dir.encode('utf-8'), self.basename(pubname),  pubtitle, int(time.time()),str(toc))
-                mf.write(ev.encode('utf-8'))
-                for event in events:
-                    mf.write(",\n" + json.dumps(event))
-                    yield event
+            print assembly_dir
+            for event in events:
+                pubevents.append(event)
+                yield event
+            try:
             
                 logging.debug('********************************** PUBLISH ASSEMBLY')
+                
                 for pubres in self.publish_job(assembly, xjob.getroot()):
-                    mf.write(",\n" + json.dumps(pubres))
+                    pubevents.append(pubres)
                     yield pubres
+                    
                 yield {"event":"publication_dir", "path":assembly_dir}
+
                 if self._cleanup:
                     try:
                         self.cleanup_assembly_dir(xjob.getroot())
                     except:
                         logging.debug('Warning: could not remove tmp dir')
-                mf.write("]}\n")
+            except:
+                import traceback
+                yield {
+                    'event':'error',
+                    'msg':"erreur lors de la publication",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                }
+        
         except:
             import traceback
-            yield {
-                'event':'error',
-                'msg':"impossible d'ouvrir le fichier manifeste",
-                'stacktrace':traceback.format_exc(),
-                'time':time.time(),
-            }
-            
-        return
+            errev =  {
+                    'event':'error',
+                    'msg':"erreur lors de l'assemblage",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                }
+            pubevents.append(errev)
+            yield errev
+            return
+
+        finally:    
+            try:
+                manifest = self.getOsPath(assembly_dir + '/manifest.json')
+#                mfevents = []
+#                if os.path.exists(manifest):
+#                    with open(manifest, 'r') as mf:
+#                        mfevents = json.loads(mf.read())
+                        
+                mfevents = {
+                    "event":"publication",
+                    "path":assembly_dir,
+                    "name":self.basename(pubname),
+                    "title":pubtitle,
+                    "time": int(time.time()),
+                    "content":pubevents,
+                    }
+                with open(manifest, 'w') as mf:
+                    mf.write(json.dumps(mfevents))
     
+            except:
+                import traceback
+                yield {
+                    'event':'error',
+                    'msg':"impossible d'ouvrir le fichier manifeste",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    }
+            
+                return
+
+                
 class Releaser(Publisher):
     def __init__(self, *args, **kwargs):
         super(Releaser, self).__init__(*args, **kwargs)
