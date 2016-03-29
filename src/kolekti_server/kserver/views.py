@@ -807,9 +807,10 @@ class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
         settings_js="""
         var kolekti = {
-        "lang":"%s"
+        "lang":"%s",
+        "project":"%s"
         }
-        """%(self.user_settings.active_srclang,)
+        """%(self.user_settings.active_srclang, self.user_settings.active_project)
         return HttpResponse(settings_js,content_type="text/javascript")
     
 class SettingsJsonView(kolektiMixin, TemplateView):
@@ -1508,8 +1509,6 @@ class WidgetPublicationsListView(kolektiMixin, View):
     template_name = "widgets/publications.html"
     
     def get(self, request):
-        for p in self.get_publications():
-                print p
         context = {
             "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
         }
