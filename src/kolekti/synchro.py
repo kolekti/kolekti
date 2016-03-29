@@ -9,7 +9,7 @@ import sys
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-from exceptions import ExcSyncNoSync
+from exceptions import *
 
 
 def initLocale():
@@ -35,7 +35,8 @@ def initLocale():
             locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
 initLocale()
 
-class SynchroManager(object):
+
+class SvnClient(object):
     statuses_modified = [
         pysvn.wc_status_kind.deleted,
         pysvn.wc_status_kind.added,
@@ -62,20 +63,42 @@ class SynchroManager(object):
         pysvn.wc_status_kind.incomplete,
         ]
     
-    def __init__(self, base):
-
-        def callback_log_message(*args, **kwargs):
-            logging.debug("callback log")
-#            logging.debug(str(arg))
-            
-        self.notifications = []
-        def callback_notification(arg):
-            self.notifications.append(arg)
-            
-        self._base = base
+    def __init__(self, username=None, password=None, accept_cert=False):
         self._client = pysvn.Client()
+        self.__username = username
+        self.__password = password
+        self.__accept_cert = accept_cert
+        
+        def get_login( realm, username, may_save ):
+            if self.__username is None:
+                raise ExcSyncRequestAuth
+            return True, self.__username, self.__password, True
+        self._client.callback_get_login = get_login
+
+        self._messages = []
+        def callback_log_message(arg):
+            self._messages.append(arg)
         self._client.callback_get_log_message = callback_log_message
+            
+        self._notifications = []
+        def callback_notification(arg):
+            self._notifications.append(arg)
         self._client.callback_notify = callback_notification
+        
+        def callback_accept_cert(arg):
+            print arg
+            if self.__accept_cert:
+                return  True, 1, True
+            if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
+                return  True, 12, True
+            raise ExcSyncRequestSSL
+            
+        self._client.callback_ssl_server_trust_prompt = callback_accept_cert
+        
+class SynchroManager(SvnClient):
+    def __init__(self, base):
+        super(SynchroManager, self).__init__()
+        self._base = base
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
@@ -360,18 +383,10 @@ class SynchroManager(object):
             print traceback.format_exc()
             return None
         
-class SVNProjectManager(object):
+class SVNProjectManager(SvnClient):
     def __init__(self, projectsroot, username=None, password=None):
         self._projectsroot = projectsroot
-        self._client = pysvn.Client()
-        self.__username = username
-        self.__password = password
-        #self._client.callback_get_log_message = get_log_message
-        def get_login( realm, username, may_save ):
-#            if username == self.__username:
-            return True, self.__username, self.__password, True
-#            return False, "","", False
-        self._client.callback_get_login = get_login
+        super(SVNProjectManager, self).__init__(username, password)
         
     def export_project(self, folder, url="http://beta.kolekti.net/svn/quickstart07"):
         ospath = os.path.join(self._projectsroot, folder)
