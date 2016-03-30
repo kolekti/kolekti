@@ -134,7 +134,7 @@ class Importer(common.kolektiBase):
         except IndexError:
             yield {
                 'event':'error',
-                'msg':"Erreur lors de l'import : parametres non spécifiés",
+                'msg':"Erreur lors de l'import : paramètres non spécifiés",
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
                 }
