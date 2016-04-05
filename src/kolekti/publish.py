@@ -163,19 +163,22 @@ class Publisher(PublisherMixin, kolektiBase):
                 events.append(event)
 
             # copy scripts resources
-            for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
+            for script in xjob.xpath("/job/scripts/script[not(@name='multiscript')][@enabled = 1]|/job/scripts/script[@name='multiscript'][@enabled = 1]/*/script"):
+                scriptlabel = script.xpath('string(label|ancestor::script/label)')
                 try:
+                    print script.get('name')
                     self.copy_script_params(script, profile, assembly_dir)
                 except:
                     import traceback
+                    print traceback.format_exc()
                     events.append({
                         'event':'error',
-                        'msg':"Impossible de copier les parametres du script %s"%script.find('label').text,
+                        'msg':"Impossible de copier les parametres du script %s"%scriptlabel,
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         })
 
-                    logging.error("resources for script %s not found"%script.find('label').text)
+                    logging.error("resources for script %s not found"%scriptlabel)
                     logging.debug(traceback.format_exc())
 
         return assembly, assembly_dir, pubname, events 
@@ -211,8 +214,34 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time(),
                         }
                     logging.debug(traceback.format_exc())
+                    
                 # invoke scripts
-                for script in xjob.xpath("/*/scripts/script[@enabled = 1]"):
+                for output in xjob.xpath("/job/scripts/script[@enabled = 1][@name='multiscript']"):
+                    indata = pivot
+                    for script in output.xpath('publication/script'):
+                        scriptlabel = script.xpath('string(ancestor::script/label)')
+                        try:
+                            outdata = self.start_script(script, profile, assembly_dir, indata)
+                            yield {
+                                'event':'script',
+                                'script':scriptlabel,
+                                'docs':outdata,
+                                'time':time.time()
+                                }
+                            indata = outdata
+                        except:
+                            import traceback
+                            logging.error("Script %s finished with errors"%scriptlabel)
+                            yield {
+                                'event':'error',
+                                'msg':"Erreur d'execution du script %s"%scriptlabel,
+                                'stacktrace':traceback.format_exc(),
+                                'time':time.time(),
+                                }
+                            logging.debug(traceback.format_exc())
+                            
+                        
+                for script in xjob.xpath("/job/scripts/script[@enabled = 1][not(@name='multiscript')]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
                         yield {
@@ -396,7 +425,7 @@ class Publisher(PublisherMixin, kolektiBase):
     def copy_script_params(self, script, profile, assembly_dir):
         pubdir = self.pubdir(assembly_dir, profile)
         name = script.get('name')
-        scriptlabel = script.find('label').text
+        scriptlabel = script.xpath('string(label|ancestor::script/label)')
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%name)[0]
         except IndexError:
@@ -478,7 +507,7 @@ class Publisher(PublisherMixin, kolektiBase):
         #print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
         pubdir = self.pubdir(assembly_dir, profile)
         label =  self.substitute_variables(self.substitute_criteria(unicode(profile.xpath('string(label)')),profile), profile, {"LANG":self._publang})
-        scriptlabel = script.find('label').text
+        scriptlabel = script.xpath('string(label|ancestor::script/label)')
         pubname = self.substitute_variables(self.substitute_criteria(unicode(script.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
         #print pubname
         name=script.get('name')

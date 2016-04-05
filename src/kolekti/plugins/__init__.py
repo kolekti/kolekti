@@ -5,6 +5,8 @@
 
 import pluginBase
 import WebHelp5
+import filterpivot
+import serializepdf
 
 #def getPlugin(plugin, path):
 #    logging.debug('plugin import %s'%plugin)

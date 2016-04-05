@@ -41,6 +41,7 @@
     <div class="job-templates hidden">
       <xsl:call-template name="profil"/>
       <xsl:call-template name="pubscripts"/>
+      <xsl:call-template name="multiscript"/>
     </div>
   </xsl:template>
 
@@ -122,7 +123,11 @@
 	      <span class="caret"/>
 	    </button>
 	    <ul class="dropdown-menu" role="menu">
-	      <xsl:apply-templates select="/job/settings/scripts" mode="scripts_menu"/>
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[not(@multi)]" mode="scripts_menu"/>
+
+	      <li role="separator" class="divider"></li>
+
+	      <li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement de scripts</a></li>
 	    </ul>
 	  </div>
 	</div>
@@ -131,7 +136,17 @@
   </xsl:template>
 
   <xsl:template match="pubscript" mode="scripts_menu">
-    <li><a href="#" class="script-menu-item" data-kolekti-script-id="{@id}"><xsl:value-of select="name"/></a></li>
+    <li>
+      <a href="#" class="" data-kolekti-script-id="{@id}">
+	<xsl:attribute name="class">
+	  <xsl:choose>
+	    <xsl:when test="@multi='yes'">multi-menu-item</xsl:when>
+	    <xsl:otherwise>script-menu-item</xsl:otherwise>
+	  </xsl:choose>
+	</xsl:attribute>
+	<xsl:value-of select="name"/>
+      </a>
+    </li>
   </xsl:template>
 
   <xsl:template match="profile" name="profil">
@@ -263,36 +278,40 @@
     <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
       <div class="panel-body">
 	<h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
-	<div class="row">
-	  <div class="col-sm-9">
-	    <div class="row">
-	      <div class="col-sm-4">
-		<label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
-	      </div>
-	      <div class="col-sm-8">
-		<input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+	<xsl:if test="not(ancestor::script)">
+	  <div class="row">
+	    <div class="col-sm-9">
+	      <div class="row">
+		<div class="col-sm-4">
+		  <label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
+		</div>
+		<div class="col-sm-8">
+		  <input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+		</div>
 	      </div>
 	    </div>
-	  </div>
-	  <div class="col-sm-3">
-	    <div class="checkbox">
-	      <label>
-		<input type="checkbox" class="script-enabled">
-		  <xsl:if test="@enabled='1'">
-		    <xsl:attribute name="checked">checked</xsl:attribute>
-		  </xsl:if>
-		</input>
-		<xsl:text> Sortie active</xsl:text>
-	      </label>
+	    <div class="col-sm-3">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="script-enabled">
+		    <xsl:if test="@enabled='1'">
+		      <xsl:attribute name="checked">checked</xsl:attribute>
+		    </xsl:if>
+		  </input>
+		  <xsl:text> Sortie active</xsl:text>
+		</label>
+	      </div>
+	    </div>
+	    <div class="col-sm-3">
+	      <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	    </div>
+	    <div class="col-sm-9">
+	      <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
 	    </div>
 	  </div>
-	  <div class="col-sm-3">
-	    <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
-	  </div>
-	  <div class="col-sm-9">
-	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
-	  </div>
-	</div>
+	</xsl:if>
+ 	<xsl:apply-templates select="publication"/>
+	<xsl:apply-templates select="validation"/>
 	<xsl:apply-templates select="parameters"/>
 	<hr/>
 	<div class="pull-right">
@@ -302,6 +321,55 @@
     </div>
   </xsl:template>
 
+  <xsl:template match="publication">
+    <div class="multi-area">	
+      <h5>Enchaînement de publication</h5>
+      <div class="multiscript-list publication-scripts">
+	<xsl:apply-templates select="script"/>
+      </div>
+      <div class="row multi-add-script-pub">
+	<div class="col-xs-4">
+	  <div class="btn-group">
+	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	      Ajouter un script
+	      <xsl:text> </xsl:text>
+	      <span class="caret"/>
+	    </button>
+	    <ul class="dropdown-menu" role="menu">
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+	    </ul>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="validation">
+    <div class="multi-area">	
+      <h5>Enchaînement de validation</h5>
+      <div class="multiscript-list validation-scripts">
+	<xsl:apply-templates select="script"/>
+      </div>
+      <div class="row multi-add-script-valid">
+	<div class="col-xs-4">
+	  <div class="btn-group">
+	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	      <span class="kolekti-param-value-menu">
+		Ajouter un script
+		<xsl:text> </xsl:text>
+	      </span>
+	      <xsl:text> </xsl:text>
+	      <span class="caret"/>
+	    </button>
+	    <ul class="dropdown-menu" role="menu">
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+	    </ul>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+  
   <xsl:template match="script/parameters/parameter">
     <xsl:apply-templates select="/job/settings/scripts/pubscript[@id=current()/ancestor::script/@name]/parameters/parameter[@name = current()/@name]">
       <xsl:with-param name="value" select="@value"/>
@@ -316,34 +384,37 @@
     <div class="panel panel-default job-comp script {@id}" data-kolekti-script-id="{@id}">
       <div class="panel-body">
 	<h5><strong><xsl:value-of select="name"/></strong></h5>
-	
-	<div class="row">
-	  <div class="col-sm-9">
-	    <div class="row">
-	      <div class="col-sm-4">
-		<label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
-	      </div>
-	      <div class="col-sm-8">
-		<input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+
+	<xsl:if test="not(@multi)">
+	  <div class="row">
+	    <div class="col-sm-9">
+	      <div class="row">
+		<div class="col-sm-4">
+		  <label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
+		</div>
+		<div class="col-sm-8">
+		  <input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+		</div>
 	      </div>
 	    </div>
-	  </div>
-	  <div class="col-sm-3">
-	    <div class="checkbox">
-	      <label>
-		<input type="checkbox" class="script-enabled" checked="checked"/>
-		<xsl:text> Sortie active</xsl:text>
-	      </label>
+	    <div class="col-sm-3">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="script-enabled" checked="checked"/>
+		  <xsl:text> Sortie active</xsl:text>
+		</label>
+	      </div>
 	    </div>
-	  </div>
-	  <div class="col-sm-3">
-	    <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
-	  </div>
-	  <div class="col-sm-9">
-	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
 	    
+	    <div class="col-sm-3">
+	      <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	    </div>
+	    <div class="col-sm-9">
+	      <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
+	      
+	    </div>
 	  </div>
-	</div>
+	</xsl:if>
 
 	<xsl:apply-templates select="parameters/parameter"/>
 	<hr/>
@@ -353,8 +424,6 @@
       </div>
     </div>
   </xsl:template>
-
-
 
   <xsl:template match="pubscript/parameters/parameter">
     <xsl:param name="value" select="''"/>
@@ -398,4 +467,92 @@
       </div>
     </div>
   </xsl:template>
+
+
+  <xsl:template name="multiscript">
+    <div class="panel panel-default job-comp script multiscript" data-kolekti-script-id="multiscript">
+      <div class="panel-body">
+	<h5><strong>Enchaînement</strong></h5>
+	
+	<div class="row">
+	  <div class="col-sm-9">
+	    <div class="row">
+	      <div class="col-sm-4">
+		<label for="script_name_multiscript"><strong>Nom de la sortie</strong></label>
+	      </div>
+	      <div class="col-sm-8">
+		<input type="text" name="script_name" class="script-name form-control" value="multi" id="script_name_multi"/>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-sm-3">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="script-enabled" checked="checked"/>
+		<xsl:text> Sortie active</xsl:text>
+	      </label>
+	    </div>
+	  </div>
+	  <div class="col-sm-3">
+	    <label for="script_filename_multi">Nom des fichiers publiés</label>
+	  </div>
+	  <div class="col-sm-9">
+	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_multi" value=""/>
+	    
+	  </div>
+	</div>
+
+
+
+	<div class="multi-area">	
+	  <h5>Enchaînement de publication</h5>
+	  <div class="multiscript-list publication-scripts"/>
+	  <div class="row multi-add-script-pub">
+	    <div class="col-xs-4">
+	      <div class="btn-group">
+		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		  Ajouter un script
+		  <xsl:text> </xsl:text>
+		  <span class="caret"/>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+		</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+
+	<div class="multi-area">	
+	  <h5>Enchaînement de validation</h5>
+	  <div class="multiscript-list validation-scripts"/>
+	  <div class="row multi-add-script-valid">
+	    <div class="col-xs-4">
+	      <div class="btn-group">
+		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		  <span class="kolekti-param-value-menu">
+		    Ajouter un script
+		    <xsl:text> </xsl:text>
+		  </span>
+		  <xsl:text> </xsl:text>
+		  <span class="caret"/>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+		</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<hr/>
+	<div class="pull-right">
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
+	</div>
+      </div>
+    </div>
+
+  </xsl:template>
+
 </xsl:stylesheet>

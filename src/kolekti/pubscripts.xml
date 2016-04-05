@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scripts>
 
+
+  <pubscript id="filterpivot" type="plugin" multi="yes">
+    <name>Filtrage du pivot</name>
+    <plugin>filterpivot</plugin>
+    <parameters>
+      <parameter name="filter" label="Filtre de pivot" 
+		 type="filelist" dir="kolekti/publication-templates/filterpivot/xsl" ext="xsl"/>
+    </parameters>
+  </pubscript>
+
+  
+  <pubscript id="princexml_multi" type="shell" multi="yes">
+    <name>Générer pdf avec PrinceXML</name>
+    <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_/." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
+    <parameters>
+      <parameter name="CSS" label="Feuille de style" 
+		 type="filelist" dir="kolekti/publication-templates/princexml/css" ext="css"/>
+    </parameters>
+  </pubscript>
+
+  <pubscript id="serializepdf" type="plugin" multi="yes">
+    <name>Optimiser le pdf pour le web</name>
+    <plugin>serializepdf</plugin>
+    <parameters/>
+  </pubscript>
+
+
+
+
   <pubscript id="princexml" type="shell">
     <name>Générer pdf avec PrinceXML</name>
     <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_/." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
