@@ -127,7 +127,7 @@
 
 	      <li role="separator" class="divider"></li>
 
-	      <li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement de scripts</a></li>
+	      <li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement d'actions</a></li>
 	    </ul>
 	  </div>
 	</div>
@@ -323,7 +323,7 @@
 
   <xsl:template match="publication">
     <div class="multi-area">	
-      <h5>Enchaînement de publication</h5>
+      <h5>Actions lors de la publication</h5>
       <div class="multiscript-list publication-scripts">
 	<xsl:apply-templates select="script"/>
       </div>
@@ -331,7 +331,7 @@
 	<div class="col-xs-4">
 	  <div class="btn-group">
 	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-	      Ajouter un script
+	      Ajouter une action
 	      <xsl:text> </xsl:text>
 	      <span class="caret"/>
 	    </button>
@@ -346,7 +346,7 @@
   
   <xsl:template match="validation">
     <div class="multi-area">	
-      <h5>Enchaînement de validation</h5>
+      <h5>Actions lors de l'officialisation d'une version</h5>
       <div class="multiscript-list validation-scripts">
 	<xsl:apply-templates select="script"/>
       </div>
@@ -355,7 +355,7 @@
 	  <div class="btn-group">
 	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
 	      <span class="kolekti-param-value-menu">
-		Ajouter un script
+		Ajouter une action
 		<xsl:text> </xsl:text>
 	      </span>
 	      <xsl:text> </xsl:text>
@@ -472,7 +472,7 @@
   <xsl:template name="multiscript">
     <div class="panel panel-default job-comp script multiscript" data-kolekti-script-id="multiscript">
       <div class="panel-body">
-	<h5><strong>Enchaînement</strong></h5>
+	<h5><strong>Enchaînement d'actions</strong></h5>
 	
 	<div class="row">
 	  <div class="col-sm-9">
@@ -505,13 +505,13 @@
 
 
 	<div class="multi-area">	
-	  <h5>Enchaînement de publication</h5>
+	  <h5>Actions lors de la publication</h5>
 	  <div class="multiscript-list publication-scripts"/>
 	  <div class="row multi-add-script-pub">
 	    <div class="col-xs-4">
 	      <div class="btn-group">
 		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-		  Ajouter un script
+		  Ajouter une action
 		  <xsl:text> </xsl:text>
 		  <span class="caret"/>
 		</button>
@@ -525,14 +525,14 @@
 	
 
 	<div class="multi-area">	
-	  <h5>Enchaînement de validation</h5>
+	  <h5>Actions lors de l'officialisation d'une version</h5>
 	  <div class="multiscript-list validation-scripts"/>
 	  <div class="row multi-add-script-valid">
 	    <div class="col-xs-4">
 	      <div class="btn-group">
 		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
 		  <span class="kolekti-param-value-menu">
-		    Ajouter un script
+		    Ajouter une action
 		    <xsl:text> </xsl:text>
 		  </span>
 		  <xsl:text> </xsl:text>
