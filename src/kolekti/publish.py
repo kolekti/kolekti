@@ -166,6 +166,7 @@ class Publisher(PublisherMixin, kolektiBase):
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
                 try:
                     self.copy_script_params(script, profile, assembly_dir)
+                    self.copy_script_variables(script, profile, assembly_dir)
                 except:
                     import traceback
                     events.append({
@@ -402,7 +403,8 @@ class Publisher(PublisherMixin, kolektiBase):
         except IndexError:
             logging.error("Script %s not found" %name)
             raise
-
+        # copy variable files used in scripts definitions
+        
         # copy libs
         try:
             stype = scrdef.get('type')
@@ -469,7 +471,19 @@ class Publisher(PublisherMixin, kolektiBase):
             raise
         
         
-    
+    def copy_script_variables(self, script, profile, assembly_dir):
+        scriptlabel = script.find('filename').text
+        scriptlabel = self.substitute_criteria(scriptlabel, profile)
+        for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', scriptlabel):
+            # logging.debug(variable)
+            splitVar = variable[1:-1].split(':')
+            sheet = splitVar[0].strip()
+            if sheet[0] != "/":
+                variables_file = self.get_base_variable(sheet)
+            else:
+                variables_file = sheet
+            srcdir,filer = variables_file.rsplit("/",1)
+            self.script_copy(filer, srcdir, assembly_dir, 'xml')
 
 
     def start_script(self, script, profile, assembly_dir, pivot):
