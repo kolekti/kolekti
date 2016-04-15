@@ -476,7 +476,6 @@ class ReleaseStateView(kolektiMixin, TemplateView):
             lang = request.POST.get('lang')
             assembly = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
             self.syncMgr.propset("release_state",state, assembly)
-#            self.syncMgr.commit([assembly],"change release state")
             return HttpResponse(state)
         except:
             import traceback
@@ -540,10 +539,42 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
             print traceback.format_exc()
         return HttpResponse(content)
     
-        
+
+class ReleasePublicationsView(kolektiMixin, TemplateView):
+    template_name = "releases/publications.html"
+    
+    def __release_publications(self, lang, release_path):
+        publications = []
+        try:
+            mf = json.loads(self.read(release_path + "/manifest.json"))
+            for event in mf:
+                if event.get('event','') == "release_publication":
+                    for event2 in event.get('content'):
+                        if event2.get('event','') == "lang" and event2.get('label','') == lang:
+                            publications.extend(event2.get('content'))
+        except:
+            import traceback
+            print traceback.format_exc()
+        return publications
+
+    def get(self, request):
+        release_path = request.GET.get('release')
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        context = self.get_context_data({
+            'publications':self.__release_publications(lang, release_path)
+        })
+        return self.render_to_response(context)
+                
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
+    def __has_valid_actions(self,  release_path):
+        assembly = release_path.rsplit('/',1)[1]
+        xjob = self.parse(release_path + '/kolekti/publication-parameters/'+ assembly +'_asm.xml')
+        print xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')
+        return len(xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')) > 0
+
+    
     def get_context_data(self, context):
         context = super(ReleaseDetailsView, self).get_context_data(context)
         states = []
@@ -583,6 +614,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'assembly_name':assembly_name,
             'lang':lang,
             'srclang':srclang,
+            'validactions':self.__has_valid_actions(release_path)
         })
         return self.render_to_response(context)
     
@@ -625,6 +657,29 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         try:
             p = publish.ReleasePublisher(release_path, projectpath, langs=langs)
             return StreamingHttpResponse(self.format_iterator(p.publish_assembly(assembly_name + "_asm")), content_type="text/html")
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            context.update({'success':False})
+            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
+
+class ReleaseValidateView(kolektiMixin, TemplateView):
+    def post (self, request):
+        release_path = request.POST.get('release')
+        langs = request.POST.getlist('langs[]',[])
+        context={}
+
+#        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
+#        print jobpath
+#        xjob = self.parse(jobpath)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        try:
+            p = publish.ReleasePublisher(release_path, projectpath, langs=langs)
+            return StreamingHttpResponse(self.format_iterator(p.validate_release()), content_type="text/html")
 
         except:
             import traceback

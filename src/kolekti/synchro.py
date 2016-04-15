@@ -9,7 +9,7 @@ import sys
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-from exceptions import *
+from kolekti.exceptions import *
 
 
 def initLocale():

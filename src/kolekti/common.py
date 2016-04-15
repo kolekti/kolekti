@@ -20,7 +20,7 @@ import mimetypes
 mimetypes.init()
 from lxml import etree as ET
 
-from exceptions import *
+from kolekti.exceptions import *
 from settings import settings
 from synchro import SynchroManager
 from searchindex import IndexManager
@@ -105,7 +105,6 @@ class kolektiBase(object):
         self._version = self._config['version']
         self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logging.debug("kolekti v%s"%self._version)
-
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
