@@ -580,7 +580,7 @@ class kolektiBase(object):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
         # logging.debug("copyFile %s -> %s"%(ossource, ospath))
-               
+        
         cp = shutil.copy(ossource, ospath)
         if hasattr(self, "_draft") and self._draft is False:
             self.post_save(path)
@@ -684,8 +684,7 @@ class kolektiBase(object):
         if sheet[0] != "/":
             variables_file = self.get_base_variable(sheet)
         else:
-            variables_file = sheet
-
+            variables_file = self.process_path(sheet)
         xvariables = self.parse(variables_file + '.xml')
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
         criteria_dict = self._get_criteria_dict(profile)

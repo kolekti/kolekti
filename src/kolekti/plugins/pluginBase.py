@@ -78,10 +78,21 @@ class plugin(PublisherMixin,kolektiBase):
                                           resdir = self.assembly_dir,
                                           **kwargs)
 
+    def process_path(self, path):
+        path = super(plugin, self).process_path(path)
+        if self.release is None:
+            return path
+        else:
+            return '/release/' + self.release + path
+    
     def __call__(self, scriptdef, profile, assembly_dir, pivot):
         self.scriptname = scriptdef.get('name')
         logging.debug("calling script %s", self.scriptname)
-
+        self.release = None
+        adparts = assembly_dir.split('/')
+        
+        if len(adparts) == 2 and adparts[0] == "releases":
+            self.release = adparts[1]
         self.scriptdef = scriptdef
         self.profile = profile
         self.assembly_dir = assembly_dir
@@ -92,7 +103,7 @@ class plugin(PublisherMixin,kolektiBase):
         #self.publication_file = self.substitute_criteria(pubfile, profile)
 
         self.publication_file = self.substitute_variables(self.substitute_criteria(unicode(scriptdef.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
-
+        
         self.publication_dir = self.pubdir(assembly_dir, profile)
         self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file #+ "_" + self.scriptname
         try:
