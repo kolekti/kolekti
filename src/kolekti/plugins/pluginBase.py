@@ -83,14 +83,14 @@ class plugin(PublisherMixin,kolektiBase):
         if self.release is None:
             return path
         else:
-            return '/release/' + self.release + path
+            return '/releases/' + self.release + '/' +  path
     
     def __call__(self, scriptdef, profile, assembly_dir, pivot):
         self.scriptname = scriptdef.get('name')
         logging.debug("calling script %s", self.scriptname)
         self.release = None
-        adparts = assembly_dir.split('/')
-        
+        adparts = assembly_dir[1:].split('/')
+        logging.debug("adparts: %s ", str(adparts))
         if len(adparts) == 2 and adparts[0] == "releases":
             self.release = adparts[1]
         self.scriptdef = scriptdef
