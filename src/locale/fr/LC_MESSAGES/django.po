@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolekti\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-02 10:46+0100\n"
-"PO-Revision-Date: 2016-03-02 11:01+0100\n"
+"POT-Creation-Date: 2016-04-25 14:34+0200\n"
+"PO-Revision-Date: 2016-04-21 22:53+0100\n"
 "Last-Translator: Josselin PEREZ <josselin.perez@ymail.com>\n"
 "Language-Team: Exselt <contact@exselt.fr>\n"
 "Language: fr\n"
@@ -120,10 +120,6 @@ msgstr "Generic modal"
 #: kolekti_server/kserver/templates/window.html:43
 msgid "Cancel"
 msgstr "Annuler"
-
-#: kolekti_server/kserver/templates/projects-config.html:4
-msgid "menu-current"
-msgstr "menu-current"
 
 #: kolekti_server/kserver/templates/projects-config.html:6
 msgid "configure language"
@@ -283,20 +279,20 @@ msgstr "Publié le"
 
 #: kolekti_server/kserver/templates/browser/main.html:34
 msgid "New File :"
-msgstr ""
+msgstr "Nouveau fichier :"
 
 #: kolekti_server/kserver/templates/browser/main.html:35
 #: kolekti_server/kserver/templates/browser/main.html:41
 msgid "ok"
-msgstr ""
+msgstr "ok"
 
 #: kolekti_server/kserver/templates/browser/main.html:52
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: kolekti_server/kserver/templates/browser/main.html:53
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: kolekti_server/kserver/templates/browser/main.html:54
 #, fuzzy
@@ -305,7 +301,10 @@ msgstr "Actif"
 
 #: kolekti_server/kserver/templates/browser/main.html:94
 msgid "Parental Directory"
-msgstr ""
+msgstr "Dossier Parent"
+
+#~ msgid "menu-current"
+#~ msgstr "menu-current"
 
 #, fuzzy
 #~ msgid "Synchro"

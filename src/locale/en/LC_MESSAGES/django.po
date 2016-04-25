@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolekti\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-02 10:46+0100\n"
+"POT-Creation-Date: 2016-04-25 14:34+0200\n"
 "PO-Revision-Date: 2016-03-02 10:57+0100\n"
 "Last-Translator: Josselin PEREZ <josselin.perez@ymail.com>\n"
 "Language-Team: Exselt <contact@exselt.com>\n"
@@ -118,10 +118,6 @@ msgstr "Generic modal"
 #: kolekti_server/kserver/templates/window.html:43
 msgid "Cancel"
 msgstr "Cancel"
-
-#: kolekti_server/kserver/templates/projects-config.html:4
-msgid "menu-current"
-msgstr "menu-current"
 
 #: kolekti_server/kserver/templates/projects-config.html:6
 msgid "configure language"
@@ -304,6 +300,9 @@ msgstr "Active"
 #: kolekti_server/kserver/templates/browser/main.html:94
 msgid "Parental Directory"
 msgstr ""
+
+#~ msgid "menu-current"
+#~ msgstr "menu-current"
 
 #, fuzzy
 #~ msgid "Synchro"
