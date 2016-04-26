@@ -199,7 +199,7 @@ $(document).ready(function() {
 	    var x0 = d3.scale
 		.ordinal()
 		.domain(by_year.map(function(d) {
-		    return parseFloat(d.key);
+		    return d.key;
 		}))
 		.rangeRoundPoints([0, width]);
 
