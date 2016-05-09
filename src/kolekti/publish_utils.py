@@ -68,13 +68,12 @@ class PublisherMixin(object):
 
     def purge_manifest_events(self, pubevents):
         # remove ElementTree objects from events - call before any manifest file update
-        for ev in pubevents:
-            if isinstance(ev, list):
-                map(purge_manifest_events, ev)
-            elif isinstance(ev, dict):
-                if ev.get('ET') is not None:
-                    ev.update({'ET':''})
-                map(pur_manifest_events, ev.values())
+        if isinstance(pubevents, list):
+            map(self.purge_manifest_events, pubevents)
+        elif isinstance(pubevents, dict):
+            if pubevents.get('ET') is not None:
+                pubevents.update({'ET':''})
+            map(self.purge_manifest_events, pubevents.values())
         
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
