@@ -1143,12 +1143,16 @@ class ReleasePublisher(Publisher):
         finally:
             self.purge_manifest_events(pubevents)
             try:
-                mfevents = json.loads(self.read(self._release_dir + '/manifest.json'))
-                for event in mfevents:
-                    if event.get('event','') == "release_publication":
-                        for event2 in event.get('content'):
-                            if event2.get('event','') == "lang" and event2.get('label','') == lang:
-                                event2.update({'content':[]})
+                try:
+                    mfevents = json.loads(self.read(self._release_dir + '/manifest.json'))
+                    for event in mfevents:
+                        if event.get('event','') == "release_publication":
+                            for event2 in event.get('content'):
+                                if event2.get('event','') == "lang" and event2.get('label','') == lang:
+                                    event2.update({'content':[]})
+                except IOError:
+                    mfevents = []
+                     
                 mfevents.append({
                     "event":"release_publication",
                     "path":self._release_dir,
