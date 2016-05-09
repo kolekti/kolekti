@@ -7,6 +7,7 @@ import pluginBase
 import WebHelp5
 import filterpivot
 import serializepdf
+import princexml_nbpage
 
 #def getPlugin(plugin, path):
 #    logging.debug('plugin import %s'%plugin)

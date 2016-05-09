@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scripts>
 
-
-  <pubscript id="filterpivot" type="plugin" multi="yes">
+  <!-- chained pubscripts -->
+  <pubscript id="filterpivot" type="plugin" multi="yes" input="pivot" output="pivot">
     <name>Filtrage du pivot</name>
     <plugin>filterpivot</plugin>
     <parameters>
@@ -10,9 +10,8 @@
 		 type="filelist" dir="kolekti/publication-templates/filterpivot/xsl" ext="xsl"/>
     </parameters>
   </pubscript>
-
   
-  <pubscript id="princexml_multi" type="shell" multi="yes">
+  <pubscript id="princexml_multi" type="shell" multi="yes" input="pivot" output="pdf">
     <name>Générer pdf avec PrinceXML</name>
     <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_/." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
     <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
@@ -22,15 +21,64 @@
     </parameters>
   </pubscript>
 
-  <pubscript id="serializepdf" type="plugin" multi="yes">
+  <pubscript id="princexml_nbpage" type="plugin" multi="yes" input="pivot" output="pdf">
+    <name>Générer pdf avec PrinceXML 2 passes (comptage pages)</name>
+    <plugin>princexml_nbpage</plugin>
+    <cmd>prince "_INCOPY_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_/." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
+    <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
+    <parameters>
+      <parameter name="CSS" label="Feuille de style" 
+		 type="filelist" dir="kolekti/publication-templates/princexml/css" ext="css"/>
+    </parameters>
+  </pubscript>
+
+  <pubscript id="WebHelp5_multi" type="plugin">
+    <name>WebHelp5 (Aide en ligne html5)</name>
+    <plugin>WebHelp5</plugin>
+    <parameters>
+      <parameter name="template" label="Directives" 
+         type="filelist" 
+         dir="kolekti/publication-templates/WebHelp5"
+         ext="xht"/>
+
+      <parameter name="css" label="Feuille de style" 
+         type="filelist" 
+         dir="kolekti/publication-templates/WebHelp5/styles" 
+         ext="css"
+         copytopub="usercss"/>
+
+      <parameter name="pivot_filter" label="Filtre de pivot" 
+		 type="filelist"
+		 dir="kolekti/publication-templates/WebHelp5/filters"
+		 ext="xsl"/>
+
+      <parameter name="zip" label="Créer zip" 
+         type="boolean"/>
+
+      <parameter name="labels" 
+         type="resource" 
+         dir="sources/{LANG}/variables"
+         file="WebHelp5_labels"
+	 ext="xml"
+         />
+      <parameter name="generate" 
+         type="resource" 
+         dir="kolekti/publication-templates/WebHelp5/xsl"
+	 onfail="silent"
+         />
+    </parameters>
+  </pubscript>
+
+  
+  <pubscript id="serializepdf" type="plugin" multi="yes" input="pdf" output="pdf">
     <name>Optimiser le pdf pour le web</name>
     <plugin>serializepdf</plugin>
+    <cmd>gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dFastWebView=true -sOutputFile=_PUBDIR_/_PUBNAME_.pdf _INCOPY_</cmd>
+    <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
     <parameters/>
   </pubscript>
 
-
-
-
+  <!-- single scripts -->
   <pubscript id="princexml" type="shell">
     <name>Générer pdf avec PrinceXML</name>
     <cmd>prince "_PIVOT_" -s "_SRCDIR_/kolekti/publication-templates/princexml/css/_CSS_.css" --baseurl "_SRCDIR_/." -o "_PUBDIR_/_PUBNAME_.pdf"</cmd>
@@ -42,8 +90,6 @@
 		 type="filelist" dir="kolekti/publication-templates/princexml/filters" ext="xsl"/>
     </parameters>
   </pubscript>
-
-
 
   <pubscript id="fop" type="shell">
     <name>Générer pdf avec Apache fop</name>
@@ -99,181 +145,5 @@
 
 
 
-<!--
-  <pubscript id="xhtml" type="xslt">
-    <name>Publication xhtml+css</name>
-    <stylesheet>pubxhtml.xsl</stylesheet>
-    <parameters>
-      <parameter name="css" label="Feuille de style" 
-		 type="filelist" 
-		 dir="xhtml/styles" ext="css"
-		 copyto="css"/>
-    </parameters>
-    <output>_DOCNAME_-pub.html</output>
-  </pubscript>
-
-  <pubscript id="S5" type="plugin">
-    <name>S5 (Présentation xhtml)</name>
-    <plugin>S5</plugin>
-    <parameters>
-      <parameter name="css" label="Feuille de style" 
-		 type="filelist" 
-		 dir="S5/styles" 
-		 ext="css"
-		 copytopub="ui/kolekti"/>
-      <parameter name="zip" label="Créer zip" 
-		 type="boolean"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="WebHelp" type="plugin">
-    <name>WebHelp (Aide en ligne xhtml)</name>
-    <plugin>WebHelp</plugin>
-    <parameters>
-      <parameter name="template" label="Directives" 
-		 type="filelist" 
-		 dir="WebHelp/config"
-		 ext="xht"/>
-      <parameter name="css" label="Feuille de style" 
-		 type="filelist" 
-		 dir="WebHelp/styles" 
-		 ext="css"
-		 copytopub="usercss"/>
-      <parameter name="zip" label="Créer zip" 
-		 type="boolean"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="WebHelp5" type="plugin">
-    <name>WebHelp5 (Aide en ligne html5)</name>
-    <plugin>WebHelp5</plugin>
-    <parameters>
-      <parameter name="template" label="Directives" 
-         type="filelist" 
-         dir="WebHelp5/config"
-         ext="xht"/>
-      <parameter name="css" label="Feuille de style" 
-         type="filelist" 
-         dir="WebHelp5/styles" 
-         ext="css"
-         copytopub="usercss"/>
-      <parameter name="zip" label="Créer zip" 
-         type="boolean"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="easiware" type="plugin">
-    <name>easiware (Aide en ligne html5)</name>
-    <plugin>easiware</plugin>
-    <parameters>
-      <parameter name="template" label="Directives" 
-         type="filelist" 
-         dir="easiware/config"
-         ext="xsl"/>
-      <parameter name="css" label="Feuille de style" 
-         type="filelist" 
-         dir="easiware/styles" 
-         ext="css"
-         copytopub="usercss"/>
-      <parameter name="zip" label="Créer zip" 
-         type="boolean"/>
-      <parameter name="urlform" label="URL formulaire" 
-         type="text"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="chm" type="plugin">
-    <name>chm (Aide en ligne windows chm)</name>
-    <plugin>chm</plugin>
-    <parameters>
-      <parameter name="css" label="Feuille de style" 
-         type="filelist" 
-         dir="chm/styles" 
-         ext="css"
-         copyto="usercss"/>
-    </parameters>
-  </pubscript>
-  
-
-  <pubscript id="odt" type="plugin">
-    <name>Générer OpenDocument Text, créer un pdf</name>
-    <plugin>odt</plugin>
-    <parameters>
-      <parameter name="template" label="Modèle" 
-		 type="filelist" dir="opendocument"
-		 ext="ott"/>
-      <parameter name="pdf" label="Générer PDF" type="boolean"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="odtcsv" type="plugin">
-    <name>Générer OpenDocument Text, créer un pdf avec un fichier csv</name>
-    <plugin>odtcsv</plugin>
-    <parameters>
-      <parameter name="template" label="Modèle" 
-       type="filelist" dir="opendocument"
-       ext="ott"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="epub" type="plugin">
-    <name>Epub (Livre électronic)</name>
-    <plugin>epub</plugin>
-    <parameters>
-      <parameter name="css" label="Feuille de style" 
-       type="filelist" 
-       dir="epub/styles" 
-       ext="css"
-       copyto="OEBPS/usercss"/>
-    </parameters>
-  </pubscript>
-
-  <pubscript id="princexmlcsv" type="plugin">
-    <name>Générer pdf avec PrinceXML et csv</name>
-    <plugin>princexmlcsv</plugin>
-    <parameters>
-      <parameter name="css" label="Feuille de style" 
-       type="filelist" dir="princexml/styles" ext="css"
-       copyto="css"/>
-    </parameters>
-  </pubscript>
-
-
-
-  <pubscript id="easiware" type="plugin">
-    <name>easiware (Aide en ligne html5)</name>
-    <plugin>easiware</plugin>
-    <parameters>
-      <parameter name="template" label="Directives" 
-         type="filelist" 
-         dir="easiware/config"
-         ext="xsl"/>
-      <parameter name="css" label="Feuille de style" 
-         type="filelist" 
-         dir="easiware/styles" 
-         ext="less"
-         copyto="usercss"/>
-      <parameter name="zip" label="Créer zip" 
-         type="boolean"/>
-      <parameter name="urlform" label="URL formulaire" 
-         type="text"/>
-    </parameters>
-  </pubscript>
-
-
-
-  <pubscript id="co-ment" type="plugin">
-    <name>Publication sur la plateforme co-ment</name>
-    <plugin>coment</plugin>
-    <parameters>
-      <parameter name="serviceid"
-                 label="Service" 
-                 type="remoteservice">
-        <field name="foreignid" value="_PROJECT_" />
-        <field name="servicetype" value="coment" />
-       </parameter>
-    </parameters>
-  </pubscript>
--->
 
 </scripts> 

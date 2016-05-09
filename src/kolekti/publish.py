@@ -28,7 +28,6 @@ class Publisher(PublisherMixin, kolektiBase):
         #if self._publang is None:
         #    self._publang = self._config.get("sourcelang","en")
         self._cleanup = True
-        self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
         logging.debug("kolekti %s"%self._version)
 
     def getPublisherExtensions(self):        
@@ -43,11 +42,6 @@ class Publisher(PublisherMixin, kolektiBase):
                          namespaces=self.nsmap)
         return unicode(var)
 
-    def __substscript(self, s, subst, profile):
-        """substitues all _NAME_ by its profile value in string s""" 
-        for k,v in subst.iteritems():
-            s = s.replace('_%s_'%k,v)
-        return self.substitute_variables(self.substitute_criteria(s,profile),profile,{"LANG":self._publang})
 
     def get_script(self, plugin):
 
@@ -166,9 +160,7 @@ class Publisher(PublisherMixin, kolektiBase):
             for script in xjob.xpath("/job/scripts/script[not(@name='multiscript')][@enabled = 1]|/job/scripts/script[@name='multiscript'][@enabled = 1]/*/script"):
                 scriptlabel = script.xpath('string(label|ancestor::script/label)')
                 try:
-                    print script.get('name')
                     self.copy_script_params(script, profile, assembly_dir)
-                    self.copy_script_variables(script, profile, assembly_dir)
                 except:
                     import traceback
                     print traceback.format_exc()
@@ -180,6 +172,23 @@ class Publisher(PublisherMixin, kolektiBase):
                         })
 
                     logging.error("resources for script %s not found"%scriptlabel)
+                    logging.debug(traceback.format_exc())
+                    
+            for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
+                scriptlabel = script.xpath('string(label|ancestor::script/label)')
+                try:
+                    self.copy_script_variables(script, profile, assembly_dir)
+                except:
+                    import traceback
+                    print traceback.format_exc()
+                    events.append({
+                        'event':'error',
+                        'msg':"Impossible de copier les variables du script %s"%scriptlabel,
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        })
+
+                    logging.error("variables for script %s not found"%scriptlabel)
                     logging.debug(traceback.format_exc())
 
         return assembly, assembly_dir, pubname, events 
@@ -600,7 +609,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         localsrc = self.getOsPath(str(media.get('src')))
                         media.set('src', localsrc)
 
-                cmd=self.__substscript(cmd, subst, profile)
+                cmd=self._substscript(cmd, subst, profile)
                 cmd=cmd.encode(LOCAL_ENCODING)
                 logging.debug(cmd)
                 print "--------------"
@@ -635,11 +644,11 @@ class Publisher(PublisherMixin, kolektiBase):
     
                     if not has_error:
                         xl=scrdef.find('link')
-                        outfile=self.__substscript(xl.get('name'), subst, profile)
-                        outref=self.__substscript(xl.get('ref'), subst, profile)
+                        outfile=self._substscript(xl.get('name'), subst, profile)
+                        outref=self._substscript(xl.get('ref'), subst, profile)
                         outtype=xl.get('type')
                         logging.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
-                        res=[{"type":outtype, "label":outfile, "url":outref}]
+                        res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
                 except:
                     import traceback
                     logging.debug(traceback.format_exc())
@@ -659,7 +668,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     sout=scrdef.find("output").text
 
                     ###
-                    sout=self.__substscript(sout, subst, profile)
+                    sout=self._substscript(sout, subst, profile)
 
                     xparams={}
                     for n,v in params.iteritems():
@@ -1161,7 +1170,6 @@ class ReleasePublisher(Publisher):
         return
 
     def validate_script(self, xjob, profilename, scriptname, puboutput):
-        print profilename, scriptname
         validscripts = xjob.xpath('/job/scripts/script[label = "%s"]/validation/script'%scriptname)
         if not len(validscripts):
             return None
@@ -1171,8 +1179,11 @@ class ReleasePublisher(Publisher):
         listres = []
         outdata = None
         for script in validscripts:
+            print script.get('name')
             outdata = self.start_script(script, xprofile, assembly_dir, indata)
             listres.append(outdata)
+            indata = outdata
+        print outdata
         return {
             'event':'result',
             'script':scriptname,

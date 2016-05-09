@@ -23,6 +23,7 @@ import shutil
 import logging
 
 from lxml import etree as ET
+from PyPDF2 import PdfFileReader
 
 from kolekti.plugins import pluginBase
 
@@ -33,9 +34,35 @@ class plugin(pluginBase.plugin):
         main publication function
         """
         res = []
-        logging.debug( "serialize pdf  : %s %s"%(self.assembly_dir,self.publication_dir))
-        print "serialize pdf",self.assembly_dir,self.publication_dir,self.pivot
+        pivot = self.pivot
+        body = pivot.xpath('/*/*[local-name() = "body"]')[0]
+
+        # make image urls relative in pivot
+        for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
+            src = media.get('src')
+            if src[0] == "/":
+                media.set('src', src[1:])
+
+        logging.debug( "pdf nbpages : %s %s"%(self.assembly_dir,self.publication_dir))
+
+        # produce pdf once
+        first_res = self.start_cmd()
+        pdf = first_res[0]['file']
+
+        # count pages in pdf
+        with open(self.getOsPath(pdf), 'rb') as pdf:
+            nbpages = PdfFileReader(pdf).getNumPages() 
+
+        # update pivot body attributes
+        body.set('data-nbp', str(nbpages))
+        body.set('data-nbp2', str(nbpages % 2))
+        body.set('data-nbp4', str(nbpages % 4))
+        body.set('data-nbp8', str(nbpages % 8))
+        body.set('data-nbp16', str(nbpages % 16))
+
+        # produce pdf with modified pivot
         res = self.start_cmd()
+        
         return res
     
 
