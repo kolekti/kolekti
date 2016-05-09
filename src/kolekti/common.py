@@ -765,6 +765,18 @@ class kolektiBase(object):
                                "name":os.path.splitext(file)[0]}
         
     @property
+    def iterreleasejobs(self):
+#        print 'iter',os.path.join(self._path, 'releases')
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if rootparts[-1] == 'publication-parameters':
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.xml':
+                        if not file=='criterias.xml':
+                            yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
+                                   "name":os.path.splitext(file)[0]}
+        
+    @property
     def iterpublications(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
             rootparts = root.split(os.path.sep)
