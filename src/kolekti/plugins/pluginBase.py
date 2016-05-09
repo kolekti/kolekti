@@ -20,9 +20,15 @@ import os
 import sys
 import shutil
 import logging
+import re
+import tempfile
+import subprocess
+import platform
+
+
 from lxml import etree as ET
 from kolekti.common import kolektiBase
-from kolekti.publish_utils import PublisherMixin, PublisherExtensions
+from kolekti.publish_utils import PublisherMixin, PublisherExtensions, PublishException
 
 class PluginsExtensions(PublisherExtensions):
     def __init__(self, *args, **kwargs):
@@ -78,6 +84,114 @@ class plugin(PublisherMixin,kolektiBase):
                                           resdir = self.assembly_dir,
                                           **kwargs)
 
+
+    
+    def copyinput(self):
+        #        _, tmpname = tempfile.mkstemp(dir = self.getOsPath(self.pubdir(self.assembly_dir, self.profile)))
+        _, tmpname = tempfile.mkstemp()
+        inputtype = self.scriptspec.get("input")
+        print type(self.input)
+        for item in self.input:
+            if item.get('type', '') == inputtype:
+                if 'ET' in item.keys():
+                    with open(tmpname, 'w') as tmpfile:
+                        tmpfile.write(ET.tostring(item['ET']))
+                if "file"  in item.keys():
+                    shutil.copy(self.getOsPath(item["file"]), tmpname) 
+                if "data" in item.keys():
+                    with open(tmpname, 'w') as tmpfile:
+                        tmpfile.write(item['data'])
+        return tmpname
+    
+    def start_cmd(self):
+        try:
+            res = []
+            scriptlabel = self.scriptdef.xpath('string(label|ancestor::script/label)')
+            system = platform.system()
+            try:
+                cmd = self.scriptspec.find("cmd[@os='%s']"%system).text
+            except:
+                cmd = self.scriptspec.xpath("cmd[not(@os)]")[0].text
+
+            subst = {}
+            for p in self.scriptdef.xpath('parameters/parameter'):
+                subst.update({p.get('name'):p.get('value')})
+            pubdir = self.pubdir(self.assembly_dir, self.profile)
+            subst.update({
+                "APPDIR":self._appdir,
+                "PLUGINDIR":self._plugindir,
+                "PUBDIR":self.getOsPath(pubdir),
+                "SRCDIR":self.getOsPath(self.assembly_dir),
+                "BASEURI":self.getUrlPath(self.assembly_dir) + '/',
+                "PUBURI":pubdir,
+                "PUBNAME":self.publication_file,
+#                "PIVOT": self.getOsPath(pivfile)
+                })
+
+    
+            # if get file with local url                
+            if cmd.find("_PIVLOCAL_") >= 0:
+                for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
+                    localsrc = self.getOsPath(str(media.get('src')))
+                    media.set('src', localsrc)
+
+            if cmd.find("_INCOPY_") >= 0:
+                tmpfile = self.copyinput()
+                print tmpfile
+                subst.update({'INCOPY':tmpfile})
+                                            
+            cmd=self._substscript(cmd, subst, self.profile)
+            cmd=cmd.encode(self.LOCAL_ENCODING)
+            logging.debug(cmd)
+            print "--------------"
+            print cmd
+
+            exccmd = subprocess.Popen(
+                cmd,
+                shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=False)
+            err=exccmd.stderr.read()
+            out=exccmd.stdout.read()
+            exccmd.communicate()
+            err=err.decode(self.LOCAL_ENCODING)
+            out=out.decode(self.LOCAL_ENCODING)
+            for line in err.split('\n'):
+                # Doesn't display licence warning
+                if re.search('license.dat', line):
+                    continue
+                # display warning or error
+                if re.search('warning', line):
+                    logging.info("Attention %(warn)s"% {'warn': line})
+                elif re.search('error', line) or re.search('not found', line):
+                    logging.error(line)
+                    errmsg = "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(self.LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')}
+                    logging.error(errmsg)
+                    raise PublishException([errmsg] + err.split('\n'))
+
+            # display link
+            
+            xl=self.scriptspec.find('link')
+            outfile=self._substscript(xl.get('name'), subst, self.profile)
+            outref=self._substscript(xl.get('ref'), subst, self.profile)
+            outtype=xl.get('type')
+            logging.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
+            res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
+
+        except:
+            import traceback
+            logging.debug(traceback.format_exc())
+            print traceback.format_exc()
+            logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
+            raise
+
+        finally:
+            exccmd.stderr.close()
+            exccmd.stdout.close()
+        return res
+
     def process_path(self, path):
         path = super(plugin, self).process_path(path)
         if self.release is None:
@@ -85,24 +199,43 @@ class plugin(PublisherMixin,kolektiBase):
         else:
             return '/releases/' + self.release + '/' +  path
     
-    def __call__(self, scriptdef, profile, assembly_dir, pivot):
+    def __call__(self, scriptdef, profile, assembly_dir, inputs):
         self.scriptname = scriptdef.get('name')
         logging.debug("calling script %s", self.scriptname)
+
+        # check if execute in release or not
         self.release = None
         adparts = assembly_dir[1:].split('/')
         logging.debug("adparts: %s ", str(adparts))
         if len(adparts) == 2 and adparts[0] == "releases":
             self.release = adparts[1]
+
+        # get context    
         self.scriptdef = scriptdef
         self.profile = profile
         self.assembly_dir = assembly_dir
-        self.pivot = pivot
-        
-        #pubfile = scriptdef.xpath('string(filename)')
-        #pubfile = self.substitute_variables(pubfile, profile)
-        #self.publication_file = self.substitute_criteria(pubfile, profile)
 
-        self.publication_file = self.substitute_variables(self.substitute_criteria(unicode(scriptdef.xpath("string(filename)")),profile), profile, {"LANG":self._publang})
+        # normalize pivot / input attribute
+        self.pivot = None
+        if isinstance(inputs, ET._ElementTree):
+            self.pivot = inputs
+            self.input = [{'type':'pivot', 'ET':inputs}]
+        else:
+            for item in inputs:
+                if item.get('type','') == 'pivot':
+                    if 'ET' in item.keys():
+                        self.pivot = item['ET']
+                    if "file"  in item.keys():
+                        self.pivot = self.parse(item['file'])
+                    if "data" in  item.keys():
+                        self.pivot = self.parse_string(item['data'])
+            self.input = inputs
+
+        # get xml specification for the plugin        
+        self.scriptspec = self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%self.scriptname)[0]
+
+        # calculate publication path/filenames
+        self.publication_file = self.substitute_variables(self.substitute_criteria(unicode(scriptdef.xpath("string(filename|ancestor::script/filename)")),profile), profile, {"LANG":self._publang})
         
         self.publication_dir = self.pubdir(assembly_dir, profile)
         self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file #+ "_" + self.scriptname
@@ -166,3 +299,5 @@ class plugin(PublisherMixin,kolektiBase):
             logging.error("Unable to read script parameters: %s"%param)
             logging.debug(traceback.format_exc())
             return None
+
+

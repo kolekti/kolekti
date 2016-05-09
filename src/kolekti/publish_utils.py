@@ -17,6 +17,9 @@ from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 
 
 
+class PublishException(Exception):
+    pass
+
 class PublisherMixin(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
     def __init__(self, *args, **kwargs):
@@ -34,7 +37,9 @@ class PublisherMixin(object):
 
         if self._publang is None:
             self._publang = self._config.get("sourcelang","en")
-        
+
+        self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
+
                         
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
@@ -43,6 +48,11 @@ class PublisherMixin(object):
         extra.update({"LANG":self._publang})
         return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
 
+    def _substscript(self, s, subst, profile):
+        """substitues all _NAME_ by its profile value in string s""" 
+        for k,v in subst.iteritems():
+            s = s.replace('_%s_'%k,v)
+        return self.substitute_variables(self.substitute_criteria(s,profile),profile,{"LANG":self._publang})
     
     def pubdir(self, assembly_dir, profile):
         # calculates and creates the publication directory
@@ -54,7 +64,18 @@ class PublisherMixin(object):
         except:
             logging.debug("publication path %s already exists"%pubdir)
         return pubdir
-    
+
+
+    def purge_manifest_events(self, pubevents):
+        # remove ElementTree objects from events - call before any manifest file update
+        for ev in pubevents:
+            if isinstance(ev, list):
+                map(purge_manifest_events, ev)
+            elif isinstance(ev, dict):
+                if ev.get('ET') is not None:
+                    ev.update({'ET':''})
+                map(pur_manifest_events, ev.values())
+        
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
