@@ -45,7 +45,10 @@ class plugin(pluginBase.plugin):
         doc=xslt(self.pivot,
                 pubdir=u"'%s'"%puburl,
             )
-        res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/pivot.html"%self.publication_plugin_dir})
+        res.append({'type':"pivot",
+                    "label":"%s_%s"%(self.publication_file,self.scriptname),
+#                    "url": "%s/pivot.html"%self.publication_plugin_dir
+                    "ET": doc})
         return res
     
 

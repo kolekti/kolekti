@@ -945,7 +945,8 @@ class DraftPublisher(Publisher):
             yield errev
             return
 
-        finally:    
+        finally:
+            self.purge_manifest_events(pubevents)    
             try:
                 manifest = self.getOsPath(assembly_dir + '/manifest.json')
 #                mfevents = []
@@ -1140,6 +1141,7 @@ class ReleasePublisher(Publisher):
             yield errev
 
         finally:
+            self.purge_manifest_events(pubevents)
             try:
                 mfevents = json.loads(self.read(self._release_dir + '/manifest.json'))
                 for event in mfevents:

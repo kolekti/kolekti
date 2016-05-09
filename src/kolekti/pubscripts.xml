@@ -32,7 +32,7 @@
     </parameters>
   </pubscript>
 
-  <pubscript id="WebHelp5_multi" type="plugin">
+  <pubscript id="WebHelp5_multi" multi="yes" type="plugin" input="pivot" output="webhelp">
     <name>WebHelp5 (Aide en ligne html5)</name>
     <plugin>WebHelp5</plugin>
     <parameters>
@@ -46,11 +46,6 @@
          dir="kolekti/publication-templates/WebHelp5/styles" 
          ext="css"
          copytopub="usercss"/>
-
-      <parameter name="pivot_filter" label="Filtre de pivot" 
-		 type="filelist"
-		 dir="kolekti/publication-templates/WebHelp5/filters"
-		 ext="xsl"/>
 
       <parameter name="zip" label="Créer zip" 
          type="boolean"/>

@@ -64,7 +64,18 @@ class PublisherMixin(object):
         except:
             logging.debug("publication path %s already exists"%pubdir)
         return pubdir
-    
+
+
+    def purge_manifest_events(self, pubevents):
+        # remove ElementTree objects from events - call before any manifest file update
+        for ev in pubevents:
+            if isinstance(ev, list):
+                map(purge_manifest_events, ev)
+            elif isinstance(ev, dict):
+                if ev.get('ET') is not None:
+                    ev.update({'ET':''})
+                map(pur_manifest_events, ev.values())
+        
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
