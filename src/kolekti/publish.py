@@ -1011,7 +1011,7 @@ class Releaser(Publisher):
         release_name = xjob.get('pubdir', release_name)
         xjob.set('id',release_name + '_asm')
 
-        xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+        # xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
         ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
 
         # assembly
