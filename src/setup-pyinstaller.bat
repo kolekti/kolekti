@@ -13,6 +13,7 @@
 
 @for /f "tokens=1-4 delims=/ " %%G in ('date /t') do set mmddyyyy=%%I_%%H_%%G
 
-@copy %BUILDPATH%\Output\setup-kolekti_0.7.2.exe F:\kolekti\setup-kolekti_0.7.2.exe
+
+@copy %BUILDPATH%\Output\setup-kolekti_0.7.3.exe F:\kolekti\setup-kolekti_0.7.3.exe
 pause
 
