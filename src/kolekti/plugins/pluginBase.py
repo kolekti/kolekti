@@ -102,7 +102,10 @@ class plugin(PublisherMixin,kolektiBase):
                     with open(tmpname, 'w') as tmpfile:
                         tmpfile.write(item['data'])
         return tmpname
-    
+
+    def get_command(self):
+        return ''
+                    
     def start_cmd(self):
         try:
             res = []
@@ -128,7 +131,10 @@ class plugin(PublisherMixin,kolektiBase):
 #                "PIVOT": self.getOsPath(pivfile)
                 })
 
-    
+            # if get file with local url                
+            if cmd.find("_CMD_") >= 0:
+                subst.update({'CMD':self.get_command()})
+                
             # if get file with local url                
             if cmd.find("_PIVLOCAL_") >= 0:
                 for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
