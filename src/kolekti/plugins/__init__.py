@@ -9,6 +9,8 @@ import filterpivot
 import serializepdf
 import princexml_nbpage
 
+import ExportPublicationToFolder
+
 #def getPlugin(plugin, path):
 #    logging.debug('plugin import %s'%plugin)
 #    d = os.path.dirname(__file__)
