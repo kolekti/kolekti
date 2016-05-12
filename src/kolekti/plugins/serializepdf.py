@@ -27,6 +27,17 @@ from lxml import etree as ET
 from kolekti.plugins import pluginBase
 
 class plugin(pluginBase.plugin):
+
+    def get_command(self):
+        import _winreg
+        aReg = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
+        aKey = _winreg.OpenKey(aReg, "SOFTWARE\GPL Ghostscript")
+        gsversion = _winreg.EnumKey(aKey, 0)
+        sk = _winreg.OpenKey(aKey, gsversion)
+        gspaths = _winreg.QueryValueEx(sk,'GS_LIB')
+        path = gspaths[0].split(';')[0]
+        print 'ghostscript path',path
+        return path
     
     def postpub(self):
         """
