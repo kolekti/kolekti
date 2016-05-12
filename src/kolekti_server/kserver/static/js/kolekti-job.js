@@ -103,6 +103,9 @@ $(document).ready(function() {
 	    if (type == "filelist") {
 		value = $(s).data('kolekti-param-value');
 	    }
+	    if (type == "text") {
+		value = $(s).find('.kolekti-crit-value').val();
+	    }
 	    if (type == "boolean") {
 		if($(s).find('.kolekti-crit-value').get(0).checked)
 		    value = 'yes';
