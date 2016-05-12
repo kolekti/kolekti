@@ -9,9 +9,11 @@
     {% if event.event = "result" %}
     <ul class="list-unstyled">
       {% for doc in  event.docs %}
+      {% if doc.url %} 
       <li>
 	<i class="fa fa-file-{{ doc.type }}-o"></i> <a href="{{ doc.url }}" target="publications">{{ doc.label }}</a>
       </li>
+      {% endif %}
       {% endfor %}
     </ul>
     {% endif %}
