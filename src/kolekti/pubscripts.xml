@@ -32,6 +32,16 @@
     </parameters>
   </pubscript>
 
+  
+  <pubscript id="ExportPublicationToFolder" multi="yes" type="plugin">
+    <name>Copier la publication vers un dossier</name>
+    <plugin>ExportPublicationToFolder</plugin>
+    <parameters>
+      <parameter name="destination" label="Chemin du dossier destination" 
+		 type="text" />
+    </parameters>
+  </pubscript>
+
   <pubscript id="WebHelp5_multi" multi="yes" type="plugin" input="pivot" output="webhelp">
     <name>WebHelp5 (Aide en ligne html5)</name>
     <plugin>WebHelp5</plugin>
