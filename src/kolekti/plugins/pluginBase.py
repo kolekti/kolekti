@@ -20,6 +20,7 @@ import os
 import sys
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 import re
 import tempfile
 import subprocess
@@ -56,7 +57,7 @@ class plugin(PublisherMixin,kolektiBase):
         self._draft = True
         
     def get_xsl(self, xslfile, **kwargs):
-        logging.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl from plugin %s"%self._plugindir)
         try:
             xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
             xsl = super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
@@ -66,8 +67,6 @@ class plugin(PublisherMixin,kolektiBase):
                                                 **kwargs)
     
         except:
-            import traceback
-            print traceback.format_exc()
             xsl = super(plugin,self).get_xsl(xslfile,
                                             extclass = self.__ext,
                                             xsldir = os.path.join(self._plugindir,'xsl'),
@@ -77,7 +76,7 @@ class plugin(PublisherMixin,kolektiBase):
         return xsl
     
     def get_project_xsl(self,xslfile, **kwargs):
-        logging.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl from plugin %s"%self._plugindir)
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
@@ -107,6 +106,7 @@ class plugin(PublisherMixin,kolektiBase):
         return ''
                     
     def start_cmd(self):
+        logger.debug("os cmd call from plugin")
         try:
             res = []
             scriptlabel = self.scriptdef.xpath('string(label|ancestor::script/label)')
@@ -148,9 +148,7 @@ class plugin(PublisherMixin,kolektiBase):
                                             
             cmd=self._substscript(cmd, subst, self.profile)
             cmd=cmd.encode(self.LOCAL_ENCODING)
-            logging.debug(cmd)
-            print "--------------"
-            print cmd
+            logger.debug(cmd)
 
             exccmd = subprocess.Popen(
                 cmd,
@@ -170,11 +168,11 @@ class plugin(PublisherMixin,kolektiBase):
                     continue
                 # display warning or error
                 if re.search('warning', line):
-                    logging.info("Attention %(warn)s"% {'warn': line})
+                    logger.info("Attention %(warn)s"% {'warn': line})
                 elif re.search('error', line) or re.search('not found', line):
-                    logging.error(line)
+                    logger.error(line)
                     errmsg = "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(self.LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')}
-                    logging.error(errmsg)
+                    logger.error(errmsg)
                     raise PublishException([errmsg] + err.split('\n'))
 
             # display link
@@ -183,14 +181,14 @@ class plugin(PublisherMixin,kolektiBase):
             outfile=self._substscript(xl.get('name'), subst, self.profile)
             outref=self._substscript(xl.get('ref'), subst, self.profile)
             outtype=xl.get('type')
-            logging.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
+            logger.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
             res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
 
         except:
             import traceback
-            logging.debug(traceback.format_exc())
+            logger.debug(traceback.format_exc())
             print traceback.format_exc()
-            logging.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
+            logger.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
             raise
 
         finally:
@@ -207,12 +205,12 @@ class plugin(PublisherMixin,kolektiBase):
     
     def __call__(self, scriptdef, profile, assembly_dir, inputs):
         self.scriptname = scriptdef.get('name')
-        logging.debug("calling script %s", self.scriptname)
+        logger.debug("calling script %s", self.scriptname)
 
         # check if execute in release or not
         self.release = None
         adparts = assembly_dir[1:].split('/')
-        logging.debug("adparts: %s ", str(adparts))
+#        logger.debug("adparts: %s ", str(adparts))
         if len(adparts) == 2 and adparts[0] == "releases":
             self.release = adparts[1]
 
@@ -273,15 +271,15 @@ class plugin(PublisherMixin,kolektiBase):
                 refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
                 self.makedirs(refdir)
             except OSError:
-                logging.debug('makedir failed')
+                logger.debug('makedir failed')
                 import traceback
-                logging.debug(traceback.format_exc())
+                logger.debug(traceback.format_exc())
             try:
                 self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
             except:
-                logging.debug('unable to copy media')
+                logger.debug('unable to copy media')
                 import traceback
-                logging.debug(traceback.format_exc())
+                logger.debug(traceback.format_exc())
 
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
@@ -294,7 +292,7 @@ class plugin(PublisherMixin,kolektiBase):
         """
         postpub is the iterator used in plugin
         """
-        logging.debug('Dummy plugin')
+        logger.debug('Dummy plugin')
         return "Dummy plugin"
 
     def get_script_parameter(self, param):
@@ -302,8 +300,8 @@ class plugin(PublisherMixin,kolektiBase):
             return self.scriptdef.xpath('string(./parameters/parameter[@name="%s"]/@value)'%param)
         except:
             import traceback
-            logging.error("Unable to read script parameters: %s"%param)
-            logging.debug(traceback.format_exc())
+            logger.error("Unable to read script parameters: %s"%param)
+            logger.debug(traceback.format_exc())
             return None
 
 

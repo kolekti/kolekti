@@ -267,6 +267,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
+
         context = self.get_context_data()
         if context.get('active_project') is None:
             return HttpResponseRedirect('/projects/') 
@@ -662,7 +663,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
 
             return self.render_to_response(context)
@@ -685,7 +686,7 @@ class ReleaseValidateView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
 
             return self.render_to_response(context)
@@ -1139,17 +1140,17 @@ class PublicationView(kolektiMixin, View):
     template_name = "publication.html"
     def __init__(self, *args, **kwargs):
         super(PublicationView, self).__init__(*args, **kwargs)
-        self.loggerstream = StringIO()
-        import logging
-        self.loghandler = logging.StreamHandler(stream = self.loggerstream)
-        self.loghandler.setLevel(logging.WARNING)
+#        self.loggerstream = StringIO()
+#        import logging
+#        self.loghandler = logging.StreamHandler(stream = self.loggerstream)
+#        self.loghandler.setLevel(logging.WARNING)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(levelname)-8s ; %(message)s\n')
+#        formatter = logging.Formatter('%(levelname)-8s ; %(message)s\n')
         # tell the handler to use this format
-        self.loghandler.setFormatter(formatter)
-        # add the handler to the root logger
-        rl = logging.getLogger('')
-        rl.addHandler(self.loghandler)
+#        self.loghandler.setFormatter(formatter)
+#        # add the handler to the root logger
+#        rl = logging.getLogger('')
+#        rl.addHandler(self.loghandler)
 
     @classmethod
     def as_view(cls, **initkwargs):
@@ -1186,10 +1187,10 @@ class DraftView(PublicationView):
 
         except:
             import traceback
-            self.loghandler.flush()
-            print self.loggerstream
+#            self.loghandler.flush()
+#            print self.loggerstream
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
 
             return self.render_to_response(context)
@@ -1239,9 +1240,9 @@ class ReleaseView(PublicationView):
         except:
             import traceback
             print traceback.format_exc()
-            self.loghandler.flush()
+#            self.loghandler.flush()
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
             
             return self.render_to_response(context)

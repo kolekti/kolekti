@@ -2,6 +2,7 @@ import os
 import tempfile
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 import urllib2
 import pysvn
 import locale
@@ -102,8 +103,6 @@ class SynchroManager(SvnClient):
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
-            import traceback
-            print traceback.format_exc()
             raise ExcSyncNoSync
 
     def __makepath(self, path):
@@ -267,11 +266,11 @@ class SynchroManager(SvnClient):
         info = self._client.info(path)
             
         rurl = info.get('url')
-        logging.debug('dry run '+rurl)
+        logger.debug('dry run '+rurl)
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
         
-        logging.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
+        logger.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
 
         import subprocess
         cmd = 'svn merge --dry-run -r BASE:HEAD "%s"'%path 
@@ -330,16 +329,16 @@ class SynchroManager(SvnClient):
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        logging.debug("post save synchro : %s"%path)
+        logger.debug("post save synchro : %s"%path)
         if path[:14]=='/publications/':
-            logging.debug("skip")
+            logger.debug("skip")
             return
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
         try:
             if self._client.info(ospath) is None:
-                logging.debug("add")
+                logger.debug("add")
                 self._client.add(ospath)
         except pysvn.ClientError:
             self.post_save(path.rsplit('/',1)[0])
@@ -368,15 +367,13 @@ class SynchroManager(SvnClient):
 
     def propset(self, name, value, path):
         ospath = self.__makepath(path)
-        print "SETPROP",name,value,path,ospath
+        logger.debug("svn proset %s %s %s"%(name,value,path))
         self._client.propset(name, value, ospath)
         
     def propget(self, name, path):
         ospath = self.__makepath(path)
-        print "GETPROP",name,path,ospath
         try:
             props = self._client.propget(name, ospath)
-            print props
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
             import traceback

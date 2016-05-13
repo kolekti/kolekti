@@ -13,6 +13,7 @@ from kolekti.settings import settings
 #import pysvn
 
 import logging
+import logging.config
 
 
 import mimetypes
@@ -32,16 +33,20 @@ def main():
                      'publish',
                      ]
     if args.verbose:
-        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-        logging.debug('debug')
+        logging.config.fileConfig('logging-cmd-v.conf')
+        logging.debug('verbose output')
     else:
-        logging.basicConfig(format='%(message)s', level=logging.INFO)
+        logging.config.fileConfig('logging-cmd.conf')
+        #logging.basicConfig(format='%(message)s', level=logging.INFO)
 
+
+        
     if args.config:
         config = settings(args.config)
     else:
         config = settings()
-
+        
+    logger = logging.getLogger(__name__)
         
     # read configuration
     parser = argparse.ArgumentParser(parents=[metaparser],description=__doc__)    
@@ -184,24 +189,24 @@ def main():
                                    
                 for event in p.publish_draft(toc, xjob):
                     if event['event'] == "job":
-                        logging.info('Publishing Job %s'%event['label'])
+                        logger.info('Publishing Job %s'%event['label'])
                     if event['event'] == "profile":
-                        logging.info(' profile %s'%event['label'])
+                        logger.info(' profile %s'%event['label'])
                     if event['event'] == "result":
-                        logging.info('%s complete'%event['script'])
+                        logger.info('%s complete'%event['script'])
                         for doc in event['docs']:
-                            logging.info('[%s] %s'%(doc['type'],doc['url']))
+                            logger.info('[%s] %s'%(doc['type'],doc.get('url','')))
 
                     if event['event'] == "error":
-                        logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
+                        logger.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                     if event['event'] == "warning":
-                        logging.warning(' [W] %s'%(event['msg'],) )
-                        logging.debug(' [W] %s'%(event['stacktrace'],) )
-            logging.info("Publication complete")
+                        logger.warning(' [W] %s'%(event['msg'],) )
+                        logger.debug(' [W] %s'%(event['stacktrace'],) )
+            logger.info("Publication complete")
         except:
             import traceback
-            logging.debug(traceback.format_exc())
-            logging.error("Publication ended with errors")
+            logger.debug(traceback.format_exc())
+            logger.error("Publication ended with errors")
 
     if args.cmd == 'make_release':
         from kolekti import publish
@@ -216,11 +221,11 @@ def main():
             xjob = p.parse(job)
             xjob.getroot().set('pubdir',args.name)
             p.make_release(toc, xjob, release_name=args.name)
-            logging.info("Release sucessful")
+            logger.info("Release sucessful")
         except:
             import traceback
-            logging.debug(traceback.format_exc())
-            logging.error("Release ended with errors")
+            logger.debug(traceback.format_exc())
+            logger.error("Release ended with errors")
                     
     if args.cmd == 'publish_release':
         from kolekti import publish
@@ -230,24 +235,24 @@ def main():
 
             for event in p.publish_assembly(args.name + "_asm"):
                 if event['event'] == "job":
-                    logging.info('Publishing Job %s'%event['label'])
+                    logger.info('Publishing Job %s'%event['label'])
                 if event['event'] == "profile":
-                    logging.info(' profile %s'%event['label'])
+                    logger.info(' profile %s'%event['label'])
                 if event['event'] == "result":
-                    logging.info('%s complete'%event['script'])
+                    logger.info('%s complete'%event['script'])
                     for doc in event['docs']:
-                        logging.info('[%s] %s'%(doc['type'],doc['url']))
+                        logger.info('[%s] %s'%(doc['type'],doc.get('url','')))
 
                 if event['event'] == "error":
-                    logging.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
+                    logger.info(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                 if event['event'] == "warning":
-                    logging.info(' [W] %s\n%s'%(msg) )
+                    logger.info(' [W] %s\n%s'%(msg) )
 
-            logging.info("Publication complete")
+            logger.info("Publication complete")
         except:
             import traceback
-            logging.debug(traceback.format_exc())
-            logging.error("Publication ended with errors")
+            logger.debug(traceback.format_exc())
+            logger.error("Publication ended with errors")
             
     if args.cmd == 'diagnostic':
         from kolekti import diagnostic
@@ -259,8 +264,8 @@ def main():
                 d.diag_project()
         except:
             import traceback
-            logging.debug(traceback.format_exc())
-            logging.error("Diagnostics failed")
+            logger.debug(traceback.format_exc())
+            logger.error("Diagnostics failed")
                     
     if args.cmd == 'varods':
         from kolekti import variables
@@ -293,7 +298,7 @@ def main():
                 print s,len(l)
                 
 #                for item in l:
-#                    logging.debug("%s : %s"%(item['path'],item['rstatus']))
+#                    logger.debug("%s : %s"%(item['path'],item['rstatus']))
                                            
             # print 'files to be added:'
             # print changes['added']

@@ -10,6 +10,8 @@ import re
 import os
 import copy
 import logging
+logger = logging.getLogger(__name__)
+
 import json
 from lxml import etree as ET
 
@@ -98,27 +100,27 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         modid = args[0]
         path = self.process_path(modid)
         upath = self.getUrlPath(path)
-        logging.debug("get topic %s -> %s"%(modid,upath))
+        logger.debug("get topic %s -> %s"%(modid,upath))
         return upath
 
     def gettopic2(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
-        logging.debug("get topic path %s -> %s"%(modid,path))
+        logger.debug("get topic path %s -> %s"%(modid,path))
         return path
 
     def criteria(self, _, *args):
-        logging.debug('xslt ext criteria')
+        logger.debug('xslt ext criteria')
         criteria = self._profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria.append(ET.XML('<criteria code="LANG" value="%s"/>'%(self._publang)))
         return criteria
 
     def criteria_definitions(self, _, *args):
-        logging.debug('xslt ext criteria_definitions')
+        logger.debug('xslt ext criteria_definitions')
         return self._project_settings.xpath("/settings/criteria/criterion")
 
     def lang(self, _, *args):
-        logging.debug('lang criteria_definitions')
+        logger.debug('lang criteria_definitions')
         return self._publang
     
     def normpath(self, _, *args):

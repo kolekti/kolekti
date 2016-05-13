@@ -15,10 +15,14 @@ import urllib
 import urlparse
 import shutil
 import logging
+logger = logging.getLogger(__name__)
+
 import json
 import mimetypes
 mimetypes.init()
 from lxml import etree as ET
+
+
 
 from kolekti.exceptions import *
 from settings import settings
@@ -67,7 +71,7 @@ class kolektiBase(object):
             appurl = urllib.pathname2url(self._appdir)[3:]
             os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
             
-        # logging.debug('project path : %s'%path)
+        # logger.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
         else:
@@ -81,8 +85,8 @@ class kolektiBase(object):
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
-            # logging.debug("project config")
-            # logging.debug(ET.tostring(conf))
+            # logger.debug("project config")
+            # logger.debug(ET.tostring(conf))
             self._config = {
                 "project":conf.get('project',projectdir),
                 "sourcelang":conf.get('sourcelang'),
@@ -92,7 +96,7 @@ class kolektiBase(object):
                 }
             
         except:
-            # logging.debug("default config")
+            # logger.debug("default config")
             self._config = {
                 "project":"Kolekti",
                 "sourcelang":'en',
@@ -101,10 +105,10 @@ class kolektiBase(object):
                 "projectdir":projectdir,
                 }
             import traceback
-            logging.debug(traceback.format_exc() )
+            logger.debug(traceback.format_exc() )
         self._version = self._config['version']
         self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
-        # logging.debug("kolekti v%s"%self._version)
+        # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
@@ -115,7 +119,7 @@ class kolektiBase(object):
         except:
             import traceback
             print traceback.format_exc()
-            logging.debug('Search index could not be loaded')
+            logger.debug('Search index could not be loaded')
 
 
     @property
@@ -133,9 +137,9 @@ class kolektiBase(object):
             return "?"
             
     def __getattribute__(self, name):
-        # logging.debug('get attribute: ' +name)
+        # logger.debug('get attribute: ' +name)
         # import traceback
-        # logging.debug(traceback.print_stack())
+        # logger.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
@@ -143,8 +147,8 @@ class kolektiBase(object):
                 return f
         except:
             import traceback
-            logging.debug('error getting attribute '+name)
-            logging.debug(traceback.format_exc())
+            logger.debug('error getting attribute '+name)
+            logger.debug(traceback.format_exc())
             pass
         return super(kolektiBase, self).__getattribute__(name)
 
@@ -178,8 +182,8 @@ class kolektiBase(object):
         pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
         res =  os.path.join(self._path, *pathparts)
         # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
-        #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
-        #logging.debug(urllib2.url2pathname(path))
+        #logger.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
+        #logger.debug(urllib2.url2pathname(path))
         
         return os.path.join(self._path, *pathparts)
 
@@ -338,7 +342,7 @@ class kolektiBase(object):
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
         except OSError:
-            logging.debug('makedir failed')
+            logger.debug('makedir failed')
         # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
         self.update_assembly_lang(xassembly, dstlang)
@@ -386,7 +390,7 @@ class kolektiBase(object):
                     refdir = "/".join(splitpath.split('/')[:-1])
                     self.makedirs(refdir)
                 except OSError:
-                    logging.debug('makedir failed')
+                    logger.debug('makedir failed')
 
                 respath = path + respath
                 self.copy_resource(respath, '/'.join(splitpath))
@@ -400,7 +404,7 @@ class kolektiBase(object):
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
         except OSError:
-            logging.debug('makedir failed')
+            logger.debug('makedir failed')
         self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
         for elt_img in xassembly.xpath('//h:img',**ns):
@@ -431,7 +435,7 @@ class kolektiBase(object):
     def get_xsl(self, stylesheet, extclass = None, xsldir = None, system_path = False, **kwargs):
         # loads an xsl stylesheet
         # 
-        logging.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
+        logger.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
@@ -447,12 +451,12 @@ class kolektiBase(object):
 
     def log_xsl(self, error_log):
         for entry in error_log:
-            logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+            logger.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
             print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
-            #logging.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
-            #logging.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
-            #logging.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
-            #logging.debug('[XSL] filename: %s' % entry.filename)
+            #logger.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
+            #logger.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
+            #logger.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
+            #logger.debug('[XSL] filename: %s' % entry.filename)
 
     def parse_string(self, src):
         return ET.XML(src,self._xmlparser)
@@ -512,12 +516,12 @@ class kolektiBase(object):
         try:
             self.syncMgr.move_resource(src, dest)
         except:
-            logging.info('Synchro unavailable')
+            logger.info('Synchro unavailable')
             shutil.move(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
@@ -525,18 +529,18 @@ class kolektiBase(object):
         except:
             import traceback
             print traceback.format_exc()
-            logging.info('Synchro unavailable')
+            logger.info('Synchro unavailable')
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
         except:
-            logging.info('Synchro unavailable')
+            logger.info('Synchro unavailable')
             if os.path.isdir(self.__makepath(path)):
                 shutil.rmtree(self.__makepath(path))
             else:
@@ -544,19 +548,19 @@ class kolektiBase(object):
         try:
             self.indexMgr.delete_resource(path)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
 
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
         except:
-            logging.debug('Synchro unavailable')
+            logger.debug('Synchro unavailable')
         try:
             self.indexMgr.post_save(path)
         except:
             import traceback
             print traceback.format_exc()
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
 
     def makedirs(self, path, sync=False):
         ospath = self.__makepath(path)
@@ -579,7 +583,7 @@ class kolektiBase(object):
     def copyFile(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
-        # logging.debug("copyFile %s -> %s"%(ossource, ospath))
+        # logger.debug("copyFile %s -> %s"%(ossource, ospath))
         
         cp = shutil.copy(ossource, ospath)
         if hasattr(self, "_draft") and self._draft is False:
@@ -603,7 +607,7 @@ class kolektiBase(object):
 
     def getUrlPath(self, source):
         path = self.__makepath(source)
-        # logging.debug(path)
+        # logger.debug(path)
         try:
             upath = urllib.pathname2url(str(path))
         except UnicodeEncodeError:
@@ -616,7 +620,7 @@ class kolektiBase(object):
 
     def getUrlPath2(self, source):
         path = self.__makepath(source)
-        # logging.debug(path)
+        # logger.debug(path)
         
         upath = path.replace(os.path.sep,"/")
 # upath = urllib.pathname2url(path.
@@ -660,7 +664,7 @@ class kolektiBase(object):
         except AttributeError:
             criteria_dict = {}
         criteria_dict.update(extra)
-        #logging.debug(criteria_dict)
+        #logger.debug(criteria_dict)
         for criterion, val in criteria_dict.iteritems():
             if val is not None:
                 string=string.replace('{%s}'%criterion, val)
@@ -670,11 +674,11 @@ class kolektiBase(object):
         
     def substitute_variables(self, string, profile, extra={}):
         for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
-            # logging.debug(variable)
+            # logger.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
-            # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
+            # logger.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
             value = self.variable_value(sheet, sheet_variable, profile, extra).text
             string = string.replace(variable, value)
         return string
@@ -701,7 +705,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content')
-        logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
+        logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
         return ET.XML("<content>[??]</content>")
 
 
