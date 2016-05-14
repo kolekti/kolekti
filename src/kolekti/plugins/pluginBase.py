@@ -111,6 +111,7 @@ class plugin(PublisherMixin,kolektiBase):
             res = []
             scriptlabel = self.scriptdef.xpath('string(label|ancestor::script/label)')
             system = platform.system()
+            logger.debug("platform is %s"%system)
             try:
                 cmd = self.scriptspec.find("cmd[@os='%s']"%system).text
             except:
