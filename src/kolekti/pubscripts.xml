@@ -79,6 +79,8 @@
     <name>Optimiser le pdf pour le web</name>
     <plugin>serializepdf</plugin>
     <cmd>gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dFastWebView=true -sOutputFile=_PUBDIR_/_PUBNAME_.pdf _INCOPY_</cmd>
+    <cmd os="windows">"_CMD_\gswin32.exe" -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dFastWebView=true -sOutputFile=_PUBDIR_/_PUBNAME_.pdf _INCOPY_</cmd>
+    <cmd os="windows">_CMD_ -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dFastWebView=true -sOutputFile=_PUBDIR_\_PUBNAME_.pdf _INCOPY_</cmd>
     <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
     <parameters/>
   </pubscript>
