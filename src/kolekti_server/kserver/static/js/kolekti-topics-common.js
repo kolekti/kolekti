@@ -9,7 +9,7 @@ var create_topic = function(browser, folder, update_function) {
 		   'topicpath': folder + "/" + filename
 	       })
 	    .done(
-		function() {
+		function(topicpath) {
 		    update_function()
 		}
 	    )

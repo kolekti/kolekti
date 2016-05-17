@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block current_settings %}class="menu-current"{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
+{% block help-topic %}criteria{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-criteria.css"></script>
@@ -10,12 +11,9 @@
     <script src="/static/js/kolekti-criteria.js"></script>
 {% endblock %}
 
-{% block title %}{% endblock %}
+{% block title %}Critères{% endblock %}
 
 {% block content %}
-
-<h2>Critères</h2>
-
 <div>
   {% for criterion in criteria %}
   <div class="criterion" data-criterion="{{ criterion.code }}">

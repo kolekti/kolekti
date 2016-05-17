@@ -10,6 +10,8 @@ import re
 import os
 import copy
 import logging
+logger = logging.getLogger(__name__)
+
 import json
 from lxml import etree as ET
 
@@ -17,12 +19,16 @@ from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 
 
 
+class PublishException(Exception):
+    pass
+
 class PublisherMixin(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"}
     def __init__(self, *args, **kwargs):
         # intercept lang & draft parameters
 
         self._publang = None
+#        print "mixin",kwargs
         if kwargs.has_key('lang'):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
@@ -33,7 +39,9 @@ class PublisherMixin(object):
 
         if self._publang is None:
             self._publang = self._config.get("sourcelang","en")
-        
+
+        self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
+
                         
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
@@ -42,18 +50,33 @@ class PublisherMixin(object):
         extra.update({"LANG":self._publang})
         return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
 
+    def _substscript(self, s, subst, profile):
+        """substitues all _NAME_ by its profile value in string s""" 
+        for k,v in subst.iteritems():
+            s = s.replace('_%s_'%k,v)
+        return self.substitute_variables(self.substitute_criteria(s,profile),profile,{"LANG":self._publang})
     
     def pubdir(self, assembly_dir, profile):
         # calculates and creates the publication directory
-        pubdir = self.substitute_variables(profile.xpath('string(dir/@value)'),profile)
-        pubdir = self.substitute_criteria(pubdir, profile)
+        pubdir = self.substitute_criteria(profile.xpath('string(dir/@value)'),profile)
+        pubdir = self.substitute_variables(pubdir, profile, {"LANG":self._publang})
         pubdir = assembly_dir + "/" + pubdir
         try:
             self.makedirs(pubdir)
         except:
             logging.debug("publication path %s already exists"%pubdir)
         return pubdir
-    
+
+
+    def purge_manifest_events(self, pubevents):
+        # remove ElementTree objects from events - call before any manifest file update
+        if isinstance(pubevents, list):
+            map(self.purge_manifest_events, pubevents)
+        elif isinstance(pubevents, dict):
+            if pubevents.get('ET') is not None:
+                pubevents.update({'ET':''})
+            map(self.purge_manifest_events, pubevents.values())
+        
 class PublisherExtensions(PublisherMixin, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
@@ -64,34 +87,40 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         if kwargs.has_key('profile'):
             self._profile = kwargs.get('profile')
             kwargs.pop('profile')
+        self.__cache = {}
         super(PublisherExtensions,self).__init__(*args, **kwargs)
 
 
+    def parse(self, path):
+        if not self.__cache.has_key(path):
+            self.__cache[path] =  super(PublisherExtensions, self).parse(path)
+        return self.__cache[path]
+        
     def gettopic(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
         upath = self.getUrlPath(path)
-        logging.debug("get topic %s -> %s"%(modid,upath))
+        logger.debug("get topic %s -> %s"%(modid,upath))
         return upath
 
     def gettopic2(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
-        logging.debug("get topic path %s -> %s"%(modid,path))
+        logger.debug("get topic path %s -> %s"%(modid,path))
         return path
 
     def criteria(self, _, *args):
-        logging.debug('xslt ext criteria')
+        logger.debug('xslt ext criteria')
         criteria = self._profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria.append(ET.XML('<criteria code="LANG" value="%s"/>'%(self._publang)))
         return criteria
 
     def criteria_definitions(self, _, *args):
-        logging.debug('xslt ext criteria_definitions')
+        logger.debug('xslt ext criteria_definitions')
         return self._project_settings.xpath("/settings/criteria/criterion")
 
     def lang(self, _, *args):
-        logging.debug('lang criteria_definitions')
+        logger.debug('lang criteria_definitions')
         return self._publang
     
     def normpath(self, _, *args):
@@ -129,7 +158,10 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def variable(self, _, *args):
         sheet = self.substitute_criteria(args[0], self._profile)
         variable = self.substitute_criteria(args[1], self._profile)
-        return unicode(self.variable_value(sheet, variable, self._profile, {"LANG":self._publang}))
+
+        # print self.variable_value(sheet, variable, self._profile, {"LANG":self._publang})
+        
+        return self.variable_value(sheet, variable, self._profile, {"LANG":self._publang})
 
     def evaluate_condition(self, _, args):
         conditions = args.replace(' ','')
@@ -147,3 +179,13 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
     def upper_case(self, _, *args):
         path = args[0]
         return path.upper()
+
+class ReleasePublisherExtensions(PublisherExtensions):
+    def __init__(self, *args, **kwargs):
+        if kwargs.has_key('release'):
+            self._release = kwargs.get('release')
+            kwargs.pop('release')
+        super(ReleasePublisherExtensions,self).__init__(*args, **kwargs)
+
+    def process_path(self, path):
+        return self._release + '/' + super(ReleasePublisherExtensions, self).process_path(path)

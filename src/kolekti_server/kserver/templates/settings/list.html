@@ -1,7 +1,8 @@
 {% extends "base-wide.html" %}
 
 {% block current_tools %}class="menu-current"{% endblock %}
-{% block title %}Parametres {{ kolekti.project }}{% endblock %}
+{% block title %}Paramètres de publication{% endblock %}
+{% block help-topic %}job{% endblock %}
 
 {% block extrascripts %}
     <script src="/static/js/kolekti-jobslist.js"></script>
@@ -14,33 +15,8 @@
 {% block content %}
 
 <div class="main">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a href="#">
-	  Critères
-	</a>
-      </h4>
-    </div>
-    <div class="panel-body">
-	<a href="criteria">Modifier les critères</a>
-    </div>
-  </div>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a href="#">
-	  Parametres de publication
-	</a>
-      </h4>
-    </div>
-    <div class="panel-body">
-      <div class="title">
-      </div>
-      <div class="browserparent">
-      </div>      
-    </div>
-  </div>
+  <div class="browserparent">
+  </div>      
 </div>
 
 

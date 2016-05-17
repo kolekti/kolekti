@@ -1,16 +1,43 @@
 import os
 import tempfile
+import shutil
 import logging
+logger = logging.getLogger(__name__)
 import urllib2
 import pysvn
-
+import locale
 import sys
+
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-from exceptions import ExcSyncNoSync
+from kolekti.exceptions import *
 
 
-class SynchroManager(object):
+def initLocale():
+    # init the locale
+    if sys.platform in ['win32','cygwin']:
+        locale.setlocale( locale.LC_ALL, '' )
+
+    else:
+        language_code, encoding = locale.getdefaultlocale()
+        if language_code is None:
+            language_code = 'en_GB'
+
+        if encoding is None:
+            encoding = 'UTF-8'
+        if encoding.lower() == 'utf':
+            encoding = 'UTF-8'
+
+        try:
+            # setlocale fails when params it does not understand are passed
+            locale.setlocale( locale.LC_ALL, '%s.%s' % (language_code, encoding) )
+        except locale.Error:
+            # force a locale that will work
+            locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
+initLocale()
+
+
+class SvnClient(object):
     statuses_modified = [
         pysvn.wc_status_kind.deleted,
         pysvn.wc_status_kind.added,
@@ -37,20 +64,42 @@ class SynchroManager(object):
         pysvn.wc_status_kind.incomplete,
         ]
     
-    def __init__(self, base):
-
-        def callback_log_message(*args, **kwargs):
-            logging.debug("callback log")
-#            logging.debug(str(arg))
-            
-        self.notifications = []
-        def callback_notification(arg):
-            self.notifications.append(arg)
-            
-        self._base = base
+    def __init__(self, username=None, password=None, accept_cert=False):
         self._client = pysvn.Client()
+        self.__username = username
+        self.__password = password
+        self.__accept_cert = accept_cert
+        
+        def get_login( realm, username, may_save ):
+            if self.__username is None:
+                raise ExcSyncRequestAuth
+            return True, self.__username, self.__password, True
+        self._client.callback_get_login = get_login
+
+        self._messages = []
+        def callback_log_message(arg):
+            self._messages.append(arg)
         self._client.callback_get_log_message = callback_log_message
+            
+        self._notifications = []
+        def callback_notification(arg):
+            self._notifications.append(arg)
         self._client.callback_notify = callback_notification
+        
+        def callback_accept_cert(arg):
+            print arg
+            if self.__accept_cert:
+                return  True, 1, True
+            if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
+                return  True, 12, True
+            raise ExcSyncRequestSSL
+            
+        self._client.callback_ssl_server_trust_prompt = callback_accept_cert
+        
+class SynchroManager(SvnClient):
+    def __init__(self, base):
+        super(SynchroManager, self).__init__()
+        self._base = base
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
@@ -67,9 +116,29 @@ class SynchroManager(object):
     def history(self):
         return self._client.log(self._base)
 
-    def state(self):
-        headrev = self._client.info(self._base)
-        return headrev
+    def rev_number(self):
+        #headrev = self._client.info(self._base)
+        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        return {"revision":{"number":headrev}}
+    
+    def rev_state(self):
+        #headrev = self._client.info(self._base)
+        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        statuses = self.statuses()
+        status = "N"
+        if len(statuses['error']):
+            status = "E"
+        if len(statuses['conflict']):
+            status = "C"
+        if len(statuses['merge']):
+            status = "M"
+        if len(statuses['commit']):
+            status = "*"
+        if len(statuses['update']):
+            status = "U"
+            
+        return {"revision":{"number":headrev,"status":status}}
+
     
     def revision_info(self, revision):
         rev = int(revision)
@@ -83,26 +152,33 @@ class SynchroManager(object):
         # rev_info = self._client.info2(self._base,
         #                         revision = pysvn.Revision(pysvn.opt_revision_kind.number,rev)
         #                         )
-        diff_text = self._client.diff('/tmp',
+        tmpdir = tempfile.mkdtemp()
+        diff_text = self._client.diff(tmpdir,
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                                self._base,
                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
-                               )
+                               header_encoding="utf-8")
+
+        shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
         
-    def statuses(self):
-        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[]}
-        statuses = self._client.status(self._base,
-                                       recurse = True,
+    def statuses(self, path="", recurse = True):
+        res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
+        statuses = self._client.status(self.__makepath(path),
+                                       recurse = recurse,
                                        get_all = True,
                                        update = True)
         for status in statuses:
             path = status.path[len(self._base):]
             item = {"path":path,
-                    "rstatus":status.repos_text_status,
-                    "wstatus":status.text_status,
+                    "basename":os.path.basename(path),
+                    "rstatus":str(status.repos_text_status),
+                    "wstatus":str(status.text_status),
+                    "rpropstatus":str(status.repos_prop_status),
+                    "wpropstatus":str(status.prop_status),
                     }
+
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
                              "author":status.entry.commit_author})
@@ -110,22 +186,32 @@ class SynchroManager(object):
                 item.update({"kind":"none"})
             if status.text_status == pysvn.wc_status_kind.ignored:
                 pass
+
             elif status.text_status == pysvn.wc_status_kind.unversioned and status.repos_text_status == pysvn.wc_status_kind.none:
-                pass
+                res['unversioned'].append(item)
+
             elif status.repos_text_status in self.statuses_modified:
                 if status.text_status == pysvn.wc_status_kind.added:
                     res['conflict'].append(item)
                 elif status.text_status == pysvn.wc_status_kind.unversioned:
                     res['conflict'].append(item)
                 elif status.text_status in self.statuses_modified:
-                    if self.merge_dryrun(status.path):
-                        res['merge'].append(item)
-                    else:
+                    if (status.repos_text_status == pysvn.wc_status_kind.deleted) and (status.text_status == pysvn.wc_status_kind.deleted or status.text_status == pysvn.wc_status_kind.unversioned):
+                        res['update'].append(item)
+                    elif status.repos_text_status == pysvn.wc_status_kind.deleted:
                         res['conflict'].append(item)
+                    else:
+                        if self.merge_dryrun(status.path):
+                            res['merge'].append(item)
+                        else:
+                            res['conflict'].append(item)
+                            
                 elif status.text_status in self.statuses_absent:
                     res['update'].append(item)
+                    
                 elif status.text_status in self.statuses_normal:
                     res['update'].append(item)
+                    
                 else:
                     res['error'].append(item)
                     
@@ -136,12 +222,21 @@ class SynchroManager(object):
                     res['commit'].append(item)
                 elif status.text_status in self.statuses_normal:
                     res['ok'].append(item)
+                    
                 else:
                     res['error'].append(item)
             else:
                 res['error'].append(item)
-
-
+            
+            
+            if status.prop_status in self.statuses_modified:
+                if status.repos_prop_status in self.statuses_modified:
+                    res['conflict'].append(item)
+                else:
+                    res['commit'].append(item)
+            else:
+                if status.repos_prop_status in self.statuses_modified:
+                    res['update'].append(item)
         return res
 
 
@@ -171,11 +266,11 @@ class SynchroManager(object):
         info = self._client.info(path)
             
         rurl = info.get('url')
-        logging.debug('dry run '+rurl)
+        logger.debug('dry run '+rurl)
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
         
-        logging.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
+        logger.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
 
         import subprocess
         cmd = 'svn merge --dry-run -r BASE:HEAD "%s"'%path 
@@ -190,7 +285,7 @@ class SynchroManager(object):
             }
 
     def resolved(self, file):
-        self._client.resolved(file)
+        self._client.resolved(self.__makepath(file))
 
     def update_all(self):
 #        print "update_all"
@@ -199,7 +294,11 @@ class SynchroManager(object):
         return update_revision
 
     def update(self, files):
-        update_revision = self._client.update(files, recurse = True)
+        osfiles = []
+        for f in files:
+            osfiles.append(self.__makepath(f))
+        update_revision = self._client.update(osfiles)
+        
         return update_revision
 
     def revert(self, files):
@@ -215,6 +314,7 @@ class SynchroManager(object):
     def commit(self, files, log_message):
         osfiles = []
         for f in files:
+            print type(f)
             osfiles.append(self.__makepath(f))
         commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
@@ -222,22 +322,20 @@ class SynchroManager(object):
     def diff(self, path):
         tmpdir = tempfile.mkdtemp()
         diff = self._client.diff(tmpdir, path)
+        shutil.rmtree(tmpdir)
         with open(path) as f:
             workdata = f.read()
         headdata = self._client.cat(path)
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        logging.debug("post save synchro : %s"%path)
         if path[:14]=='/publications/':
-            logging.debug("skip")
             return
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
         try:
             if self._client.info(ospath) is None:
-                logging.debug("add")
                 self._client.add(ospath)
         except pysvn.ClientError:
             self.post_save(path.rsplit('/',1)[0])
@@ -256,37 +354,33 @@ class SynchroManager(object):
         ospath = self.__makepath(path)
         self._client.add(ospath)
 
+    def remove_resource(self,path):
+        ospath = self.__makepath(path)
+        self._client.remove(ospath,keep_local=True,force=True)
+
     def delete_resource(self,path):
         ospath = self.__makepath(path)
         self._client.remove(ospath,force=True)
 
     def propset(self, name, value, path):
         ospath = self.__makepath(path)
+        logger.debug("svn proset %s %s %s"%(name,value,path))
         self._client.propset(name, value, ospath)
         
     def propget(self, name, path):
         ospath = self.__makepath(path)
         try:
             props = self._client.propget(name, ospath)
-#            print props
-            return props.get(ospath,'unversionned')
+            return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
             import traceback
             print traceback.format_exc()
-            return 'unversionned'
+            return None
         
-class SVNProjectManager(object):
+class SVNProjectManager(SvnClient):
     def __init__(self, projectsroot, username=None, password=None):
         self._projectsroot = projectsroot
-        self._client = pysvn.Client()
-        self.__username = username
-        self.__password = password
-        #self._client.callback_get_log_message = get_log_message
-        def get_login( realm, username, may_save ):
-            if username == self.__username:
-                return True, username, password, True
-            return False, "","", False
-        self._client.callback_get_login = get_login
+        super(SVNProjectManager, self).__init__(username, password)
         
     def export_project(self, folder, url="http://beta.kolekti.net/svn/quickstart07"):
         ospath = os.path.join(self._projectsroot, folder)

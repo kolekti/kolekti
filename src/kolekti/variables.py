@@ -7,11 +7,15 @@ import os
 from zipfile import ZipFile
 from lxml import etree as ET
 
+import logging
+logger = logging.getLogger(__name__)
+
 import common
 
 
 class OdsToXML(common.kolektiBase):
     def convert(self, odsfile, varpath = None, orient="cols"):
+        logger.debug("ods to xml convert")
         # genere le fichier de variables à partir du openoffice
         xslt1=self.get_xsl("ods2xml-%s-pass1"%orient)
         xslt2=self.get_xsl("ods2xml-pass2")
@@ -26,6 +30,7 @@ class OdsToXML(common.kolektiBase):
 
 class XMLToOds(common.kolektiBase):
     def convert(self, odsfile, varpath, orient="cols"):
+        logger.debug("xml to ods convert")
         xslt=self.get_xsl("xml2ods-%s"%orient)
         varxml = self.parse(varpath)
         tpl = os.path.join(self._appdir,"templates","variables.ods")

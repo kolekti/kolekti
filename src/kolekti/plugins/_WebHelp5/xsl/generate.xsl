@@ -62,6 +62,7 @@
   <!-- main template -->
 
   <xsl:template match="/">
+
     <exsl:document href="{$pubdir}/js/modcodes.js" method='text'>
       var modcodes = new Object();
       <xsl:apply-templates select="html:html/html:body//html:div[@class='topic']" mode="modcodes" />
@@ -69,8 +70,10 @@
     <exsl:document href="{$pubdir}/js/modtexts.js" method='text'>
       var modtexts = new Object();
       <xsl:apply-templates select="$topics" mode="textcontent" />
-    </exsl:document>
+      </exsl:document>
+
     <xsl:apply-templates select="$topics" />
+
     <xsl:apply-templates select="//html:div[starts-with(@class,'INDEX')]" />
 
   </xsl:template>
@@ -102,7 +105,7 @@
     <xsl:call-template name="trquot">
       <xsl:with-param name="text" select="$modtitle" />
     </xsl:call-template>
-    <xsl:text>';&#x0A;</xsl:text>
+    <xsl:text>';</xsl:text>
   </xsl:template>
 
   <xsl:template match="html:div[@class='topic']" mode="textcontent">
@@ -113,7 +116,7 @@
     <xsl:value-of select="$filename" />
     <xsl:text>'] = '</xsl:text>
     <xsl:apply-templates mode="textcontent" select="node()[not(@class='topicinfo')]" />
-    <xsl:text>';&#x0A;</xsl:text>
+    <xsl:text>';</xsl:text>
   </xsl:template>
 
   <xsl:template match="text()" mode="textcontent">
@@ -137,7 +140,9 @@
       <xsl:variable name="modtitle">
         <xsl:call-template name="modtitle" />
       </xsl:variable>
-      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;</xsl:text>
+<xsl:text>
+</xsl:text>
       <html>
         <head>
           <xsl:call-template name="genhtmlheader" />
@@ -148,9 +153,7 @@
 
             <div class="row">
               <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
-                <xsl:call-template name="gentoc">
-                  <xsl:with-param name="modtitle" select="$modtitle"/>
-                </xsl:call-template>
+                <xsl:call-template name="gentoc"/>
               </div>
 
               <div class="col-md-9 col-sm-12 col-xs-12" id="k-main">
@@ -185,7 +188,7 @@
       <xsl:variable name="modtitle">
         <xsl:value-of select="kfp:variable(string($translationfile),'AlphaIndexTitre')" />
       </xsl:variable>
-      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+      <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;</xsl:text>
       <html>
         <head>
           <xsl:call-template name="genhtmlheader" />
@@ -197,7 +200,6 @@
             <div class="row">
               <div class="col-md-3 col-sm-12 col-xs-12" id="k-menu">
                 <xsl:call-template name="gentoc">
-                  <xsl:with-param name="modtitle" select="$modtitle"/>
                   <xsl:with-param name="modid" select="'alphaindex'"/>
                 </xsl:call-template>
               </div>
@@ -225,23 +227,17 @@
     </exsl:document>
   </xsl:template>
 
-
-
   <xsl:template match="html:div[@class='topic']" mode="gentoc">
-    <xsl:param name="modid" />
 
     <xsl:variable name="modref">
       <xsl:call-template name="modfile" />
     </xsl:variable>
-
-    <xsl:variable name="curtopic" select="boolean(@id = $modid)" />
-
-    <li>
+      
+    <li data-topic-id="{@id}">
       <xsl:attribute name="class">
         <xsl:text>list-group-item</xsl:text>
-        <xsl:if test="$curtopic"> active</xsl:if>
       </xsl:attribute>
-
+      
       <a href="{$modref}">
         <i class="glyphicon glyphicon-file"></i>
         <xsl:call-template name="modtitle" />
@@ -252,26 +248,17 @@
   <xsl:template match="html:div[@class='topic'][not(.//html:h1) and not(.//html:h2)]" mode="gentoc"/>
 
   <xsl:template match="html:div[@class='section']" mode="gentoc">
-    <xsl:param name="modid" />
-    <xsl:param name="modtitle" />
 
     <xsl:variable name="modref">
       <xsl:call-template name="modfile">
         <xsl:with-param name="modid" select="(.//html:div[@class='topic'])[1]/@id" />
       </xsl:call-template>
     </xsl:variable>
-
-    <xsl:variable name="cursection" select="boolean(.//html:div[@id = $modid])" />
-
     <li class="list-group-item">
       <a href="{$modref}" data-section="{generate-id()}">
-        <i>
-          <xsl:attribute name="class">
-            <xsl:choose>
-              <xsl:when test="$cursection"><xsl:text>glyphicon glyphicon-folder-open</xsl:text></xsl:when>
-              <xsl:otherwise><xsl:text>glyphicon glyphicon-folder-close</xsl:text></xsl:otherwise>
-            </xsl:choose>
-          </xsl:attribute>
+        <i class="section-icon">
+	  <!--
+	  -->
         </i>
       </a>
 
@@ -282,16 +269,17 @@
       <ul data-section-content="{generate-id()}">
         <xsl:attribute name="class">
           <xsl:text>list-group</xsl:text>
-          <xsl:if test="not($cursection)"> hidden</xsl:if>
+	  <!--
+              <xsl:if test="not($cursection)"> hidden</xsl:if>
+	  -->
         </xsl:attribute>
-        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gentoc">
-          <xsl:with-param name="modid" select="$modid" />
-          <xsl:with-param name="modtitle" select="$modtitle" />
-        </xsl:apply-templates>
+        <xsl:apply-templates select="html:div[@class='section' or @class='topic']" mode="gentoc"/>
       </ul>
     </li>
   </xsl:template>
   
+  <xsl:template match="html:div[@class='section'][@data-hidden='true']" mode="gentoc"/>
+
   <xsl:template match="html:a[@class='indexmq']" mode="gentoc" />
   <xsl:template match="html:span[@class='title_num']" mode="gentoc" />
 
@@ -346,25 +334,37 @@
 
 
   <xsl:template match="html:div[@class='attention']" mode="modcontent">
+    <p><span class="label label-warning">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Important')" />
+    </span></p>
     <div class="alert alert-warning" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='danger']" mode="modcontent">
+    <p><span class="label label-danger">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Danger')" />
+    </span></p>
     <div class="alert alert-danger" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='remarque']" mode="modcontent">
-    <div class="alert alert-info" role="alert">
+    <p><span class="label label-success">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Remarque')" />
+    </span></p>
+    <div class="alert alert-success" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
 
   <xsl:template match="html:div[@class='exemple']" mode="modcontent">
-    <div class="alert alert-success" role="alert">
+    <p><span class="label label-info">
+      <xsl:value-of select="kfp:variable(string($translationfile),'Exemple')" />
+    </span></p>      
+    <div class="alert alert-info" role="alert">
       <xsl:apply-templates select="node()" mode="modcontent" />
     </div>
   </xsl:template>
@@ -393,43 +393,16 @@
     </li>
   </xsl:template>
 
-
-
-  <!--
   <xsl:template match="html:img" mode="modcontent">
-    <xsl:variable name="src">
-      <xsl:choose>
-        <xsl:when test="starts-with(@src, 'http://')">
-          <xsl:value-of select="@src" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>sources</xsl:text>
-          <xsl:value-of select="substring-after(@src, 'medias/')" />
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <img src="{@src}" alt="{@alt}" title="{@title}">
-      <xsl:if test="@style">
-        <xsl:attribute name="style"><xsl:value-of select="@style" /></xsl:attribute>
-      </xsl:if>
-    </img>
+    <xsl:copy>
+      <xsl:copy-of select="@*"/>
+      <xsl:attribute name="class">
+	<xsl:value-of select="class"/>
+	<xsl:text> img-responsive</xsl:text>
+      </xsl:attribute>
+    </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:embed" mode="modcontent">
-    <xsl:variable name="src">
-      <xsl:choose>
-        <xsl:when test="starts-with(@src, 'http://')">
-          <xsl:value-of select="@src" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>medias/</xsl:text>
-          <xsl:value-of select="substring-after(@src, 'medias/')" />
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <embed width="{@width}" height="{@height}" type="{@type}" pluginspage="{@pluginspage}" src="{$src}" />
-  </xsl:template>
--->
 
   <xsl:template match="node()|@*" mode="modcontent">
     <xsl:copy>
@@ -497,9 +470,9 @@
 
    <!--  generate html header -->
    <xsl:template name="genhtmlheader">
-     <title><xsl:apply-templates select="/html:html/html:body/html:div[@class='section'][1]/html:*[1]/text()" /></title>
      <meta charset="utf-8" />
      <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+     <xsl:copy-of select="/html:html/html:head/html:title" />
      <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition']"/>
      <xsl:copy-of select="/html:html/html:head/html:meta[@scheme='user_condition_label']"/>
      <link rel="stylesheet" href="lib/css/bootstrap.min.css" type="text/css"/>
@@ -511,7 +484,7 @@
 
    <xsl:text disable-output-escaping='yes'>&lt;!--[if lt IE 9]&gt;</xsl:text>
    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript">
-     <xsl:text>&#x0D;</xsl:text>
+     <xsl:comment> </xsl:comment>
    </script>
    <xsl:text disable-output-escaping='yes'>&lt;![endif]--&gt;</xsl:text>
    <style type="text/css">
@@ -528,26 +501,26 @@
 
  <xsl:template name="genhtmlfooter">
      <script src="lib/js/jquery-2.1.1.min.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/filteredview.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/bootstrap.min.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
      <script src="js/modcodes.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="js/modtexts.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="js/index.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
      <script src="lib/js/search.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
 
@@ -557,7 +530,7 @@
    </script>
 
      <script src="lib/js/events.js" type="text/javascript">
-       <xsl:text>&#x0D;</xsl:text>
+       <xsl:comment> </xsl:comment>
      </script>
 
    <script type="text/javascript">
@@ -603,9 +576,13 @@
  </xsl:template>
 
  <!-- generate TOC -->
+
+ <xsl:variable name="toc">
+   <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc"/>   
+ </xsl:variable>
+ 
  <xsl:template name="gentoc">
    <xsl:param name="modid" select="@id" />
-   <xsl:param name="modtitle" select="''" />
    <!--
    <div class="btn-list col-xs-12">
      <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="glyphicon glyphicon-list visible-xs btn-lg col-xs-12">
@@ -651,10 +628,15 @@
      <div id="menu" class="well navbar-nav col-sm-12">
        <h5><xsl:value-of select="kfp:variable(string($translationfile),'TdmTitre')"/></h5>
        <ul class="menu-list list-group list-unstyled">
-         <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
+	 <!--
+             <xsl:apply-templates select="/html:html/html:body/html:div[@class='section' or @class='topic']" mode="gentoc">
+             <xsl:with-param name="modid" select="$modid" />
+             <xsl:with-param name="modtitle" select="$modtitle" />
+             </xsl:apply-templates>
+	 -->
+	 <xsl:apply-templates select="exsl:node-set($toc)" mode="processtoc">
            <xsl:with-param name="modid" select="$modid" />
-           <xsl:with-param name="modtitle" select="$modtitle" />
-         </xsl:apply-templates>
+	 </xsl:apply-templates>
        </ul>
        <xsl:if test="//html:div[starts-with(@class,'INDEX')]">
          <ul class="menu-list list-group list-unstyled">
@@ -677,6 +659,89 @@
  </xsl:template>
 
 
+  <xsl:template match="node()|@*" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*" mode="processtoc">
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+ 
+  <xsl:template match="html:ul" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:variable name="content">
+      <xsl:apply-templates select="node()" mode="processtoc" >
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:choose>
+	<xsl:when test="exsl:node-set($content)/html:li/@data-current">
+	  <xsl:attribute name="data-current">yes</xsl:attribute>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:attribute name="class">
+	    <xsl:value-of select="@class"/>
+	    <xsl:text> hidden</xsl:text>
+	  </xsl:attribute>
+	</xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:copy-of select="$content"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:li[not(@data-topic-id)]" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:variable name="content">
+      <xsl:apply-templates select="html:ul" mode="processtoc" >
+	<xsl:with-param name="modid" select="$modid"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:if test="exsl:node-set($content)/html:ul/@data-current">
+	<xsl:attribute name="data-current">yes</xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="html:a" mode="processtoc">
+	<xsl:with-param name="modid" select="boolean(exsl:node-set($content)/html:ul/@data-current)"/>
+      </xsl:apply-templates>
+      <xsl:copy-of select="$content"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="html:li[@data-topic-id]" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:if test="@data-topic-id = $modid">
+	<xsl:attribute name="data-current">yes</xsl:attribute>
+	<xsl:attribute name="class">
+	  <xsl:value-of select="@class"/>
+	  <xsl:text> active</xsl:text>
+	</xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="node()" mode="processtoc" />
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="html:i[@class='section-icon']" mode="processtoc">
+    <xsl:param name="modid"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="processtoc" />
+      <xsl:attribute name="class">
+        <xsl:choose>
+          <xsl:when test="$modid"><xsl:text>glyphicon glyphicon-folder-open</xsl:text></xsl:when>
+          <xsl:otherwise><xsl:text>glyphicon glyphicon-folder-close</xsl:text></xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <xsl:apply-templates select="node()" mode="processtoc" />
+    </xsl:copy>
+  </xsl:template>
+ 
 
 
  <!-- TODO template menu selection criteres -->
@@ -747,22 +812,13 @@
  </xsl:template>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
  <!-- topic title -->
  <xsl:template name="modtitle">
-   <xsl:apply-templates select="(.//html:h1|.//html:h2|.//html:h3|.//html:h4|.//html:h5|.//html:h6|.//html:dt)[1]" mode="TOCtitle" />
+   <xsl:param name="modid">
+     <xsl:value-of select="@id" />
+   </xsl:param>
+   <xsl:variable name="mod" select="//html:div[@id = $modid]" />
+   <xsl:apply-templates select="($mod//html:h1|$mod//html:h2|$mod//html:h3|$mod//html:h4|$mod//html:h5|$mod//html:h6|$mod//html:dt)[1]" mode="TOCtitle" />
  </xsl:template>
 
  <!-- topic filename -->
@@ -813,7 +869,7 @@
    <xsl:text>.html</xsl:text>
    <xsl:if test="contains($modid,'_')">
      <xsl:text>#</xsl:text>
-     <xsl:value-of select="$modid" />
+     <xsl:value-of select="substring-after($modid,'_')" />
    </xsl:if>
  </xsl:template>
 

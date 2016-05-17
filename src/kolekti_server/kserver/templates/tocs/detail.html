@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% load ostags %}
+{% load csssafe %}
 
 {% block current_trames %}class="menu-current"{% endblock %}
+{% block help-topic %}toc{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css"></link>
-    <link rel="stylesheet" type="text/css"  href="/criteria.css"></link>
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css" />
+    <link rel="stylesheet" type="text/css"  href="/criteria.css" />
+    <link rel="stylesheet" type="text/css"  href="/kolekti/ui-stylesheets/toc.css" />
 {% endblock %}
 
 
@@ -16,7 +19,9 @@
 {% endblock %}
 
 {% block title %}
-        <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
+<!--
+        <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
+-->
 	{{ tocdisplay }}
 {% endblock %}
 
@@ -33,11 +38,41 @@
 
 
     <div class="row top-margin">
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-primary btn_publish" id="btn_draft">Publier</button>
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-primary btn_publish" id="btn_draft">Publier</button>
+	  </div>
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-default btn_publish" id="btn_release">Créer version</button>
+	  </div>
+	</div>
       </div>
-      <div class="col-sm-6 col-md-6">
-	<button type="button" class="btn btn-block btn-default btn_publish" id="btn_release">Créer une version</button>
+    </div>
+    <br/>
+
+    <div class="row ">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-xs btn-default" id="btn_collapse_all">
+	      <span class="glyphicon glyphicon-chevron-right"></span>
+	      <span class="visible-lg-inline">tout masquer</span>
+	    </button>
+	  </div>
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-xs btn-default" id="btn_expand_all">
+	      <span class="glyphicon glyphicon-chevron-down"></span>
+	      <span class="visible-lg-inline">tout afficher</span>
+	    </button>
+	  </div>
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-xs btn-default collapsed" id="btn_meta">
+	      <span class="glyphicon glyphicon-info-sign"></span>
+	      <span class="visible-lg-inline">infos trame</span>
+	    </button>
+	  </div>
+	</div>
       </div>
     </div>
     <br/>
@@ -50,26 +85,17 @@
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
 	    </small>
-	    Paramètres de publication
+	    Paramétrage de la publication
 	  </a>
 	</h4>
       </div>
       <div id="collapsePublier" class="panel-collapse collapse in">
 	<div class="panel-body">
-{% comment %}
-	  <h5>
-	  Nom de la publication
-	  </h5>	  
-	  <input type='text'
-		 class='block-control'
-		 id='input_toc_title'
-		 value="{{ toctitle }}"/>
-{% endcomment %}
 	  <h5>
 	  Dossier de la publication
 	  </h5>	  
 	  <input type='text'
-		 class='block-control'
+		 class='form-control'
 		 id='input_toc_pubdir'
 		 value="{{ tocmeta.kolekti_pubdir }}"/>
 	  
@@ -78,14 +104,20 @@
 	  </h5>
 	  <span class="btn-group">
 	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
-	      <span class="label_job">{{ tocmeta.kolekti_job|urlbasename }}</span>
+	      <span class="label_job">
+		{% if tocmeta.kolekti_job %}
+		{{ tocmeta.kolekti_job|urlbasename }}
+		{% else %}
+		<em>Selectionnez...</em>
+		{% endif %}
+	      </span>
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 	      {% for job in jobs %}
 	      <li role="presentation">
 		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
-		   data-kolekti-jobpath="{{ job.path }}">
+		   data-kolekti-jobclass="{{ job.name|csssafe }}" data-kolekti-jobpath="{{ job.path }}">
 		  {{ job.name }}
 		</a>
 	      </li>
@@ -93,55 +125,55 @@
 	    </ul>
 	  </span>
 	  
-	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"><span class="glyphicon glyphicon-cog"> </span></a>
+	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"
+	     {% if not tocmeta.kolekti_job %}class="hidden"{% endif %}>
+	    <span class="glyphicon glyphicon-cog"> </span></a>
 
-	  
-	  <h5>
-	  Sélection rapide
-	  </h5>
+	  <div id="quickselect"{% if not tocmeta.kolekti_job %} class="hidden"{% endif %}>
+<!--
+	    <h5>
+	      Sélection rapide
+	    </h5>
+-->
+	    {% for job in jobs %}
 
-	  {% for job in jobs %}
 
-
-	  <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
-	       data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
-	    <div class="col-sm-12 col-md-12">
-
-	      <h6>Profils</h6>
-	    </div>
-	    {% for profile in job.profiles %}
-
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox" checked>
-		<label>
-  		  <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
-			 {% if profile.1 == "1"%}checked{% endif %}/>
-		  {{ profile.0 }}
-		</label>
+	    <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name|csssafe }}"
+		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
+	      <div class="col-sm-12 col-md-12">
+		
+		<h6>Profils</h6>
 	      </div>
+	      {% for profile in job.profiles %}
+	      
+	      <div class="col-sm-6 col-md-6">
+		<div class="checkbox" checked>
+		  <label>
+  		    <input type="checkbox" class="publish_job_profile" id="job_{{ job.name }}_{{ profile.0 }}" data-kolekti-profile="{{ profile.0 }}"
+			   {% if profile.1 == "1"%}checked{% endif %}/>
+		    {{ profile.0 }}
+		  </label>
+		</div>
+	      </div>
+	      {% endfor %}
+	      <div class="col-sm-12 col-md-12">
+		<h6>Sorties</h6>
+	      </div>
+	      {% for script in job.scripts %}
+	      <div class="col-sm-6 col-md-6">
+		<div class="checkbox">
+		  <label>
+  		    <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
+			   {% if script.1 == "1"%} checked{% endif %}/>
+		    {{ script.0 }}
+		  </label>
+		</div>
+	      </div>
+	      {% endfor %}
+
 	    </div>
 	    {% endfor %}
-	    <div class="col-sm-12 col-md-12">
-	      <h6>Sorties</h6>
-	    </div>
-	    {% for script in job.scripts %}
-	    <div class="col-sm-6 col-md-6">
-	      <div class="checkbox">
-		<label>
-  		  <input type="checkbox" class="publish_job_script" id="job_{{ job.name }}_{{ script.0 }}" data-kolekti-script="{{ script.0 }}"
-			 {% if script.1 == "1"%} checked{% endif %}/>
-		  {{ script.0 }}
-		</label>
-	      </div>
-	    </div>
-	    {% endfor %}
-	    {% comment %}
-	    <div class="col-sm-12 col-md-12 top-margin">
-	      <a id="editjoblink" class="btn btn-default btn-block" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer les paramètres">Paramètres avancés...</a>
-	    </div>
-	    {% endcomment %}
 	  </div>
-	  {% endfor %}
 	</div>
       </div>
     </div>
@@ -169,10 +201,10 @@
     </div>
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-danger hidden">
       <div class="panel-heading">
 	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapseDiag" class="collapsed">
+	  <a data-toggle="collapse" href="#collapseDiag" class="">
 	    <small>
 	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
@@ -181,7 +213,7 @@
 	  </a>
 	</h4>
       </div>
-      <div id="collapseDiag" class="panel-collapse collapse">
+      <div id="collapseDiag" class="panel-collapse collapse in">
 	<div class="panel-body diag">
 	  <p> En cours de chargement... </p>
 	</div>
@@ -193,29 +225,24 @@
 
 {% block content %}
     <hr>
-    <div id="toc_meta">
-      <!--
-      <div class="section panel panel-info">
-	<div class="panel-body">
-	  -->
-      <div class="row">
-	    <div class="col-sm-6">
-	      Titre :
-	      <input type="text" name="title" id="input_toc_title" value="{{ tocmeta.DC_title }}"/>
-	    </div>
-	    <div class="col-sm-6">
-	      Auteur : {{ tocmeta.DC_creator }}
-	      {% comment %} 	    <input type="text" name="author" id="tocauthor" value="{{ tocmeta.DC_creator }}"/> {% endcomment %}
-	    </div>
-	  </div>
-<!--
+    <div id="toc_meta" class="form-horizontal">
+      <div class="form-group">
+	<label for="title" class="col-sm-2 control-label">Titre</label>
+	 <div class="col-sm-10">
+	   <input class="form-control" type="text" name="title" id="input_toc_title" value="{{ tocmeta.DC_title }}"/>
+	 </div>
+      </div>
+      <div class="form-group">
+	<label for="author" class="col-sm-2 control-label">Auteur</label>
+	<div class="col-sm-10">
+	  <input class="form-control" type="text" name="author" id="input_toc_author" value="{{ tocmeta.DC_creator }}"/>
 	</div>
       </div>
--->
+    <hr>
     </div>
 
-    <hr>
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"  
+    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"
+	 data-kolekti-tocname="{{ tocdisplay }}"
       {% for namemeta, valuemeta  in tocmeta.items %}
       data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
       {% endfor %}

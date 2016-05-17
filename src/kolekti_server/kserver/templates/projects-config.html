@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load ostags %}
+
+{% block current_tools %}menu-current{% endblock %}
+
+{% block title %}Configuration des langues{% endblock %}
+{% block help-topic %}projects{% endblock %}
+{% block extrascripts %}
+    <script src="/static/js/kolekti-config-lang.js"></script>
+{% endblock %}
+
+
+{% block content %}    
+{% if projects|length %}
+<div id="menu">
+  <div class="panel panel-default list-group">
+    <div class="panel-body">
+      <h5>Langue d'édition</h5>
+      <div class="input-group input-group-sm btn-lang-group" id="edit_langs">
+	<div class="input-group-btn" role="group" aria-label="Langue">
+	  {% for lang in srclangs %}
+	  <div class="btn-group btn-lang">
+	    <a href="#" class="btn btn-default btn-sm dropdown-toggle {% if lang == default_srclang %} btn-info {% endif %}" data-toggle="dropdown"><span class="lang">{{ lang }}</span>&nbsp;<span class="caret"></span></a>
+	    <ul class="dropdown-menu">
+	      <li {% if lang == default_srclang %}class="disabled"{% endif %}><a href="#" class="lang_del">Supprimer</a></li>
+	      <li {% if lang == default_srclang %}class="disabled"{% endif %}><a href="#" class="lang_default">Langue par défaut</a></li>
+	    </ul>
+	  </div>
+	  {% endfor %}
+	  
+	  <div class="btn-group hidden">
+	    <a href="#" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="lang"></span>&nbsp;<span class="caret"></span></a>
+	    <ul class="dropdown-menu">
+	      <li><a href="#" class="lang_del">Supprimer</a></li>
+	      <li><a href="#" class="lang_default">Langue par défaut</a></li>
+	    </ul>
+	  </div>
+
+	</div>
+	
+	<input type="text" class="form-control" placeholder="Ajouter">
+	<span class="input-group-btn">
+	  <button class="btn btn-default lang_add" type="button">Ajouter</button>
+	</span>
+      </div><!-- /input-group -->
+      <hr>
+      <h5>Langues des versions (traductions)</h5>
+      {{ lang }}
+      <div class="input-group input-group-sm btn-lang-group" id="release_langs">
+	<div class="input-group-btn" role="group" aria-label="Langue">
+	  {% for lang in releaselangs %}
+	  <div class="btn-group btn-lang">
+	    <a href="#" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="lang">{{ lang }}</span>&nbsp;<span class="caret"></span></a>
+	    <ul class="dropdown-menu">
+	      <li {% if lang == default_srclang %}class="disabled"{% endif %}><a href="#" class="lang_del">Supprimer</a></li>
+	    </ul>
+	  </div>
+	  {% endfor %}
+	  <div class="btn-group hidden">
+	    <a href="#" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="lang"></span>&nbsp;<span class="caret"></span></a>
+	    <ul class="dropdown-menu">
+	      <li><a href="#" class="lang_del">Supprimer</a></li>
+	    </ul>
+	  </div>
+
+	</div>
+	<input type="text" class="form-control" placeholder="Ajouter">
+	<span class="input-group-btn">
+	  <button class="btn btn-default lang_add" type="button">Ajouter</button>
+	</span>
+      </div><!-- /input-group -->
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block menu %}
+    
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save" data-path="{{ path }}">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+
+{% endblock %}

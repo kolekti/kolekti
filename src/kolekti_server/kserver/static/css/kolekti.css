@@ -1,7 +1,16 @@
 /* room for navbar */
 body {
-    padding-top:50px;
+    padding-top:55px;
 }
+
+div.main>h1 {
+    font-size:160%
+}
+
+.padright {
+    padding-right:12px;
+}
+
 
 /*
 .side .affix {
@@ -61,11 +70,18 @@ a[data-toggle=collapse] small
 
 .side h5 {
     margin-top:16px;
+    font-weight:bold;
     border-bottom:1px solid #D0D0D0;
 }
 
+.side h6 {
+    font-weight:normal;
+    font-style:italic;
+
+}
+
 .side {
-    margin-top: 25px;
+    margin-top: 68px;
 }
 
 .section>.panel-heading h1,
@@ -94,11 +110,11 @@ a.pathstep:active,
 a.pathstep {
 color:black;
 }
-
+/*
 label {
     font-weight:100;
 }
-
+*/
 
 .navbar-inverse {
  background-color: #428BCA;   
@@ -126,8 +142,97 @@ label {
 /* project info bar */
 
 #navbar2 {
-    min-height:25px;
-    margin-bottom:-10px;
+    margin-top:50px;
+    /*    min-height:25px;    */
+    left:auto;
+}
+
+#navbar2 .strong {
+    font-weight:bold;
 }
 
 .top-margin { margin-top:10px; }
+
+
+/* browser */
+
+/* set color on folder lines */
+.browser tr.dir {
+    background-color: #f9f9f9;
+}
+
+.kolekti-browser-sync span {
+    cursor: pointer;
+}
+
+/* drag n drop */
+
+.ui-draggable-dragging .kolekti-browser-item-action ,
+.ui-draggable-dragging .kolekti-browser-sync,
+.ui-draggable-dragging .kolekti-browser-date {
+    display:none;
+}
+
+.ui-draggable-dragging .kolekti-browser-sync {
+    display:none;
+}
+
+.browser .ui-state-hover ,
+.browser tr.dir.ui-state-hover {
+    background-color: #D0D0D0;
+}
+
+.panel.drop {
+    background-color:rgba(12,255,55,.05);
+}
+
+
+/* widgets */
+
+.history {
+    padding-bottom:20px;
+}
+
+.widget .date ,
+.history .date {
+    padding-left: 5px;
+}
+
+.widget .info {
+    padding-left: 8px;
+    padding-top: 12px;
+    display:inline-block;
+}
+
+.widget .date,
+.widget .author,
+.history .date,
+.history .author {
+    font-size :80%;
+    padding-top: 12px;
+    display:inline-block;
+}
+
+.widget .msg,
+.history .msg {
+    font-style : italic;
+}
+
+.widget .record:first,
+.history .record:first {
+    border-top : 1px solid #606060;
+}
+
+.widget .record,
+.history .record {
+    border-bottom: 1px solid #606060;
+}
+
+.widget .link,
+.history .link {
+    text-align:right;
+    font-size:80%
+		   
+}
+
+

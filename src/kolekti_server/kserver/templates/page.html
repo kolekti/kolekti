@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ kolekti.project }}{% block page-title %}{% endblock %}</title>
-
+    <link rel="icon" href="/static/kolekti.png">
     <!-- Bootstrap -->
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     
@@ -42,19 +42,24 @@
 	    <li {% block current_images %}{% endblock %}><a href="/images/">Images</a></li>
 	    <li {% block current_releases %}{% endblock %}><a href="/releases/">Versions</a></li>
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
-	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Outils <span class="caret"></span></a>
+	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="/import/">Import</a></li>
 		<li><a href="/variables/">Variables</a></li>
-		<li><a href="/sync/">Synchro</a></li>
-		<li><a href="/settings/">Paramètres</a></li>
+		<li><a href="/settings/criteria">Critères</a></li>
+		<li><a href="/projects/config">Langues</a></li>
+		<li><a href="/settings/">Paramètres de publication</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/projects/">Projets</a></li>
+		<li><a href="/import/">Importer un fichier tableur</a></li>
+		<li role="presentation" class="divider"></li>
+		<li><a href="/sync/">Synchronisation</a></li>
+		<li role="presentation" class="divider"></li>
+		<li><a href="/projects/">Gestion des projets</a></li>
 	      </ul>
 	    <li>
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">          
+	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 	    <li><a href="http://www.kolekti.org/projects/kolekti/wiki" target="_blank">Wiki</a></li>
 	    {% if user.is_authenticated %} 
 	    <li class="dropdown">
@@ -73,6 +78,7 @@
 	    {% endif %}
 	    <li>
 	  </ul>
+	  <!--
 	  <form class="navbar-form navbar-right navbar-input-group" role="search" action="/search">
 	    <div class="input-group input-group-sm">
 	      <input type="text" class="form-control" name="query" placeholder="Rechercher...">
@@ -81,64 +87,62 @@
 	      </span>
 	    </div>
 	  </form>
+	  -->
 	</div>
       </div>
 <!--
       <div class="collapse navbar-collapse" id="navbar2">
 	<ul class="nav navbar-nav">
-	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncinfo.revision.number }}]</span></a></li>
+	  <li><span class="label label-primary">{{ active_project }} {{ active_srclang }} [r{{ syncnum.revision.number }}]</span></a></li>
 	</ul>
       </div>
 -->
     </div> <!-- navbar -->
-    <div class="navbar"  id="navbar2">
+    <div class="navbar navbar-fixed-top"  id="navbar2">
       <div class="container-fluid">
 	<div class="row">
 	  <div class="col-sm-12">
-	    <div class="btn-toolbar pull-right" role="toolbar" id="kolekti_tools">
-	      
-	    <div class="btn-group" role="group">
-	      {% block infobuttons %}
+	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
+	      <div class="btn-group pull-right" role="group">
+		<button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
+		  <span>
+		    <span><i class="fa fa-circle"></i></span> 
+		    rev {{ syncnum.revision.number }}
+		  </span>
+		</button>
+	      </div>
+	      <div class="btn-group  pull-right" role="group">
+		{% block infobuttons %}
+		<div class="btn-group" role="group">
+		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+		    Projet {{ active_project }} ({{ active_srclang }})
+		    <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+		    {% for project in projects %}
+		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.name }}&redirect=/">{{project.name}}</a></li>
+		    {% endfor %}
+		  </ul>
+		</div>
+	      </div>
+	      {% block infobuttons_lang %}
+	      {% comment %}
 	      <div class="btn-group" role="group">
-		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		  {{ active_project }} ({{ active_srclang }})
+
+		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
+		  {{ active_srclang }}
 		  <span class="caret"></span>
 		</button>
-		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-		  {% for project in projects %}
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.name }}&redirect=/">{{project.name}}</a></li>
-		  {% endfor %}
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
 		</ul>
 	      </div>
-	    </div>
-	    <div class="btn-group" role="group">
-	      <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
-		rev {{ syncinfo.revision.number }}
-	      </button>
-	    </div>
-	    {% block infobuttons_lang %}
-	    {% comment %}
-	    <div class="btn-group" role="group">
+	      {% endcomment %}
+	      {% endblock %}
 
-	      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
-		{{ active_srclang }}
-		<span class="caret"></span>
-	      </button>
-	      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
-		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
-		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
-		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
-		<li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
-	      </ul>
-	    </div>
-	    {% endcomment %}
-	    {% endblock %}
-
-	    <div class="btn-group" role="group">
-	    <button class="btn btn-xs btn-default" type="button" >
-		  Aide
-	    </button>
-	    </div>
 	      {% endblock %}
 	    </div>
 	  </div>
@@ -168,8 +172,11 @@
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
+    {% block footer %}{% endblock %}
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="/static/jquery.js"></script>
+    <script src="/static/jquery-ui.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/settings.js"></script>

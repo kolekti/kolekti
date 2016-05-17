@@ -2,30 +2,33 @@ $(document).ready( function () {
     
     var editor = CKEDITOR.replace( 'editor1', {
 	autoGrow_onStartup : true,
+	fullPage:true,
 	contentsCss : '/criteria.css',
-	extraPlugins : 'codemirror,textselection,conditions',
+	skin : 'moonocolor',
+	extraPlugins : 'codemirror,textselection,conditions,docprops',
 	allowedContent:true,
 	//	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	entities : false,
-
+	fillEmptyBlocks: false,
 	filebrowserBrowseUrl: '/browse/ckbrowser',
 	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
 	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
+	
 //	filebrowserUploadUrl: '/browse/ckupload',
 //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
 	
 	toolbar_Full : [
-	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
+	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' , 'DocProps'] },
 	    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },
 	    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ], items: [ 'Find', 'Replace', 'SelectAll', 'Scayt' ] },
 	    { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
 	    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
 	    { name: 'about', items: [ 'About' ] },
 	    '/',
-	    { name: 'tools', items: [ 'ShowBlocks' ] },
+	    { name: 'tools', items: [ 'ShowBlocks', 'editCondition', 'removeCondition' ] },
 	    { name: 'styles', items: [ 'Format' ] },
 	    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat' ] },
-	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv', 'conditions'] }
+	    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ], items: [ 'NumberedList', 'BulletedList', 'CreateDiv','RemoveDiv'] }
 	],
 	toolbar:"Full"
 
@@ -42,15 +45,28 @@ $(document).ready( function () {
     });
     
     editor.on( 'save', function(event){ 
+	var doc = editor.document;
+/*
+	var nkeys = doc.getCustomData('nbmeta')
+	var meta = []
+	for (var index = 0; index < nkeys; index++) {
+	    var n = doc.getCustomData( 'metaname'+index);
+	    var v = doc.getCustomData( 'metavalue'+index);
+	    meta.push(n+':'+v)
+	}
+	headers= {'METADATA':meta.join(';')}
+*/
 	$.ajax({
 	    url:window.location.pathname+window.location.search,
 	    type:'POST',
+//	    headers:headers,
 	    data:event.editor.getData(),
 	    contentType:'text/plain'
 	}).success(function(data) {
 	    savestate = 0;
 	    event.editor.commands.save.disable();
-//	    console.log('save ok')
+	    //	    console.log('save ok')
+	    kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
 	});
 
 	event.cancel();

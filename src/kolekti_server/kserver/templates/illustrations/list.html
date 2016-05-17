@@ -2,6 +2,7 @@
 {% load ostags %}
 
 {% block current_images %}class="menu-current"{% endblock %}
+{% block help-topic %}images{% endblock %}
 
 {% block extracss %}
     <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-illustrations.css"></link>
@@ -9,6 +10,7 @@
 
 
 {% block extrascripts %}
+    <script src="/static/js/kolekti-illustrationsutils.js"></script>
     <script src="/static/js/kolekti-illustrationslist.js"></script>
 {% endblock %}
 

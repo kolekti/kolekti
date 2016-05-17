@@ -11,7 +11,7 @@ $(document).ready(function() {
 		    })
 		  .select(
 		      function(path) {
-			  window.open('/topics/edit/?topic='+path);
+			  window.open('/topics/edit/?topic='+encodeURI(path));
 		      }
 		  )
 		  .create(create_topic);

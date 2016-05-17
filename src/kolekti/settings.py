@@ -13,7 +13,8 @@ else:
 
 default_settings ={
     "InstallSettings":{
-        "projectspath":os.path.join(userdir,'kolekti'),
+        "projectspath":os.path.join(userdir,'kolekti-projects'),
+        "kolektiversion":"0.7",
         },
 }
 
@@ -22,10 +23,10 @@ def settings(settings_file=""):
     config = ConfigParser.SafeConfigParser(dict_type=dict)
 
     config_files =[
-        'kolekti.ini',
-        '/etc/kolekti.ini',
-        os.path.join(appdatadir,usercfgfile),
         settings_file,
+        'kolekti.ini',
+        os.path.join(appdatadir,usercfgfile),
+        '/etc/kolekti.ini',
         ]
 
     read_files = config.read(config_files)

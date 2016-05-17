@@ -33,7 +33,6 @@
   <xsl:param name="jobname"/>
 
   <xsl:template match="/">
-    <h2><span id="job_id"><xsl:value-of select='$jobname'/></span></h2>
     <div id="job_body">
       <xsl:apply-templates select="/job/criteria"/>
       <xsl:apply-templates select="/job/profiles"/>
@@ -42,6 +41,7 @@
     <div class="job-templates hidden">
       <xsl:call-template name="profil"/>
       <xsl:call-template name="pubscripts"/>
+      <xsl:call-template name="multiscript"/>
     </div>
   </xsl:template>
 
@@ -123,7 +123,11 @@
 	      <span class="caret"/>
 	    </button>
 	    <ul class="dropdown-menu" role="menu">
-	      <xsl:apply-templates select="/job/settings/scripts" mode="scripts_menu"/>
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[not(@multi)]" mode="scripts_menu"/>
+
+	      <li role="separator" class="divider"></li>
+
+	      <li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement d'actions</a></li>
 	    </ul>
 	  </div>
 	</div>
@@ -132,30 +136,40 @@
   </xsl:template>
 
   <xsl:template match="pubscript" mode="scripts_menu">
-    <li><a href="#" class="script-menu-item" data-kolekti-script-id="{@id}"><xsl:value-of select="name"/></a></li>
+    <li>
+      <a href="#" class="" data-kolekti-script-id="{@id}">
+	<xsl:attribute name="class">
+	  <xsl:choose>
+	    <xsl:when test="@multi='yes'">multi-menu-item</xsl:when>
+	    <xsl:otherwise>script-menu-item</xsl:otherwise>
+	  </xsl:choose>
+	</xsl:attribute>
+	<xsl:value-of select="name"/>
+      </a>
+    </li>
   </xsl:template>
 
   <xsl:template match="profile" name="profil">
     <div class="panel panel-default job-comp profile">
       <div class="panel-body">
 	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-sm-9">
 	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
+	      <div class="col-sm-4">
 		<label for="profil_name_{generate-id()}"><strong>Nom du profil</strong></label>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="profile_name" class="profile-name" value="{label}" id="profil_name_{generate-id()}"/>
+	      <div class="col-sm-8">
+		<input type="text" name="profile_name" class="profile-name form-control" value="{label}" id="profil_name_{generate-id()}"/>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
+	      <div class="col-sm-4">
 		<label for="profil_dir_{generate-id()}">Dossier</label>
 	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="profile_dir" class="profile-dir" value="{dir/@value}" id="profil_dir_{generate-id()}" />
+	      <div class="col-sm-8">
+		<input type="text" name="profile_dir" class="profile-dir form-control" value="{dir/@value}" id="profil_dir_{generate-id()}" />
 	      </div>
 	    </div>
 	  </div>
-	  <div class="col-sm-6 col-xs-12">
+	  <div class="col-sm-3">
 	    <div class="checkbox">
 	      <label>
 		<input type="checkbox" class="profile-enabled">
@@ -168,7 +182,7 @@
 	    </div>
 	  </div>
 	</div>
-	<h5>Filtres à la publication</h5>
+	<h5>Filtrage à la publication</h5>
 	<xsl:variable name="profile" select="label"/>
 	<xsl:apply-templates select="/job/settings/criteria">
 	  <xsl:with-param name="profile" select="$profile"/>
@@ -176,7 +190,7 @@
 	</xsl:apply-templates>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
@@ -222,12 +236,12 @@
 	  <xsl:with-param name="userselect" select="'*'"/>
 	</xsl:call-template>
       </xsl:attribute>
-      <div class="col-sm-3 col-xs-12 kolekti-crit-code">
+      <div class="col-xs-3 kolekti-crit-code">
 	<xsl:value-of select="@code"/>
       </div>
-      <div class="col-sm-9 col-xs-12">
+      <div class="col-xs-9">
 	<div class="btn-group">
-	  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	  <button type="button" class="btn btn-default dropdown-toggle form-control" data-toggle="dropdown" aria-expanded="false">
 	    <span class="kolekti-crit-value-menu">
 	      <xsl:call-template name="criterion-value">
 		<xsl:with-param name="profile" select="$profile"/>
@@ -263,45 +277,99 @@
   <xsl:template match="script">
     <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
       <div class="panel-body">
-	<div class="row">
-	  <div class="col-sm-9 col-xs-12">
-	    <h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>	    
-	  </div>
-	</div>
-
-	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
-	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
-		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
-	      </div>
-	      <div class="col-sm-6 col-xs-12">
-		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value="{filename}"/>
+	<h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
+	<xsl:if test="not(ancestor::script)">
+	  <div class="row">
+	    <div class="col-sm-9">
+	      <div class="row">
+		<div class="col-sm-4">
+		  <label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
+		</div>
+		<div class="col-sm-8">
+		  <input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+		</div>
 	      </div>
 	    </div>
-	  </div>
-	  <div class="col-sm-6 col-xs-12">
-	    <div class="checkbox">
-	      <label>
-		<input type="checkbox" class="script-enabled">
-		  <xsl:if test="@enabled='1'">
-		    <xsl:attribute name="checked">checked</xsl:attribute>
-		  </xsl:if>
-		</input>
-		<xsl:text> Sortie active</xsl:text>
-	      </label>
+	    <div class="col-sm-3">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="script-enabled">
+		    <xsl:if test="@enabled='1'">
+		      <xsl:attribute name="checked">checked</xsl:attribute>
+		    </xsl:if>
+		  </input>
+		  <xsl:text> Sortie active</xsl:text>
+		</label>
+	      </div>
+	    </div>
+	    <div class="col-sm-3">
+	      <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	    </div>
+	    <div class="col-sm-9">
+	      <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
 	    </div>
 	  </div>
-	</div>
+	</xsl:if>
+ 	<xsl:apply-templates select="publication"/>
+	<xsl:apply-templates select="validation"/>
 	<xsl:apply-templates select="parameters"/>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
   </xsl:template>
 
+  <xsl:template match="publication">
+    <div class="multi-area">	
+      <h5>Actions lors de la publication</h5>
+      <div class="multiscript-list publication-scripts">
+	<xsl:apply-templates select="script"/>
+      </div>
+      <div class="row multi-add-script-pub">
+	<div class="col-xs-4">
+	  <div class="btn-group">
+	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	      Ajouter une action
+	      <xsl:text> </xsl:text>
+	      <span class="caret"/>
+	    </button>
+	    <ul class="dropdown-menu" role="menu">
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+	    </ul>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="validation">
+    <div class="multi-area">	
+      <h5>Actions lors de l'officialisation d'une version</h5>
+      <div class="multiscript-list validation-scripts">
+	<xsl:apply-templates select="script"/>
+      </div>
+      <div class="row multi-add-script-valid">
+	<div class="col-xs-4">
+	  <div class="btn-group">
+	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	      <span class="kolekti-param-value-menu">
+		Ajouter une action
+		<xsl:text> </xsl:text>
+	      </span>
+	      <xsl:text> </xsl:text>
+	      <span class="caret"/>
+	    </button>
+	    <ul class="dropdown-menu" role="menu">
+	      <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+	    </ul>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </xsl:template>
+  
   <xsl:template match="script/parameters/parameter">
     <xsl:apply-templates select="/job/settings/scripts/pubscript[@id=current()/ancestor::script/@name]/parameters/parameter[@name = current()/@name]">
       <xsl:with-param name="value" select="@value"/>
@@ -315,58 +383,62 @@
   <xsl:template match="pubscript"> <!-- template for new scripts -->
     <div class="panel panel-default job-comp script {@id}" data-kolekti-script-id="{@id}">
       <div class="panel-body">
-	<div class="row">
-	  <div class="col-sm-9 col-xs-12">
-	    <h5><strong><xsl:value-of select="name"/></strong></h5>
-	  </div>
-	</div>
-	
-	<div class="row">
-	  <div class="col-sm-6 col-xs-12">
-	    <div class="row">
-	      <div class="col-sm-6 col-xs-12">
-		<label for="script_filename_{generate-id()}">Nom des fichier publiés</label>
-	      </div>
-	      <div class="col-sm-6  col-xs-12">
-		<input type="text" name="script_filename" class="script-filename" id="script_filename_{generate-id()}" value=""/>
-	
+	<h5><strong><xsl:value-of select="name"/></strong></h5>
+
+	<xsl:if test="not(@multi)">
+	  <div class="row">
+	    <div class="col-sm-9">
+	      <div class="row">
+		<div class="col-sm-4">
+		  <label for="script_name_{generate-id()}"><strong>Nom de la sortie</strong></label>
+		</div>
+		<div class="col-sm-8">
+		  <input type="text" name="script_name" class="script-name form-control" value="{label}" id="script_name_{generate-id()}"/>
+		</div>
 	      </div>
 	    </div>
-	  </div>
-	  <div class="col-sm-6 col-xs-12">
-	    <div class="checkbox">
-	      <label>
-		<input type="checkbox" class="script-enabled" checked="checked"/>
-		<xsl:text> Sortie active</xsl:text>
-	      </label>
+	    <div class="col-sm-3">
+	      <div class="checkbox">
+		<label>
+		  <input type="checkbox" class="script-enabled" checked="checked"/>
+		  <xsl:text> Sortie active</xsl:text>
+		</label>
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-3">
+	      <label for="script_filename_{generate-id()}">Nom des fichiers publiés</label>
+	    </div>
+	    <div class="col-sm-9">
+	      <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value=""/>
+	      
 	    </div>
 	  </div>
-	</div>
+	</xsl:if>
+
 	<xsl:apply-templates select="parameters/parameter"/>
 	<hr/>
 	<div class="pull-right">
-	  <button class="btn btn-default btn-xs suppr">Supprimer</button>
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
       </div>
     </div>
   </xsl:template>
 
-
-
   <xsl:template match="pubscript/parameters/parameter">
     <xsl:param name="value" select="''"/>
 
     <div class="row script-parameter" data-script-param-name='{@name}' data-script-param-type='{@type}' data-kolekti-param-value="{$value}">
-      <div class="col-sm-3 col-xs-12">
+      <div class="col-xs-3">
 	<label for="script-param_{generate-id()}">
 	  <xsl:value-of select="@label"/>
 	</label>
       </div>
-      <div class="col-sm-9 col-xs-12">
+      <div class="col-xs-4">
 	<xsl:choose>
 	  <xsl:when test="@type='filelist'">
-	    <div class="btn-group kolekti-param-menu">
-	      <button type="button" class="btn btn-default btn-sm dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
+	    <div class="btn-group  kolekti-param-menu">
+	      <button type="button" class="btn btn-default dropdown-toggle kolekti-param" data-toggle="dropdown" aria-expanded="false">
 		<span class="kolekti-param-value-menu">
 		  <xsl:value-of select="$value"/>
 		  <xsl:text> </xsl:text>
@@ -395,4 +467,92 @@
       </div>
     </div>
   </xsl:template>
+
+
+  <xsl:template name="multiscript">
+    <div class="panel panel-default job-comp script multiscript" data-kolekti-script-id="multiscript">
+      <div class="panel-body">
+	<h5><strong>Enchaînement d'actions</strong></h5>
+	
+	<div class="row">
+	  <div class="col-sm-9">
+	    <div class="row">
+	      <div class="col-sm-4">
+		<label for="script_name_multiscript"><strong>Nom de la sortie</strong></label>
+	      </div>
+	      <div class="col-sm-8">
+		<input type="text" name="script_name" class="script-name form-control" value="multi" id="script_name_multi"/>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-sm-3">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="script-enabled" checked="checked"/>
+		<xsl:text> Sortie active</xsl:text>
+	      </label>
+	    </div>
+	  </div>
+	  <div class="col-sm-3">
+	    <label for="script_filename_multi">Nom des fichiers publiés</label>
+	  </div>
+	  <div class="col-sm-9">
+	    <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_multi" value=""/>
+	    
+	  </div>
+	</div>
+
+
+
+	<div class="multi-area">	
+	  <h5>Actions lors de la publication</h5>
+	  <div class="multiscript-list publication-scripts"/>
+	  <div class="row multi-add-script-pub">
+	    <div class="col-xs-4">
+	      <div class="btn-group">
+		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		  Ajouter une action
+		  <xsl:text> </xsl:text>
+		  <span class="caret"/>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+		</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+
+	<div class="multi-area">	
+	  <h5>Actions lors de l'officialisation d'une version</h5>
+	  <div class="multiscript-list validation-scripts"/>
+	  <div class="row multi-add-script-valid">
+	    <div class="col-xs-4">
+	      <div class="btn-group">
+		<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		  <span class="kolekti-param-value-menu">
+		    Ajouter une action
+		    <xsl:text> </xsl:text>
+		  </span>
+		  <xsl:text> </xsl:text>
+		  <span class="caret"/>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <xsl:apply-templates select="/job/settings/scripts/pubscript[@multi='yes']" mode="scripts_menu"/>
+		</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<hr/>
+	<div class="pull-right">
+	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
+	</div>
+      </div>
+    </div>
+
+  </xsl:template>
+
 </xsl:stylesheet>

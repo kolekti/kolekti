@@ -45,6 +45,12 @@
   </xsl:template>
 
   <xsl:template match="node()">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="*">
     <xsl:element name="{local-name()}" namespace="http://www.w3.org/1999/xhtml">
       <xsl:apply-templates select="node()|@*"/>
     </xsl:element>

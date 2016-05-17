@@ -6,7 +6,8 @@ $(document).ready(function() {
 		     'title':" ",
 		     'titleparent':".title",
 		     'mode':"selectonly",
-		     'modal':"no"
+		     'modal':"no",
+		     'os_action_delete':'yes'
 		    })
 	.select(
 	    function(path) {

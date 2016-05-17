@@ -22,7 +22,8 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
   xmlns="http://www.w3.org/1999/xhtml" 
   xmlns:exsl="http://exslt.org/common"
-  xmlns:html="http://www.w3.org/1999/xhtml" 
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:mathml="http://www.w3.org/1998/Math/MathML" 
   xmlns:kt="kolekti:trames"
   xmlns:kf="kolekti:extensions:functions:publication"
   extension-element-prefixes="exsl kf" 
@@ -57,6 +58,7 @@
         <title>
           <xsl:value-of select="html:head/html:title/text()"/>
         </title>
+	<xsl:copy-of select="html:head/html:meta[starts-with(@name,'DC.')]"/>
       </head>
       <body lang="{$lang}" xml:lang="{$lang}">
         <xsl:apply-templates select="html:body" mode="aggreg">
@@ -64,14 +66,6 @@
         </xsl:apply-templates>
       </body>
     </html>
-  </xsl:template>
-  
-
-  <xsl:template match="html:body" mode="aggreg">
-    <xsl:param name="section_depth"/>
-    <xsl:apply-templates mode="aggreg">
-      <xsl:with-param name="section_depth" select="$section_depth"/>
-    </xsl:apply-templates>
   </xsl:template>
   
   
@@ -86,6 +80,7 @@
         <xsl:value-of select="$section_depth"/>
 	</xsl:comment>
       -->
+      <xsl:copy-of select="@data-hidden"/>
       <xsl:apply-templates mode="aggreg">
         <xsl:with-param name="section_depth" select="$section_depth+1"/>
       </xsl:apply-templates>
@@ -161,15 +156,14 @@
     
     <xsl:variable name="topic_url" select="kf:gettopic(string(@href))"/>
     <xsl:variable name="topic" select="document($topic_url)"/>
-
     <div class="topic" id="{generate-id()}">
       <div class="topicinfo">
          <xsl:comment>Do not translate</xsl:comment>
          <p><span class="infolabel">source</span><span class="infovalue"><a href="{$topic_url}"><xsl:value-of select="$topic_url"/></a></span></p>
-         <xsl:apply-templates select="$topic/html:html/html:head/html:meta" mode="topic_info"/>
+         <xsl:apply-templates select="$topic/html:html/html:head/html:meta|$topic/html/head/meta" mode="topic_info"/>
       </div>
 
-      <xsl:apply-templates select="$topic/html:html/html:body" mode="aggreg">
+      <xsl:apply-templates select="$topic/html:html/html:body|$topic/html/body" mode="aggreg">
 	<xsl:with-param name="section_depth" select="$section_depth"/>
       </xsl:apply-templates>
     </div>
@@ -177,7 +171,7 @@
 
 
 
-  <xsl:template match="html:meta[@name]" mode="topic_info">
+  <xsl:template match="html:meta[@name]|meta[@name]" mode="topic_info">
     <p><span class="infolabel"><xsl:value-of select="@name"/></span><span class="infovalue"><xsl:value-of select="@content"/></span></p>
   </xsl:template>
 
@@ -185,7 +179,7 @@
 
   <!-- traitement du corps du topic -->
 
-  <xsl:template match="html:body" mode="aggreg">
+  <xsl:template match="html:body|body" mode="aggreg">
     <xsl:param name="section_depth"/>    
     <xsl:apply-templates select="node()" mode="aggreg">
       <xsl:with-param name="section_depth" select="$section_depth"/>
@@ -203,13 +197,23 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="*[namespace-uri() = '']" mode="aggreg">
+    <xsl:param name="section_depth"/>    
+    <xsl:element name="{local-name()}" namespace="http://www.w3.org/1999/xhtml">
+      <xsl:apply-templates select="node()|@*" mode="aggreg">
+        <xsl:with-param name="section_depth" select="$section_depth"/>
+      </xsl:apply-templates>
+    </xsl:element>
+  </xsl:template>
+
+  
   <!-- marques d'index : normalize le contenu des entrées -->
 
-  <xsl:template match="html:ins[@class='index']|html:span[@rel='index']" mode="aggreg">
-    <xsl:copy>
+  <xsl:template match="html:ins[@class='index']|html:span[@rel='index']|ins[@class='index']|span[@rel='index']" mode="aggreg">
+    <xsl:element name="{local-name()}" namespace="http://www.w3.org/1999/xhtml">
       <xsl:apply-templates select="@*" mode="aggreg"/>
       <xsl:value-of select="normalize-space(.)"/>
-    </xsl:copy>
+    </xsl:element>
   </xsl:template>
 
 

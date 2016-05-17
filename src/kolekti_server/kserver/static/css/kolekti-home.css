@@ -1,0 +1,55 @@
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.value {
+    fill: steelblue;
+}
+.value:hover{
+    fill:#24425c;
+}
+
+@media (min-width: 992px) {
+    #mychartdetails {
+	max-height:250px;
+	overflow-y:auto;
+	overflow-x:hidden;
+    }
+}
+
+
+.eventrect {
+    fill:transparent;
+}
+
+.valueline {
+    stroke:white;
+    stroke-width:2;
+}
+
+.area {
+    fill: lightsteelblue;
+    stroke-width: 2;
+    stroke:lightsteelblue;
+    fill-opacity:0.4;
+}
+
+@media (min-width: 992px) {
+    #widgets_main .panel-body {
+	height:400px;
+	overflow-y:auto;
+	overflow-x:hidden;
+    }
+}
+.footer {
+    bottom: 0;
+    height: 22px;
+    width: 100%;
+}
+
+

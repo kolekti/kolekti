@@ -6,6 +6,7 @@
 import os
 import sys
 import re
+from string import maketrans
 from copy import copy
 from datetime import datetime
 import ConfigParser
@@ -14,17 +15,23 @@ import urllib
 import urlparse
 import shutil
 import logging
+logger = logging.getLogger(__name__)
+
 import json
 import mimetypes
 mimetypes.init()
 from lxml import etree as ET
 
-from exceptions import *
+
+
+from kolekti.exceptions import *
 from settings import settings
 from synchro import SynchroManager
 from searchindex import IndexManager
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
+
+ns = {'namespaces':{"h":"http://www.w3.org/1999/xhtml"}}
 
 objpathes = {
     "0.6":{
@@ -63,24 +70,31 @@ class kolektiBase(object):
             self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
-
-
         if path is not None:
             self.set_project(path)
             
                 
     def set_project(self, path):
+        if os.sys.platform[:3] == "win":
+            appurl = urllib.pathname2url(self._appdir)[3:]
+            os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
+            
+        # logger.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
         else:
             self._path = path + os.path.sep
-            
+        self._xmlparser = ET.XMLParser(load_dtd = True)
+        self._xmlparser.resolvers.add(PrefixResolver())
+        self._htmlparser = ET.HTMLParser(encoding='utf-8')
+
         projectdir = os.path.basename(self._path[:-1])
+        projectspath = os.path.dirname(self._path[:-1])
 
         try:
             self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
-            # logging.debug("project config")
-            # logging.debug(ET.tostring(conf))
+            # logger.debug("project config")
+            # logger.debug(ET.tostring(conf))
             self._config = {
                 "project":conf.get('project',projectdir),
                 "sourcelang":conf.get('sourcelang'),
@@ -90,7 +104,7 @@ class kolektiBase(object):
                 }
             
         except:
-            # logging.debug("default config")
+            # logger.debug("default config")
             self._config = {
                 "project":"Kolekti",
                 "sourcelang":'en',
@@ -99,26 +113,41 @@ class kolektiBase(object):
                 "projectdir":projectdir,
                 }
             import traceback
-            logging.debug(traceback.format_exc() )
+            logger.debug(traceback.format_exc() )
         self._version = self._config['version']
-        # logging.debug("kolekti v%s"%self._version)
-
+        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
+        # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
             self.syncMgr = SynchroManager(self._path)
-            self._syncstate = self.syncMgr.state()
         except ExcSyncNoSync:
-            self._syncstate = None
+            self.syncMgr = None
         try:
-            self.indexMgr = IndexManager(self._path)
+            self.indexMgr = IndexManager(projectspath, projectdir)
         except:
-            logging.debug('Search index could not be loaded')
+            import traceback
+            print traceback.format_exc()
+            logger.debug('Search index could not be loaded')
 
-        
+
+    @property
+    def _syncnumber(self):
+        try:
+            return self.syncMgr.rev_number()
+        except:
+            return "?"
+            
+    @property
+    def _syncstate(self):
+        try:
+            return self.syncMgr.rev_state()
+        except:
+            return "?"
+            
     def __getattribute__(self, name):
-        # logging.debug('get attribute: ' +name)
+        # logger.debug('get attribute: ' +name)
         # import traceback
-        # logging.debug(traceback.print_stack())
+        # logger.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
@@ -126,8 +155,8 @@ class kolektiBase(object):
                 return f
         except:
             import traceback
-            logging.debug('error getting attribute '+name)
-            logging.debug(traceback.format_exc())
+            logger.debug('error getting attribute '+name)
+            logger.debug(traceback.format_exc())
             pass
         return super(kolektiBase, self).__getattribute__(name)
 
@@ -149,11 +178,20 @@ class kolektiBase(object):
         lp = self.__makepath(path)
         return os.path.exists(lp)
 
+    def __pathchars(self, s):
+        intab = """?'"<>\/|"""
+        outtab = "!_______"
+        for i,o in zip(intab, outtab):
+            s = s.replace(i,o)
+        return s
+    
     def __makepath(self, path):
         # returns os absolute path from relative path
-        pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
-        #logging.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
-        #logging.debug(urllib2.url2pathname(path))
+        pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
+        res =  os.path.join(self._path, *pathparts)
+        # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
+        #logger.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
+        #logger.debug(urllib2.url2pathname(path))
         
         return os.path.join(self._path, *pathparts)
 
@@ -220,7 +258,18 @@ class kolektiBase(object):
                 d = datetime.fromtimestamp(os.path.getmtime(pf))
                 yield (f, d)
 
-
+    def get_publications(self):
+        publications = []
+        for manifest in self.iterpublications:
+            if len(manifest):
+                yield manifest[-1]
+        
+    def get_releases_publications(self):
+        publications = []
+        for manifest in self.iter_releases_publications:
+            if len(manifest):
+                yield manifest[-1]
+        
     def resolve_var_path(self, path, xjob):
         criteria = re.findall('\{.*?\}', path)
         if len(criteria) == 0:
@@ -235,21 +284,38 @@ class kolektiBase(object):
                 seen.add(ppath)
                 yield ppath
 
-                
+
+    def zip_publication(self, path):
+        if not(path[:14] == '/publications/' or path[:10] == '/releases/'):
+            raise Exception()
+        from zipfile import ZipFile
+        from StringIO import StringIO
+        zf= StringIO()
+        top = self.getOsPath(path)
+        with ZipFile(zf, "w") as zippy:
+            for root, dirs, files in os.walk(top):
+                rt=root[len(top) + 1:]
+                if rt[:7] == 'kolekti' or rt[:7] == 'sources':
+                    continue
+                for name in files:
+                    zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+        z =  zf.getvalue()
+        zf.close()
+        return z
                 
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
         xjob = self.parse(job_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             for imgfile in self.resolve_var_path(src_img, xjob):
                 t = mimetypes.guess_type(imgfile)[0]
                 if t is None:
                     t = "application/octet-stream"
                 callback(imgfile, t)
-        for elt_var in xassembly.xpath('//h:var',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_var in xassembly.xpath('//h:var',**ns):
             attr_class = elt_var.get('class')
             if "=" in attr_class:
                 if attr_class[0] == '/':
@@ -265,37 +331,61 @@ class kolektiBase(object):
 
     def copy_release(self, path, assembly_name, srclang, dstlang):
         # copy images & variables
-        srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
-        for subdir in srcsubdirs:
-            srcpath = '%s/sources/%s/%s'%(path, srclang, subdir)
-            dstpath = '%s/sources/%s/%s'%(path, dstlang, subdir)
-            self.copyDirs(srcpath,dstpath)            
+        #srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
+        #for subdir in srcsubdirs:
+        
+        srcpath = '%s/sources/%s'%(path, srclang)
+        dstpath = '%s/sources/%s'%(path, dstlang)
+
+        self.copyDirs(srcpath,dstpath)            
+        try:
             self.syncMgr.post_save(dstpath)
-            
+        except:
+            pass
 
         # copy assembly / change language in references to images
-        src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'.html'])
-        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'.html'])
+        # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
+        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
         try:
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
         except OSError:
-            logging.debug('makedir failed')
-        self.copy_resource(src_assembly_path, assembly_path)
+            logger.debug('makedir failed')
+        # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
-            src_img = elt_img.get('src')
-            splitpath = src_img.split('/')
-            if splitpath[1:3] == ["sources",srclang]:
-                splitpath[2] = dstlang 
-                elt_img.set('src','/'.join(splipath))
+        self.update_assembly_lang(xassembly, dstlang)
         self.xwrite(xassembly, assembly_path)
-
-
-        self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
-
+                
+#        try:
+#            self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+#        except:
+#            pass
         yield assembly_path
         return
+
+    def update_assembly_lang(self, xassembly, lang):
+        for elt_img in xassembly.xpath('//h:img',**ns):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1] == "sources" and splitpath[2] != 'share':
+                splitpath[2] = lang 
+                elt_img.set('src','/'.join(splitpath))
+        try:
+            xassembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',lang)
+        except IndexError:
+            pass
+        try:
+            xassembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',lang)
+        except IndexError:
+            pass
+        try:
+            body = xassembly.xpath('/h:html/h:body',**ns)[0]
+            body.set('lang',lang)
+            body.set('{http://www.w3.org/XML/1998/namespace}lang',lang)
+        except IndexError:
+            pass
+
+
 
                                         
     def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
@@ -308,7 +398,7 @@ class kolektiBase(object):
                     refdir = "/".join(splitpath.split('/')[:-1])
                     self.makedirs(refdir)
                 except OSError:
-                    logging.debug('makedir failed')
+                    logger.debug('makedir failed')
 
                 respath = path + respath
                 self.copy_resource(respath, '/'.join(splitpath))
@@ -322,10 +412,10 @@ class kolektiBase(object):
             refdir = "/".join([path,'sources',dstlang,'assembly'])
             self.makedirs(refdir)
         except OSError:
-            logging.debug('makedir failed')
+            logger.debug('makedir failed')
         self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
-        for elt_img in xassembly.xpath('//h:img',namespaces={"h":"http://www.w3.org/1999/xhtml"}):
+        for elt_img in xassembly.xpath('//h:img',**ns):
             src_img = elt_img.get('src')
             splitpath = src_img.split('/')
             if splitpath[1:3] == ["sources",srclang]:
@@ -353,13 +443,11 @@ class kolektiBase(object):
     def get_xsl(self, stylesheet, extclass = None, xsldir = None, system_path = False, **kwargs):
         # loads an xsl stylesheet
         # 
-        logging.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
+        logger.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:
-            if system_path:
-                xsldir = os.path.join(self._appdir, xsldir)
-            else:
+            if not system_path:
                 xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
         xsldoc  = ET.parse(path,self._xmlparser)
@@ -370,14 +458,13 @@ class kolektiBase(object):
         return xsl
 
     def log_xsl(self, error_log):
-        print "log xsl"
         for entry in error_log:
-            logging.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+            logger.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
             print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
-            #logging.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
-            #logging.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
-            #logging.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
-            #logging.debug('[XSL] filename: %s' % entry.filename)
+            #logger.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
+            #logger.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
+            #logger.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
+            #logger.debug('[XSL] filename: %s' % entry.filename)
 
     def parse_string(self, src):
         return ET.XML(src,self._xmlparser)
@@ -389,30 +476,35 @@ class kolektiBase(object):
         src = self.__makepath(filename)
         return ET.parse(src,self._xmlparser)
     
+    def parse_html(self, filename):
+        src = self.__makepath(filename)
+        return ET.parse(src,self._htmlparser)
+    
     def read(self, filename):
         ospath = self.__makepath(filename)
         with open(ospath, "r") as f:
             return f.read()
 
-    def write(self, content, filename):
+    def write(self, content, filename, mode="w"):
         ospath = self.__makepath(filename)
-        with open(ospath, "w") as f:
+        with open(ospath, mode) as f:
             f.write(content)
         self.post_save(filename)
         
-    def write_chunks(self, chunks, filename):
+    def write_chunks(self, chunks, filename, mode="w"):
         ospath = self.__makepath(filename)
-        with open(ospath, "w") as f:
+        with open(ospath, mode) as f:
             for chunk in chunks():
                 f.write(chunk)
         self.post_save(filename)
         
-    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True):
+    def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
 
             
     # for demo
@@ -432,31 +524,31 @@ class kolektiBase(object):
         try:
             self.syncMgr.move_resource(src, dest)
         except:
-            logging.info('Synchro unavailable')
+            logger.info('Synchro unavailable')
             shutil.move(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
         except:
             import traceback
-            print traceback.format_exc
-            logging.info('Synchro unavailable')
+            print traceback.format_exc()
+            logger.info('Synchro unavailable')
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
         except:
-            logging.info('Synchro unavailable')
+            logger.info('Synchro unavailable')
             if os.path.isdir(self.__makepath(path)):
                 shutil.rmtree(self.__makepath(path))
             else:
@@ -464,24 +556,29 @@ class kolektiBase(object):
         try:
             self.indexMgr.delete_resource(path)
         except:
-            logging.debug('Search index unavailable')
+            logger.debug('Search index unavailable')
 
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
         except:
-            logging.debug('Synchro unavailable')
+            logger.debug('Synchro unavailable')
         try:
             self.indexMgr.post_save(path)
         except:
-            logging.debug('Search index unavailable')
+            import traceback
+            print traceback.format_exc()
+            logger.debug('Search index unavailable')
 
-    def makedirs(self, path):
+    def makedirs(self, path, sync=False):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
-            # svn add if file did not exist
-            self.post_save(path)
+            if sync:
+                self.post_save(path)
+            #if hasattr(self, "_draft") and self._draft is False:
+                # svn add if file did not exist
+                # self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)
@@ -491,13 +588,16 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         return os.path.exists(ospath)
 
-    def copyFile(self, source, path):
+    def copyFile(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path) 
-        # logging.debug("copyFile %s -> %s"%(ossource, ospath))
-               
-        return shutil.copy(ossource, ospath)
-
+        # logger.debug("copyFile %s -> %s"%(ossource, ospath))
+        
+        cp = shutil.copy(ossource, ospath)
+        if hasattr(self, "_draft") and self._draft is False:
+            self.post_save(path)
+        return cp
+            
     def copyDirs(self, source, path):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
@@ -506,7 +606,7 @@ class kolektiBase(object):
             shutil.rmtree(ospath)
         except:            
             pass
-        return shutil.copytree(ossource, ospath)
+        return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
 
 
     
@@ -515,8 +615,11 @@ class kolektiBase(object):
 
     def getUrlPath(self, source):
         path = self.__makepath(source)
-        # logging.debug(path)
-        upath = urllib.pathname2url(path.encode('utf-8'))
+        # logger.debug(path)
+        try:
+            upath = urllib.pathname2url(str(path))
+        except UnicodeEncodeError:
+            upath = urllib.pathname2url(path.encode('utf-8'))
         if upath[:3]=='///':
             return 'file:' + upath
         else:
@@ -525,7 +628,7 @@ class kolektiBase(object):
 
     def getUrlPath2(self, source):
         path = self.__makepath(source)
-        # logging.debug(path)
+        # logger.debug(path)
         
         upath = path.replace(os.path.sep,"/")
 # upath = urllib.pathname2url(path.
@@ -564,9 +667,12 @@ class kolektiBase(object):
 
 
     def substitute_criteria(self, string, profile, extra={}):
-        criteria_dict = self._get_criteria_dict(profile)
+        try:
+            criteria_dict = self._get_criteria_dict(profile)
+        except AttributeError:
+            criteria_dict = {}
         criteria_dict.update(extra)
-        #logging.debug(criteria_dict)
+        #logger.debug(criteria_dict)
         for criterion, val in criteria_dict.iteritems():
             if val is not None:
                 string=string.replace('{%s}'%criterion, val)
@@ -574,14 +680,14 @@ class kolektiBase(object):
         return string
 
         
-    def substitute_variables(self, string, profile):
-        for variable in re.findall('{[ a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
-            # logging.debug(variable)
+    def substitute_variables(self, string, profile, extra={}):
+        for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+            # logger.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
             sheet_variable = splitVar[1].strip()
-            # logging.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
-            value = self.variable_value(sheet, sheet_variable, profile)
+            # logger.debug('substitute_variables : sheet : %s ; variable : %s'%(sheet, sheet_variable))
+            value = self.variable_value(sheet, sheet_variable, profile, extra).text
             string = string.replace(variable, value)
         return string
 
@@ -590,11 +696,9 @@ class kolektiBase(object):
         if sheet[0] != "/":
             variables_file = self.get_base_variable(sheet)
         else:
-            variables_file = sheet
-
+            variables_file = self.process_path(sheet)
         xvariables = self.parse(variables_file + '.xml')
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
-
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
         for value in values:
@@ -608,9 +712,9 @@ class kolektiBase(object):
                 else:
                     accept = False
             if accept:
-                return value.find('content').text
-        logging.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return "[??]"
+                return value.find('content')
+        logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
+        return ET.XML("<content>[??]</content>")
 
 
     @property
@@ -672,6 +776,54 @@ class kolektiBase(object):
                         yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
                                "name":os.path.splitext(file)[0]}
         
+    @property
+    def iterreleasejobs(self):
+#        print 'iter',os.path.join(self._path, 'releases')
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            if rootparts[-1] == 'publication-parameters':
+                for file in files:
+                    if os.path.splitext(file)[-1] == '.xml':
+                        if not file=='criterias.xml':
+                            yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
+                                   "name":os.path.splitext(file)[0]}
+        
+    @property
+    def iterpublications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'publications'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for mfile in files:
+                if mfile  == 'manifest.json':
+                    print mfile
+                    with open(os.path.join(root,mfile)) as f:
+                    
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield [{'event':'error',
+                                   'file':os.path.join(root,mfile),
+                                   'msg':'cannot read manifest file',
+                                   }]
+    @property
+    def iter_releases_publications(self):
+        for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
+            rootparts = root.split(os.path.sep)
+            for file in files:
+                if file  == 'manifest.json':
+                    with open(os.path.join(root,file)) as f:
+
+                        try:
+                            yield json.loads('['+f.read()+']')
+                        except:
+                            import traceback
+                            print traceback.format_exc()
+                            yield [{'event':'error',
+                                   'file':os.path.join(root,file),
+                                   'msg':'cannot read manifest file',
+                                   }]
+                        
     def release_details(self, path, lang):
         res=[]
         root = self.__makepath(path)
@@ -694,14 +846,19 @@ class kolektiBase(object):
                     
         return res
                 
-                
+    def create_project(self, project_dir, projects_path):
+        tpl = os.path.join(self._appdir, 'project_template')
+        target = os.path.join(projects_path, project_dir)
+        shutil.copytree(tpl, target)
+
+                    
                 
 class XSLExtensions(kolektiBase):
     """
     Extensions functions for xslt that are applied during publishing process
     """
     ens = "kolekti:extensions:functions"
-    def __init__(self, path):
+    def __init__(self, path, **kwargs):
         super(XSLExtensions, self).__init__(path)
 
 class PrefixResolver(ET.Resolver):

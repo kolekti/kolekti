@@ -3,6 +3,8 @@
 
 {% block title %}Synchronisation{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
+{% block help-topic %}synchro{% endblock %}
+
 {% block extrascripts %}
     <script src="/static/js/kolekti-synchro.js"></script>
 {% endblock %}
@@ -10,10 +12,10 @@
 {# no repository #}
 {#
 <div class="alert alert-warning">
-  <h3>Aucun dépot configuré</h3>
-  <p>Vous ne bénéficiez pas des fonctions collaboratives de kolekti</p>
+  <h3>Aucun dépôt configuré</h3>
+  <p>Vous ne bénéficiez pas des fonctions collaboratives de Kolekti</p>
   <p>Entrez l'adresse du serveur SVN</p> 
-  <p>Contactez nous pour un 
+  <p>Contactez-nous pour un 
  <form method="POST">
     input type
 </form>
@@ -26,19 +28,21 @@
       <div class="panel-heading">
 	<h3>Historique</h3>
       </div>
-      <div class="panel-body">
-
-	  {% for commit in history %}
-	  <div class="list-group">
-	    <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item">
-	    <span class="badge">{{commit.revision.number}}</span> par {{commit.author}}, le {{commit.date|print_timestamp}}
-	  </a>
-	  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item list-group-item-info">
-	    {{commit.message}}
-	  </a>
-	  </div>
-	  {% endfor %}
-
+      
+      <div class="panel-body history">
+	{% for commit in history %}
+	<div class="record">
+	  <p class="commitinfo">
+	    <span class='rev label label-info'>{{commit.revision.number}}</span>
+	    <span class="date">{{commit.date|print_timestamp}}</span>
+	    <span class="author pull-right">{{commit.author}}</span>
+	  </p>
+	  <p class="msg">{{commit.message}}</p>
+	  <p class="link">  
+	    <a href="/sync/revision/{{commit.revision.number}}/">détails</a>
+	  </p>
+	</div>
+	{% endfor %}
       </div>
     </div>
 {% endblock %}
@@ -50,6 +54,23 @@
 <div class="main">
   {% block operation %}{% endblock %}
   {% block nextsteps %}{% endblock %}
+  <div class="modal" id="modal_processing">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+	<div class="modal-header">
+	  <h4 class="modal-title">Synchronisation en cours</h4>
+	</div>
+	<div class="modal-body">
+	  <div class="alert alert-info" role="alert">
+	    <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
+	    Connexion au serveur svn, cette opération peut prendre quelques instants. <br/>
+	    Cette fenêtre sera réactualisée quand l'opération sera terminée.
+	  </div>
+	</div>
+      </div>
+    </div>
+  </div>
+  
 </div>
 
 {% endblock %}
