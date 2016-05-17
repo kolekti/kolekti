@@ -56,8 +56,20 @@
 
 	  <ul class="nav navbar-nav navbar-right ">          
 	    <li><a href="http://www.kolekti.org/projects/kolekti/wiki" target="_blank">Wiki</a></li>
-	    {% if kolekti.saas %}
-            <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
+	    {% if user.is_authenticated %} 
+	    <li class="dropdown">
+	      <a href="#" class="dropdown-toggle" role="button" aria-expanded="false" data-toggle="dropdown" >
+		{{ user.username }}
+		<span class="caret"></span>
+	      </a>
+	      <ul class="dropdown-menu" role="menu">
+		<li><a href="/accounts/profile/">Profil</a></li>
+		{% if user.is_superuser %}
+		<li><a href="/admin/">Admin</a></li>
+		{% endif %}
+		<li><a href="/accounts/logout/">Déconnexion</a></li>
+	      </ul>
+	    </li>
 	    {% endif %}
 	    <li>
 	  </ul>

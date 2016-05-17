@@ -17,7 +17,7 @@ try:
 except ImportError:
     from StringIO import StringIO
    
-from models import Settings, ReleaseFocus
+from models import Settings, ReleaseFocus, Project, UserProject
 from forms import UploadFileForm
 
 from django.http import Http404
@@ -32,6 +32,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import condition
 from django.template.loader import get_template
 from django.template import Context
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.decorators import login_required
 
 # kolekti imports
 from kolekti.common import kolektiBase
@@ -69,16 +71,32 @@ fileicons= {
     "text/directory":"fa-folder-o",
     }
 
-class kolektiMixin(TemplateResponseMixin, kolektiBase):
+
+
+class LoginRequiredMixin(object):
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
+        return login_required(view)
+                            
+
+class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
     def __init__(self, *args, **kwargs):
-        self.user_settings = Settings.objects.get()
+        if len(Settings.objects.all()):
+            self.user_settings = Settings.objects.get()
+        else:
+            self.user_settings = Settings(active_project="", active_srclang="fr", active_publang="fr")
+            
         projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
         super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
-
+        
+        
     def config(self):
         return self._config
 
     def projects(self):
+        print self.request
+
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
             project={'name':projectname, 'id':projectname.replace(' ','_')}
@@ -240,6 +258,28 @@ class HomeView(kolektiMixin, View):
         return self.render_to_response(context)
 
 
+class UserProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "registration/profile.html"
+
+    
+
+class SaasProjectsView(kolektiMixin, View):
+    template_name = "projects.html"
+    def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
+        try:
+            project = UserProject.objects.get(user = request.user, active = True)
+            context = self.get_context_data({
+                "active_project" :project.project.name,
+                "active_srclang":project.active_srclang,
+                "require_svn_auth":require_svn_auth,
+                "projectfolder":project_folder,
+                "projecturl":project_url,
+            })
+        except ObjectDoesNotExist:
+            context = self.get_context_data()
+            
+        return self.render_to_response(context)
+    
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
     def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
@@ -273,6 +313,18 @@ class ProjectsView(kolektiMixin, View):
                 return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
             
 
+class SaasProjectsActivateView(ProjectsView):
+    def get(self, request):
+        project = request.GET.get('project')
+        redirect = ''
+        #        redirect = request.META.get('HTTP_REFERER', '')
+        self.project_activate(project)
+        if redirect == '':
+            return super(ProjectsActivateView, self).get(request)
+        else:
+            
+            return HttpResponseRedirect(redirect)
+
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
@@ -285,6 +337,12 @@ class ProjectsActivateView(ProjectsView):
             
             return HttpResponseRedirect(redirect)
 
+
+class SaasProjectsLanguageView(ProjectsView):
+    def get(self, request):
+        project = request.GET.get('lang')
+        self.language_activate(project)
+        return super(ProjectsLanguageView, self).get(request)
 
 class ProjectsLanguageView(ProjectsView):
     def get(self, request):

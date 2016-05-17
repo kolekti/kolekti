@@ -1,20 +1,31 @@
 from django.conf.urls import patterns, include, url
 from kserver.views import *
+
 from django.conf import settings
 from django.conf.urls.static import static
 
 from django.views.static import serve as staticView
 
-#from django.contrib import admin
-#admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
+
 
 urlpatterns = patterns('',
-    # Examples:
+    url(r'^accounts/', include('django.contrib.auth.urls')),
+                       
+#    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
+#    url(r'^accounts/profile/$', UserProfileView.as_view(), name="manager_user_profile"),
+
+                       
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),
     url(r'^tocs/edit/$', TocView.as_view(), name='tocedit'),
     url(r'^tocs/usecases/$', TocUsecasesView.as_view(), name='tocusecases'),
     url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
+
+    url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
+    url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
+    url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),    
 
     url(r'^import/$', ImportView.as_view(), name='import'),
 
@@ -38,9 +49,6 @@ urlpatterns = patterns('',
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
 
-    url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
-    url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
 
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
@@ -77,12 +85,14 @@ urlpatterns = patterns('',
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
     url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
+    url(r'^admin/', include(admin.site.urls)),
+
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
 
 #    url(r'^publications', staticView, name="kolekti_raw_publication"),
 #    url(r'^drafts', staticView, name="kolekti_raw_draft"),
 
                        
-#    (r'^admin/', include(admin.site.urls)),
+
 )
 

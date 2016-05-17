@@ -39,7 +39,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bootstrapform',
     'kserver',
+#    'kmanager',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -62,18 +64,21 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 KOLEKTI_CONFIG = settings()
 KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
 # APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
-if os.sys.platform[:3] == "win":
-    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
-    DB_NAME = appdatadir + '\\db.sqlite3'
-    DB_NAME = DB_NAME.replace('\\','/')
-else:
-    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
+#if os.sys.platform[:3] == "win":
+#    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
+#    DB_NAME = appdatadir + '\\db.sqlite3'
+#    DB_NAME = DB_NAME.replace('\\','/')
+#else:
+#    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
 
+
+    
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'NAME': DB_NAME,
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': '/home/waloo/my.cnf',
+        },
     }
 }
 
@@ -100,7 +105,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.    
-    "kolekti_server/kserver/templates",
+    "/home/waloo/kolekti/src/kolekti_server/kserver/templates",
 )
 RE_BROWSER_IGNORE=["~$","^\.svn$", "^#.*#$"]
 

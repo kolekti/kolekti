@@ -51,24 +51,30 @@ objpathes = {
 
  
 class kolektiBase(object):
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path=None, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
+        self._xmlparser = ET.XMLParser()
+        self._xmlparser.resolvers.add(PrefixResolver())
+        self._htmlparser = ET.HTMLParser(encoding='utf-8')
+
         try:
             Config = settings()
             self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
         except : 
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
 
-        # logging.debug('project path : %s'%path)
+
+        if path is not None:
+            self.set_project(path)
+            
+                
+    def set_project(self, path):
         if path[-1]==os.path.sep:
             self._path = path
         else:
             self._path = path + os.path.sep
-        self._xmlparser = ET.XMLParser()
-        self._xmlparser.resolvers.add(PrefixResolver())
-        self._htmlparser = ET.HTMLParser(encoding='utf-8')
-
+            
         projectdir = os.path.basename(self._path[:-1])
 
         try:
