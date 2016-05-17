@@ -1204,12 +1204,14 @@ class ReleasePublisher(Publisher):
     def validate_release(self):
         """  validation actions for release """
         valevents = []
+        logger.debug("validate release %s %s"%(self._release_dir, self._publangs))
         try:
             mf = json.loads(self.read(self._release_dir + "/manifest.json"))
             assembly = self._release_dir.rsplit('/',1)[1]
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'_asm.xml')
             profilename = ""
             for event in mf:
+                logger.debug(event['event'])
                 if event.get('event','') == "release_publication":
                     for event2 in event.get('content'):
                         if event2.get('event','') == "lang" and event2.get('label','') in self._publangs:
@@ -1221,6 +1223,7 @@ class ReleasePublisher(Publisher):
                                 if pubev.get('event')=="result":
                                     puboutput = pubev.get('docs')
                                     scriptname = pubev.get('script')
+                                    print "validate:", puboutput, scriptname
                                     resscript = self.validate_script(xjob, profilename, scriptname, puboutput)
                                     if resscript is not None:
                                         lgvalevent_content.append(resscript)
@@ -1230,6 +1233,8 @@ class ReleasePublisher(Publisher):
                                 
         except:
             import traceback
+            logger.error('erreur lors de la validation')
+            logger.debug(traceback.format_exc())
             errev = {
                 'event':'error',
                 'msg':"erreur lors de la validation",

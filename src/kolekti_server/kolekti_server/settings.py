@@ -60,6 +60,10 @@ LOGGING = {
             'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
+        'console': {
+            'format': '[%(name)s.%(funcName)s:%(lineno)d] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
     },
     'handlers': {
         'file': {
@@ -79,6 +83,11 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(LOG_PATH, 'kolekti.log'),
             'formatter':'verbose',
+        },
+        'console_kolekti': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter':'console',
         },
     },
     'loggers': {

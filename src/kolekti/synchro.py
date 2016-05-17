@@ -329,16 +329,13 @@ class SynchroManager(SvnClient):
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        logger.debug("post save synchro : %s"%path)
         if path[:14]=='/publications/':
-            logger.debug("skip")
             return
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
         try:
             if self._client.info(ospath) is None:
-                logger.debug("add")
                 self._client.add(ospath)
         except pysvn.ClientError:
             self.post_save(path.rsplit('/',1)[0])
