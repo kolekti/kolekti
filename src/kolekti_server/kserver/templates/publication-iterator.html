@@ -10,7 +10,9 @@
   {% elif event == "result" %}
   <ul class="result">
     {% for doc in docs %}
+    {% if doc.url %}
     <li>[{{ doc.type }}] <a href="{{doc.url}}" target="_blank">{{ doc.label }}</a></li>
+    {% endif %}
     {% endfor %}
   </ul>
   {% elif event == "release" %}

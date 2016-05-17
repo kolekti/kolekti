@@ -18,6 +18,7 @@ a = Analysis(['kolekti_server\\server.py'],
                             'kserver.templatetags.difftags',
                             'kserver.templatetags.timetags',
                             'kserver.templatetags.statustags',
+                            'kserver.templatetags.csssafe',
                             ],
              hookspath=None,
              runtime_hooks=None)

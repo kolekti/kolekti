@@ -2,6 +2,7 @@ import os
 import tempfile
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 import urllib2
 import pysvn
 import locale
@@ -9,7 +10,7 @@ import sys
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-from exceptions import ExcSyncNoSync
+from kolekti.exceptions import *
 
 
 def initLocale():
@@ -35,7 +36,8 @@ def initLocale():
             locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
 initLocale()
 
-class SynchroManager(object):
+
+class SvnClient(object):
     statuses_modified = [
         pysvn.wc_status_kind.deleted,
         pysvn.wc_status_kind.added,
@@ -62,25 +64,45 @@ class SynchroManager(object):
         pysvn.wc_status_kind.incomplete,
         ]
     
-    def __init__(self, base):
-
-        def callback_log_message(*args, **kwargs):
-            logging.debug("callback log")
-#            logging.debug(str(arg))
-            
-        self.notifications = []
-        def callback_notification(arg):
-            self.notifications.append(arg)
-            
-        self._base = base
+    def __init__(self, username=None, password=None, accept_cert=False):
         self._client = pysvn.Client()
+        self.__username = username
+        self.__password = password
+        self.__accept_cert = accept_cert
+        
+        def get_login( realm, username, may_save ):
+            if self.__username is None:
+                raise ExcSyncRequestAuth
+            return True, self.__username, self.__password, True
+        self._client.callback_get_login = get_login
+
+        self._messages = []
+        def callback_log_message(arg):
+            self._messages.append(arg)
         self._client.callback_get_log_message = callback_log_message
+            
+        self._notifications = []
+        def callback_notification(arg):
+            self._notifications.append(arg)
         self._client.callback_notify = callback_notification
+        
+        def callback_accept_cert(arg):
+            print arg
+            if self.__accept_cert:
+                return  True, 1, True
+            if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
+                return  True, 12, True
+            raise ExcSyncRequestSSL
+            
+        self._client.callback_ssl_server_trust_prompt = callback_accept_cert
+        
+class SynchroManager(SvnClient):
+    def __init__(self, base):
+        super(SynchroManager, self).__init__()
+        self._base = base
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
-            import traceback
-            print traceback.format_exc()
             raise ExcSyncNoSync
 
     def __makepath(self, path):
@@ -244,11 +266,11 @@ class SynchroManager(object):
         info = self._client.info(path)
             
         rurl = info.get('url')
-        logging.debug('dry run '+rurl)
+        logger.debug('dry run '+rurl)
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
         
-        logging.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
+        logger.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
 
         import subprocess
         cmd = 'svn merge --dry-run -r BASE:HEAD "%s"'%path 
@@ -307,16 +329,13 @@ class SynchroManager(object):
         return diff, headdata, workdata  
 
     def post_save(self, path):
-        logging.debug("post save synchro : %s"%path)
         if path[:14]=='/publications/':
-            logging.debug("skip")
             return
         if path[:8]=='/drafts/':
             return
         ospath = self.__makepath(path)
         try:
             if self._client.info(ospath) is None:
-                logging.debug("add")
                 self._client.add(ospath)
         except pysvn.ClientError:
             self.post_save(path.rsplit('/',1)[0])
@@ -345,33 +364,23 @@ class SynchroManager(object):
 
     def propset(self, name, value, path):
         ospath = self.__makepath(path)
-        print "SETPROP",name,value,path,ospath
+        logger.debug("svn proset %s %s %s"%(name,value,path))
         self._client.propset(name, value, ospath)
         
     def propget(self, name, path):
         ospath = self.__makepath(path)
-        print "GETPROP",name,path,ospath
         try:
             props = self._client.propget(name, ospath)
-            print props
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
             import traceback
             print traceback.format_exc()
             return None
         
-class SVNProjectManager(object):
+class SVNProjectManager(SvnClient):
     def __init__(self, projectsroot, username=None, password=None):
         self._projectsroot = projectsroot
-        self._client = pysvn.Client()
-        self.__username = username
-        self.__password = password
-        #self._client.callback_get_log_message = get_log_message
-        def get_login( realm, username, may_save ):
-#            if username == self.__username:
-            return True, self.__username, self.__password, True
-#            return False, "","", False
-        self._client.callback_get_login = get_login
+        super(SVNProjectManager, self).__init__(username, password)
         
     def export_project(self, folder, url="http://beta.kolekti.net/svn/quickstart07"):
         ospath = os.path.join(self._projectsroot, folder)

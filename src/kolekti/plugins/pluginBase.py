@@ -20,9 +20,16 @@ import os
 import sys
 import shutil
 import logging
+logger = logging.getLogger(__name__)
+import re
+import tempfile
+import subprocess
+import platform
+
+
 from lxml import etree as ET
 from kolekti.common import kolektiBase
-from kolekti.publish_utils import PublisherMixin, PublisherExtensions
+from kolekti.publish_utils import PublisherMixin, PublisherExtensions, PublishException
 
 class PluginsExtensions(PublisherExtensions):
     def __init__(self, *args, **kwargs):
@@ -50,7 +57,7 @@ class plugin(PublisherMixin,kolektiBase):
         self._draft = True
         
     def get_xsl(self, xslfile, **kwargs):
-        logging.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl from plugin %s"%self._plugindir)
         try:
             xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
             xsl = super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
@@ -60,8 +67,6 @@ class plugin(PublisherMixin,kolektiBase):
                                                 **kwargs)
     
         except:
-            import traceback
-            print traceback.format_exc()
             xsl = super(plugin,self).get_xsl(xslfile,
                                             extclass = self.__ext,
                                             xsldir = os.path.join(self._plugindir,'xsl'),
@@ -71,26 +76,172 @@ class plugin(PublisherMixin,kolektiBase):
         return xsl
     
     def get_project_xsl(self,xslfile, **kwargs):
-        logging.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl from plugin %s"%self._plugindir)
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
                                           resdir = self.assembly_dir,
                                           **kwargs)
 
-    def __call__(self, scriptdef, profile, assembly_dir, pivot):
-        self.scriptname = scriptdef.get('name')
-        logging.debug("calling script %s", self.scriptname)
 
+    
+    def copyinput(self):
+        #        _, tmpname = tempfile.mkstemp(dir = self.getOsPath(self.pubdir(self.assembly_dir, self.profile)))
+        _, tmpname = tempfile.mkstemp()
+        inputtype = self.scriptspec.get("input")
+        print type(self.input)
+        for item in self.input:
+            if item.get('type', '') == inputtype:
+                if 'ET' in item.keys():
+                    with open(tmpname, 'w') as tmpfile:
+                        tmpfile.write(ET.tostring(item['ET']))
+                if "file"  in item.keys():
+                    shutil.copy(self.getOsPath(item["file"]), tmpname) 
+                if "data" in item.keys():
+                    with open(tmpname, 'w') as tmpfile:
+                        tmpfile.write(item['data'])
+        return tmpname
+
+    def get_command(self):
+        return ''
+                    
+    def start_cmd(self):
+        logger.debug("os cmd call from plugin")
+        try:
+            res = []
+            scriptlabel = self.scriptdef.xpath('string(label|ancestor::script/label)')
+            system = platform.system()
+            logger.debug("platform is %s"%system)
+            try:
+                cmd = self.scriptspec.find("cmd[@os='%s']"%system).text
+            except:
+                cmd = self.scriptspec.xpath("cmd[not(@os)]")[0].text
+
+            subst = {}
+            for p in self.scriptdef.xpath('parameters/parameter'):
+                subst.update({p.get('name'):p.get('value')})
+            pubdir = self.pubdir(self.assembly_dir, self.profile)
+            subst.update({
+                "APPDIR":self._appdir,
+                "PLUGINDIR":self._plugindir,
+                "PUBDIR":self.getOsPath(pubdir),
+                "SRCDIR":self.getOsPath(self.assembly_dir),
+                "BASEURI":self.getUrlPath(self.assembly_dir) + '/',
+                "PUBURI":pubdir,
+                "PUBNAME":self.publication_file,
+#                "PIVOT": self.getOsPath(pivfile)
+                })
+
+            # if get file with local url                
+            if cmd.find("_CMD_") >= 0:
+                subst.update({'CMD':self.get_command()})
+                
+            # if get file with local url                
+            if cmd.find("_PIVLOCAL_") >= 0:
+                for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
+                    localsrc = self.getOsPath(str(media.get('src')))
+                    media.set('src', localsrc)
+
+            if cmd.find("_INCOPY_") >= 0:
+                tmpfile = self.copyinput()
+                print tmpfile
+                subst.update({'INCOPY':tmpfile})
+                                            
+            cmd=self._substscript(cmd, subst, self.profile)
+            cmd=cmd.encode(self.LOCAL_ENCODING)
+            logger.debug(cmd)
+
+            exccmd = subprocess.Popen(
+                cmd,
+                shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=False)
+            err=exccmd.stderr.read()
+            out=exccmd.stdout.read()
+            exccmd.communicate()
+            err=err.decode(self.LOCAL_ENCODING)
+            out=out.decode(self.LOCAL_ENCODING)
+            for line in err.split('\n'):
+                # Doesn't display licence warning
+                if re.search('license.dat', line):
+                    continue
+                # display warning or error
+                if re.search('warning', line):
+                    logger.info("Attention %(warn)s"% {'warn': line})
+                elif re.search('error', line) or re.search('not found', line):
+                    logger.error(line)
+                    errmsg = "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(self.LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')}
+                    logger.error(errmsg)
+                    raise PublishException([errmsg] + err.split('\n'))
+
+            # display link
+            
+            xl=self.scriptspec.find('link')
+            outfile=self._substscript(xl.get('name'), subst, self.profile)
+            outref=self._substscript(xl.get('ref'), subst, self.profile)
+            outtype=xl.get('type')
+            logger.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
+            res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
+
+        except:
+            import traceback
+            logger.debug(traceback.format_exc())
+            print traceback.format_exc()
+            logger.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
+            raise
+
+        finally:
+            exccmd.stderr.close()
+            exccmd.stdout.close()
+        return res
+
+    def process_path(self, path):
+        path = super(plugin, self).process_path(path)
+        if self.release is None:
+            return path
+        else:
+            return '/releases/' + self.release + '/' +  path
+    
+    def __call__(self, scriptdef, profile, assembly_dir, inputs):
+        self.scriptname = scriptdef.get('name')
+        logger.debug("calling script %s", self.scriptname)
+
+        # check if execute in release or not
+        self.release = None
+        adparts = assembly_dir[1:].split('/')
+#        logger.debug("adparts: %s ", str(adparts))
+        if len(adparts) == 2 and adparts[0] == "releases":
+            self.release = adparts[1]
+
+        # get context    
         self.scriptdef = scriptdef
         self.profile = profile
         self.assembly_dir = assembly_dir
-        self.pivot = pivot
-        
-        pubfile = scriptdef.xpath('string(filename)')
-        pubfile = self.substitute_variables(pubfile, profile)
-        self.publication_file = self.substitute_criteria(pubfile, profile)
 
+        # normalize pivot / input attribute
+        self.pivot = None
+        if isinstance(inputs, ET._ElementTree):
+            self.pivot = inputs
+            self.input = [{'type':'pivot', 'ET':inputs}]
+        else:
+            for item in inputs:
+                if item.get('type','') == 'pivot':
+                    if 'ET' in item.keys():
+                        self.pivot = item['ET']
+                    if "file"  in item.keys():
+                        self.pivot = self.parse(item['file'])
+                    if "data" in  item.keys():
+                        self.pivot = self.parse_string(item['data'])
+            self.input = inputs
+
+        # get xml specification for the plugin        
+        self.scriptspec = self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%self.scriptname)[0]
+
+        # calculate publication path/filenames
+        self.publication_file = self.substitute_variables(self.substitute_criteria(unicode(scriptdef.xpath("string(filename|ancestor::script/filename)")),profile), profile, {"LANG":self._publang})
+        
         self.publication_dir = self.pubdir(assembly_dir, profile)
         self.publication_plugin_dir = self.publication_dir+"/"+ self.publication_file #+ "_" + self.scriptname
         try:
@@ -121,15 +272,15 @@ class plugin(PublisherMixin,kolektiBase):
                 refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
                 self.makedirs(refdir)
             except OSError:
-                logging.debug('makedir failed')
+                logger.debug('makedir failed')
                 import traceback
-                logging.debug(traceback.format_exc())
+                logger.debug(traceback.format_exc())
             try:
                 self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
             except:
-                logging.debug('unable to copy media')
+                logger.debug('unable to copy media')
                 import traceback
-                logging.debug(traceback.format_exc())
+                logger.debug(traceback.format_exc())
 
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
@@ -142,7 +293,7 @@ class plugin(PublisherMixin,kolektiBase):
         """
         postpub is the iterator used in plugin
         """
-        logging.debug('Dummy plugin')
+        logger.debug('Dummy plugin')
         return "Dummy plugin"
 
     def get_script_parameter(self, param):
@@ -150,6 +301,8 @@ class plugin(PublisherMixin,kolektiBase):
             return self.scriptdef.xpath('string(./parameters/parameter[@name="%s"]/@value)'%param)
         except:
             import traceback
-            logging.error("Unable to read script parameters: %s"%param)
-            logging.debug(traceback.format_exc())
+            logger.error("Unable to read script parameters: %s"%param)
+            logger.debug(traceback.format_exc())
             return None
+
+

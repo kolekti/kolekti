@@ -45,7 +45,7 @@ Ces argument s'appliquent à toutes commandes kolekti :
 Commandes
 *********
 
-La commande permet de spécifier l'opération à réaliser. En fonction de la commande spécfiée, des arguments additionnels peuvent etre donnés à kolekti, pour consulter les arguments disponibles pour une commande, utilisez: kolekti.py COMMANDE --help
+La commande permet de spécifier l'opération à réaliser. En fonction de la commande spécfiée, des arguments additionnels peuvent être donnés à kolekti, pour consulter les arguments disponibles pour une commande, utilisez: kolekti.py COMMANDE --help
 
 Fichier de configuration
 ************************
@@ -64,7 +64,7 @@ Chaque section (nom entre [] ) correspond à une comment et contient les couples
 Détail des paramètres des commandes
 ***********************************
 
-Dans les parametres des commandes les chemins sont spéficiés relativement à la recine du projet. Les paramètres entre crochet droits sont optionnels.
+Dans les paramètres des commandes les chemins sont spécifiés relativement à la recine du projet. Les paramètres entre crochets droits sont optionnels.
 
 publish : publication directe des sources
 =========================================

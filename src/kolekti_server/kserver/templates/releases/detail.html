@@ -96,16 +96,21 @@
 	  </div>
 	</div>
       </div>
+    </div>
+    {% endif %}
 
+    <div id="release_publications">
     </div>
     
-
-    {% endif %}
 {% endblock %}
 
 
 {% block content %}
-    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ lang }}">
+    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ lang }}"
+	 {% if validactions %}
+	 data-valid-actions="yes"
+	 {% endif %}
+	 >
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 	{% for rlang, state,focus in langstates %}
 	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>

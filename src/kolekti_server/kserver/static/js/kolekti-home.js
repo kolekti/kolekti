@@ -363,7 +363,7 @@ $(document).ready(function() {
     var widgets_definitions = {
 	'recent':{'title':'Vos modifications',
 		  'content':function() {
-			 return localstorage_widget_builder('kolekti-recent');
+			 return localstorage_widget_builder('kolekti-recent-'+window.kolekti.project);
 			}
 		    },
 	'history':{'title':'Historique du projet',

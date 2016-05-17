@@ -59,9 +59,10 @@ var formatTime = function(unixTimestamp) {
 
 var kolekti_recent = function(name, info, url) {
     if (localStorage) {
-	var stored = JSON.parse(localStorage.getItem("kolekti-recent"))
+	var storage = "kolekti-recent-"+ window.kolekti.project;
+	var stored = JSON.parse(localStorage.getItem(storage))
 	if (stored == null) stored = [];
 	stored.unshift({'name':name, 'info':info, 'url':url, 'time':Date.now()/1000})
-	localStorage.setItem("kolekti-recent", JSON.stringify(stored))
+	localStorage.setItem(storage, JSON.stringify(stored))
     }
 }

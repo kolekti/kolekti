@@ -477,7 +477,7 @@ var kolekti_browser = function(args) {
 				linkadd = true;
 				break;
 			    case 'ok':
-				msg =  "A jour avec le référentiel";
+				msg =  "À jour avec le référentiel";
 				break;
 			    case 'commit':
 				if ($(this).data('wstatus') == 'added')

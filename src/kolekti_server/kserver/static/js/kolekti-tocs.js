@@ -335,15 +335,15 @@ $(document).ready( function () {
 
     // publish
 
-    var get_publish_params = function(job) {
+    var get_publish_params = function(cssclass) {
 	var params={};
 	params['profiles']=[]
-	$(".kolekti-job-"+job).find('.publish_job_profile').each(function(i, e) {
+	$(".kolekti-job-"+cssclass).find('.publish_job_profile').each(function(i, e) {
 	    if ($(e).is(":checked"))
 		params['profiles'].push($(e).data('kolekti-profile'))
 	});
 	params['scripts']=[]
-	$(".kolekti-job-"+job).find('.publish_job_script').each(function(i, e) {
+	$(".kolekti-job-"+cssclass).find('.publish_job_script').each(function(i, e) {
 	    if ($(e).is(":checked"))
 		params['scripts'].push($(e).data('kolekti-script'))
 	});
@@ -362,9 +362,10 @@ $(document).ready( function () {
 
 	var toc = $('#toc_root').data('kolekti-path');
 	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
+	var cssclass = $('#toc_root').data('kolekti-meta-kolekti_jobclass');
 	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
 
-	params = get_publish_params(job)
+	params = get_publish_params(cssclass)
 	params['toc']=toc;
 	params['job']=jobpath;
 
@@ -546,12 +547,16 @@ $(document).ready( function () {
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
+	var cssclass = $(this).data('kolekti-jobclass');
+
 	$('#editjoblink').show();
 	$('#editjoblink').removeClass('hidden')
 	$('#quickselect').removeClass('hidden')
 
 	$('#toc_root').data('kolekti-meta-kolekti_job',name)
 	$('#toc_root').attr('data-kolekti-meta-kolekti_job',name)
+	$('#toc_root').data('kolekti-meta-kolekti_jobclass',cssclass)
+	$('#toc_root').attr('data-kolekti-meta-kolekti_jobclass',cssclass)
 	$('#toc_root').data('kolekti-meta-kolekti_jobpath',path)
 	$('#toc_root').attr('data-kolekti-meta-kolekti_jobpath',path)
 	$('#editjoblink').attr('href','/settings/job?path='+path)
@@ -559,7 +564,7 @@ $(document).ready( function () {
 	    $(e).html(name)}
 			    );
 	$('.kolekti-job').addClass('hidden')
-	$('.kolekti-job-'+name).removeClass('hidden')
+	$('.kolekti-job-'+cssclass).removeClass('hidden')
 	enable_save()
     });
 

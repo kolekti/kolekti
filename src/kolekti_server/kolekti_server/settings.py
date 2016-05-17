@@ -15,6 +15,23 @@ from kolekti.settings import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+KOLEKTI_CONFIG = settings()
+KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+# APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
+if os.sys.platform[:3] == "win":
+    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
+    DB_NAME = appdatadir + '\\db.sqlite3'
+    DB_NAME = DB_NAME.replace('\\','/')
+else:
+    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
+
+try:
+    os.makedirs(os.path.join(KOLEKTI_BASE,'.logs'))
+except:
+    pass
+                
+LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
@@ -30,6 +47,67 @@ ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
 
 # Application definition
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'console': {
+            'format': '[%(name)s.%(funcName)s:%(lineno)d] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_PATH, 'debug.log'),
+            'formatter':'verbose',
+        },
+        'file_info': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_PATH, 'info.log'),
+            'formatter':'simple',
+        },
+        'file_kolekti': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_PATH, 'kolekti.log'),
+            'formatter':'verbose',
+        },
+        'console_kolekti': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter':'console',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.info': {
+            'handlers': ['file_info'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'kolekti': {
+            'handlers': ['file_kolekti'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -58,15 +136,6 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-KOLEKTI_CONFIG = settings()
-KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
-# APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
-if os.sys.platform[:3] == "win":
-    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
-    DB_NAME = appdatadir + '\\db.sqlite3'
-    DB_NAME = DB_NAME.replace('\\','/')
-else:
-    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
 
 DATABASES = {
     'default': {

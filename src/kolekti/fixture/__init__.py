@@ -23,8 +23,26 @@ class fixture(kolektiBase):
                 xsl = ET.XSLT(ET.parse(os.path.join(fixdir,f)))
                 for job in self.iterjobs:
                     jpath = job.get('path')
-                    logging.info("fix %s"%jpath)
+                    logging.info("fix job %s"%jpath)
                     xjob = self.parse(jpath)
                     newjob = xsl(xjob)
                     self.xwrite(newjob, jpath)
+
+            if f == "release_job.xsl":
+                xsl = ET.XSLT(ET.parse(os.path.join(fixdir,f)))
+                for job in self.iterreleasejobs:
+                    jpath = job.get('path')
+                    logging.info("fix release job %s"%jpath)
+                    xjob = self.parse(jpath)
+                    newjob = xsl(xjob)
+                    self.xwrite(newjob, jpath)
+
+            if f == "toc.xsl":
+                xsl = ET.XSLT(ET.parse(os.path.join(fixdir,f)))
+                for toc in self.itertocs:
+                    tpath = toc.get('path')
+                    logging.info("fix toc %s"%jpath)
+                    xtoc = self.parse(tpath)
+                    newtoc = xsl(xtoc)
+                    self.xwrite(newtoc, tpath)
 

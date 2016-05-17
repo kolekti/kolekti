@@ -267,6 +267,7 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
+
         context = self.get_context_data()
         if context.get('active_project') is None:
             return HttpResponseRedirect('/projects/') 
@@ -477,7 +478,6 @@ class ReleaseStateView(kolektiMixin, TemplateView):
             lang = request.POST.get('lang')
             assembly = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
             self.syncMgr.propset("release_state",state, assembly)
-#            self.syncMgr.commit([assembly],"change release state")
             return HttpResponse(state)
         except:
             import traceback
@@ -541,10 +541,42 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
             print traceback.format_exc()
         return HttpResponse(content)
     
-        
+
+class ReleasePublicationsView(kolektiMixin, TemplateView):
+    template_name = "releases/publications.html"
+    
+    def __release_publications(self, lang, release_path):
+        publications = []
+        try:
+            mf = json.loads(self.read(release_path + "/manifest.json"))
+            for event in mf:
+                if event.get('event','') == "release_publication":
+                    for event2 in event.get('content'):
+                        if event2.get('event','') == "lang" and event2.get('label','') == lang:
+                            publications.extend(event2.get('content'))
+        except:
+            import traceback
+            print traceback.format_exc()
+        return publications
+
+    def get(self, request):
+        release_path = request.GET.get('release')
+        lang = request.GET.get('lang', self.user_settings.active_srclang)
+        context = self.get_context_data({
+            'publications':self.__release_publications(lang, release_path)
+        })
+        return self.render_to_response(context)
+                
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
+    def __has_valid_actions(self,  release_path):
+        assembly = release_path.rsplit('/',1)[1]
+        xjob = self.parse(release_path + '/kolekti/publication-parameters/'+ assembly +'_asm.xml')
+        print xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')
+        return len(xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')) > 0
+
+    
     def get_context_data(self, context):
         context = super(ReleaseDetailsView, self).get_context_data(context)
         states = []
@@ -584,6 +616,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'assembly_name':assembly_name,
             'lang':lang,
             'srclang':srclang,
+            'validactions':self.__has_valid_actions(release_path)
         })
         return self.render_to_response(context)
     
@@ -631,7 +664,30 @@ class ReleasePublishView(kolektiMixin, TemplateView):
             import traceback
             print traceback.format_exc()
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
+
+class ReleaseValidateView(kolektiMixin, TemplateView):
+    def post (self, request):
+        release_path = request.POST.get('release')
+        langs = request.POST.getlist('langs[]',[])
+        context={}
+
+#        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
+#        print jobpath
+#        xjob = self.parse(jobpath)
+        projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+        try:
+            p = publish.ReleasePublisher(release_path, projectpath, langs=langs)
+            return StreamingHttpResponse(self.format_iterator(p.validate_release()), content_type="text/html")
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            context.update({'success':False})
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
 
             return self.render_to_response(context)
@@ -808,9 +864,10 @@ class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
         settings_js="""
         var kolekti = {
-        "lang":"%s"
+        "lang":"%s",
+        "project":"%s"
         }
-        """%(self.user_settings.active_srclang,)
+        """%(self.user_settings.active_srclang, self.user_settings.active_project)
         return HttpResponse(settings_js,content_type="text/javascript")
     
 class SettingsJsonView(kolektiMixin, TemplateView):
@@ -1084,17 +1141,17 @@ class PublicationView(kolektiMixin, View):
     template_name = "publication.html"
     def __init__(self, *args, **kwargs):
         super(PublicationView, self).__init__(*args, **kwargs)
-        self.loggerstream = StringIO()
-        import logging
-        self.loghandler = logging.StreamHandler(stream = self.loggerstream)
-        self.loghandler.setLevel(logging.WARNING)
+#        self.loggerstream = StringIO()
+#        import logging
+#        self.loghandler = logging.StreamHandler(stream = self.loggerstream)
+#        self.loghandler.setLevel(logging.WARNING)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(levelname)-8s ; %(message)s\n')
+#        formatter = logging.Formatter('%(levelname)-8s ; %(message)s\n')
         # tell the handler to use this format
-        self.loghandler.setFormatter(formatter)
-        # add the handler to the root logger
-        rl = logging.getLogger('')
-        rl.addHandler(self.loghandler)
+#        self.loghandler.setFormatter(formatter)
+#        # add the handler to the root logger
+#        rl = logging.getLogger('')
+#        rl.addHandler(self.loghandler)
 
     @classmethod
     def as_view(cls, **initkwargs):
@@ -1131,10 +1188,10 @@ class DraftView(PublicationView):
 
         except:
             import traceback
-            self.loghandler.flush()
-            print self.loggerstream
+#            self.loghandler.flush()
+#            print self.loggerstream
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
 
             return self.render_to_response(context)
@@ -1147,16 +1204,22 @@ class ReleaseView(PublicationView):
 #        pubtitle= request.POST.get('pubtitle')
 
         # print request.POST
-
+        
         profiles = request.POST.getlist('profiles[]',[])
+        print profiles
         # print profiles
         scripts = request.POST.getlist('scripts[]',[])
         context={}
         xjob = self.parse(jobpath)
+        
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
+                print ET.tostring(jprofile)
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
+                else:
+                    jprofile.set('enabled',"1")
+
             for jscript in xjob.xpath('/job/scripts/script'):
                 if not jscript.find('label').text in scripts:
                     jscript.getparent().remove(jscript)
@@ -1178,9 +1241,9 @@ class ReleaseView(PublicationView):
         except:
             import traceback
             print traceback.format_exc()
-            self.loghandler.flush()
+#            self.loghandler.flush()
             context.update({'success':False})
-            context.update({'logger':self.loggerstream.getvalue()})        
+#            context.update({'logger':self.loggerstream.getvalue()})        
             context.update({'stacktrace':traceback.format_exc()})
             
             return self.render_to_response(context)
@@ -1484,8 +1547,6 @@ class WidgetPublicationsListView(kolektiMixin, View):
     template_name = "widgets/publications.html"
     
     def get(self, request):
-        for p in self.get_publications():
-                print p
         context = {
             "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
         }

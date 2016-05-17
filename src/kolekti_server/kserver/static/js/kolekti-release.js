@@ -224,7 +224,7 @@ Defines events for languages and release state in toolbar
 	.setup_file(setup_varfile);
     })
 
-    $('#btn_save').on('click', function() {
+    var do_save = function() {
 	$.ajax({
 	    url:"/releases/state/",
 	    method:'POST',
@@ -239,6 +239,14 @@ Defines events for languages and release state in toolbar
 	    $('#btn_save').removeClass('btn-warning');
 	    kolekti_recent(displayname($('#main').data('release')), 'version', '/releases/detail/?release=' + $('#main').data('release') + '&lang=' + $('#main').data('lang'))
 	});
+    }
+    
+    $('#btn_save').on('click', function() {
+	if ($('#main').data('state') == "publication" && $('#main').data('valid-actions') == "yes") {
+	    confirm_valid_actions();
+	} else {
+	    do_save();
+	}
     })
 
     var get_publish_languages = function(all_languages) {
@@ -286,6 +294,15 @@ Defines events for languages and release state in toolbar
     
     load_assembly();
 
+    var load_publications = function() {
+	$.get('/releases/publications',{
+	    'release':$('#main').data('release'),
+	    'lang':$('#main').data('lang')
+	}).success(function(data) {
+	    $('#release_publications').html(data)
+	})
+    }    
+    load_publications();
 
 
 
@@ -297,8 +314,18 @@ Defines events for languages and release state in toolbar
 
 	$('.modal-body').html('<div id="pubresult"></div>');
 	$('.modal-title').html('Publication');
-	$('.modal-footer button').html('fermer');
-	$('.modal').modal();
+	$('.modal-footer').html(
+	    $('<button>', {
+		'class':'btn btn-default',
+		'type':'button',
+		'html':'Fermer'
+	    }
+	     ).on('click',function() {
+		 $('.modal').modal('hide')
+	     })
+	);
+	$('.modal-footer').hide();
+	$('.modal').modal({backdrop: "static"});
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>').appendTo($('#pubresult'));
 	//params = get_publish_params(job)
 
@@ -352,9 +379,120 @@ Defines events for languages and release state in toolbar
 	}).always(function() {
 	    $('#pub_progress').remove();
 	    $('#pub_end').show();
+	    $('.modal-footer').show();
+	    load_publications();
 	});
     })
 
+
+    // validation actions
+    var confirm_valid_actions = function() {
+	$('.modal-body').html('<div>Des actions sont requises pour la validation de cette langue, voulez vous les effectuer ?</div>');
+	$('.modal-title').html('Validation');
+	$('.modal-footer').html([
+	    $('<button>', {
+		'class':'btn btn-default',
+		'type':'button',
+		'html':'Valider'
+	    }
+	     ).on('click',function() {
+		 do_valid_actions();
+	     }),
+	    
+	    $('<button>', {
+		'class':'btn btn-default',
+		'type':'button',
+		'html':'Annuler'
+	    }
+	     ).on('click',function() {
+		 $('.modal').modal('hide')
+	     })
+	]
+	);
+	$('.modal').on('hidden.bs.modal', function (e) {
+		console.log('hide modal');
+	});
+	$('.modal').modal({backdrop: "static"})
+	
+    }
+    
+    var do_valid_actions = function() {
+	var url='/releases/validate/'
+
+	$('.modal-body').html('<div id="pubresult"></div>');
+	$('.modal-title').html('Validation');
+	$('.modal-footer').html(
+	    $('<button>', {
+		'class':'btn btn-default',
+		'type':'button',
+		'html':'Fermer'
+	    }
+	     ).on('click',function() {
+		 $('.modal').modal('hide')
+	     })
+	);
+
+	$('.modal-footer button').hide();
+	$('.modal').modal({backdrop: "static"});
+	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Validation de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Actions de validation en cours</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Actions de validation effectuées</div></div></div>').appendTo($('#pubresult'));
+	
+	//params = get_publish_params(job)
+
+	$('#pub_end').hide();
+	
+	var params = {}
+	var release = $('#main').data('release')
+	params['release']=release;
+	var alllang = ($(this).attr('id') == "btn_publish_all")
+	params['langs']= get_publish_languages(alllang);
+	var streamcallback = function(data) {
+	    $("#pub_results").html(data);
+	}
+	
+	$.ajaxPrefilter("html streamed", function(){return "streamed"});
+	streamedTransport(streamcallback);
+	$.ajax({
+	    url:url,
+	    type:'POST',
+	    data:params,
+	    dataType:"streamed",
+	    beforeSend:function(xhr, settings) {
+		ajaxBeforeSend(xhr, settings);
+		settings.xhr.onreadystatechange=function(){
+		    console.log(xhr.responseText);
+		}
+	    }
+	}).done(function(data) {
+	    $("#pub_results").html(data);
+	    do_save();
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    $('#pub_results').html([
+		$('<div>',{'class':"alert alert-danger",
+			   'html':[$('<h5>',{'html':"Erreur"}),
+				   $('<p>',{'html':"Une erreur inattendue est survenue lors d'une action de validation"})
+				   
+				  ]}),
+		$('<a>',{
+		    'class':"btn btn-primary btn-xs",
+		    'data-toggle':"collapse",
+		    'href':"#collapseStacktrace",
+		    'aria-expanded':"false",
+		    'aria-controls':"collapseStracktrace",
+		    'html':'Détails'}),
+		$('<div>',{'class':"well",
+			   'html':[
+			       $('<p>',{'html':textStatus}),
+			       $('<p>',{'html':errorThrown}),
+			       $('<pre>',{'html':jqXHR.responseText})]
+			  })
+	    ]);
+	}).always(function() {
+	    $('#pub_progress').remove();
+	    $('#pub_end').show();
+	    $('.modal-footer button').show();
+	    
+	});
+    }
     
 
 })

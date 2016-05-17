@@ -58,7 +58,8 @@ class plugin(pluginBase.plugin):
             tfile="%s.xht"%templatename
         else:
             tfile="%s.xht"%self._plugin
-        templatepath = '/'.join([self.assembly_dir,self.get_base_template(self.scriptname),tfile])
+        tdir = self.scriptspec.xpath('string(parameters/parameter[@name="template"]/@dir)')
+        templatepath = '/'.join([self.assembly_dir, tdir, tfile])
         template=self.parse(templatepath)
 
         # copier les illustration et css
@@ -68,8 +69,9 @@ class plugin(pluginBase.plugin):
             self.copy_file('/'.join(['medias',logo]), self.publication_dir)
         except:
             pass
-
+        
         #self.copy_dirfiles(os.path.join(pubpath,'css'),os.path.join(pubpath,self.publisher.pivname,'css'))
+        print self.pivot, self.input
         self.copymedias()
         
 

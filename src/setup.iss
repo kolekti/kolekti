@@ -4,7 +4,7 @@
 #define BuildDir "F:\Bureau\kolekti\sources\0.7\kolekti\src"
 
 #define MyAppName "Kolekti"
-#define MyAppVersion "0.7.1"
+#define MyAppVersion "0.7.3"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
 #define MyAppExeName "kolekti_server.exe"
@@ -62,3 +62,39 @@ Type: filesandordirs; Name: "{userappdata}\kolekti"
 Type: filesandordirs; Name: "{app}\kolekti.ini"
 Type: filesandordirs; Name: "{app}\kolekti.log"
 Type: filesandordirs; Name: "{app}\kolekti.err"
+
+[Code]
+function gsInstalled(): Boolean;
+begin
+  if RegKeyExists(HKEY_CURRENT_USER, 'SOFTWARE\GPL Ghostscript') then
+  begin
+	Result := true;
+  end
+  else
+  begin
+	Result := false;
+  end
+end;
+ 
+procedure installGs();
+var
+ErrCode: integer;
+begin
+  if (msgbox('In order to enable Converseen to manage PDF files you have to download and install Ghostscript. Do you want to download it now?', mbConfirmation, MB_YESNO) = IDYES) then
+  begin
+	ShellExec('open', 'http://www.ghostscript.com/download/gsdnld.html', '', '', SW_SHOW, ewNoWait, ErrCode);
+  end
+end;
+ 
+procedure CurPageChanged(CurPageID: Integer);
+var
+gsIsInstalled : boolean;
+begin
+  if CurPageID = wpFinished then
+  begin
+	gsIsInstalled := gsInstalled();
+ 
+	if gsIsInstalled = false then
+	   installGs();
+  end
+end;

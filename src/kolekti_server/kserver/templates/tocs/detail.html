@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load ostags %}
+{% load csssafe %}
 
 {% block current_trames %}class="menu-current"{% endblock %}
 {% block help-topic %}toc{% endblock %}
@@ -116,7 +117,7 @@
 	      {% for job in jobs %}
 	      <li role="presentation">
 		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
-		   data-kolekti-jobpath="{{ job.path }}">
+		   data-kolekti-jobclass="{{ job.name|csssafe }}" data-kolekti-jobpath="{{ job.path }}">
 		  {{ job.name }}
 		</a>
 	      </li>
@@ -137,7 +138,7 @@
 	    {% for job in jobs %}
 
 
-	    <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name }}"
+	    <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name|csssafe }}"
 		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	      <div class="col-sm-12 col-md-12">
 		

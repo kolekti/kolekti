@@ -57,7 +57,7 @@ $(document).ready(function() {
 	});
 	buf += "</profiles>";
 	buf += "<scripts>";
-	$("#job_body .script").each(function(i,e) {
+	$("#job_scripts>.script").each(function(i,e) {
 	    buf += "<script name='"+$(e).data("kolekti-script-id")+"' enabled='";
 	    if ($(e).find('.script-enabled').get(0).checked) {
 		buf += "1"
@@ -69,24 +69,24 @@ $(document).ready(function() {
 	    buf +='<label>' + label + '</label>';
 	    var filename = $(e).find('.script-filename').val();
 	    buf +='<filename>' + filename + '</filename>';
-	    buf += "<parameters>";
-	    $(e).find(".script-parameter").each(function(i,s) {
-		var name=$(s).data('script-param-name');
-		var type=$(s).data('script-param-type');
-		var value;
-		if (type == "filelist") {
-		    value = $(s).data('kolekti-param-value');
-		}
-		if (type == "boolean") {
-		    if($(s).find('.kolekti-crit-value').get(0).checked)
-			value = 'yes';
-		    else
-			value='no';
-		}
-		
-		buf += "<parameter name='"+name+"' value='"+ value +"'/>";
-	    });
-	    buf += "</parameters>";
+	    if ($(e).data('kolekti-script-id') == 'multiscript') {
+		buf += "<publication>";
+		$(e).find('.publication-scripts .script').each(function(i,pe) {
+		    buf += "<script name='"+$(pe).data("kolekti-script-id")+"'>";
+		    buf += serialize_script_params(pe);
+		    buf += "</script>";
+		});
+		buf += "</publication>";
+		buf += "<validation>";
+		$(e).find('.validation-scripts .script').each(function(i,pe) {
+		    buf += "<script name='"+$(pe).data("kolekti-script-id")+"'>";
+		    buf += serialize_script_params(pe);
+		    buf += "</script>";
+		});
+		buf += "</validation>";
+	    } else {
+		buf += serialize_script_params(e)
+	    }
 	    buf += "</script>";
 	});
 	buf += "</scripts>";
@@ -94,6 +94,31 @@ $(document).ready(function() {
 	return buf;
     };
 
+    var serialize_script_params = function(e) {
+	var buf = "<parameters>";
+	$(e).find(".script-parameter").each(function(i,s) {
+	    var name=$(s).data('script-param-name');
+	    var type=$(s).data('script-param-type');
+	    var value;
+	    if (type == "filelist") {
+		value = $(s).data('kolekti-param-value');
+	    }
+	    if (type == "text") {
+		value = $(s).find('.kolekti-crit-value').val();
+	    }
+	    if (type == "boolean") {
+		if($(s).find('.kolekti-crit-value').get(0).checked)
+		    value = 'yes';
+		else
+		    value='no';
+	    }
+	    
+	    buf += "<parameter name='"+name+"' value='"+ value +"'/>";
+	});
+	buf += "</parameters>";
+	return buf
+    }
+    
     $('#btn_save').on('click', function(e){
 	var path = $(this).data('path');
 	$.ajax({
@@ -172,6 +197,24 @@ $(document).ready(function() {
 	)
 	$('#job_scripts .script').last().find('input').first().focus();
 	$('#job_scripts .script').last().find('.kolekti-param-menu').each(function(i,e) {
+	    var ev = jQuery.Event( "click" );
+	    $(e).find(".script-param-menu-entry").first().trigger(ev);
+	})
+	e.preventDefault();
+	enable_save();
+
+    });
+
+    //click on add script item in pultiscript
+    $('.multi-menu-item').on('click', function(e) {
+	var script = $(this).data('kolekti-script-id');
+	var multi = $(this).closest('.multi-area').find('.multiscript-list');
+	console.log(multi)
+	multi.append(
+	    $('.job-templates .'+script).clone(true)
+	)
+	multi.find('.script').last().find('input').first().focus();
+	multi.find('.script').last().find('.kolekti-param-menu').each(function(i,e) {
 	    var ev = jQuery.Event( "click" );
 	    $(e).find(".script-param-menu-entry").first().trigger(ev);
 	})
