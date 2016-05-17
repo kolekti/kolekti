@@ -22,15 +22,11 @@ import os
 import time
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 
 from lxml import etree as ET
 
 from kolekti.plugins import pluginBase
-from _WebHelp5 import ac_index
-
-htmlns="http://www.w3.org/1999/xhtml"
-
-helpname="WebHelp5"
 
 class plugin(pluginBase.plugin):
     
@@ -39,24 +35,22 @@ class plugin(pluginBase.plugin):
         main publication function
         """
         res = []
-        logging.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
+        # logger.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
 
         # copy libs from assembly space to publication directory
         dst = self.get_script_parameter('destination')
         for item in self.input:
             if 'ET' in item.keys():
-                print "pass", item.type
+                logger.debug( "pass ET %s"% item.type)
 
             elif item.get('type','') == "directory":
-                srcdn = item['path'].split('/')[-1]
+                pathparts = os.path.split(item['path'])
+                srcdn = pathparts[-1]
+                if srcdn == "":
+                    srcdn = pathparts[-2]
+
                 src = self.getOsPath(item['path'])
-                
-                try:
-                    os.makedirs(dst)
-                except:
-                    # import traceback
-                    # print traceback.format_exc()
-                    pass
+                self.__mkdir(dst)
                 try:
                     shutil.rmtree(os.path.join(dst,srcdn))
                 except:
@@ -64,9 +58,22 @@ class plugin(pluginBase.plugin):
                     # print traceback.format_exc()
                     pass
                 shutil.copytree(src, os.path.join(dst,srcdn))
-                print "copy plugin directory",src,dst
+                logger.debug("copy plugin directory %s to %s"%(src,dst))
+
             elif 'file' in item.keys():
+                self.__mkdir(dst)
                 src = self.getOsPath(item['file'])
-                shutil.copyfile(src, dst)
-                print "copy plugin file",src,dst
-        return self.input
+                srcfn = os.path.basename(src)
+                shutil.copyfile(src, os.path.join(dst, srcfn))
+                logger.debug( "copy plugin file %s to %s"%(src,dst))
+
+            return self.input
+
+    def __mkdir(self, path):
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path)
+            except:
+                # import traceback
+                # print traceback.format_exc()
+                pass
