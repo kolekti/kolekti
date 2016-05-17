@@ -54,11 +54,11 @@ class plugin(pluginBase.plugin):
             nbpages = PdfFileReader(pdf).getNumPages() 
 
         # update pivot body attributes
-        body.set('data-nbp', str(nbpages))
-        body.set('data-nbp2', str(nbpages % 2))
-        body.set('data-nbp4', str(nbpages % 4))
-        body.set('data-nbp8', str(nbpages % 8))
-        body.set('data-nbp16', str(nbpages % 16))
+        body.set('data-pagecount', str(nbpages))
+        body.set('data-pagecount-mod-2', str(nbpages % 2))
+        body.set('data-pagecount-mod-4', str(nbpages % 4))
+        body.set('data-pagecount-mod-8', str(nbpages % 8))
+        body.set('data-pagecount-mod-16', str(nbpages % 16))
 
         # produce pdf with modified pivot
         res = self.start_cmd()
