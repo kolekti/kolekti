@@ -72,18 +72,21 @@ class kolektiBase(object):
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         if path is not None:
             self.set_project(path)
-            
                 
     def set_project(self, path):
+        logger.debug("set project %s"%path)
+                        
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
             os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
             
-        # logger.debug('project path : %s'%path)
         if path[-1]==os.path.sep:
             self._path = path
         else:
             self._path = path + os.path.sep
+            
+        logger.debug('project path : %s'%self._path)
+
         self._xmlparser = ET.XMLParser(load_dtd = True)
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
@@ -114,8 +117,10 @@ class kolektiBase(object):
                 }
             import traceback
             logger.debug(traceback.format_exc() )
+            logger.debug(self._config )
+            print self._config
         self._version = self._config['version']
-        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
+        self._kolektiversion = self._version #self._config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
@@ -188,7 +193,7 @@ class kolektiBase(object):
     def __makepath(self, path):
         # returns os absolute path from relative path
         pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
-        res =  os.path.join(self._path, *pathparts)
+        # res =  os.path.join(self._path, *pathparts)
         # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
         #logger.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
         #logger.debug(urllib2.url2pathname(path))

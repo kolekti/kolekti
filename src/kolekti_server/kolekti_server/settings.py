@@ -45,6 +45,15 @@ TEMPLATE_DEBUG = False
 HOSTNAME='0.0.0.0'
 ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
+# SMTP config
+
+EMAIL_HOST="mail.gandi.net"
+EMAIL_PORT=465
+EMAIL_HOST_USER="kolekti@kolekti.net"
+EMAIL_HOST_PASSWORD="yofUden8"
+EMAIL_USE_TLS=False
+EMAIL_USE_SSL=True
+DEFAULT_FROM_EMAIL="kolekti@kolekti.net"
 
 # Application definition
 
@@ -106,6 +115,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'registration': {
+            'handlers': ['file_kolekti'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 
@@ -116,6 +130,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'registration',
     'bootstrapform',
     'kserver',
 #    'kmanager',
@@ -134,6 +149,7 @@ ROOT_URLCONF = 'kolekti_server.urls'
 
 WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 
+ACCOUNT_ACTIVATION_DAYS = 7
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases

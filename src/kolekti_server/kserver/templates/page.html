@@ -60,7 +60,7 @@
 
 	  <ul class="nav navbar-nav navbar-right ">          
 	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
-	    <li><a href="http://www.kolekti.org/projects/kolekti/wiki" target="_blank">Wiki</a></li>
+
 	    {% if user.is_authenticated %} 
 	    <li class="dropdown">
 	      <a href="#" class="dropdown-toggle" role="button" aria-expanded="false" data-toggle="dropdown" >
@@ -72,7 +72,7 @@
 		{% if user.is_superuser %}
 		<li><a href="/admin/">Admin</a></li>
 		{% endif %}
-		<li><a href="/accounts/logout/">Déconnexion</a></li>
+		<li><a href="/accounts/logout/?next=/">Déconnexion</a></li>
 	      </ul>
 	    </li>
 	    {% endif %}

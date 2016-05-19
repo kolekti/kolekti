@@ -88,17 +88,12 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             self.user_settings = Settings.objects.get()
         else:
             self.user_settings = Settings(active_project="", active_srclang="fr", active_publang="fr")
-            
-        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
-        super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
-        
+        super(kolektiMixin, self).__init__(None,*args,**kwargs)
         
     def config(self):
         return self._config
 
     def projects(self):
-        print self.request
-
         projects = []
         for projectname in os.listdir(settings.KOLEKTI_BASE):
             project={'name':projectname, 'id':projectname.replace(' ','_')}
@@ -132,9 +127,21 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             return ['en'],['en','fr','de'],'en'
     
     def get_context_data(self, data={}, **kwargs):
-        prj = self.user_settings.active_project
+        if self.request.user.is_authenticated():
+            user_project = UserProject.objects.get(user=self.request.user, active = True)
+            self.user_settings = Settings(active_project = user_project.project.name,
+                                          active_srclang = user_project.src_lang,
+                                          active_publang = user_project.pub_lang
+            )
+            projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.user_settings.active_project)
+            prj = self.user_settings.active_project
+        else:
+            prj = self.user_settings.active_project
+            projectpath = os.path.join(settings.KOLEKTI_BASE, prj)
+        self.set_project(projectpath)
+        
         try:
-            ET.parse(os.path.join(settings.KOLEKTI_BASE, prj, 'kolekti', 'settings.xml'))
+            ET.parse(os.path.join(projectpath, 'kolekti', 'settings.xml'))
         except IOError:
             prj = None
                      
@@ -301,10 +308,10 @@ class SaasProjectsView(kolektiMixin, View):
     template_name = "projects.html"
     def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
         try:
-            project = UserProject.objects.get(user = request.user, active = True)
+            user_project = UserProject.objects.get(user = request.user, active = True)
             context = self.get_context_data({
-                "active_project" :project.project.name,
-                "active_srclang":project.active_srclang,
+                "active_project" :user_project.project.name,
+                "active_srclang":user_project.src_lang,
                 "require_svn_auth":require_svn_auth,
                 "projectfolder":project_folder,
                 "projecturl":project_url,

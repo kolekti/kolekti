@@ -11,8 +11,8 @@ admin.autodiscover()
 
 
 urlpatterns = patterns('',
-    url(r'^accounts/', include('django.contrib.auth.urls')),
-                       
+#    url(r'^accounts/', include('django.contrib.auth.urls')),
+    url(r'^accounts/', include('registration.backends.default.urls')),                       
 #    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
 #    url(r'^accounts/profile/$', UserProfileView.as_view(), name="manager_user_profile"),
 
