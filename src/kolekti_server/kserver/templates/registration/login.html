@@ -1,0 +1,28 @@
+{% extends "registration/home.html" %}
+{% load bootstrap %}
+{% block menu %}
+<div data-spy="affix" data-offset-top="0" id="sideaffix">
+  {% if user.is_authenticated %}
+  {% else %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+	Connexion
+      </h4>
+    </div>
+    <div class="panel-body">
+      <form role="form" method="POST" action="{% url 'django.contrib.auth.views.login' %}">
+	{% csrf_token %}
+	{{form|bootstrap}}
+	
+	<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}/{% endif %}" />
+	
+	<button type="submit" class="btn btn-primary">Connexion</button>
+      </form>
+      <hr>
+      <p><a href="{% url 'registration_register' %}">Créer un compte</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

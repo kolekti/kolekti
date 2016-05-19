@@ -1,0 +1,27 @@
+{% extends "registration/home.html" %}
+{% load bootstrap %}
+
+{% block page-content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-md-9 main">
+      <h1>S'enregistrer</h1>
+      <p>Créez un compte pour accéder a Kolekti</p>
+      <form role="form" method="POST" action="{% url 'registration_register' %}">
+	{% csrf_token %}
+	{{ form|bootstrap }}
+	<div class="form-group">
+	  <p>
+	    <input type="checkbox" name="cgv"/> J'accepte les <a href="">Condition d'utilisation du service kolekti</p>
+	  <input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}/{% endif %}" />
+	</div>
+      
+	<button type="submit" class="btn btn-primary">Valider</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
