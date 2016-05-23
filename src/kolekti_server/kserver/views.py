@@ -1425,10 +1425,13 @@ class SyncView(kolektiMixin, View):
             sync.update_all()
             
         elif action == "commit":
-            sync.update_all()
+            resolve = request.POST.get('resolve')
             files = request.POST.getlist('fileselect',[])
-            sync.commit(files,commitmsg)
-            
+            if resolve == "commit":
+                sync.update_all()
+                sync.commit(files,commitmsg)
+            else:
+                sync.revert(files)
             
         return self.get(request)
                     
