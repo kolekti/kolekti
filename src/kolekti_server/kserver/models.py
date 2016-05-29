@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
+
+import logging
+logger = logging.getLogger('kolekti.'+__name__)
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -19,9 +27,10 @@ class Project(models.Model):
     template = models.ForeignKey(Template)
 
     def __unicode__(self):
-      return u"%s/%s"%(self.name, self.owner.username)
-          
-
+        return u"%s/%s"%(self.name, self.owner.username)
+    
+    
+  
 class UserProject(models.Model):
     project = models.ForeignKey(Project)
     user = models.ForeignKey(User)
@@ -33,8 +42,18 @@ class UserProject(models.Model):
     publang = models.CharField(max_length = 5)
 
     def __unicode__(self):
-      return u"%s/%s"%(self.user.username, self.project.name)
+        return u"%s/%s"%(self.user.username, self.project.name)
 
+    def checkout_project(self):
+        username = self.user.username
+        svnurl = self.project.directory
+        logger.debug('checkout')
+        
+    def save(self):
+        if self.pk is None:
+            self.checkout_project()
+        return super(UserProject,self).save()
+              
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     company = models.CharField(max_length = 255, default = '')

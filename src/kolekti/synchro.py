@@ -95,6 +95,9 @@ class SvnClient(object):
             raise ExcSyncRequestSSL
             
         self._client.callback_ssl_server_trust_prompt = callback_accept_cert
+
+        self._client.set_default_username(username)
+
         
 class SynchroManager(SvnClient):
     def __init__(self, base):

@@ -41,19 +41,4 @@
 {% endblock %}
 
 
-{% block usermenu %}
-{% if user.is_authenticated %} 
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" role="button" aria-expanded="false" data-toggle="dropdown" >
-    {{ user.username }}
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li><a href="/manager/projects/">Projets</a></li>
-    <li><a href="/accounts/profile/">Profil</a></li>
-    <li><a href="/accounts/logout/?next=/">Déconnexion</a></li>
-  </ul>
-</li>
-{% endif %}
-{% endblock %}
 

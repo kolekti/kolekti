@@ -49,6 +49,8 @@ from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
 
+from kserver import signals
+
 fileicons= {
     "application/zip":"fa-file-archive-o",
     'application/x-tar':"fa-file-archive-o",
@@ -238,13 +240,17 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
 
     def project_activate(self, userproject):
         # get userdir
-        self.request.user.userprofile.active_project = userproject
-        self.request.user.userprofile.save()
         
-        languages, rlang, defaultlang = self.project_langs()
-        if not self.kolekti_userproject.srclang in languages:
-             self.kolekti_userproject.srclang = defaultlang
-             self.kolekti_userproject.save()
+        self.request.user.userprofile.activeproject = userproject
+        self.request.user.userprofile.save()
+        try:
+            languages, rlang, defaultlang = self.project_langs()
+            if not self.kolekti_userproject.srclang in languages:
+                self.kolekti_userproject.srclang = defaultlang
+                self.kolekti_userproject.save()
+        except:
+            self.kolekti_userproject.srclang=en
+            self.kolekti_userproject.save()
 
         
     def language_activate(self, language):
@@ -287,13 +293,13 @@ class ProjectsView(kolektiMixin, View):
         context = self.get_context_data({
                     "require_svn_auth":require_svn_auth,
                     "projectfolder":self.kolekti_userproject.project.directory,
-                    "projecturl":self.kolekti_userproject.project.svn,
                     })
-            
+        if hasattr(self,'_project_starters'):
+            context.update({'project_starters':self._project_starters(request.user)})
         return self.render_to_response(context)
 
     # TODO : register project in db
-    def post(self, request):
+    def checkout_project(self, request):
         project_folder = request.POST.get('projectfolder')
         project_url = request.POST.get('projecturl')
         username = request.POST.get('username',None)
@@ -361,8 +367,8 @@ class ProjectsActivateView(ProjectsView):
 
 class ProjectsLanguageView(ProjectsView):
     def get(self, request):
-        project = request.GET.get('lang')
-        self.language_activate(project)
+        lang = request.GET.get('lang')
+        self.language_activate(lang)
         return super(ProjectsLanguageView, self).get(request)
 
         

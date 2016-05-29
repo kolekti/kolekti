@@ -37,7 +37,8 @@ urlpatterns = patterns('',
     url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
 
     url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),
-    url(r'^projects/new/$', SaasProjectsView.as_view(), name='projects_new'),    
+    url(r'^projects/new/$', SaasProjectsView.as_view(), name='projects_new'),
+    url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),    
     url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
     url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
 

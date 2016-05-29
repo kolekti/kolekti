@@ -6,7 +6,9 @@
 
 {% block title %}Gestion des projets{% endblock %}
 {% block help-topic %}projects{% endblock %}
-
+{% block extrascripts %}
+    <script src="/static/js/kolekti-projects.js"></script>
+{% endblock %}
 
 
 
@@ -42,7 +44,7 @@
       {% endif %}
     </div>
   
-    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
+    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.userproject == active_project %}in{% endif %}">
       <div class="panel-body">
 	{% if project.userproject == active_project %}
 	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
@@ -66,7 +68,7 @@
     {% endfor %}
   </div>
 {% else %}
- {% include "saas/starters.html" %}
+ {% include "saas/starters.html" with cols="12"%}
 {% endif %}
 
 
@@ -75,6 +77,6 @@
 
 {% block menu %}
 {% if projects|length %}
-{% include "saas/starters.html" %}
+{% include "saas/starters.html" with cols="12"%}
 {% endif %}
 {% endblock %}

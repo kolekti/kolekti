@@ -6,6 +6,8 @@
 import os
 import sys
 import subprocess
+import tempfile
+import pysvn
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
 
@@ -54,12 +56,14 @@ class SVNUserManager(CMDMixin):
             cmd.append('-c')
         cmd.extend([passfile, username, password])
         self.start_cmd(cmd)
+
+    
         
-class SVNProjectManager(CMDMixin):
+class SVNProjectCreator(CMDMixin):
     def create_from_template(self, template_url, project_directory, username):
-        repo_path = os.path.join(settings.SVN_ROOT,project_directory)
+        repo_path = os.path.join(settings.KOLEKTI_SVN_ROOT,project_directory)
         # export template to temp dir
-        tmpd = tempfile.mkdtemp()
+        tmpd = os.path.join(tempfile.mkdtemp(),project_directory)
         client = pysvn.Client()
 
         def get_login( realm, username, may_save ):
@@ -72,13 +76,13 @@ class SVNProjectManager(CMDMixin):
             raise Exception("cert not valid")
         client.callback_ssl_server_trust_prompt = callback_accept_cert
         
-        client.export(template, tmpdir)
+        client.export(template_url, tmpd)
 
         # run svnadmin to create repository
-        cmd = ["svadmin","create",repo_path]
+        cmd = ["svnadmin","create",repo_path]
         self.start_cmd(cmd)
         
-        client = Pysvn.Client()
+        client = pysvn.Client()
         client.set_default_username(username)
-        client.import_(tmpdir,'file://'+repo_path)
+        client.import_(tmpd,'file://'+repo_path, log_message="initial import")
     

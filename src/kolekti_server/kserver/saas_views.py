@@ -2,32 +2,40 @@
 
 #     kOLEKTi : a structural documentation generator
 #     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
-
+import os
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('kolekti.'+__name__)
     
-
-
+from django.conf import settings
+from django.http import HttpResponseRedirect
 from django.views.generic import View
 from django.dispatch import receiver
 from django.utils.text import get_valid_filename
 from registration.signals import user_registered, user_activated
 from registration.backends.default.views import RegistrationView as DefaultRegistrationView
 
-from kserver.models import UserProfile, Pack
+from kserver.models import UserProfile, Pack, Template, UserProject, Project
 from kserver.views import kolektiMixin
 from kserver.forms import kolektiRegistrationForm, NewProjectForm
-from kserver.svnutils import SVNUserManager
+from kserver.svnutils import SVNUserManager, SVNProjectCreator
 from kolekti.synchro import SVNProjectManager, ExcSyncNoSync
 
 class SaasProjectsView(kolektiMixin, View):
     template_name = "saas/projects.html"
 
-    def _project_starters(self):
+    def _project_starters(self, user, from_form = None, from_template = None):
         starters = []
         for pack in Pack.objects.all():
             for template in pack.templates.all():
-                form = NewProjectForm()
+                logger.debug(template)
+                logger.debug(type(template.pk))
+                logger.debug(type(from_template))
+                logger.debug(unicode(template.pk) == from_template)
+                if unicode(template.pk) == from_template:
+                    logger.debug('from template')
+                    form = from_form
+                else:
+                    form = NewProjectForm(user = user)
                 starters.append({'name':template.name,
                                  'description':template.description,
                                  'pack':pack.description,
@@ -42,22 +50,28 @@ class SaasProjectsView(kolektiMixin, View):
         
         context = self.get_context_data({
             "require_svn_auth":require_svn_auth,
-            "project_starters":self._project_starters(),
+            "project_starters":self._project_starters(request.user),
             "projecturl":"",
         })
             
         return self.render_to_response(context)
 
     def post(self, request):
-
-        form = NewProjectForm(request.POST)
+        ## return post from one of the starters list
+        form = NewProjectForm(request.POST, user = request.user)
+        template_id = request.POST.get('template_id')
+        logger.debug(request.POST)
+        logger.debug('----------------')
         if form.is_valid():
-            template_id = request.POST.get('template_id')
-            template = Template.object.get(pk = template_id)
+            template = Template.objects.get(pk = template_id)
+            project_directory = "%05d_%s"%(request.user.pk, get_valid_filename(form.cleaned_data['projectname']))
+
+            logger.debug('--------------- create svn repository')            
             # create svn project
-            pm = SVNProjectManager()
-            pm.create_from_template(template.svn, form.cleaned_data['projectname'], request.user.username)
-            project_directory = "%5d_%s"%(request.user.pk, get_valid_filename(form.cleaned_data['projectname']))
+            pm = SVNProjectCreator()
+            pm.create_from_template(template.svn, project_directory, request.user.username)
+            logger.debug('--------------- create project object')
+            
             project = Project(name = form.cleaned_data['projectname'],
                               description = "Saas demo project",
                               directory = project_directory,
@@ -65,27 +79,32 @@ class SaasProjectsView(kolektiMixin, View):
                               template = template
                               )
                               
-                              
+            project.save()
+            
+            logger.debug('--------------- create user project')
             # adds user to project
-            up = UserProject(user =  
-            # checkout project
-            sync.checkout_project(project_folder, project_url)
-
-        
-        sync = SVNProjectManager(settings.KOLEKTI_BASE,username,password)
-        if project_url=="":
-        # create local project
-            #sync.export_project(project_folder)
-            self.create_project(project_folder, os.path.join(settings.KOLEKTI_BASE, self.user.username))
-            self.project_activate(project_folder)
-            return self.get(request)
+            up = UserProject(user = request.user,
+                             project = project,
+                             is_saas = True,
+                             is_admin = True)
+                             
+            up.save()
+            logger.debug('--------------- set kolekti project')
+            projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project.directory)
+            self.set_project(projectpath)
+            logger.debug('--------------- activate')
+            self.project_activate(up)
+            logger.debug('--------------- end ')
+            return HttpResponseRedirect('/') 
         else:
-            try:
+            context = self.get_context_data({
+                "project_starters":self._project_starters(request.user, form, template_id),
+                "projecturl":"",
+            })
+            
+        return self.render_to_response(context)
 
-                return self.get(request)
-            except ExcSyncNoSync:
-                return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
-
+                
 class RegistrationView(DefaultRegistrationView):
     form_class = kolektiRegistrationForm
     def register(self,request, **cleaned_data):
