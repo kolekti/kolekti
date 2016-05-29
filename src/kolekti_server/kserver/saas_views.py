@@ -8,7 +8,8 @@ logger = logging.getLogger('kolekti.'+__name__)
     
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.views.generic import View
+from django.forms.models import model_to_dict
+from django.views.generic import View, TemplateView
 from django.dispatch import receiver
 from django.utils.text import get_valid_filename
 from registration.signals import user_registered, user_activated
@@ -16,7 +17,7 @@ from registration.backends.default.views import RegistrationView as DefaultRegis
 
 from kserver.models import UserProfile, Pack, Template, UserProject, Project
 from kserver.views import kolektiMixin
-from kserver.forms import kolektiRegistrationForm, NewProjectForm
+from kserver.forms import kolektiRegistrationForm, NewProjectForm, UserProfileForm
 from kserver.svnutils import SVNUserManager, SVNProjectCreator
 from kolekti.synchro import SVNProjectManager, ExcSyncNoSync
 
@@ -104,12 +105,53 @@ class SaasProjectsView(kolektiMixin, View):
             
         return self.render_to_response(context)
 
-                
+class UserProfileView(kolektiMixin, View):
+    template_name = "registration/profile.html"
+    def get(self, request):
+        profile = request.user.userprofile
+        profile_dict = model_to_dict(profile)
+        profile_dict.update({
+            "firstname":request.user.first_name,
+            "lastname":request.user.last_name
+        })
+        
+        form = UserProfileForm(profile_dict)
+        context = self.get_context_data()
+        context.update({
+            "form" : form
+            })
+        return self.render_to_response(context)
+
+    def post(self, request):
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            request.user.first_name = form.cleaned_data['firstname']
+            request.user.last_name = form.cleaned_data['lastname']
+            request.user.save()
+            up = request.user.userprofile
+            up.company = form.cleaned_data['company']
+            up.address = form.cleaned_data['address']
+            up.city = form.cleaned_data['city']
+            up.zipcode = form.cleaned_data['zipcode']
+            up.phone = form.cleaned_data['phone']
+            up.save()
+            return HttpResponseRedirect('/')
+        else:
+            context = self.get_context_data()
+            context.update({
+                "form" : form
+            })
+            return self.render_to_response(context) 
+        
 class RegistrationView(DefaultRegistrationView):
     form_class = kolektiRegistrationForm
+            
     def register(self,request, **cleaned_data):
         user = super(RegistrationView, self).register(request, **cleaned_data)
         svnum = SVNUserManager()
+        user.firstname = cleaned_data['firstname']
+        user.lastname = cleaned_data['lastname']
+        user.save()
         svnum.add_user(user.username, cleaned_data['password1'])
         
         

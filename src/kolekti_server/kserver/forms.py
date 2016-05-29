@@ -13,7 +13,7 @@ class UploadFileForm(forms.Form):
     path  = forms.CharField()
 
 
-class kolektiRegistrationForm(RegistrationForm):
+class UserProfileForm(forms.Form):
     firstname = forms.CharField(max_length = 32, required = False)
     lastname  = forms.CharField(max_length = 32, required = False)
     company = forms.CharField(max_length = 255, required = False)
@@ -21,6 +21,9 @@ class kolektiRegistrationForm(RegistrationForm):
     city = forms.CharField(max_length = 255,  required = False)
     zipcode = forms.CharField(max_length = 32, required = False)
     phone = forms.CharField(max_length = 32,  required = False)
+    
+
+class kolektiRegistrationForm(RegistrationForm, UserProfileForm):
     cgv = forms.BooleanField(widget=forms.CheckboxInput,
                              label=_(u'I have read and agree to the Terms of Service'),
                              error_messages={'required': _("You must agree to the terms to register")}

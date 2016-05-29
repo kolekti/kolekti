@@ -14,14 +14,11 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
 
-    url(r'^accounts/register/$',
-        RegistrationView.as_view(),
-        name='registration_register'),
-
+    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
+    url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^auth/', include('django.contrib.auth.urls')),
-                       #    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
-#    url(r'^accounts/profile/$', UserProfileView.as_view(), name="manager_user_profile"),
+
 
                        
     url(r'^$', HomeView.as_view(), name='home'),
