@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load ostags %}
+{% load bootstrap %}
+
+{% block current_tools %}menu-current{% endblock %}
+
+{% block title %}Gestion des projets{% endblock %}
+{% block help-topic %}projects{% endblock %}
+
+
+
+
+{% block content %}    
+{% if projects|length %}
+<div class="panel panel-default list-group">
+    <!--
+	<div class="panel-heading">
+	  <h4>Projets disponibles</h4>
+	</div>
+	-->
+    {% for project in projects %}
+
+    <div class="panel-heading">
+      <a data-toggle="collapse" {% if project.userproject != active_project %}class="collapsed"{% endif %} href="#collapse_{{ project.id }}">
+	<small>
+	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"> </span>
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"> </span>
+	</small>
+      </a>
+
+      <strong>{{ project.name }}</strong> 
+      <span class="label label-info pull-right">
+	{% ifequal project.status  "svn" %}
+	partagé
+	{% else %}
+	privé
+	{% endifequal %}
+      </span>
+      {% if project.userproject == active_project %}
+      <span class="label label-warning pull-right">Actif</span>
+      <span>  </span>
+      {% endif %}
+    </div>
+  
+    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
+      <div class="panel-body">
+	{% if project.userproject == active_project %}
+	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
+	  {% for lang in project.languages %}
+	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
+	  {% endfor %}
+	  </div>
+	  <a class="btn btn-xs btn-default" href="/projects/config">Configurer les langues</a>
+
+	<hr/>
+	{% endif %}
+	{% ifequal project.status "svn" %}
+	<p>url du dépot SVN : {{ project.url }}</p>
+	<hr/>
+	{% endifequal  %}
+	{% if project.userproject != active_project %}
+	<a href="/projects/activate?project={{project.directory}}" class="btn btn-default">Activer ce projet</a>
+	{% endif %}
+      </div>      
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+ {% include "saas/starters.html" %}
+{% endif %}
+
+
+{% endblock %}
+
+
+{% block menu %}
+{% if projects|length %}
+{% include "saas/starters.html" %}
+{% endif %}
+{% endblock %}

@@ -42,16 +42,26 @@
 	    
 	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 
-	    {% block usermenu %}
-            <li><a href="/accounts/logout/?next=/" title="déconnexion"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
-
-	    {% endblock %}
+	    
 	    <li>
 	  </ul>
 	</div>
       </div>
     </div> <!-- navbar -->
-
+    {% if user.is_authenticated %}     
+    <div class="navbar navbar-fixed-top"  id="navbar2">
+      <div class="container-fluid">
+	<div class="row">
+	  <div class="col-sm-12">
+	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
+	      {% block usermenu %}
+	      {% endblock %}
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    {% endif %}
     {% block page-content %}{% endblock %}
 
 

@@ -17,6 +17,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 KOLEKTI_CONFIG = settings()
 KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
+KOLEKTI_SVN_ROOT = KOLEKTI_CONFIG.get('InstallSettings').get('svnroot','')
+KOLEKTI_SVN_PASSFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svnpassfile','')
+KOLEKTI_SVN_GROUPFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svngroupfile','')
+KOLEKTI_LANGS = ['fr','en','us','de','it']
+
+oKOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
+KOLEKTI_SVNTPL_PASS = KOLEKTI_CONFIG.get('SvnRemotes').get('svnpass','')
+
+
+#KOLEKTI_SVN
+
 # APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
 if os.sys.platform[:3] == "win":
     appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
@@ -29,7 +40,8 @@ try:
     os.makedirs(os.path.join(KOLEKTI_BASE,'.logs'))
 except:
     pass
-                
+
+
 LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
 
 # Quick-start development settings - unsuitable for production
@@ -155,8 +167,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
 
-KOLEKTI_CONFIG = settings()
-KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
 # APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
 #if os.sys.platform[:3] == "win":
 #    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
@@ -179,7 +189,7 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr_fr'
 TIME_ZONE = KOLEKTI_CONFIG.get('InstallSettings',{'timezone':"Europe/Paris"}).get('timezone')
 #TIME_ZONE = 'UTC'
 
@@ -205,17 +215,8 @@ RE_BROWSER_IGNORE=["~$","^\.svn$", "^#.*#$"]
 
 # kolekti configuration
 
-
-
-#KOLEKTI_CONFIG = settings()
-#KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
-#print KOLEKTI_CONFIG
-
 STATICFILES_DIRS = (
     KOLEKTI_BASE,
 )
-
-KOLEKTI_LANGS = ['fr','en','us','de','it']
-
 # settings for active project
 

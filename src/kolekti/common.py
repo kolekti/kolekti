@@ -107,7 +107,7 @@ class kolektiBase(object):
                 }
             
         except:
-            # logger.debug("default config")
+            logger.exception("unable to read project config file, using default config")
             self._config = {
                 "project":"Kolekti",
                 "sourcelang":'en',

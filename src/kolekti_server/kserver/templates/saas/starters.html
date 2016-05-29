@@ -1,0 +1,36 @@
+{% load bootstrap %}
+{% block starters %}
+{% for starter in project_starters %}
+<div class="col-sm-4">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4>{{ starter.name }}</h4>
+    </div>
+    <div class="panel-body">
+      <img src="/static/saas/project-templates/{{ starter.name }}.png" alt =""/>
+      <div>{{ starter.description }}</div>
+      <br/>
+      <a class = "btn btn-default btn-sm" data-toggle="collapse" href="#starter_collapse_{{ starter.id }}">
+	Créer un nouveau projet
+      </a>
+      
+      <div id = "starter_collapse_{{ starter.id }}" class="collapse">
+	<hr/>
+	<form method="POST" action="{% url 'projects_new' %}">
+	  {% csrf_token %}
+	  {{ starter.form|bootstrap }}
+	  <input type="hidden" name="pack_id" value="{{ starter.idpack }}"/>
+	  <input type="hidden" name="template_id" value="{{ starter.id }}"/>
+	  <div class="form-group">
+	    <div class="col-sm-offset-2 col-sm-10">
+	      <button type="submit" class="btn btn-sm">Créer</button>
+	    </div>
+	  </div>		
+	</form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+

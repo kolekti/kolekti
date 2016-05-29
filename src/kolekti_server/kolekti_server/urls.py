@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, include, url
+
 from kserver.views import *
+from kserver.saas_views import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -11,9 +13,14 @@ admin.autodiscover()
 
 
 urlpatterns = patterns('',
-#    url(r'^accounts/', include('django.contrib.auth.urls')),
-    url(r'^accounts/', include('registration.backends.default.urls')),                       
-#    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
+
+    url(r'^accounts/register/$',
+        RegistrationView.as_view(),
+        name='registration_register'),
+
+    url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^auth/', include('django.contrib.auth.urls')),
+                       #    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
 #    url(r'^accounts/profile/$', UserProfileView.as_view(), name="manager_user_profile"),
 
                        
@@ -29,9 +36,10 @@ urlpatterns = patterns('',
     url(r'^tocs/usecases/$', TocUsecasesView.as_view(), name='tocusecases'),
     url(r'^tocs/create/$', TocCreateView.as_view(),name="toc_create"),
 
-    url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
-    url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),    
+    url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),
+    url(r'^projects/new/$', SaasProjectsView.as_view(), name='projects_new'),    
+    url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
+    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),    
 
     url(r'^import/$', ImportView.as_view(), name='import'),
     url(r'^import/template/$', ImportTemplateView.as_view(), name='importtemplate'),
