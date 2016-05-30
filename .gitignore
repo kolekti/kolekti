@@ -45,3 +45,9 @@ src/kolekti_server/db.sqlite3
 
 #ajouts felix
 travail_ecorse
+
+# Emacs
+*~
+[#]*[#]
+.\#*
+

@@ -249,7 +249,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                 self.kolekti_userproject.srclang = defaultlang
                 self.kolekti_userproject.save()
         except:
-            self.kolekti_userproject.srclang=en
+            self.kolekti_userproject.srclang='en'
             self.kolekti_userproject.save()
 
         
@@ -287,7 +287,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
 
         
 class ProjectsView(kolektiMixin, View):
-    template_name = "projects.html"
+    template_name = "saas/projects.html"
     def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
         
         context = self.get_context_data({
@@ -361,7 +361,7 @@ class ProjectsActivateView(ProjectsView):
         project = UserProject.objects.get(user = self.request.user, project__directory = project_dir)
         self.project_activate(project)
         if redirect == '':
-            return super(ProjectsActivateView, self).get(request)
+            return HttpResponseRedirect('/')
         else:
             return HttpResponseRedirect(redirect)
 

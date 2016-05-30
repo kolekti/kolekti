@@ -61,14 +61,14 @@
 	<hr/>
 	{% endifequal  %}
 	{% if project.userproject != active_project %}
-	<a href="/projects/activate?project={{project.directory}}" class="btn btn-default">Activer ce projet</a>
+	<a href="/projects/activate?project={{project.userproject.project.directory}}" class="btn btn-default">Activer ce projet</a>
 	{% endif %}
       </div>      
     </div>
     {% endfor %}
   </div>
 {% else %}
- {% include "saas/starters.html" with cols="12"%}
+ {% include "saas/starters.html" with cols="4"%}
 {% endif %}
 
 

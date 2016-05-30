@@ -6,7 +6,6 @@ import os
 import json
 from lxml import etree as ET
 from copy import deepcopy
-from models import Settings, ReleaseFocus
 from forms import UploadFileForm
 
 from django.http import Http404
@@ -34,10 +33,10 @@ from kolekti.import_sheets import Importer, Templater
 
 from views import kolektiMixin
 
-class EcoRSEMixin(kolektiMixin):
+class ElocusMixin(kolektiMixin):
     def render_to_response(self, context):
         context.update({'DEBUG': settings.DEBUG})
-        return super(EcoRSEMixin, self).render_to_response(context)
+        return super(ElocusMixin, self).render_to_response(context)
 
     def get_assembly_edit(self, path, release_path="", section=None, share = False):
         xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
@@ -138,7 +137,7 @@ class EcoRSEMixin(kolektiMixin):
         return list(varset)
         
     
-class EcoRSEReportCreateView(EcoRSEMixin, View):
+class ElocusReportCreateView(ElocusMixin, View):
     def post(self, request):
         try:
             title = request.POST.get('title','')
@@ -167,7 +166,7 @@ class EcoRSEReportCreateView(EcoRSEMixin, View):
         
 
         
-class EcoRSEReportUpdateView(EcoRSEMixin, View):
+class ElocusReportUpdateView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         try:
@@ -185,7 +184,7 @@ class EcoRSEReportUpdateView(EcoRSEMixin, View):
                                             'msg':traceback.format_exc()}),content_type="application/json")
         return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
     
-class EcoRSEReportAnalysisView(EcoRSEMixin, View):
+class ElocusReportAnalysisView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
@@ -209,7 +208,7 @@ class EcoRSEReportAnalysisView(EcoRSEMixin, View):
         return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
 
     
-class EcoRSEReportStarView(EcoRSEMixin, View):
+class ElocusReportStarView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
@@ -232,7 +231,7 @@ class EcoRSEReportStarView(EcoRSEMixin, View):
             
         return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
     
-class EcoRSEReportHideView(EcoRSEMixin, View):
+class ElocusReportHideView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
@@ -255,7 +254,7 @@ class EcoRSEReportHideView(EcoRSEMixin, View):
             
         return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
     
-class EcoRSEReportChartView(EcoRSEMixin, View):
+class ElocusReportChartView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
@@ -277,7 +276,7 @@ class EcoRSEReportChartView(EcoRSEMixin, View):
 
     
     
-class EcoRSEReportView(EcoRSEMixin, View):
+class ElocusReportView(ElocusMixin, View):
     template_name = "ecorse/report.html"
     def get(self, request):
             
@@ -316,7 +315,7 @@ class EcoRSEReportView(EcoRSEMixin, View):
                                         "title":assembly_name})
     
         
-class EcoRSEReportShareView(EcoRSEMixin, View):
+class ElocusReportShareView(ElocusMixin, View):
     template_name = "ecorse/share.html"
     def get(self, request):
             
@@ -346,7 +345,7 @@ class EcoRSEReportShareView(EcoRSEMixin, View):
     
         
 
-class EcoRSERefParametersView(EcoRSEMixin, View):
+class ElocusRefParametersView(ElocusMixin, View):
     def get(self, request):
         try:
             result = []
@@ -380,7 +379,7 @@ class EcoRSERefParametersView(EcoRSEMixin, View):
             print traceback.format_exc()
         return HttpResponse(json.dumps(result),content_type="application/json")
     
-class EcoRSECommunesView(EcoRSEMixin, View):
+class ElocusCommunesView(ElocusMixin, View):
     def get(self, request):
         referentiel = request.GET.get('referentiel','')
         xtoc = self.parse('/sources/fr/tocs/ecorse/'+referentiel)
@@ -391,7 +390,7 @@ class EcoRSECommunesView(EcoRSEMixin, View):
         communes = sp.get_communes()
         return HttpResponse(json.dumps(communes),content_type="application/json")
 
-class EcoRSEReferentielsView(EcoRSEMixin, View):
+class ElocusReferentielsView(ElocusMixin, View):
     def get(self, request):
         try:
             referentiels = self.get_directory('/sources/fr/tocs/ecorse')
@@ -403,7 +402,7 @@ class EcoRSEReferentielsView(EcoRSEMixin, View):
                                             'msg':traceback.format_exc()}),content_type="application/json")
 
 
-class EcoRSEReportPublishView(EcoRSEMixin, View):
+class ElocusReportPublishView(ElocusMixin, View):
     def post(self, request):
         try:
             release_path = request.POST.get('release','')

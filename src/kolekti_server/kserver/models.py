@@ -57,12 +57,12 @@ class UserProject(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     company = models.CharField(max_length = 255, default = '')
-    address = models.TextField()
-    city = models.CharField(max_length = 255)
-    zipcode = models.CharField(max_length = 32)
-    phone = models.CharField(max_length = 32)
+    address = models.TextField(default='', blank=True)
+    zipcode = models.CharField(max_length = 32, default='', blank=True)
+    city = models.CharField(max_length = 255, default='', blank=True)
+    phone = models.CharField(max_length = 32, default='', blank=True)
     created = models.DateField(auto_now_add = True)
-    activeproject = models.ForeignKey(UserProject, null = True, on_delete = models.SET_NULL)
+    activeproject = models.ForeignKey(UserProject, null = True, default=None, blank=True, on_delete = models.SET_NULL)
     
     def __unicode__(self):
       return self.user.username
