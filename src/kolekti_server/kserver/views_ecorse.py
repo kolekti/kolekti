@@ -39,7 +39,7 @@ class ElocusMixin(kolektiMixin):
         return super(ElocusMixin, self).render_to_response(context)
 
     def get_assembly_edit(self, path, release_path="", section=None, share = False):
-        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
             xsl = self.get_xsl('ecorse_assembly_home')
             body = xassembly.getroot()
@@ -51,7 +51,7 @@ class ElocusMixin(kolektiMixin):
         return content
 
     def get_assembly_menu(self, path, release_path="", section=None):
-        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
 #        if section is None:
 #           section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
@@ -60,7 +60,7 @@ class ElocusMixin(kolektiMixin):
         return content
 
     def get_assembly_libs(self, path, release_path="", section=None):
-        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
             root = xassembly.xpath('/html:html/html:body',
                                    namespaces={'html':'http://www.w3.org/1999/xhtml'})
@@ -107,7 +107,7 @@ class ElocusMixin(kolektiMixin):
 
     def assembly_user_vars(self, path, section=None):
         varset = set()
-        xassembly = self.parse(path.replace('{LANG}',self.user_settings.active_publang))
+        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
             varxpath = '/html:html/html:body//html:var[startswith(@class,"uservar:")]'
         else:
@@ -146,8 +146,8 @@ class ElocusReportCreateView(ElocusMixin, View):
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             xjob.getroot().set('pubdir',title)
-            lang=self.user_settings.active_srclang
-            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            lang=self.kolekti_userproject.srclang
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.kolekti_userproject)
             criteria = xjob.xpath('/job/criteria')[0]
             for uservar in request.POST.keys():
                 if uservar[:8] == 'uservar_' and uservar[-4:] == '[id]':
@@ -414,8 +414,8 @@ class ElocusReportPublishView(ElocusMixin, View):
                 if jscript.get('name') != script:
                     jscripts.remove(jscript)
             print ET.tostring(jscripts)
-            lang=self.user_settings.active_srclang
-            projectpath = os.path.join(settings.KOLEKTI_BASE,self.user_settings.active_project)
+            lang=self.kolekti_userproject.srclang
+            projectpath = os.path.join(settings.KOLEKTI_BASE,self.kolekti_userproject)
             r = publish.ReleasePublisher(release_path, projectpath, langs = [lang])
             res = []
             for e in r.publish_assembly(assembly_name, xjob):
