@@ -1,0 +1,113 @@
+<div class="modal" id="modal_create">
+      <div class="modal-dialog modal-lg">
+	<div class="modal-content">
+	  <div class="modal-header">
+            <h4 class="modal-title">Créer un rapport</h4>
+	  </div>
+	  <div class="modal-body">
+	    <div class="form-horizontal">
+	      <div class="form-group">
+		<label for="ref" class="col-sm-2 control-label">Référentiel</label>
+		<div class="col-sm-10">
+		  <select name="ref" id="ecorse_select_referentiel" class="form-control">
+		  </select>
+		</div>
+	      </div>
+	      <div class="form-group">
+		<label for="titre" class="col-sm-2 control-label">Titre</label>
+		<div class="col-sm-10">
+		  <input name="titre" id="titre_rapport" class="form-control" type="text"/>
+		</div>
+	      </div>
+	      <hr/>
+	      <div id="create_form_parameters">
+		{% comment %}
+		<div class="form-group">
+		  <label for="commune1" class="col-sm-2 control-label">Territoire 1</label>
+		  <div class="col-sm-10">
+		    <input name="commune1" id="commune1" type="text" class="form-control typeahead" data-provide="typeahead"/>
+		  </div>
+		</div>
+		
+		<div class="form-group">
+		  <label for="commune2" class="col-sm-2 control-label">Territoire 2</label>
+		  <div class="col-sm-10">
+		    <input name="commune2" id="commune2" type="text" class="form-control typeahead" data-provide="typeahead"/>
+		  </div>
+		</div>
+		
+		<div class="form-group">
+		  <label for="commune3" class="col-sm-2 control-label">Territoire 3</label>
+		  <div class="col-sm-10">
+		    <input name="commune3" id="commune3" type="text" class="form-control typeahead" data-provide="typeahead"/>
+		  </div>
+		</div>
+		{% endcomment %}
+	      </div>
+	    </div>
+	  </div>
+	  <div class="modal-footer">
+	    {% block modal-footer %}{% endblock %}
+            <button type="button" class="btn btn-default" id="modal_create_ok">OK</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+<div class="modal" id="modal_create_processing">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Créer un rapport</h4>
+      </div>
+      <div class="modal-body">
+	<div class="alert alert-info" role="alert">
+	  <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
+	  Génération du rapport en cours, cela peut prendre quelques instants
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal_update_processing">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Actualisation des données</h4>
+      </div>
+      <div class="modal-body">
+	<div class="alert alert-info" role="alert">
+	  <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
+	  Actualisation du rapport en cours, cela peut prendre quelques instants
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="modal_share">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Partager</h4>
+      </div>
+      <div class="modal-body">
+	<div class="form">
+	  <div class="form-group">
+	    <label for="ref_url" class="control-label">Copiez l'URL ci dessous pour acceder a la <a href="/ecorse/report/?release=/releases/{{ current }}">version publique du rapport</a></label>
+	    <input name="ref_url" id="ecorse_share_url" class="form-control" value="http://kolekti.ecorse.eu/ecorse/report/?release=/releases/{{ current }}" readonly="yes"/>
+	  </div>
+	</div>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+      </div><!-- /.modal-footer -->
+    </div>
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+

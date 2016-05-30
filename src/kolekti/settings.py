@@ -1,5 +1,6 @@
 import os
 import logging
+
 import ConfigParser
 
 userdir = os.path.expanduser("~")
@@ -30,6 +31,7 @@ def settings(settings_file=""):
         ]
 
     read_files = config.read(config_files)
+    print read_files
     for section in default_settings:
         if not config.has_section(section):
             config.add_section(section)

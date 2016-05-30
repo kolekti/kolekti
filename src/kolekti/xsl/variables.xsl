@@ -61,10 +61,26 @@
     </xsl:element>
   </xsl:template>
   
-<!-- substitution des éléments var par la valeur d'un texte automatique -->
+  <!-- substitution des éléments var par la valeur d'un texte automatique -->
+
+  <xsl:template match="urlparam"/>
 
   <xsl:template match="html:var">
     <xsl:choose>
+      <xsl:when test="starts-with(@class,'topicvar:')">
+	<xsl:variable name="varname" select="substring-after(@class,':')"/>
+	<xsl:variable name="val" select="ancestor::html:div[@class='topic']/html:div[@class='topicinfo']/urlparam[@name=$varname]/@value"/>
+        <xsl:value-of select="$val"/>
+      </xsl:when>
+
+      <xsl:when test="starts-with(@class,'uservar:')">
+	<xsl:copy>
+	  <xsl:apply-templates select="@*"/>
+          <xsl:variable name="res" select="kfp:replace_criteria(concat('{',@class,'}'))"/>
+          <xsl:value-of select="$res"/>
+	</xsl:copy>
+      </xsl:when>
+
       <xsl:when test="contains(@class,':')">
 	<xsl:call-template name="getvariable">
           <xsl:with-param name="varfile" select="substring-before(@class,':')"/>

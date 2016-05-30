@@ -1,0 +1,9 @@
+.kolekti-sparql-query,
+.kolekti-sparql-template,
+.kolekti-sparql-result-json {
+    display:none;
+}
+
+.topic h3 {
+    margin-left:20px
+}

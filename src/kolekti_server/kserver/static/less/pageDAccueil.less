@@ -1,0 +1,167 @@
+/* ==========================================
+Page d'accueil
+========================================== */
+
+.main .accueil {
+
+
+    // Custom Colored Panels
+    .panel {
+        border-color: @grisFonce;
+        .panel-heading {
+            border-color: @grisMoyen;
+            color: white;
+            background-color: @grisFoncePlus;
+            .huge {
+                font-size: 30px;
+            }
+        }
+        a {
+            color: @linkColor;
+            &:hover {
+                color: @linkColorHover;
+            }
+        }
+
+        &.bien-etre .panel-heading {
+            background-color: fadeout(@bien-etre, 10%);
+        }
+        &.economie .panel-heading {
+            background-color: fadeout(@economie, 10%);
+        }
+        &.education .panel-heading {
+            background-color: fadeout(@education, 10%);
+        }
+        &.energie .panel-heading {
+            background-color: fadeout(@energie, 10%);
+        } 
+        &.environnement .panel-heading {
+            background-color: fadeout(@environnement, 10%);
+        } 
+        &.evolution .panel-heading {
+            background-color: fadeout(@evolution, 10%);
+        }
+        &.immobilier .panel-heading {
+            background-color: fadeout(@immobilier, 10%);
+        }
+        &.logement .panel-heading {
+            background-color: fadeout(@logement, 10%);
+        }
+        &.meteo .panel-heading {
+            background-color: fadeout(@meteo, 10%);
+        }
+        &.politique .panel-heading {
+            background-color: fadeout(@politique, 10%);
+        }
+        &.sante .panel-heading {
+            background-color: fadeout(@sante, 10%);
+        }
+        &.ski .panel-heading {
+            background-color: fadeout(@ski, 10%);
+        }
+        &.social .panel-heading {
+            background-color: fadeout(@social, 10%);
+        }
+        &.sport .panel-heading {
+            background-color: fadeout(@sport, 10%);
+        }
+        &.technologie .panel-heading {
+            background-color: fadeout(@technologie, 10%);
+        }
+        &.tourisme .panel-heading {
+            background-color: fadeout(@tourisme, 10%);
+        }
+        &.transport .panel-heading {
+            background-color: fadeout(@transport, 10%);
+        }
+
+        .picto {
+            @file: "sprite.png";
+            background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+            background-position: 0px 0px;
+            display: block;
+            height: 35px;
+            width: 35px;
+
+
+            &.bien-etre {
+                background-position: -850px -50px;
+            }
+            &.economie {
+                background-position: -800px -50px;
+            }
+            &.education {
+                background-position: -750px -50px;
+            }
+            &.energie {
+                background-position: -700px -50px;
+            } 
+            &.environnement {
+                background-position: -650px -50px;
+            } 
+            &.evolution {
+                background-position: -600px -50px;
+            }
+            &.immobilier {
+                background-position: -550px -50px;
+            }
+            &.logement {
+                background-position: -500px -50px;
+            }
+            &.meteo {
+                background-position: -450px -50px;
+            }
+            &.politique {
+                background-position: -400px -50px;
+            }
+            &.sante {
+                background-position: -350px -50px;
+            }
+            &.ski {
+                background-position: -3000px -50px;
+            }
+            &.social {
+                background-position: -250px -50px;
+            }
+            &.sport {
+                background-position: -200px -50px;
+            }
+            &.technologie {
+                background-position: -150px -50px;
+            }
+            &.tourisme {
+                background-position: -100px -50px;
+            }
+            &.transport {
+                background-position: -50px -50px;
+            }
+
+        }           
+
+    }
+
+}
+
+
+/*
+
+  bien-etre **
+  economie **
+  education **
+  energie ** 
+  environnement ** 
+  evolution **
+  immobilier **
+  logement **
+  meteo **
+  politique **
+  sante **
+  ski **
+  social **
+  sport **
+  technologie **
+  tourisme **
+  transport **
+
+
+*/

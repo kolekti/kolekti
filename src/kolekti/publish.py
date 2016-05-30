@@ -92,10 +92,34 @@ class Publisher(PublisherMixin, kolektiBase):
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
-                        
+
+        # ECORSE only : substvars
+        s = self.get_xsl('variables', PublisherExtensions, profile = xjob, lang=self._publang)
+        assembly = s(assembly)
+        self.log_xsl(s.error_log)
+
+        
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
+
+        try:
+            endpoint = self._project_settings.find('sparql').get('endpoint')
+            # endpoint = endpoint + xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)', namespaces=self.nsmap)
+            from kolekti.publish_queries import kolektiSparQL
+            sp = kolektiSparQL(endpoint)
+            sp.process_queries(assembly)
+        except:
+            import traceback
+            events.append({
+                'event':'warning',
+                'msg':"Impossible d'executer les requetes",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            })
+            print traceback.format_exc()
+            logging.debug("W: unable to create assembly directory")
+            logging.debug(traceback.format_exc())
 
         # calculate the publication name
         pubname = xjob.get('id','')
@@ -1097,7 +1121,7 @@ class ReleasePublisher(Publisher):
     def process_path(self, path):
         return self.assembly_dir() + "/" + super(ReleasePublisher,self).process_path(path)
     
-    def publish_assembly(self, assembly):
+    def publish_assembly(self, assembly, xjob=None):
         """ publish an assembly"""
         pubevents = []
         try :
@@ -1121,8 +1145,8 @@ class ReleasePublisher(Publisher):
                     langpubevt.append(errevt)
                     yield errevt
                     return
-
-                xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+                if xjob is None:
+                    xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     langpubevt.append(pubres)

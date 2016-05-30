@@ -455,6 +455,7 @@ class kolektiBase(object):
             if not system_path:
                 xsldir = self.__makepath(xsldir)
         path = os.path.join(xsldir, stylesheet+".xsl")
+
         xsldoc  = ET.parse(path,self._xmlparser)
         if extclass is  None:
             extclass = XSLExtensions

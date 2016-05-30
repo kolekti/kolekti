@@ -22,7 +22,7 @@ KOLEKTI_SVN_PASSFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svnpassfile','
 KOLEKTI_SVN_GROUPFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svngroupfile','')
 KOLEKTI_LANGS = ['fr','en','us','de','it']
 
-oKOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
+KOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
 KOLEKTI_SVNTPL_PASS = KOLEKTI_CONFIG.get('SvnRemotes').get('svnpass','')
 
 
@@ -179,10 +179,12 @@ ACCOUNT_ACTIVATION_DAYS = 7
     
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/home/waloo/my.cnf',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_NAME,
+#        'ENGINE': 'django.db.backends.mysql',
+#        'OPTIONS': {
+#            'read_default_file': '/home/waloo/my.cnf',
+#        },
     }
 }
 

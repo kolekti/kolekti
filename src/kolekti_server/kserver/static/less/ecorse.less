@@ -1,0 +1,524 @@
+/* Fecou less */
+
+.test {
+	display: block;
+}
+
+/* ==========================================
+Imports
+========================================== */
+@import "variablesAndFonctions.less";
+
+
+/* ==========================================
+Généralités
+========================================== */
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	//margin: 0;
+	//padding: 0;
+	//border: 0;
+}
+
+body {
+	font-size:@font-size-base;
+	font-family: @texteFontFamily;
+	text-rendering: optimizeLegibility;
+    color:@baseFontColor;
+	@file: "fonds/pattern.png";
+	background: url( "@{baseUrlForImages}@{file}" ) repeat scroll 0 bottom transparent;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: @hsFontFamily;
+	font-weight: @hsFontWeight;
+	color: @hsColor;
+	text-rendering: optimizelegibility; // Fix the character spacing for headings
+	small {
+		font-weight: normal;
+		color: @gray-light;
+	}
+}
+h1 {
+	//margin-bottom: 0.7em;
+	//font-size: 2.5em;
+}
+h2 {
+	//margin: 0.6em 0 0.4em 0;
+}
+h3, h4, h5, h6 {
+	//line-height: 1.4em;
+}
+
+p {
+	text-align: left;
+}
+li {
+	//list-style-type: none;
+}
+a, a:link {
+	color: @linkColor;
+	//text-decoration: none;
+}
+a:visited {
+	color: @linkColor;
+	//text-decoration: none;
+}
+a:hover, a:active {
+	color: @linkColorHover;
+	text-decoration: underline;
+}
+
+@media (max-width: 1199px) {  .visible-largeDesktop { display:none; }}
+@media (min-width: 1200px) {  .hidden-largeDesktop { display:none; }}
+
+img {
+}
+
+section {
+}
+
+a.admlink , a.admlink:link, a.admlink:visited {
+	color: @admLinkColor;
+}
+a.admlink:hover, a.admlink:active {
+	color: @admLinkColorHover;
+}
+
+.mgt { // margin top
+	margin-top: 15px;
+}
+.mgb { // margin bottom
+	margin-bottom: 15px;
+}
+.pdt { // padding top
+	padding-top: 15px;
+}
+.pdb { // padding bottom
+	padding-bottom: 15px;
+}
+.ch { //center horizontaly
+	margin-left: auto;
+	margin-right:auto;
+	display:block;
+}
+
+.btn-fecou, a.btn-fecou {
+	//@file: "fonds/menuGaucheButtonBgInactive.png";
+	//background: url( "@{baseUrlForImages}@{file}" ) repeat scroll transparent;
+	#gradient > .vertical( lighten(@orangeLogo, 5%); darken(@orangeLogo, 5%) );
+	color:@blanc !important;
+	border: none !important;
+	.box-shadow-color(1px 2px 3px 1px, 0.3);
+	&:hover, &:active, &:focus {
+		//@file: "../../images/fonds/menuGaucheButtonBgActive.png";
+		//background: url( "@{baseUrlForImages}@{file}" ) repeat scroll transparent;
+		#gradient > .vertical( lighten(@marineLogo, 10%); @marineLogo );
+		color:@blanc;
+		cursor: pointer !important;
+	}
+}
+
+
+.no-min-height {
+	min-height: inherit !important;
+}
+
+html {
+	position: relative;
+	min-height: 100%;
+	.IE9-only {
+		display:none;
+	}
+	&.lt-ie10 .IE9-only {
+		display:block;//visible seulement pour IE lt 9
+	}
+}
+
+
+
+/* ==========================================
+Admin
+========================================== */
+
+
+
+/* ==========================================
+Content
+========================================== */
+
+
+body {
+	padding-top: 70px;
+}
+		
+	/* ==== Navigation ==== */
+	.navbar-ecorse {
+	    background-color: @marineLogo;
+	    border-color: darken(@cielLogo, 20%);
+	    margin-bottom: 0;
+
+	    a {
+	    	color: @orangeDarken;
+	    	&:hover {
+	    		color: @orangeLogo;
+	    	}
+	    }
+
+	    .navbar-nav {
+			padding-right: 10px;
+			padding-top: 6px;
+		}
+
+	    .navbar-brand img {
+		    position: relative;
+		    top: -7px;
+		}
+
+	    .dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
+			background-color: @orangeLogo;
+			color: #fff;
+		}
+
+		.dropdown-menu > li > a:hover {
+			color: @orangeLogo;
+		}
+
+		.navbar-form {
+			padding-right: 0;
+		}
+
+		.navbar-btn {
+			margin-left: 8px;			
+		}
+		.btn {
+			background-color: @noirClair;
+			color: @orangeDarken;
+			&:hover, a:hover, &:hover i {
+	    		color: @orangeLogo;
+	    	}
+		}
+		.dropdown a .caret {
+			color: @noirClair;
+		}
+	}
+
+
+	/* ==== Left menus ==== */
+	
+
+	.sidebar {
+		//background-color: fadeout(@grisClair, 60%);		
+		display: block;		
+		overflow-y: auto;
+		position: fixed;
+		top: 57px;
+		left: 0;
+		bottom: 60px;
+
+		.panel {
+			margin: 15px 0;
+			background-color: fadeout(@grisClair, 60%);
+			.panel-title, .panel-title a {
+				color: @orangeLogo;
+			}
+			.panel-body {
+				padding: 2px;
+				.list-group-item {
+					background-color: @grisClairPlusPlus;
+					&.active {
+						background-color: @cielLogo;
+						//cursor: default;
+					}
+					&:first-child {
+					  border-top-left-radius: 0;
+					  border-top-right-radius: 0;
+					}
+					&:last-child {
+					  border-top-left-radius: 0;
+					  border-top-right-radius: 0;
+					}
+					&:before {
+						@file: "sprite.png";
+						background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+						content: "";
+						display: block;
+						float: left;
+						height: 18px;
+						margin-left: -5px;
+						margin-right: 7px;
+						position: relative;
+						top: 0;
+						width: 18px;
+					}
+					&.bien-etre:before {
+						background-position: -850px 0px ;
+					}
+					&.economie:before {
+						background-position: -800px 0px ;
+					}
+					&.education:before {
+						background-position: -750px 0px ;
+					}
+					&.energie:before {
+						background-position: -700px 0px ;
+					}
+					&.environnement:before {
+						background-position: -650px 0px ;
+					}
+					&.evolution:before {
+						background-position: -600px 0px ;
+					}
+					&.immobilier:before {
+						background-position: -550px 0px ;
+					}
+					&.logement:before {
+						background-position: -500px 0px ;
+					}
+					&.meteo:before {
+						background-position: -450px 0px ;
+					}
+					&.politique:before {
+						background-position: -400px 0px ;
+					}
+					&.sante:before {
+						background-position: -350px 0px ;
+					}
+					&.ski:before {
+						background-position: -300px 0px ;
+					}
+					&.social:before {
+						background-position: -250px 0px ;
+					}
+					&.sport:before {
+						background-position: -200px 0px ;
+					}
+					&.technologie:before {
+						background-position: -150px 0px ;
+					}
+					&.tourisme:before {
+						background-position: -100px 0px ;
+					}
+					&.transport:before {
+						background-position: -50px 0px ;
+					}
+				}
+			}				
+			.panel-footer .btn-sm-dropdown{
+				font-size: 12px;
+			}
+
+		}
+
+
+		a.ecorse-action-update-data, a.dropdown-toggle {
+			color: @linkColor;
+		}
+	}
+
+	/* ==== Main content ==== */
+	
+	.main {
+
+		/* breadcrumb, fil d'ariane */
+		ol.breadcrumb {
+			background-color: transparent;
+			margin-top: 1em;
+		}
+
+		/* titre */
+		.jumbotron {
+			padding: 1px 30px 10px 30px;
+			background-color: fadeout(@grisClair, 60%);
+			h1 {
+				font-size: 45px;
+				a:hover {
+					color: @marineLogo;
+				}
+			}
+		}
+
+		.report h2 {
+			color: @blanc; //@grisFoncePlus; //@orangeLogo;
+			background-color: fadeout(@grisClair, 60%);
+			border-radius: @border-radius-base;
+			padding: 10px 30px 10px 30px;
+			margin-top: -20px;
+			&:before {
+				@file: "sprite.png";
+				background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+				background-position: 0px 0px;
+				content: "";
+				display: block;
+				float: left;
+				height: 35px;
+				margin-left: 0;
+				margin-right: 20px;
+				position: relative;
+				top: -1px;
+				width: 35px;
+			}			
+			&.bien-etre {
+				background-color: fadeout(@bien-etre, 10%);
+				&:before { background-position: -850px -50px; }				
+			}
+			&.economie {
+				background-color: fadeout(@economie, 10%);
+				&:before { background-position: -800px -50px; }				
+			}			
+			&.education {
+				background-color: fadeout(@education, 10%);
+				&:before { background-position: -750px -50px; }				
+			}
+			&.energie {
+				background-color: fadeout(@energie, 10%);
+				&:before { background-position: -700px -50px; }				
+			}		
+			&.environnement {
+				background-color: fadeout(@environnement, 10%);
+				&:before { background-position: -650px -50px; }				
+			}
+			&.evolution {
+				background-color: fadeout(@evolution, 10%);
+				&:before { background-position: -600px -50px; }				
+			}
+			&.immobilier {
+				background-color: fadeout(@immobilier, 10%);
+				&:before { background-position: -550px -50px; }				
+			}			
+			&.logement {
+				background-color: fadeout(@logement, 10%);
+				&:before { background-position: -500px -50px; }				
+			}
+			&.meteo {
+				background-color: fadeout(@meteo, 10%);
+				&:before { background-position: -450px -50px; }				
+			}
+			&.politique {
+				background-color: fadeout(@politique, 10%);
+				&:before { background-position: -400px -50px; }				
+			}
+			&.sante {
+				background-color: fadeout(@sante, 10%);
+				&:before { background-position: -350px -50px; }				
+			}						
+			&.ski {
+				background-color: fadeout(@ski, 10%);
+				&:before { background-position: -300px -50px; }				
+			}
+			&.social {
+				background-color: fadeout(@social, 10%);
+				&:before { background-position: -250px -50px; }				
+			}
+			&.sport {
+				background-color: fadeout(@sport, 10%);
+				&:before { background-position: -100px -50px; }				
+			}
+			&.technologie {
+				background-color: fadeout(@technologie, 10%);
+				&:before { background-position: -150px -50px; }				
+			}
+			&.tourisme {
+				background-color: fadeout(@tourisme, 10%);
+				&:before { background-position: -100px -50px; }				
+			}			
+			&.transport {
+				background-color: fadeout(@transport, 10%);
+				&:before { background-position: -50px -50px; }				
+			}
+
+		}
+
+	
+		/* widgets */
+
+	} // /.main
+	
+	/* ==== Right menus ==== */
+
+	/* ==== Footer ==== */
+	@footerHeight: 60px ;
+	body {
+		/* Margin bottom by footer height */
+	  	margin-bottom: @footerHeight;
+	}
+
+	.footer {
+	    position: absolute;
+	    bottom: 0;
+	    width: 100%;
+	    /* Set the fixed height of the footer here */
+	    height: @footerHeight;
+	    background-color: darken(@marineLogo, 10%);
+	    padding: 1.5em 0 ;
+	    .copyright {
+	    	color: @blanc;
+	    }
+	}
+
+	// Social Buttons
+	ul.social-buttons {
+	    margin-bottom: 0;
+	    text-align: right;
+	    @socialButtonsHeight: 30px;
+	    li {
+	        a {
+	            display: block;
+	            background-color: @noirClair;
+	            height: @socialButtonsHeight;
+	            width: @socialButtonsHeight;
+	            border-radius: 100%;
+	            font-size: 20px;
+	            line-height: @socialButtonsHeight;
+	            color: @cielLogo; // @orangeDarken;
+	            outline: none;
+	            text-align: center;
+	            -webkit-transition: all 0.3s;
+	            -moz-transition: all 0.3s;
+	            transition: all 0.3s;
+	            &:hover,
+	            &:focus,
+	            &:active {
+	                background-color: @linkColorHover;
+	                color: @blanc;
+	            }
+	        }
+	    }
+	}
+
+/* ==========================================
+Media queries
+========================================== */
+
+
+@media (min-width: @screen-lg-min) {
+}
+
+@media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+}
+
+
+
+/* ==========================================
+Page d'accueil
+========================================== */
+
+@import "pageDAccueil.less";
+
+
+/* ==========================================
+Reseaux sociaux
+========================================== */
+
+
+/* ==========================================
+IE10-IE11
+========================================== */
+/* ne semble pas marcher, mais c'est pas grave 
+cf. http://www.impressivewebs.com/ie10-css-hacks/
+cf. http://css-tricks.com/ie-10-specific-styles/ */
+html.ie10 {
+	.img-responsive, .thumbnail > img, .thumbnail a > img, .carousel-inner > .item > img, .carousel-inner > .item > a > img {
+		width: inherit;
+	}
+}

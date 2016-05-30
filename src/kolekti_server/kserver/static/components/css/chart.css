@@ -1,0 +1,44 @@
+.ecorse-chart {
+    font: 10px sans-serif;
+}
+
+
+.bar rect {
+    fill: steelblue;
+    shape-rendering: crispEdges;
+}
+
+.bar text {
+    fill: #fff;
+}
+
+.axis path, .axis line, .zeroaxis {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.hiddenaxis.axis path,
+.hiddenaxis.axis line
+{
+    stroke:none;
+}
+
+.area {
+    fill-opacity:0;
+    stroke-width:2;
+}
+.eventrect {
+    fill-opacity:0;
+}
+
+.tooltipbg {
+    fill: white;
+    fill-opacity:0.72;
+    stroke : black;
+    strocke-with:2;
+    stroke-opacity:0.72;
+    
+		 
+}
+	    

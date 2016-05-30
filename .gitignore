@@ -34,3 +34,14 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+#base de donnée
+src/kolekti_server/db.sqlite3
+
+#fichier de backup de linux
+.~*
+*.*~
+
+
+#ajouts felix
+travail_ecorse

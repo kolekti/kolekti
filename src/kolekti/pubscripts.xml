@@ -83,6 +83,30 @@
     <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
     <parameters/>
   </pubscript>
+  
+  <pubscript id="odt" type="plugin">
+    <name>Générer OpenDocument Text, créer un pdf</name>
+    <plugin>odt</plugin>
+    <parameters>
+      <parameter name="template" label="Modèle" 
+		 type="filelist" dir="kolekti/publication-templates/odt"
+		 ext="ott"/>
+      <parameter name="filter" 
+         type="resource" 
+         dir="kolekti/publication-templates/odt/xsl"
+         file="filter"
+	 ext="xsl"
+         />
+      <parameter name="meta" 
+         type="resource" 
+         dir="kolekti/publication-templates/odt"
+         file="mapping"
+	 ext="xml"
+         />
+
+    </parameters>
+  </pubscript>
+
 
   <!-- single scripts -->
   <pubscript id="princexml" type="shell">

@@ -44,6 +44,7 @@
       <xsl:apply-templates select="node()|@*"/>
       <xsl:call-template name="lang" />
       <xsl:apply-templates select="kfp:criteria()"/>
+      <xsl:copy-of select="html:meta[starts-with(@name,'kolekti.')]"/>
     </xsl:copy>
   </xsl:template>
 

@@ -1,0 +1,42 @@
+Install kolekti
+
+sudo apt-get install python-django
+sudo apt-get install python-svn python-lxml python-whoosh
+sudo apt-get install python-pip
+sudo pip install pygal
+sudo apt-get install python-sparqlwrapper
+
+#git clone https://github.com/kolekti/kolekti.git
+git clone git@github.com:kolekti/kolekti.git
+git checkout ecorse
+
+export PYTHONPATH=/media/donnees/web/ecorse/kolekti/src
+cp /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3.ref /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3
+
+python /media/donnees/web/ecorse/kolekti/src/kolekti_server/manage.py runserver
+
+-> http://127.0.0.1:8000/projects/ 
+projet: ecorse
+url : http://beta.kolekti.net/svn/EcoRSE
+utilisateur : user (beta.kolekti.net) 
+mdp : ...
+
+
+config de génération de rapport
+touch ~/.kolekti
+-> [InstallSettings]
+projectspath:/media/donnees/web/ecorse/projets
+
+127.0.0.1:8000/ecorse/report/?release=/releases/rapport1
+
+template à modifier :
+/media/donnees/web/ecorse/kolekti/src/kolekti_server/kserver/templates/page_ecorse.html
+
+
+cf. https://docs.djangoproject.com/en/1.9/topics/templates/#comments
+
+Pour info, le rapport de base est dans /media/donnees/web/ecorse/projets/ecorse/releases/rapport1/sources/fr/assembly/rapport1_asm.html
+
+
+
+

@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 
 from kserver.views import *
 from kserver.saas_views import *
+from kserver.views_ecorse import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -14,6 +15,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
 
+
     url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
     url(r'^accounts/', include('registration.backends.default.urls')),
@@ -21,6 +23,25 @@ urlpatterns = patterns('',
 
 
                        
+
+    # ECOres specific wiews
+    # url(r'^$', ElocusHomeView.as_view(), name='elocushome'),
+    url(r'^elocus/$', ElocusReportView.as_view(), name='elocushome'),
+    
+    url(r'^elocus/report/$', ElocusReportShareView.as_view(), name='elocusreport'),
+    url(r'^elocus/report/create$', ElocusReportCreateView.as_view(), name='elocusreportcreate'),
+    url(r'^elocus/report/publish$', ElocusReportPublishView.as_view(), name='elocusreportpublish'),
+    url(r'^elocus/report/update$', ElocusReportUpdateView.as_view(), name='elocusreportupdate'),
+    url(r'^elocus/report/analysis$', ElocusReportAnalysisView.as_view(), name='elocusreportanalysis'),
+    url(r'^elocus/report/star$', ElocusReportStarView.as_view(), name='elocusreportstar'),
+    url(r'^elocus/report/hide$', ElocusReportHideView.as_view(), name='elocusreporthide'),
+    url(r'^elocus/report/chart$', ElocusReportChartView.as_view(), name='elocusreportchart'),
+    url(r'^elocus/refparameters$', ElocusRefParametersView.as_view(), name='elocusrefparameters'),
+
+    url(r'^elocus/communes$', ElocusCommunesView.as_view(), name='elocuscommunes'),
+    url(r'^elocus/referentiels$', ElocusReferentielsView.as_view(), name='elocusreferentiels'),
+    
+
     url(r'^$', HomeView.as_view(), name='home'),
 
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),

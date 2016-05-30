@@ -16,21 +16,22 @@
 		xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
 		xmlns:xlink="http://www.w3.org/1999/xlink"		
 		xmlns:exsl="http://exslt.org/common"
+		xmlns:ke  = "kolekti:extensions:functions:publication"
 		xmlns:html="http://www.w3.org/1999/xhtml"
-		exclude-result-prefixes="html"
-		extension-element-prefixes="exsl"
+		exclude-result-prefixes="html ke"
+		extension-element-prefixes="exsl ke"
 		>
 <xsl:output indent="yes"/>
   <xsl:param name="pivot"/>
   <xsl:param name="styles"/>
   <xsl:param name="mapping"/>
-
-  <xsl:variable name="mappings" select="document($mapping)/mappings"/>
-  <xsl:variable name="stylesdoc" select="document($styles)/office:document-styles"/>
+  
+  <xsl:variable name="mappings" select="document(ke:get_url($mapping))/mappings"/>
+  <xsl:variable name="stylesdoc" select="document(ke:get_url($styles))/office:document-styles"/>
   <xsl:variable name="imgzoom">
     <xsl:choose>
-      <xsl:when test="document($mapping)/mappings/imgprop/@zoomfactor">
-	<xsl:value-of select="document($mapping)/mappings/imgprop/@zoomfactor"/>
+      <xsl:when test="document(ke:get_url($mapping))/mappings/imgprop/@zoomfactor">
+	<xsl:value-of select="document(ke:get_url($mapping))/mappings/imgprop/@zoomfactor"/>
       </xsl:when>
       <xsl:otherwise>1</xsl:otherwise>
     </xsl:choose>
@@ -49,10 +50,8 @@
   <xsl:variable name="tpltoc" select="/office:document-content/office:body/office:text/text:table-of-content[1]"/>
   <xsl:variable name="tplindex" select="/office:document-content/office:body/office:text/text:alphabetical-index[1]"/>
 
+
   <xsl:template match="/office:document-content">
-    <!--
-    <xsl:message><xsl:value-of select="document('')/xsl:stylesheet/namespace::text"/></xsl:message>
-    -->
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
@@ -96,15 +95,15 @@
 				  draw:luminance="0%" draw:contrast="0%" draw:red="0%" draw:green="0%" draw:blue="0%" draw:gamma="100%" 
 				  draw:color-inversion="false" draw:image-opacity="100%" draw:color-mode="standard"/>
       </style:style>
-      <xsl:apply-templates select="document($mapping)/mappings/map/extension" mode="styles"/>
+      <xsl:apply-templates select="document(ke:get_url($mapping))/mappings/map/extension" mode="styles"/>
       <xsl:apply-templates select="style:style[@style:family='table']"/> 
       <xsl:apply-templates select="style:style[@style:family='table-column']"/> 
       <xsl:apply-templates select="style:style[@style:family='table-cell']"/> 
       <!--generate custom cell styles named in template -->
       <xsl:apply-templates select="/office:document-content/office:body/office:text//table:table-cell[string(.)]" mode="stylescells"/>
-      <xsl:apply-templates select="document($pivot)//html:table" mode="styles"/>
+      <xsl:apply-templates select="document(ke:get_url($pivot))//html:table" mode="styles"/>
       <!--<xsl:apply-templates select="style:style[@style:family='graphic']"/> -->
-      <xsl:apply-templates select="document($pivot)//html:img" mode="styles"/>
+      <xsl:apply-templates select="document(ke:get_url($pivot))//html:img" mode="styles"/>
       <xsl:apply-templates select="number:number-style"/>
       <xsl:apply-templates select="number:date-style"/>
       <xsl:apply-templates select="number:text-style"/>
@@ -124,7 +123,7 @@
   <xsl:template match="office:text">
     <xsl:copy>
       <xsl:apply-templates select="office:forms|text:sequence-decls"/>
-      <xsl:apply-templates select="document($pivot)"/>
+      <xsl:apply-templates select="document(ke:get_url($pivot))"/>
     </xsl:copy>
   </xsl:template>
 
@@ -132,8 +131,12 @@
     <xsl:apply-templates select="html:body"/>
   </xsl:template>
 
-  <xsl:template match="html:div [@class][@class='moduleinfo']" priority="999"/>
+  <xsl:template match="html:div [@class][@class='topicinfo']" priority="999"/>
   <xsl:template match="html:span[@class='title_num']"/>
+
+  <xsl:template match="html:span[@class='tab']">
+    <text:tab/>
+  </xsl:template>
 
 
   <!-- generate index -->
@@ -306,6 +309,12 @@
   <xsl:template match="html:a[@class='voirpage']">
    <xsl:variable name="href" select="substring(@href, 2)" />
    <text:reference-ref text:reference-format="page" text:ref-name="{$href}">0</text:reference-ref>
+  </xsl:template>
+
+  <xsl:template match="html:a[@class='wwwlink']">
+    <text:a xlink:type="simple" xlink:href="{@href}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">
+      <xsl:apply-templates/>
+    </text:a>
   </xsl:template>
   
   <xsl:template match="html:p[starts-with(@class,'k ')]"/>
@@ -577,6 +586,11 @@
   </xsl:template>
 
   <xsl:template name="img-attrsize">
+      <xsl:attribute name="svg:height">6cm</xsl:attribute>
+      <xsl:attribute name="svg:width">10cm</xsl:attribute>
+  </xsl:template>
+  
+  <xsl:template name="img-attrsize2">
       <xsl:attribute name="svg:height">
 	<xsl:choose>
 	  <!--<xsl:when test="@height and @orig_resh"><xsl:value-of select="@height div @orig_resh"/><xsl:text>in</xsl:text></xsl:when>-->
