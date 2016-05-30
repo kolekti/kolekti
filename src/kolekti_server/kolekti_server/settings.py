@@ -22,7 +22,7 @@ KOLEKTI_SVN_PASSFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svnpassfile','
 KOLEKTI_SVN_GROUPFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svngroupfile','')
 KOLEKTI_LANGS = ['fr','en','us','de','it']
 
-oKOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
+KOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
 KOLEKTI_SVNTPL_PASS = KOLEKTI_CONFIG.get('SvnRemotes').get('svnpass','')
 
 
