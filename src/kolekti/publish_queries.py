@@ -10,6 +10,7 @@ import re
 import os
 import copy
 import logging
+logger = logging.getLogger(__name__)
 import json
 from copy import deepcopy
 
@@ -21,17 +22,20 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 class kolektiSparQL(object):
     nsmap={"h":"http://www.w3.org/1999/xhtml"} 
     def __init__(self, server):
+        logger.debug("sparql server: %s"%server)
         self.server = server
         self.wrappers = {}
         
     def get_wrapper(self, endpoint):
         try:
-            return self.wrappers[endpoint]
+            wrapper = self.wrappers[endpoint]
+            logger.debug('cached endpoint')
         except KeyError:
             urlendpoint = self.server + endpoint
+            logger.debug("url endpoint: %s"%urlendpoint)
             wrapper =  SPARQLWrapper(urlendpoint)
             self.wrappers.update({endpoint:wrapper})
-            return wrapper
+        return wrapper
 
     def instanciate_parameters(self, vardef, endpoint):
         sparql = self.get_wrapper(endpoint)
@@ -70,21 +74,23 @@ class kolektiSparQL(object):
             queryelt = dquery.xpath("*[@class='kolekti-sparql-query']",  namespaces=self.nsmap)[0]
             query = queryelt.xpath("string(.)")
             endpoint = queryelt.get('data-endpoint', defaultendpoint)
-        
-            print endpoint
-            print query
+            logger.debug('sparql query')
+            logger.debug('endpoint %s'%endpoint)
+            logger.debug('query %s'%query)
             
             sparql = self.get_wrapper(endpoint)
             sparql.setQuery(query)
             sparql.setReturnFormat(JSON)
             results = sparql.query().convert()
-            topic = dquery.xpath('ancestor::h:div[@class="topic"]',namespaces=self.nsmap)[0]
-            if topic.get("data-chart-kind") is None:
-                topic.set("data-chart-kind","Bar")
+            
             if not len(results['results']['bindings']):
-                topic.set('data-hidden','yes')
-                topic.set('data-kolekti-sparql-empty','yes')
-                print "No result for query"
+                logger.debug("No result for query")
+                try:
+                    component = dquery.xpath('ancestor::h:div[starts-with(@class,"kolekti-component-")]',namespaces=self.nsmap)[0]
+                    component.set('data-hidden','yes')
+                    component.set('data-kolekti-sparql-empty','yes')
+                except IndexError:
+                    pass
                 
             else:
                 resdiv = ET.Element('{http://www.w3.org/1999/xhtml}div', attrib = {"class":"kolekti-sparql-result"})

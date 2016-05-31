@@ -243,15 +243,14 @@ class Publisher(PublisherMixin, kolektiBase):
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
                     import traceback
-                    logger.error("Assembly Error")
+                    logger.exception("Assembly Error")
                     yield {
                         'event':'error',
                         'msg':"erreur lors de l'assemblage",
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                    logger.debug(traceback.format_exc())
-                    
+                logger.debug('---scripts')
                 # invoke scripts
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][@name='multiscript']"):
                     indata = pivot
@@ -352,9 +351,9 @@ class Publisher(PublisherMixin, kolektiBase):
 
             # make toc
             # if assembly.xpath("//h:div[@class='TOC']", namespaces=self.nsmap):
-            s = self.get_xsl('toc')
-            assembly = s(assembly)
-            self.log_xsl(s.error_log)
+#            s = self.get_xsl('toc')
+#            assembly = s(assembly)
+#            self.log_xsl(s.error_log)
             
             # revision notes
             # s = self.get_xsl('csv-revnotes')
@@ -383,6 +382,7 @@ class Publisher(PublisherMixin, kolektiBase):
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
         #print pivot
+        logger.debug('writing pivot')
         self.xwrite(pivot, pivfile, sync = False)
         return pivot
 

@@ -22,12 +22,14 @@ import time
 import urllib
 import urllib2
 import json
-
+import uuid
 from lxml import etree as ET
 from PIL import Image
 from StringIO import StringIO
 from zipfile import ZipFile
 
+import logging
+logger = logging.getLogger(__name__) 
 import pygal
 
 #from _odt import odtpdf
@@ -59,16 +61,16 @@ class plugin(pluginBase.plugin):
      
     def postpub(self):
         res = []
-        
+        logger.debug(self.assembly_dir)
         dfile=StringIO()
         tfile = self.get_script_parameter('template')
         if tfile is None:
             tfile=self._plugin
-        templatepath = '/'.join([self.assembly_dir,self.get_base_template(self.scriptname),"%s.ott"%tfile])
-        
+        templatepath = '/'.join([self.get_base_template(self.scriptname),"%s.ott"%tfile])
+        logger.debug(templatepath)
         # get the theme elements for publishing
 
-        mapfile = '/'.join([self.assembly_dir,self.get_base_template(self.scriptname),"mapping.xml"])
+        mapfile = '/'.join([self.get_base_template(self.scriptname),"mapping.xml"])
         tmppivot = "%s/tmppiv.xml" %(self.publication_plugin_dir,)
         tmpstyles = "%s/tmpstyles.xml" %(self.publication_plugin_dir,)
 
@@ -161,25 +163,26 @@ class plugin(pluginBase.plugin):
                 # generates the metadata of the odt file
 
                 tmeta=ET.XML(zipin.read('meta.xml'))
+                
                 try:
-                    xslx=self.get_plugin_xsl('generate-meta')
-                    doc=xslx(tmeta, pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')))
+                    xslx=self.get_xsl('generate-meta')
                 except:
-                    import traceback
-                    print traceback.format_exc()
-                    
-                for entry in xslx.error_log:
-                    print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
-                #logfile=open(os.path.join(pubpath,"meta.xml"),'w')
-                #logfile.write(ET.tostring(doc,pretty_print=True))
-                #logfile.close()
-                #writeback metadata in the generated file
+                    logger.exception('XSL parse error generate-meta odt')
+                    raise
+                try:
+                    logger.debug(tmppivot)
+                    doc=xslx(tmeta, pivot="'%s'"%tmppivot.encode('utf-8'))
+                except:
+                    logger.exception('XSL runtime error generate-meta odt')
+                    logger.debug(xslx)
+                    for entry in xslx.error_log:
+                        logger.debug('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+
                 zipout.writestr('meta.xml', bytes=str(doc))
 
-
-                xslx = self.get_plugin_xsl('generate-styles')
+                xslx = self.get_xsl('generate-styles')
                 doc=xslx(styles,
-                        pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')))
+                        pivot="'%s'"%tmppivot.encode('utf-8'))
 
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
@@ -189,11 +192,11 @@ class plugin(pluginBase.plugin):
 
                 template=ET.XML(zipin.read('content.xml'))
 
-                xslx = self.get_plugin_xsl('generate')
+                xslx = self.get_xsl('generate')
                 content=xslx(template,
-                         pivot="'%s'"%urllib.quote(tmppivot.encode('utf-8')),
-                         styles="'%s'"%urllib.quote(tmpstyles.encode('utf-8')),
-                         mapping="'%s'"%urllib.quote(mapfile.encode('utf-8')))
+                         pivot="'%s'"%tmppivot.encode('utf-8'),
+                         styles="'%s'"%tmpstyles.encode('utf-8'),
+                         mapping="'%s'"%mapfile.encode('utf-8'))
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
 
@@ -224,17 +227,35 @@ class plugin(pluginBase.plugin):
 
     def _generate_graphics(self):
         self.makedirs(self.publication_plugin_dir+'/img')
-        for topic in self.pivot.xpath('//h:div[@class="topic"]',namespaces=self._ns):
-            charttype = topic.get('data-chart-kind', 'none')
+        for component in self.pivot.xpath('//h:div[starts-with(@class, "kolekti-component-")]',
+                                      namespaces = self._ns):
+            compid = component.get('id','id' + str(uuid.uuid1()))
+            component.set('id',compid)
             
-            data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
-            renderer = getattr(self, '_generate_%s'%(charttype,))
-            chartfile = self.getOsPath(self.publication_plugin_dir+'/img/chart_'+ topic.get('id')+'.png')
+            component_type = component.get('class').replace("kolekti-component-","")
+
+            #            data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
+
+            renderer = getattr(self, '_render_%s'%(component_type,))
+            graphicfile = self.getOsPath(self.publication_plugin_dir+'/img/component_'+ compid +'.png')
             try:
-                renderer(json.loads(data),  chartfile)
+                renderer(component,  graphicfile)
             except:
-                topic.set('data-chart-kind', 'none')
-                
+                logger.exception("unable to render component %s"%component_type)
+
+    def _render_map(self, component, imgpath):
+        pass
+    
+    def _render_chart(self, component, imgpath):
+        pass
+
+    def _render_details(self, component, imgpath):
+        pass
+
+    def _render_wysiwyg(self, component, imgpath):
+        pass
+
+        
     def _generate_Bar(self, data, chartfile):
         bar_chart = pygal.Bar()
         bar_chart.x_labels = data['labels']

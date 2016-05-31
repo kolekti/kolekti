@@ -74,7 +74,7 @@ class kolektiBase(object):
             self.set_project(path)
                 
     def set_project(self, path):
-        logger.debug("set project %s"%path)
+        #logger.debug("set project %s"%path)
                         
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
@@ -85,7 +85,7 @@ class kolektiBase(object):
         else:
             self._path = path + os.path.sep
             
-        logger.debug('project path : %s'%self._path)
+        #logger.debug('project path : %s'%self._path)
 
         self._xmlparser = ET.XMLParser(load_dtd = True)
         self._xmlparser.resolvers.add(PrefixResolver())

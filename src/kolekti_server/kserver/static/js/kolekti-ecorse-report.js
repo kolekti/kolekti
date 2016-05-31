@@ -1,3 +1,29 @@
+var ajaxBeforeSend = function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+} ;
+
+$.ajaxSetup({ 
+    beforeSend: ajaxBeforeSend
+});
+
 $(document).ready(function() {
 
     
@@ -185,7 +211,7 @@ $(document).ready(function() {
     var get_ref_communes = function() {
 	var ref = $("#ecorse_select_referentiel").val();
 	if (!ref_communes.hasOwnProperty(ref))
-	    $.get('/ecorse/communes',{'referentiel':ref})
+	    $.get('/elocus/communes',{'referentiel':ref})
 	    .done(function(data) {
 		ref_communes[ref] = data;
 	    })
@@ -194,7 +220,7 @@ $(document).ready(function() {
     var get_ref_parameters = function() {
 	var ref = $("#ecorse_select_referentiel").val();
 	if (!ref_parameters.hasOwnProperty(ref))
-	    $.get('/ecorse/refparameters',{'referentiel':ref})
+	    $.get('/elocus/refparameters',{'referentiel':ref})
 	    .done(function(data) {
 		ref_parameters[ref] = data;
 		build_create_fields();
@@ -270,7 +296,7 @@ $(document).ready(function() {
     // typeahead
     $('#modal_create').on('shown.bs.modal', function () {
 	// recupere la liste des referentiels
-	$.get('/ecorse/referentiels').done(function(data) {
+	$.get('/elocus/referentiels').done(function(data) {
 	    $('#ecorse_select_referentiel').find('option').remove()
 	    $(data).each(function(i,v) {
 		$('#ecorse_select_referentiel').append(
@@ -296,7 +322,7 @@ $(document).ready(function() {
 	$('#modal_create').hide()
 	$('#modal_create_processing').show()
 	$.ajax({
-	    url:"/ecorse/report/create",
+	    url:"/elocus/report/create",
 	    method:'POST',
 	    data:$.param(params)
 	}).done(function(data) {
@@ -317,7 +343,7 @@ $(document).ready(function() {
 	var release = $('.report').data('release')
 	$('#modal_update_processing').show()
 	$.ajax({
-	    url:"/ecorse/report/update",
+	    url:"/elocus/report/update",
 	    method:'POST',
 	    data:$.param({
 		'release': release
@@ -334,7 +360,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-pdf').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -348,7 +374,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-word').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -368,7 +394,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-presentation').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -391,7 +417,7 @@ $(document).ready(function() {
 	var release = $('.report').data('release')
 	var btn = $(this)
 	$.ajax({
-	    url:"/ecorse/report/star",
+	    url:"/elocus/report/star",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -420,7 +446,7 @@ $(document).ready(function() {
 	var release = $('.report').data('release')
 	var btn = $(this)
 	$.ajax({
-	    url:"/ecorse/report/hide",
+	    url:"/elocus/report/hide",
 	    method:'POST',
 	    data:$.param({
 		'release': release,

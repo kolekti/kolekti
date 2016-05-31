@@ -7,7 +7,8 @@ import json
 from lxml import etree as ET
 from copy import deepcopy
 from forms import UploadFileForm
-
+import logging
+logger = logging.getLogger('kolekti.'+__name__)
 from django.http import Http404
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.conf import settings
@@ -171,10 +172,9 @@ class ElocusReportUpdateView(ElocusMixin, View):
         release_path = request.POST.get('release','')
         try:
             report = self.get_report(release_path)
-            endpoint = self._project_settings.find('sparql').get('endpoint')
-            endpoint = endpoint + report.xpath('string(/h:html/h:head/h:meta[@name="kolekti.sparql.endpoint"]/@content)',   namespaces={'h':'http://www.w3.org/1999/xhtml'})
+            sparqlserver = self._project_settings.find('sparql').get('endpoint')
             from kolekti.publish_queries import kolektiSparQL
-            sp = kolektiSparQL(endpoint)
+            sp = kolektiSparQL(sparqlserver)
             sp.process_queries(report)
             self.write_report(report, release_path)
         except:
@@ -270,7 +270,6 @@ class ElocusReportChartView(ElocusMixin, View):
             print traceback.format_exc()
             return HttpResponse(json.dumps({'status':'fail',
                                             'msg':traceback.format_exc()}),content_type="application/json")
-        print kind    
         return HttpResponse(json.dumps({'status':'ok','chart':kind}),
                             content_type="application/json")
 
@@ -300,12 +299,9 @@ class ElocusReportView(ElocusMixin, View):
             assembly_name = ""
             libs = {'css':'', 'scripts':''}
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Erreur lors de du formatage du rapport")
             raise
 
-        print libs
-        
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
                                         "release":release_path,
@@ -329,8 +325,6 @@ class ElocusReportShareView(ElocusMixin, View):
             libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
             
         except IndexError:
-            import traceback
-            print traceback.format_exc()
             content = "Selectionnez un rapport"
             menu = None
             assembly_name = ""
@@ -383,11 +377,11 @@ class ElocusCommunesView(ElocusMixin, View):
     def get(self, request):
         referentiel = request.GET.get('referentiel','')
         xtoc = self.parse('/sources/fr/tocs/ecorse/'+referentiel)
-        endpoint = self._project_settings.find('sparql').get('endpoint')
+        sparqlserver = self._project_settings.find('sparql').get('endpoint')
         endpoint = endpoint + xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
         from kolekti.publish_queries import kolektiSparQL
-        sp = kolektiSparQL(endpoint)
-        communes = sp.get_communes()
+        sp = kolektiSparQL(sparqlserver)
+        communes = sp.get_communes(endpoint)
         return HttpResponse(json.dumps(communes),content_type="application/json")
 
 class ElocusReferentielsView(ElocusMixin, View):
@@ -406,6 +400,7 @@ class ElocusReportPublishView(ElocusMixin, View):
     def post(self, request):
         try:
             release_path = request.POST.get('release','')
+            logger.debug(release_path)
             assembly_name = release_path.rsplit('/',1)[1] + "_asm"
             script = request.POST.get('script','')
             xjob = self.get_job(release_path)
@@ -413,19 +408,15 @@ class ElocusReportPublishView(ElocusMixin, View):
             for jscript in jscripts:
                 if jscript.get('name') != script:
                     jscripts.remove(jscript)
-            print ET.tostring(jscripts)
             lang=self.kolekti_userproject.srclang
-            projectpath = os.path.join(settings.KOLEKTI_BASE,self.kolekti_userproject)
-            r = publish.ReleasePublisher(release_path, projectpath, langs = [lang])
+            r = publish.ReleasePublisher(release_path, self.kolekti_projectpath, langs = [lang])
             res = []
             for e in r.publish_assembly(assembly_name, xjob):
                 if e['event']=='error':
-                    print e['stacktrace']
+                    logger.debug(e['stacktrace'])
                 res.append(e)
             return HttpResponse(json.dumps(res),content_type="application/json")           
         except:
-            print res
-            import traceback
-            print traceback.format_exc()
+            logger.exception('Erreur lors de la publication')
             return HttpResponse(json.dumps({'status':'fail',
                                             'msg':traceback.format_exc()}),content_type="application/json")

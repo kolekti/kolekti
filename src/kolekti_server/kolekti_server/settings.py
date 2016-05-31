@@ -145,6 +145,8 @@ INSTALLED_APPS = (
     'registration',
     'bootstrapform',
     'kserver',
+    'elocus',
+    'ecorse',
 #    'kmanager',
 )
 
