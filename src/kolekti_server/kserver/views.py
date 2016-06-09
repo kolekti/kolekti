@@ -221,8 +221,6 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
         xjob = self.parse(path)
         xjob.getroot().append(copy(self._project_settings))
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
-        #with open('/tmp/xml','w') as f:
-        #    f.write(ET.tostring(xjob, pretty_print=True))
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.user_settings.active_srclang)
         try:
             ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
@@ -429,7 +427,6 @@ class TocView(kolektiMixin, View):
     
     def post(self, request):
         try:
-#            print request.body
             xtoc=self.parse_string(request.body)
             tocpath = xtoc.get('data-kolekti-path')
             xtoc_save = self.get_xsl('django_toc_save')
@@ -1121,7 +1118,6 @@ class BrowserCKUploadView(kolektiMixin, View):
 
 class BrowserUploadView(kolektiMixin, TemplateView):
     def post(self, request):
-        # print request.POST, request.FILES
         try:
             path = request.POST['path']
             name = request.POST['name']
@@ -1202,7 +1198,6 @@ class ReleaseView(PublicationView):
         pubdir  = request.POST.get('pubdir')
 #        pubtitle= request.POST.get('pubtitle')
 
-        # print request.POST
         
         profiles = request.POST.getlist('profiles[]',[])
         print profiles
@@ -1379,8 +1374,7 @@ class SyncView(kolektiMixin, View):
                     "changes": sync.statuses(),
                     })
         except ExcSyncNoSync:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Synchro unavailable")
             context.update({'status':'nosync'})
         return self.render_to_response(context)
 
@@ -1400,12 +1394,12 @@ class SyncView(kolektiMixin, View):
                 for file in files:
                     if self.exists(file+'.mine'):
                         self.copyFile(file+'.mine', file)
-                        sync.resolved(file)
+                    else:
+                        raise Exception('impossible de trouver la version locale')
                     try:
                         sync.resolved(file)
                     except:
-                        import traceback
-                        print traceback.format_exc()
+                        logger.exception('error while resolving conflict [use local]')
                         
                 sync.commit(files, commitmsg)
             if resolve == "remote":
@@ -1482,8 +1476,7 @@ class SyncStatusView(kolektiMixin, View):
             states = dict(sync.rev_state())
             return HttpResponse(json.dumps(states),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to get project sync status")
             
 class SyncResStatusView(kolektiMixin, View):
     def get(self, request):
@@ -1495,8 +1488,8 @@ class SyncResStatusView(kolektiMixin, View):
             state = sync.statuses(path, recurse = False)
             return HttpResponse(json.dumps(state),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to get file sync status : %s"%path)
+
 
 class SyncAddView(kolektiMixin, View):
     def post(self, request):
@@ -1508,8 +1501,7 @@ class SyncAddView(kolektiMixin, View):
             sync.add_resource(path)
             return HttpResponse(json.dumps('ok'),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to add file to synchro : %s"%path)
                         
 class SyncRemoveView(kolektiMixin, View):
     def post(self, request):
@@ -1521,8 +1513,7 @@ class SyncRemoveView(kolektiMixin, View):
             sync.remove_resource(path)
             return HttpResponse(json.dumps('ok'),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to remove file to synchro : %s"%path)
                         
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
@@ -1539,8 +1530,8 @@ class ProjectHistoryView(kolektiMixin, View):
             hisrecords = [{"timestamp":r.date,"date":r.date,"user":r.author,"message":r.message,"rev":r.revision.number} for r in hist] 
             return HttpResponse(json.dumps(hisrecords),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to get project history")
+
 
     
 class WidgetView(kolektiMixin, View):
@@ -1560,8 +1551,7 @@ class WidgetProjectHistoryView(WidgetView):
                 'history':sync.history()
                 })
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("Unable to get project history")
 
 
 class WidgetPublicationsListView(kolektiMixin, View):
