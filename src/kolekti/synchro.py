@@ -87,7 +87,7 @@ class SvnClient(object):
         self._client.callback_notify = callback_notification
         
         def callback_accept_cert(arg):
-            print arg
+            logger.debug("callback certificate %s"%arg)
             if self.__accept_cert:
                 return  True, 1, True
             if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
@@ -110,6 +110,10 @@ class SynchroManager(SvnClient):
         pathparts=urllib2.url2pathname(path).split(os.path.sep)
         return os.path.join(self._base, *pathparts)
 
+    def _localpath(self, ospath):
+        lp = ospath.replace(self._base,'')
+        return '/'.join(lp.split(os.path.sep))        
+    
     def geturl(self):
         return self._info.get('repos')
 
@@ -170,9 +174,9 @@ class SynchroManager(SvnClient):
                                        get_all = True,
                                        update = True)
         for status in statuses:
-            path = status.path[len(self._base):]
-            item = {"path":path,
-                    "basename":os.path.basename(path),
+            item = {"path":self._localpath(status.path),
+                    "ospath":status.path,
+                    "basename":os.path.basename(status.path),
                     "rstatus":str(status.repos_text_status),
                     "wstatus":str(status.text_status),
                     "rpropstatus":str(status.repos_prop_status),
@@ -250,10 +254,9 @@ class SynchroManager(SvnClient):
         merge_client.callback_notify = callback_notification_merge
         info = merge_client.info(path)
         rurl = info.get('url')
-#        print  'dry run '+str(dict(info))
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
-#        print "merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path)
+
         merge_client.merge(path, workrev, path, headrev, path, recurse = False, dry_run=True)
         for notif in notifications:
             if notif.get('content_state',None) == pysvn.wc_notify_state.merged:
@@ -288,9 +291,7 @@ class SynchroManager(SvnClient):
         self._client.resolved(self.__makepath(file))
 
     def update_all(self):
-#        print "update_all"
         update_revision = self._client.update(self._base, recurse = True)
-#        print "update revision", update_revision
         return update_revision
 
     def update(self, files):
@@ -314,7 +315,6 @@ class SynchroManager(SvnClient):
     def commit(self, files, log_message):
         osfiles = []
         for f in files:
-            print type(f)
             osfiles.append(self.__makepath(f))
         commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
@@ -373,8 +373,7 @@ class SynchroManager(SvnClient):
             props = self._client.propget(name, ospath)
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('Proget %s failed on path %s'%(name, path))
             return None
         
 class SVNProjectManager(SvnClient):
@@ -391,6 +390,5 @@ class SVNProjectManager(SvnClient):
         try:
             self._client.checkout(url, ospath)
         except pysvn.ClientError:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("checkout of project failed : %s"%url)
             raise ExcSyncNoSync
