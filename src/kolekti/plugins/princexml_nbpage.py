@@ -21,6 +21,7 @@ import os
 import time
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 
 from lxml import etree as ET
 from PyPDF2 import PdfFileReader
@@ -43,7 +44,6 @@ class plugin(pluginBase.plugin):
             if src[0] == "/":
                 media.set('src', src[1:])
 
-        logging.debug( "pdf nbpages : %s %s"%(self.assembly_dir,self.publication_dir))
 
         # produce pdf once
         first_res = self.start_cmd()
@@ -53,12 +53,18 @@ class plugin(pluginBase.plugin):
         with open(self.getOsPath(pdf), 'rb') as pdf:
             nbpages = PdfFileReader(pdf).getNumPages() 
 
+        logger.debug( "pdf nbpages : %d"%(nbpages,))
+    
         # update pivot body attributes
         body.set('data-pagecount', str(nbpages))
         body.set('data-pagecount-mod-2', str(nbpages % 2))
         body.set('data-pagecount-mod-4', str(nbpages % 4))
         body.set('data-pagecount-mod-8', str(nbpages % 8))
         body.set('data-pagecount-mod-16', str(nbpages % 16))
+
+        pubdir = self.pubdir(self.assembly_dir, self.profile)
+        pivfile = pubdir + "/document_nbpage_attrs.xhtml"
+        self.xwrite(pivot, pivfile, sync = False)
 
         # produce pdf with modified pivot
         res = self.start_cmd()
