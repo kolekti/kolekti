@@ -117,9 +117,7 @@ class kolektiBase(object):
         try:
             self.indexMgr = IndexManager(projectspath, projectdir)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.debug('Search index could not be loaded')
+            logger.exception('Search index could not be loaded')
 
 
     @property
@@ -137,9 +135,6 @@ class kolektiBase(object):
             return "?"
             
     def __getattribute__(self, name):
-        # logger.debug('get attribute: ' +name)
-        # import traceback
-        # logger.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
@@ -422,13 +417,9 @@ class kolektiBase(object):
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
-#        print extclass
         extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
-#        for k,e in extensions.iteritems():
-#            if k[1] == "gettopic":
-#                print k,e
         return extensions
         
 
@@ -452,11 +443,6 @@ class kolektiBase(object):
     def log_xsl(self, error_log):
         for entry in error_log:
             logger.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
-            print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
-            #logger.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
-            #logger.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
-            #logger.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
-            #logger.debug('[XSL] filename: %s' % entry.filename)
 
     def parse_string(self, src):
         return ET.XML(src,self._xmlparser)
@@ -507,6 +493,7 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         with open(ospath, "w") as f:
             f.write(ET.tostring(mod, encoding = "utf-8", pretty_print = True))
+            
         # index / svn propagation
         self.post_save(path)
 
@@ -521,26 +508,24 @@ class kolektiBase(object):
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.info('Synchro unavailable')
+            logger.debug('Synchro unavailable')
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
         except:
-            logger.info('Synchro unavailable')
+            logger.exception('Synchro unavailable')
             if os.path.isdir(self.__makepath(path)):
                 shutil.rmtree(self.__makepath(path))
             else:
@@ -558,9 +543,7 @@ class kolektiBase(object):
         try:
             self.indexMgr.post_save(path)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
 
     def makedirs(self, path, sync=False):
         ospath = self.__makepath(path)
@@ -770,7 +753,6 @@ class kolektiBase(object):
         
     @property
     def iterreleasejobs(self):
-#        print 'iter',os.path.join(self._path, 'releases')
         for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
             rootparts = root.split(os.path.sep)
             if rootparts[-1] == 'publication-parameters':
@@ -786,14 +768,12 @@ class kolektiBase(object):
             rootparts = root.split(os.path.sep)
             for mfile in files:
                 if mfile  == 'manifest.json':
-                    print mfile
                     with open(os.path.join(root,mfile)) as f:
                     
                         try:
                             yield json.loads('['+f.read()+']')
                         except:
-                            import traceback
-                            print traceback.format_exc()
+                            logger.exception('cannot read manifest file')
                             yield [{'event':'error',
                                    'file':os.path.join(root,mfile),
                                    'msg':'cannot read manifest file',
@@ -809,8 +789,7 @@ class kolektiBase(object):
                         try:
                             yield json.loads('['+f.read()+']')
                         except:
-                            import traceback
-                            print traceback.format_exc()
+                            logger.exception('cannot read manifest file')
                             yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
@@ -820,11 +799,9 @@ class kolektiBase(object):
         res=[]
         root = self.__makepath(path)
         for j in os.listdir(root+'/kolekti/publication-parameters'):
-            # print j[-16:]
             if j[-16:]=='_parameters.json':
                 release_params = json.loads(self.read(path+'/kolekti/publication-parameters/'+j))
                 resrelease = []
-                # print release_params
                 
                 for job_params in release_params:
                     publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
