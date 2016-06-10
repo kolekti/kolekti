@@ -1,0 +1,15 @@
+{
+    "name": "simple-node-d3",
+    "version": "1.0.0",
+    "description": "Serverside SVG via D3 & jsdom",
+    "main": "index.js",
+    "scripts": {
+	"test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "tom.g.pearson@gmail.com",
+    "license": "ISC",
+    "dependencies": {
+	"d3": "^3.5.5",
+	"jsdom": "^3.1.2"
+    }
+}

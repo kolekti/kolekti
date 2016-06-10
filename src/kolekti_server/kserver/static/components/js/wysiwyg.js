@@ -40,7 +40,7 @@ $(document).ready(function() {
 		var topicid = $(editor.element.$).closest('.topic').attr('id')
 		var data = editor.getData()
 		$.ajax({
-		    url:"/ecorse/report/analysis",
+		    url:"/elocus/report/analysis",
 		    method:'POST',
 		    data:$.param({
 			'release': release,

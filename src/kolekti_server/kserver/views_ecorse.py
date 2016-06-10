@@ -166,6 +166,18 @@ class ElocusReportCreateView(ElocusMixin, View):
         return HttpResponse(json.dumps(pp),content_type="application/json")
         
 
+class ElocusGenerateImagesView(ElocusMixin, View):
+    def post(self, request):
+        release_path = request.POST.get('release','')
+        try:
+            report = self.get_report(release_path)
+            
+        except:
+            import traceback
+            logger.exception('erreur lors de conversion des visuels')
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")
+        return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
         
 class ElocusReportUpdateView(ElocusMixin, View):
     def post(self, request):
@@ -293,7 +305,6 @@ class ElocusReportView(ElocusMixin, View):
             else:
                 libs = {'css':'', 'scripts':''}
         except IndexError:
-            import traceback
             content = "Selectionnez un rapport"
             menu = None
             assembly_name = ""
@@ -417,6 +428,7 @@ class ElocusReportPublishView(ElocusMixin, View):
                 res.append(e)
             return HttpResponse(json.dumps(res),content_type="application/json")           
         except:
+            import traceback
             logger.exception('Erreur lors de la publication')
             return HttpResponse(json.dumps({'status':'fail',
                                             'msg':traceback.format_exc()}),content_type="application/json")

@@ -247,8 +247,13 @@ class plugin(pluginBase.plugin):
         pass
     
     def _render_chart(self, component, imgpath):
-        pass
-
+        xsl = self.get_xsl('components/render_chart.xsl')
+        html = """<html><body>%s</body></html>"""%ET.tostring(component)
+        
+        from d3js2img import d3staticsvg
+        svg = d3staticsvg.to_png(html)
+        logger.debug(svg)
+        
     def _render_details(self, component, imgpath):
         pass
 

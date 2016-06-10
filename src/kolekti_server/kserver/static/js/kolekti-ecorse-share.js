@@ -159,7 +159,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-pdf').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -173,7 +173,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-word').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,
@@ -193,7 +193,7 @@ $(document).ready(function() {
     $('.ecorse-action-dl-presentation').on('click', function() {
 	var release = $('.report').data('release')
 	$.ajax({
-	    url:"/ecorse/report/publish",
+	    url:"/elocus/report/publish",
 	    method:'POST',
 	    data:$.param({
 		'release': release,

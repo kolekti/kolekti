@@ -18,6 +18,11 @@
     shape-rendering: crispEdges;
 }
 
+.zeroaxis line {
+    fill-opacity:0;
+    stroke-width:0
+}
+
 .hiddenaxis.axis path,
 .hiddenaxis.axis line
 {
