@@ -243,9 +243,12 @@
 
     <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"
 	 data-kolekti-tocname="{{ tocdisplay }}"
-      {% for namemeta, valuemeta  in tocmeta.items %}
-      data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
-      {% endfor %}
+	 {% for namemeta, valuemeta  in tocmeta.items %}
+	 data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
+	 {% endfor %}
+	 {% if not "kolekti_jobclass" in tocmeta %}
+	 data-kolekti-meta-kolekti_jobclass="{{ tocmeta.kolekti_job | csssafe }}"
+	 {% endif %}
       >
       
   {{ toccontent|safe}}
