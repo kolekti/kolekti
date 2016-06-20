@@ -13,10 +13,11 @@ $(document).ready(function() {
     });
 
     var serialize = function() {
-	buf = "<job id='";
-	buf += $('#job_id').html();
-	buf += "'>";
-	buf += "<dir value='"+$('#job_id').html()+"'/>";
+	buf = "<job>";
+//	id='";
+//	buf += $('#job_id').html();
+//	buf += "'>";
+//	buf += "<dir value='"+$('#job_id').html()+"'/>";
 
 	// pre assembly filters
 	buf += "<criteria>";
