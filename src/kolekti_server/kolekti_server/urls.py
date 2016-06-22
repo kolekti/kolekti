@@ -41,9 +41,8 @@ urlpatterns = patterns('',
     url(r'^elocus/communes$', ElocusCommunesView.as_view(), name='elocuscommunes'),
     url(r'^elocus/referentiels$', ElocusReferentielsView.as_view(), name='elocusreferentiels'),
     
-
-    url(r'^$', HomeView.as_view(), name='home'),
-
+    url(r'^$', HomeView.as_view(), name='root'),
+    url(r'^kolekti/$', KolektiView.as_view(), name='kolekti'),
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
     url(r'^widgets/publications/$', WidgetPublicationsListView.as_view(), name='WidgetPublicationsList'),
     url(r'^widgets/releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='WidgetReleasePublicationsList'),
