@@ -1,19 +1,37 @@
-Install kolekti
+Install kolekti / ssas-elocus
 
 sudo apt-get install python-django
 sudo apt-get install python-svn python-lxml python-whoosh
 sudo apt-get install python-pip
-sudo pip install pygal
+# sudo pip install pygal
 sudo apt-get install python-sparqlwrapper
 
+sudo apt-get install python-django-registration python-bootstrapform
+sudo apt-get install python-pypdf2 >>>OU<<< pip install PyPDF2
+
 #git clone https://github.com/kolekti/kolekti.git
-git clone git@github.com:kolekti/kolekti.git
-git checkout ecorse
+#git clone git@github.com:kolekti/kolekti.git
+git clone git@oasis.demo-tic.org:eLocus/eLocus.git
+git checkout saas-elocus
 
 export PYTHONPATH=/media/donnees/web/ecorse/kolekti/src
 cp /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3.ref /media/donnees/web/ecorse/kolekti/src/kolekti_server/db.sqlite3
 
 python /media/donnees/web/ecorse/kolekti/src/kolekti_server/manage.py runserver
+
+kolekti.ini : dans kolekti_server/kolekti.ini (ou ~/.kolekti ou /etc/kolekti.ini)
+
+	    [InstallSettings]
+	    projectspath:/home/waloo/Bureau/eLocus/projets
+	    svnroot:/home/waloo/Bureau/eLocus/svn
+	    svnpassfile:/home/waloo/Bureau/eLocus/etc/passwd
+	    svngroupfile:/home/waloo/Bureau/eLocus/etc/group
+
+	    [SvnRemotes]
+	    svnuser: elocus
+	    svnpass: bzbzbz
+
+
 
 -> http://127.0.0.1:8000/projects/ 
 projet: ecorse
