@@ -96,7 +96,11 @@
 	{# remplace le menu ci dessus #}
 	<div id="side-menu" class="visible-lg-block">
 	
-		<div class="panel panel-default">
+	  <div class="panel panel-default">
+	    <div class="panel-heading">
+	      <h3 class="panel-title"><a href="/"><strong>{{ territoire.project.description }}</strong></a></h3>
+	    </div>
+	    
 			<div class="panel-heading">
 				<h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h3>
 			</div>

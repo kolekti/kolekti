@@ -1,43 +1,40 @@
 {% extends "page_ecorse.html" %}
 
 {% block page-content %}
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-sm-3 col-md-2 sidebar">
-				{# pas besoin du affix, sinon on ne peutr pas scroller... <div data-spy="affix" data-offset-top="0" id="sideaffix"> #}
-				{% block sidebar %}{% endblock %}
-			</div>
+<div class="container-fluid">
+  <div class="row">
+    {% if release %}
+    <div class="col-sm-3 col-md-2 sidebar">
+      {% block sidebar %}{% endblock %}
+    </div>
+    <div class="col-sm-9 col-md-offset-2 col-md-10 main">
+    {% else %}
+    <div class="col-sm-12  main">
+    {% endif %}
 
-			<div class="col-sm-9 col-md-offset-2 col-md-10 main">
-				<ol class="breadcrumb">
-					<li>Accueil</a></li>
-					{% if section %}
-						<li><a href="#">{{ release.name }}</a></li>
-						<li class="active">{{ current }}</li>				
-					{% else %}
-						<li class="active">{{ current }}</li>
-					{% endif %}					
-				</ol>
+    {% comment %}
+    <ol class="breadcrumb">
+      <li><a href="/">Accueil</a></li>
+      
+      {% if release %}
+      <li><a href="#">{{ release }}</a></li>
+      {% if section %}
+      <li class="active">{{ current }}</li>				
+      {% endif %}
+      {% endif %}
+    </ol>
+    {% endcomment %}
+    {% if release %}    
+    <div class="jumbotron">
+      <h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h1>
+    </div>
+    {% endif %}
 
-				{% comment "La boucle et le test ne semble pas nécessaires" %}
-					{% for release in releases %}
-						{% if release.name == current %}
-							<div class="jumbotron">
-								<h1 class="pagetitle">{% block title %}{% endblock %}{{release.name}}</h1>
-							</div>							
-						{% endif %}
-					{% endfor %}
-				{% endcomment %}
+    {% block content %}generic template{% endblock %}
 
-				<div class="jumbotron">
-					<h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h1>
-				</div>
-
-
-				{% block content %}generic template{% endblock %}
-			</div>
-		</div>
-	</div>
+    </div>
+    </div>
+  </div>
 {% endblock %}
 
 
