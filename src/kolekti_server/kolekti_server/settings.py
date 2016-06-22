@@ -144,9 +144,10 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'registration',
     'bootstrapform',
-    'kserver',
-    'elocus',
     'ecorse',
+    'elocus',
+    'kserver',
+
 #    'kmanager',
 )
 
@@ -176,7 +177,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 #    DB_NAME = DB_NAME.replace('\\','/')
 #else:
 #    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
-
 
     
 DATABASES = {
