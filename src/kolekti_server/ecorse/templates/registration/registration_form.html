@@ -1,0 +1,31 @@
+{% extends "registration/home.html" %}
+{% load bootstrap %}
+
+{% block page-content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-md-9 main">
+      <h1>S'enregistrer</h1>
+      <p>Créez un compte pour accéder a Kolekti</p>
+      <form class="form-horizontal" role="form" method="POST" action="{% url 'registration_register' %}">
+	{% csrf_token %}
+	{{ form|bootstrap_horizontal }}
+	<div class="row">
+	  <div class="col-lg-10 col-sm-10 col-lg-offset-2 col-sm-offset-2">
+	    <a href="/static/cga">Conditions d'utilisation</a>
+	  </div>
+	</div>
+	<br/>
+	<div class="row">
+	  <div class="col-lg-10 col-sm-10 col-lg-offset-2 col-sm-offset-2">
+	    <button type="submit" class="btn btn-primary">Valider</button>
+	  </div>
+	</div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

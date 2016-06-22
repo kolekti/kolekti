@@ -1,0 +1,44 @@
+{% extends "manage-base.html" %}
+{% block page-content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-md-9 main">
+      {% if user.is_authenticated %}
+      <h1>Kolekti</h1>
+      <p>Welcome, {{ user.first_name }}. Thanks for logging in.</p>
+      {% for project in user.projects %}
+      <div class="project">
+	
+      </div>
+      {% endfor %}
+      {% else %}
+      <h1>Kolekti</h1>
+      <div class="row">
+	<div class="col-sm-4 tile">
+	  <div class="well">
+	    <h3>Des trucs</h3>
+	    <p>a dire quand l'utilisateur arrive sur kolekti.net</p> 
+	  </div>
+	</div>
+	
+	<div class="col-sm-4 tile">
+	  <div class="well">
+	    <h3>Des machins</h3>
+	    <p>a dire quand l'utilisateur arrive sur kolekti.net</p> 
+	  </div>
+	</div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="col-sm-3 col-md-3 side">
+      {% block menu %}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+
+

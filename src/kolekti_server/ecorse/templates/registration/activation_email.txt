@@ -1,0 +1,7 @@
+Bonjour,
+
+Vous avez créé un compte sur la plateforme kolekti.net.
+
+Pour finaliser votre inscription merci de bien vouloir ouvrir le lien suivant :
+
+http://{{ site }}{% url 'registration_activate' activation_key %}
