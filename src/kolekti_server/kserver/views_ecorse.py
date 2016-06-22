@@ -309,6 +309,7 @@ class ElocusReportView(ElocusMixin, View):
             menu = None
             assembly_name = ""
             libs = {'css':'', 'scripts':''}
+            
         except:
             logger.exception("Erreur lors de du formatage du rapport")
             raise
@@ -319,7 +320,10 @@ class ElocusReportView(ElocusMixin, View):
                                         "menu":menu,
                                         "libs":libs,
                                         "releases":releases,
-                                        "title":assembly_name})
+                                        "title":assembly_name,
+                                        "territoire":request.user.userprofile.activeproject,
+                                        "territoires":request.user.userproject_set.all(),
+                                        })
     
         
 class ElocusReportShareView(ElocusMixin, View):
