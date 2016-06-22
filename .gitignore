@@ -46,6 +46,9 @@ src/kolekti_server/db.sqlite3
 #ajouts felix
 travail_ecorse
 
+#fichier de config, les chemins différent selon les ordis...
+src/kolekti_server/kolekti.ini
+
 # Emacs
 *~
 [#]*[#]
