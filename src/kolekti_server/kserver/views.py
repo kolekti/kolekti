@@ -272,8 +272,13 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         if os.path.splitext(path)[1] == "":
             path = path + default
         return path
-    
+
+        
 class HomeView(kolektiMixin, View):
+    def get(self, request):
+        return HttpResponseRedirect('/elocus/') 
+
+class KolektiView(kolektiMixin, View):
     template_name = "home.html"
     def get(self, request):
         context = self.get_context_data()
