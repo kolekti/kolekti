@@ -85,6 +85,13 @@ class plugin(PublisherMixin,kolektiBase):
                                           resdir = self.assembly_dir,
                                           **kwargs)
 
+    def get_system_xsl(self,xslfile, **kwargs):
+        logger.debug("get xsl from plugin %s"%self._plugindir)
+        return super(plugin,self).get_xsl(xslfile,
+                                          extclass = self.__ext,
+                                          resdir = self.assembly_dir,
+                                          **kwargs)
+
 
     
     def copyinput(self):
