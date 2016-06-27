@@ -17,12 +17,16 @@ LOCAL_ENCODING=sys.getfilesystemencoding()
 try:
     from django.conf import settings
     appdir = settings.BASE_DIR
+    logger.debug("appdir %s"%appdir)
 except:
+    logger.exception('app dir not found')
     appdir = os.getcwd()
 
 def to_svg(html):
     cmd = ['nodejs',os.path.normpath(os.path.join(appdir, 'd3js2img/d3svg.js'))]
-    print cmd
+    logger.debug(cmd)
+    #logger.debug(html)
+   
     exccmd = subprocess.Popen(
         cmd,
         stdin = subprocess.PIPE,
@@ -31,7 +35,7 @@ def to_svg(html):
         )
 
     stdoutdata, stderrdata = exccmd.communicate(html)
-    logger.debug(stdoutdata)
+    #logger.debug(stdoutdata)
     logger.debug(stderrdata)
     return stdoutdata
 
@@ -49,23 +53,28 @@ def to_png(html, css = None):
         svg = ET.tostring(svgelt)
 
     _,tmpf = tempfile.mkstemp(suffix='.svg')
-
+    _,tmpout = tempfile.mkstemp(suffix='.png')
+    
     with open(tmpf, 'w') as f:
         f.write(svg)
 
     
-    cmd = ['convert','-verbose','svg:'+tmpf,'png:']
-    print ' '.join(cmd)
+#    cmd = ['convert','-verbose','svg:'+tmpf,'png:']
+    cmd = ['inkscape', tmpf, '--export-png', tmpout, "--export-dpi", "250,250"]
+    logger.debug(' '.join(cmd))
     exccmd = subprocess.Popen(cmd,
                 stdin = subprocess.PIPE,
                 stdout = subprocess.PIPE,
                 stderr = subprocess.PIPE,
                 )
-    stdoutdata, stderrdata = exccmd.communicate(svg)
+    stdoutdata, stderrdata = exccmd.communicate()
     # print stdoutdata
-    print stderrdata
+    logger.debug(stderrdata)
     
-    return stdoutdata
+    with open(tmpout, 'r') as f:
+        png = f.read()
+        
+    return png
 
 def test():
 
