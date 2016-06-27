@@ -105,7 +105,8 @@ class plugin(pluginBase.plugin):
                 try:
                     for img in pivot.xpath('/h:html/h:body//h:img', namespaces=self._ns):
                         newsrc = img.get('src')
-                        print 'image',newsrc
+                        newsrc = "/".join([self.publication_plugin_dir,newsrc])
+                        logger.debug('image %s'%newsrc)
                         if odtids.get(newsrc, '') == '':
                             # get an uuid for the image
                             odtid = getid(iter)+os.path.splitext(newsrc)[1]
@@ -121,8 +122,7 @@ class plugin(pluginBase.plugin):
                                 ment.set("{%s}media-type"%MFNS,"image/png")
                                 ment.set("{%s}full-path"%MFNS,"Pictures/%s"%odtid)
                             except:
-                                import traceback
-                                print traceback.format_exc()
+                                logger.exception('source image not found %s'%newsrc)
                         else:
                             odtid = odtids.get(newsrc)
                         # inserts the uuid in the pivot for futher references from xslt
@@ -237,7 +237,8 @@ class plugin(pluginBase.plugin):
             #            data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
 
             renderer = getattr(self, '_render_%s'%(component_type,))
-            graphicfile = self.getOsPath(self.publication_plugin_dir+'/img/component_'+ compid +'.png')
+            graphicfile = self.getOsPath(self.publication_plugin_dir + '/img/component_' + compid + '.png')
+            logger.debug('graphic export to %s'%graphicfile)
             try:
                 renderer(component,  graphicfile)
             except:
@@ -247,12 +248,14 @@ class plugin(pluginBase.plugin):
         pass
     
     def _render_chart(self, component, imgpath):
-        xsl = self.get_xsl('components/render_chart.xsl')
-        html = """<html><body>%s</body></html>"""%ET.tostring(component)
-        
+        xsl = self.get_system_xsl('components/render_chart')
+        domhtml = xsl(component)
+        css = os.path.join(self._appdir,'..','kolekti_server/kserver/static/components/css/chart.css')
+          
         from d3js2img import d3staticsvg
-        svg = d3staticsvg.to_png(html)
-        logger.debug(svg)
+        pngdata = d3staticsvg.to_png(ET.tostring(domhtml), css)
+        with open(imgpath,'wb') as gf:
+            gf.write(pngdata)
         
     def _render_details(self, component, imgpath):
         pass
