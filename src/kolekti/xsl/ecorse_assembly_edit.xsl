@@ -112,98 +112,117 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='topic']/html:h1" mode="topicbody">
-    <h5>
-      <xsl:apply-templates select="node()|@*"/>
-    </h5>
-  </xsl:template>
+
 
   
   <xsl:template match = "html:div[@class='topic']">
     <div class="col-sm-12 col-lg-6">
-      <div class="thumbnail">
-	<xsl:copy>
-	  <xsl:apply-templates select="@*"/>
-
-	  <!-- création du corps du topic -->
-	  <xsl:apply-templates mode="topicbody"/>
-
+      <xsl:copy>
+	<xsl:apply-templates select="@*"/>
+	<div class="panel panel-default">
+	  <div class="panel-heading">
+	    <xsl:apply-templates mode="topictitle"/>
+	  </div>
+	  <div class="panel-body">
+	    
+	    <!-- création du corps du topic -->
+	    <xsl:apply-templates mode="topicbody"/>
+	  </div>
 	  <!-- pied de topic : collapse / boutons action-->
-	  <div class="caption">
+	  <div class="panel-footer">
+	    <p>&#xA0;
+	    <xsl:call-template name="topic-controls"/>
+	    </p>
+	    <!--
 	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
-
+	      -->
 	      <!-- bouttons de controle -->
-	      <xsl:call-template name="topic-controls"/>
 
+	      
 	      <!-- panneaux -->
+	      <!--
 	      <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
 				   mode="topicpanel"/>
-	      
-<!--	      <xsl:apply-templates select="html:div[@class='details']"/>
-	      <xsl:call-template name="topic-analyse"/>
-	      <xsl:call-template name="topic-visuels"/>
--->
-	    </div>
+	      -->
+	      <!--	      <xsl:apply-templates select="html:div[@class='details']"/>
+		  <xsl:call-template name="topic-analyse"/>
+		  <xsl:call-template name="topic-visuels"/>
+	      -->
+
 	  </div>
-	</xsl:copy>
-      </div>
-    </div>
+	</div>
+	<div class="modal fade modal-topic-details">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-header">
+		<h4 class="modal-title">
+		  <xsl:apply-templates mode="topictitle"/>
+		</h4>
+	      </div>
+	      <div class="modal-body">
+		<div class="row">
+		  <div class="col-md-4">
+		    <xsl:apply-templates mode="topicbody"/>
+		    <xsl:apply-templates mode="topicpanelaction"/>
+		  </div>
+		  <div class="col-md-8">
+		    <xsl:apply-templates mode="topicpanelbutton"/>
+		    <xsl:apply-templates mode="topicpanel"/>
+		  </div>
+		</div>
+	      </div>
+	      <div class="modal-footer">
+		<button type="button" class="btn btn-primary modal-topic-details-ok">Valider</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+      </xsl:copy>
+    </div>  
   </xsl:template>
 
 
   
-  <xsl:template match = "html:div[@class='topicinfo']" mode="topicbody"/>
-
-
 
 
   <xsl:template name="topic-controls">
-    <span class="btn-group">
+    <!--
+	<span class="btn-group">
       <xsl:apply-templates  select="html:div[starts-with(@class,'kolekti-component-')]"
 				   mode="topicpanelbutton"/>
 	       
-      <!--
-	  <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseDetails{@id}" aria-expanded="false" aria-controls="collapseDetails{@id}">
-	<i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
-      </a>
-
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapseAnalyse{@id}" aria-expanded="false" aria-controls="collapseAnalyse{@id}">
-	<i class="fa fa-pencil"></i>
-	<xsl:text> Analyse</xsl:text>
-      </a>
-      
-      <xsl:if test="$share='False'">
-      <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapsePictures{@id}" aria-expanded="false" aria-controls="collapsePictures{@id}">
-	<i class="fa fa-picture-o"></i>
-	<xsl:text> Visuels</xsl:text>
-      </a>
-      </xsl:if>
-      -->
     </span>
-    
-    <xsl:if test="$share='False'">
-    <span class="btn-group pull-right">
-      <button title="A la une">
-	<xsl:attribute name="class">
-	  <xsl:text>btn btn-xs btn-default  ecorse-action-star </xsl:text>
-	  <xsl:choose>
-	    <xsl:when test="ancestor-or-self::html:div[@class='topic'][@data-star]">btn-warning</xsl:when>
-	    <xsl:otherwise>btn-default</xsl:otherwise>
-	    </xsl:choose>
-	</xsl:attribute>
-	
+    -->
+    <span class="pull-right">
+      <span class="btn-group hide-topicdetails">
+	<xsl:if test="$share='False'">
+	  <button title="A la une">
+	    <xsl:attribute name="class">
+	      <xsl:text>btn btn-xs btn-default  ecorse-action-star </xsl:text>
+	      <xsl:choose>
+		<xsl:when test="ancestor-or-self::html:div[@class='topic'][@data-star]">btn-warning</xsl:when>
+		<xsl:otherwise>btn-default</xsl:otherwise>
+	      </xsl:choose>
+	    </xsl:attribute>
+	    
+	    
+	    <i class="fa fa-star-o"></i>
+	  </button>
 	  
-	<i class="fa fa-star-o"></i>
-      </button>
-      
-      <button title="Supprimer" class="btn btn-xs btn-default  ecorse-action-hide">
-	<i class="fa fa-trash-o"></i>
-      </button>
-      
-      <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
-			   mode="topicpanelaction"/>
+	  <button title="Supprimer" class="btn btn-xs btn-default  ecorse-action-hide">
+	    <i class="fa fa-trash-o"></i>
+	  </button>
+	</xsl:if>
+	<button title="Détails" class="btn btn-xs btn-default  ecorse-action-showdetails">
+	  <i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
+	</button>
+	<!--
+	    <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
+	    mode="topicpanelaction"/>
+	-->
+      </span>
     </span>
-    </xsl:if>
   </xsl:template>
 
 <!--

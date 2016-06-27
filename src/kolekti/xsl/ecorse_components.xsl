@@ -29,43 +29,55 @@
      <xsl:include href="components/details.xsl"/>
      <xsl:include href="components/chart.xsl"/>
      <xsl:include href="components/map.xsl"/>
+     
      <xsl:include href="components/wysiwyg.xsl"/>
+     <xsl:include href="components/description.xsl"/>
+     <xsl:include href="components/title.xsl"/>
+    
      <!--
-
       <xsl:include href="components/pad.xsl"/>
       <xsl:include href="components/leaflet.xsl"/>
       <xsl:include href="components/d3js.xsl"/>
-  -->
+     -->
 
-  <xsl:template name="makepanel">
-    <xsl:param name="content"/>
-    <xsl:param name="id" select="generate-id()"/>
-    <div class="collapse collapseTopic" id="collapse{$id}" role="tabpanel">
-      <div class="well">
-	<xsl:copy-of select="$content"/>
-      </div>
-    </div>
-  </xsl:template>
+     <xsl:template name="makepanel">
+       <xsl:param name="content"/>
+       <xsl:param name="id" select="generate-id()"/>
+       <div class="collapse collapseTopic" id="collapse{$id}" role="tabpanel">
+	 <div class="well">
+	   <xsl:copy-of select="$content"/>
+	 </div>
+       </div>
+     </xsl:template>
 
-  <xsl:template name="makepanelbutton">
-    <xsl:param name="content"/>
-    <xsl:param name="id" select="generate-id()"/>
-    <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapse{$id}" aria-expanded="false" aria-controls="collapse{$id}">
-      <xsl:copy-of select="$content"/>
-    </a>
-  </xsl:template>
+     
+     <xsl:template name="makepanelbutton">
+       <xsl:param name="content"/>
+       <xsl:param name="id" select="generate-id()"/>
+       <a class="btn btn-default btn-xs ecorse-action-collapse" role="button" data-toggle="collapse" href="#collapse{$id}" aria-expanded="false" aria-controls="collapse{$id}">
+	 <xsl:copy-of select="$content"/>
+       </a>
+     </xsl:template>
 
 
-  <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanel"/>
-  <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelbutton"/>
-  <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelaction"/>
+     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanel"/>
+     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelbutton"/>
+     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelaction"/>
+     
+     <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanel">
+       <xsl:copy>
+	 <xsl:apply-templates select="node()|@*"/>
+       </xsl:copy>
+     </xsl:template>
+     
+     <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelbutton"/>
+     <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelaction"/>
 
-  <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanel">
-    <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
-  </xsl:template>
-  <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelbutton"/>
-  <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelaction"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicbody"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topictitle"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanel"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelaction"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelbutton"/>
 
+     
 </xsl:stylesheet>

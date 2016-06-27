@@ -25,26 +25,31 @@
     exclude-result-prefixes="html"
     version="1.0">
 
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicbody"/>
 
-  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelaction"/>
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelaction">
+    <xsl:apply-templates mode="compdetails"/>
+  </xsl:template>
   
-  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelbutton">
-    <xsl:call-template name="makepanelbutton">
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelbutton"/>
+  <!--
+      <xsl:call-template name="makepanelbutton">
       <xsl:with-param name="content">
 	<i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
+  -->
   
-  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanel">
-    <xsl:call-template name="makepanel">
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanel"/>
+<!--    <xsl:call-template name="makepanel">
       <xsl:with-param name="content">
 	<xsl:apply-templates mode="compdetails"/>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
-
+-->
   <xsl:template match="node()|@*" mode="compdetails">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*" mode="compdetails"/>

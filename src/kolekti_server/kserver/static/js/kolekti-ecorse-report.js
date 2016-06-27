@@ -470,9 +470,23 @@ $(document).ready(function() {
 	});
     })
 
-	// selection graphique
+    // bouton détail d'un topic
     
-
+    $('.ecorse-action-showdetails').on('click', function() {
+	var topic = $(this).closest('.topic');
+	$(topic).addClass('edition')
+		
+	var modal = $(topic).find('.modal-topic-details');
+	modal.modal()
+		
+    });
+    
+    $('.modal-topic-details-ok').on('click', function(e) {
+	console.log('modal ok')
+	var modal = $(this).closest('.modal');
+	modal.trigger('confirm.bs.modal');
+	modal.modal('hide');
+    });
     
 })
 		  

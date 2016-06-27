@@ -36,10 +36,18 @@
       </scripts>
     </libs>
   </xsl:template>
-  
+
+  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicbody"/>
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelaction"/>
+  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelbutton"/>
+  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanel">
+    <div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
+      <xsl:apply-templates/>
+    </div>
+  </xsl:template>    
 
+  <!--
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelbutton">
     <a aria-controls="collapseAnalyse{ancestor::html:div[@class='topic']/@id}"
        aria-expanded="false"
@@ -47,7 +55,7 @@
        data-toggle="collapse"
        role="button" class="btn btn-default btn-xs ecorse-action-collapse"><i class="fa fa-pencil"></i> Analyse</a>
   </xsl:template>
-  
+
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanel">
     <div role="tabpanel" id="collapseAnalyse{ancestor::html:div[@class='topic']/@id}"
 	 class="collapseWysiwyg collapseTopic collapse">
@@ -58,5 +66,5 @@
       </div>
     </div>
   </xsl:template>
-
+  -->
 </xsl:stylesheet>

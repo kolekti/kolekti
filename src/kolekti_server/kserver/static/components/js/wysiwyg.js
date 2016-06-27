@@ -36,23 +36,6 @@ $(document).ready(function() {
 	});
 	editor.on( 'blur', function () {
 	    if (editor.ecorse_state) {
-		var release = $('.report').data('release')
-		var topicid = $(editor.element.$).closest('.topic').attr('id')
-		var data = editor.getData()
-		$.ajax({
-		    url:"/elocus/report/analysis",
-		    method:'POST',
-		    data:$.param({
-			'release': release,
-			'topic' : topicid,
-			'data':data
-		    })
-		}).done(function(data) {
-		    if (data.status == 'ok') {
-			editor.ecorse_state = false;
-		    }
-		}).fail(function(data) {
-		});
 		
 	    }
 	});
@@ -70,4 +53,43 @@ $(document).ready(function() {
 	editor.ecorse_state = false
     })
 
+    // initialisation CKEditor dans modal edition topic
+
+    $('.modal-topic-details').on('shown.bs.modal', function(e) {
+	var editor, edid = $(e.target).find('.anaeditor').attr('id')
+	var h = $(window).height() - 300;
+	if (CKEDITOR.instances[edid] == undefined)
+	    
+	    editor = CKEDITOR.replace(edid,{startupFocus : true, height: h })
+	else {
+	    editor = CKEDITOR.instances[edid]
+	    editor.focus()
+	}
+	editor.ecorse_state = false
+
+    });
+    
+    $('.modal-topic-details').on('confirm.bs.modal', function(e) {
+	console.log('wysiwig save')
+	var release = $('.report').data('release'),
+	    topic = $(e.target).closest('.topic'),
+	    edid = $(topic).find('.anaeditor').attr('id'),
+	    editor = CKEDITOR.instances[edid],
+	    topicid = $(topic).attr('id'),
+	    data = editor.getData()
+	$.ajax({
+	    url:"/elocus/report/analysis",
+	    method:'POST',
+	    data:$.param({
+		'release': release,
+		'topic' : topicid,
+		'data':data
+	    })
+	}).done(function(data) {
+	    if (data.status == 'ok') {
+		editor.ecorse_state = false;
+	    }
+	}).fail(function(data) {
+	});
+    });
 })

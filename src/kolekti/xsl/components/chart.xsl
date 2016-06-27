@@ -36,6 +36,8 @@
       </scripts>
     </libs>
   </xsl:template>
+
+  <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topictitle"/>
   
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicbody">
     <xsl:variable name="data" select="string(html:div[@class='kolekti-sparql']/html:div[@class='kolekti-sparql-result']/html:div[@class='kolekti-sparql-result-json'])"/>
@@ -64,19 +66,16 @@
       </button>
       <xsl:variable name="ckind" select="@data-chartkind"/>
       <ul class="dropdown-menu" role="menu">
-	<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="bar">
-	  <xsl:text>Histogramme </xsl:text>
-	  
-	  <xsl:if test="$ckind='bar' or not(@data-chartkind)">
-	    <i class="fa fa-check"></i>
-	  </xsl:if>
-	</a></li>
-	<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="line">
-	  <xsl:text>Linéaire </xsl:text>
-	  <xsl:if test="$ckind='line'">
-	    <i class="fa fa-check"></i>
-	  </xsl:if>
-	</a></li>
+	<li role="presentation">
+	  <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="bar">
+	    <xsl:text>Histogramme </xsl:text>
+	  </a>
+	</li>
+	<li role="presentation">
+	  <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="line">
+	    <xsl:text>Linéaire </xsl:text>
+	  </a>
+	</li>
 	<!--
 	<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
 	<li role="presentation" class="divider"/>
@@ -87,6 +86,7 @@
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelbutton"/>
+  
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanel"/>
 
 </xsl:stylesheet>

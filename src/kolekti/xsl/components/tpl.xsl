@@ -37,6 +37,7 @@
     </libs>
   </xsl:template>
   
+  <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicbody"/>
   <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicpanelaction"/>
   <xsl:template match="html:div[@class='kolekti-component-xxx']" mode="topicpanelbutton"/>

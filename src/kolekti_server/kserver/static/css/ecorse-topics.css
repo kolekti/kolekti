@@ -10,17 +10,38 @@
 		    
 }
 
-.thumbnail.details {
-    position : fixed;
-    top:34px;
-    bottom:34px;
-    left:0;
-    right:0;
+.topic .panel {
+    margin-bottom:20px;
 }
 
-.thumbnail.details .ecorse-action-showdetails
+/*
+.topic .panel .panel-heading {
+    min-height:100px
+}
+*/
+
+.topic .panel .panel-footer p {
+    margin-bottom:0;
+}
+
+
+.topic.details .ecorse-action-showdetails
 {
     display:none;
 }
 
-.thumbnail .ecorse-actions-details
+
+.modal-topic-details .modal-dialog {
+    width: 95%;
+    height:95%;
+}
+
+.modal-topic-details .modal-content {
+    height: auto;
+    min-height: 100%;
+}
+.modal-topic-details .modal-body {
+    max-height: 80%;
+    overflow-y: scroll;
+    
+}
