@@ -5,5 +5,22 @@
 }
 
 .topic h3 {
-    margin-left:20px
+    margin-left:20px;
+    font-size: 120%;
+		    
 }
+
+.thumbnail.details {
+    position : fixed;
+    top:34px;
+    bottom:34px;
+    left:0;
+    right:0;
+}
+
+.thumbnail.details .ecorse-action-showdetails
+{
+    display:none;
+}
+
+.thumbnail .ecorse-actions-details
