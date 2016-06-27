@@ -14,12 +14,14 @@ $(document).ready(function() {
     
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {
 	if ($(e.target).hasClass('section-content')) {
+	    $('.report').attr('style','padding-bottom:1200px;')
 	    $(e.target).find('.ecorse-chart').each(function() {
+		$(this).attr('style','');
 		drawchart(this, true)
 	    });
+	    $('.report').attr('style','padding-bottom:40px;')
 	}
     });
-    
 
 
     $(window).on('resize', function() {

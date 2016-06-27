@@ -23,7 +23,21 @@ $(document).ready(function() {
 		}
 	    });
 	}
+	resize();
     })
-		
+
+    var resize =  function() {
+	$('.collapse.in').find('.leafletmap').each(function(e,i) {
+
+	    var wwidth = $(this).width();
+	    var wheight = (wwidth / 2) + 3;
+	    if (wheight > 400)
+		wheight = 400;
+	    console.log ('map wh   '+ wwidth + 'x' +wheight)
+	    $(this).attr('style','width:100%; height:'+ wheight +'px ; position:relative');
+	});
+    };
+    
+    $(window).on('resize', resize);
 		
 })
