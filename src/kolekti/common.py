@@ -570,7 +570,8 @@ class kolektiBase(object):
         except:
             logger.debug('Synchro unavailable')
         try:
-            self.indexMgr.post_save(path)
+            pass
+            # self.indexMgr.post_save(path)
         except:
             import traceback
             print traceback.format_exc()
