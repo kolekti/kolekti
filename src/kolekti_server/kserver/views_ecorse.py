@@ -148,7 +148,6 @@ class ElocusReportCreateView(ElocusMixin, View):
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             xjob.getroot().set('pubdir',title)
             lang=self.kolekti_userproject.srclang
-            projectpath = os.path.join(settings.KOLEKTI_BASE,self.kolekti_userproject)
             criteria = xjob.xpath('/job/criteria')[0]
             for uservar in request.POST.keys():
                 if uservar[:8] == 'uservar_' and uservar[-4:] == '[id]':
@@ -157,7 +156,7 @@ class ElocusReportCreateView(ElocusMixin, View):
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI1","value":commune1})
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI3","value":commune3})
-            r = publish.Releaser(projectpath, lang = lang)
+            r = publish.Releaser(self.kolekti_projectpath, lang = lang)
             pp = r.make_release(tocpath, xjob)
         except:
             import traceback
