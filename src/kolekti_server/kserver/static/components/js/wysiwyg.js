@@ -71,25 +71,17 @@ $(document).ready(function() {
     
     $('.modal-topic-details').on('confirm.bs.modal', function(e) {
 	console.log('wysiwig save')
-	var release = $('.report').data('release'),
+	var modal = $(e.target).closest('.modal'),
 	    topic = $(e.target).closest('.topic'),
 	    edid = $(topic).find('.anaeditor').attr('id'),
 	    editor = CKEDITOR.instances[edid],
 	    topicid = $(topic).attr('id'),
-	    data = editor.getData()
-	$.ajax({
-	    url:"/elocus/report/analysis",
-	    method:'POST',
-	    data:$.param({
-		'release': release,
-		'topic' : topicid,
-		'data':data
-	    })
-	}).done(function(data) {
-	    if (data.status == 'ok') {
-		editor.ecorse_state = false;
-	    }
-	}).fail(function(data) {
-	});
+	    data = editor.getData(),
+	    elocus_params = modal.data('elocus_params')
+	
+	elocus_params['release'] = $('.report').data('release');
+	elocus_params['topic'] =  topic.attr('id');
+	elocus_params['wysiswygdata'] = data;	
+	modal.data('elocus_params', elocus_params);
     });
 })

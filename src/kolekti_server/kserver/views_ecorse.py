@@ -21,6 +21,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import condition
 from django.template.loader import get_template
 from django.template import Context
+from django.utils.text import get_valid_filename
 
 # kolekti imports
 from kolekti.common import kolektiBase
@@ -60,6 +61,7 @@ class ElocusMixin(kolektiMixin):
         content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section)) for t in body])
         return content
 
+    
     def get_assembly_libs(self, path, release_path="", section=None):
         xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
@@ -105,7 +107,17 @@ class ElocusMixin(kolektiMixin):
     def _checkout(self, release):
         pass
 
+    def get_report_name(self, release_path=""):
+        job = self.get_job(release_path)
+        return job.xpath("string(/job/@pubname)")
 
+    def get_report_list(self):
+        reports = self.get_directory('/releases')
+        for report in reports:
+            report.update({'label':self.get_report_name('/releases/%s'%report.get('name'))})
+        return reports
+
+    
     def assembly_user_vars(self, path, section=None):
         varset = set()
         xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
@@ -146,7 +158,9 @@ class ElocusReportCreateView(ElocusMixin, View):
             print dict(request.POST)
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
-            xjob.getroot().set('pubdir',title)
+            reportdir = get_valid_filename(title)
+            xjob.getroot().set('pubdir', reportdir)
+            xjob.getroot().set('pubname', title)
             lang=self.kolekti_userproject.srclang
             criteria = xjob.xpath('/job/criteria')[0]
             for uservar in request.POST.keys():
@@ -285,6 +299,34 @@ class ElocusReportChartView(ElocusMixin, View):
                             content_type="application/json")
 
     
+class ElocusTopicSaveView(ElocusMixin, View):
+    def post(self, request):
+        release_path = request.POST.get('release','')
+        topicid =  request.POST.get('topic','')
+        chartkind =  request.POST.get('chartkind',None)
+        wdata =  request.POST.get('wysiwygdata',None)
+        try:
+            report = self.get_report(release_path)
+            if not chartkind is None:
+                chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
+                                        namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+                chart.set('data-chartkind', chartkind )
+                
+            if not wdata is None:
+                xdata = self.parse_html_string(wdata)
+                ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-wysiwyg']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+                for child in ana:
+                    ana.remove(child)
+                for elt in xdata.xpath('/html/body/*'):
+                    ana.append(elt)
+            self.write_report(report, release_path)
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")
+        return HttpResponse(json.dumps({'status':'ok'}),
+                            content_type="application/json")
     
 class ElocusReportView(ElocusMixin, View):
     template_name = "ecorse/report.html"
@@ -292,7 +334,13 @@ class ElocusReportView(ElocusMixin, View):
             
         release_path = request.GET.get('release','')
         section = request.GET.get('section')
-        releases = self.get_directory('/releases')
+        releases = self.get_report_list()
+        context = {
+            'releases':releases,
+            'release':release_path,
+            "territoire":request.user.userprofile.activeproject,
+            "territoires":request.user.userproject_set.all(),
+            }
         try:
             assembly_name = release_path.rsplit('/',1)[1]
             self._checkout(release_path)
@@ -303,26 +351,28 @@ class ElocusReportView(ElocusMixin, View):
                 libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
             else:
                 libs = {'css':'', 'scripts':''}
+            context.update({
+                "content":content,
+                "current":assembly_name,
+                "reportname":self.get_report_name(release_path),
+                "menu":menu,
+                "libs":libs,
+                "title":assembly_name,
+                })
+                
         except IndexError:
-            content = "Selectionnez un rapport"
-            menu = None
-            assembly_name = ""
-            libs = {'css':'', 'scripts':''}
+            context.update({
+                "content":"",
+                "menu":None,
+                "libs":{'css':'', 'scripts':''},
+                "title":"",
+                })
             
         except:
             logger.exception("Erreur lors de du formatage du rapport")
             raise
 
-        return self.render_to_response({"content":content,
-                                        "current":assembly_name,
-                                        "release":release_path,
-                                        "menu":menu,
-                                        "libs":libs,
-                                        "releases":releases,
-                                        "title":assembly_name,
-                                        "territoire":request.user.userprofile.activeproject,
-                                        "territoires":request.user.userproject_set.all(),
-                                        })
+        return self.render_to_response(context)
     
         
 class ElocusReportShareView(ElocusMixin, View):
@@ -347,6 +397,7 @@ class ElocusReportShareView(ElocusMixin, View):
         return self.render_to_response({"content":content,
                                         "current":assembly_name,
                                         "release":release_path,
+                                        "reportname":self.get_report_name(release_path),
                                         "menu":menu,
                                         "libs":libs,
                                         "title":assembly_name})

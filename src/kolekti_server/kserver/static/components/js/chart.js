@@ -45,33 +45,30 @@ $(document).ready(function() {
 
 	$('.modal-topic-details').on('confirm.bs.modal', function(e) {
 	    console.log('chart modal confirm');
-	    var modal = $(e.target).closest('.modal');
-	    var dchart = $(modal).find('.ecorse-chart');
-	    var topic = $(modal).closest('.topic');
-	    var release = $('.report').data('release');
-	    var chartkind = dchart.attr('data-chartkind');
-	    
-	    $.ajax({
-		url:"/elocus/report/chart",
-		method:'POST',
-		data:$.param({
-		    'release': release,
-		    'topic': topic.attr('id'),
-		    'chartkind': chartkind
-		})
-	    }).done(function(data) {
-		
-		if (data.status == 'ok') {
-		    $(topic).find('.panel .ecorse-chart').each(function() {
-			$(this).attr('data-chartkind',chartkind);
-			$(this).html('')
-			drawchart(this, true);
-		    });
-
-		}
-	    }).fail(function(data) {
-	    });
+	    var modal = $(e.target).closest('.modal'),
+		dchart = $(modal).find('.ecorse-chart'),
+		topic = $(modal).closest('.topic'),
+		chartkind = dchart.attr('data-chartkind'),
+		elocus_params = modal.data('elocus_params')
+	    elocus_params['release'] = $('.report').data('release');
+	    elocus_params['topic'] =  topic.attr('id');
+	    elocus_params['chartkind'] = chartkind;
+	    modal.data('elocus_params', elocus_params);
 	});
+
+	$('.modal-topic-details').on('confirmed.bs.modal', function(e) {
+	    console.log('chart modal confirmed');
+	    var modal = $(e.target).closest('.modal'),
+		topic = $(modal).closest('.topic'),
+		dchart = $(modal).find('.ecorse-chart'),
+		chartkind = dchart.attr('data-chartkind');
+
+	    $(topic).find('.panel .ecorse-chart').each(function() {
+		$(this).attr('data-chartkind',chartkind);
+		$(this).html('')
+		drawchart(this, true);
+	    });
+	})
 	
 	$('.modal-topic-details').on('hide.bs.modal', function(e) {
 	    console.log('chart modal hide');

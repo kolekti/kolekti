@@ -37,7 +37,7 @@
 		<ul class="list-group list-releases">
 			{% for release in releases %}
 				<li class="list-group-item">
-					<a href="?release=/releases/{{release.name}}"><strong>{{release.name}}</strong></a>
+					<a href="?release=/releases/{{release.name}}"><strong>{{release.label}}</strong></a>
 					{% if release.name == current %}
 						<br/>
 						

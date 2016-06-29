@@ -27,86 +27,11 @@ $.ajaxSetup({
 $(document).ready(function() {
 
     
-    var chartoptions = function(kind, yunit) {
-
-	var cb = function (tickValue, index, ticks) {
-	    //return "Foof"
-	    var delta = ticks[1] - ticks[0];
-	    
-	    // If we have a number like 2.5 as the delta, figure out how many decimal places we need
-	    if (Math.abs(delta) > 1) {
-		if (tickValue !== Math.floor(tickValue)) {
-		    // not an integer
-		    delta = tickValue - Math.floor(tickValue);
-		}
-	    }
-	    
-	    var logDelta = Chart.helpers.log10(Math.abs(delta));
-	    var tickString = '';
-	    
-	    if (tickValue !== 0) {
-/*
-		if (yunit == "%") {
-		    tv = 100 * tickValue;
-		    tickString = tv.toFixed(0) + " %";
-		} else {
-*/
-		    var numDecimal = -1 * Math.floor(logDelta);
-		    numDecimal = Math.max(Math.min(numDecimal, 20), 0); // toFixed has a max of 20 decimal places
-		    tickString = tickValue.toFixed(numDecimal);
-/*		} */
-		if (yunit == "€" || yunit == "%") {
-		    tickString = tickString + " " + yunit;
-		}
-	    } else {
-		tickString = '0'; // never show decimal places for 0
-	    }
-
-	    return tickString;
-	    
-	}
-	
-	var _chartoptions = {
-	    'Line':{
-		'scales':{'yAxes':[{
-		    'ticks':{
-			
-			'userCallback': cb
-		    }
-		}]}
-	    },
-	    'Bar':{
-		'scales':{'yAxes':[{
-		    'ticks':{
-			'suggestedMin':0,
-			'userCallback': cb
-		    }
-		}]}
-	    }
-	};
-
-	if (yunit != "%" && yunit != "€") {
-	    _chartoptions[kind].scales['yAxes'][0].scaleLabel={
-		"display":true,
-		"labelString": yunit
-	    }
-	}
-	
-	return _chartoptions[kind];
-    }
-
-        
 
     // collapse : close open collapse when an otherone is open
     $(".collapseTopic").on('show.bs.collapse', function() {
 	var current = $(this).attr('class')
 	$(this).closest('.topicCollapses').find('.collapseTopic').removeClass('in')
-/*	$(this).closest('.topicCollapses').find('.collapseTopic').each(function(){
-	    if ($(this).attr('class') != current) {
-		$(this).removeClass('in')
-	    }
-	})
-*/ 
    })
 
     //collapse : highlight button
@@ -115,44 +40,6 @@ $(document).ready(function() {
 	$(this).addClass('active')
     })
     
-/*    
-    // affichage diagrammes
-    Chart.defaults.global.responsive = true;
-    
-    Chart.defaults.global.legend.position = 'bottom';
-//    Chart.defaults.global.scaleBeginAtZero = false;
-    
-    var chartcolors = ['220,51,51', '51,51,220', '51,220,61'];
-    
-    var make_chart  = function(chartid, kind, data) {
-	var chart = document.getElementById(chartid)
-	var canvasid = 'canvas_' + chartid
-	chart.Chart && chart.Chart.destroy()
-	//$(chart).find('canvas').remove()
-	
-	if (data != 'no data') {
-	    if($(chart).find('canvas').length == 0)
-		$(chart).prepend($('<canvas>', {'id':canvasid}))
-	
-            for (s=0; s < data['seriescount']; s++) {
-		data['datasets'][s]["borderColor"] = "rgba("+chartcolors[s]+",1)";
-		if (kind == "Bar") {
-		    data['datasets'][s]["backgroundColor"] = "rgba("+chartcolors[s]+",0.75)";
-		}
-		if (kind == "Line") {
-		    data['datasets'][s]["backgroundColor"] = "rgba("+chartcolors[s]+",0.2)";
-		}
-	    }
-            var ctx = document.getElementById(canvasid).getContext("2d");
-
-	    //	    var myNewChart = new Chart(ctx)[kind](data, chartoptions[kind]);
-	    chart.Chart = new Chart(ctx, {
-		type: kind.toLowerCase(),
-		data:data,
-		options:chartoptions(kind, data['unit'])});
-	}
-    }
-*/
 
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {
 	if ($(e.target).hasClass('section-content'))
@@ -199,13 +86,6 @@ $(document).ready(function() {
     
     // Creation nouveau rapport
     
-/*
-    $('.ecorse-action-create-report').on('click', function() {
-	$('#modal_create').show()
-	$('.typeahead').typeahead()
-    })
-*/
-
     var ref_parameters = {}
 
     var get_ref_communes = function() {
@@ -277,19 +157,11 @@ $(document).ready(function() {
 	    return process(ref_communes[ref]);
 	else {
 	    return process([]);
-	    /*
-	    $.get('/ecorse/communes',{'referentiel':ref})
-		.done(function(data) {
-		    ref_communes[ref] = data;
-		    return process(data)
-		})
-	    */
 	}
     }})
 
     $('#ecorse_select_referentiel').on('change', function() {
 	$('.typeahead').val('')
-//	get_ref_communes();
 	get_ref_parameters();
     });
     
@@ -303,7 +175,6 @@ $(document).ready(function() {
 		    $('<option>',{'value':v, 'html':v.replace('.html','')})
 		);
 	    });
-   //	    get_ref_communes();
 	    get_ref_parameters();
 	});
 	$('.typeahead').each(function(){
@@ -329,8 +200,9 @@ $(document).ready(function() {
 	    if (data.length) {
 		var url = window.location.origin + window.location.pathname + '?release=/releases/' + data[0].releasename 
 		window.location.replace(url)
-	    }
+	    } 
 	}).fail(function(data) {
+	    $('#modal_create_processing').hide()
 	});
     })
 
@@ -484,7 +356,25 @@ $(document).ready(function() {
     $('.modal-topic-details-ok').on('click', function(e) {
 	console.log('modal ok')
 	var modal = $(this).closest('.modal');
+	modal.data('elocus_params', {})
+	
 	modal.trigger('confirm.bs.modal');
+	$.ajax({
+	    url:"/elocus/topic/save",
+	    method:'POST',
+	    data:$.param(modal.data('elocus_params'))
+	}).done(function(data) {
+	    console.log('topic post done')
+	    if (data.status == 'ok') {
+		modal.trigger('confirmed.bs.modal');
+		console.log('topic post ok')		
+	    } else {
+		console.log(data)
+	    }
+	}).fail(function(data) {
+	    console.log('chart post fail')
+	});
+	
 	modal.modal('hide');
     });
     

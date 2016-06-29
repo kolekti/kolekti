@@ -19,14 +19,15 @@
       {% if release %}
       <li><a href="#">{{ release }}</a></li>
       {% if section %}
-      <li class="active">{{ current }}</li>				
+      <li class="active">{{ reportname }}</li>
       {% endif %}
       {% endif %}
     </ol>
     {% endcomment %}
+
     {% if release %}    
     <div class="jumbotron">
-      <h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ current }}</strong></a></h1>
+      <h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h1>
     </div>
     {% endif %}
 
