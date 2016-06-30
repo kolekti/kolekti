@@ -18,6 +18,7 @@ from django.views.generic.base import TemplateResponseMixin
 from django.views.static import serve 
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
+from django.core.urlresolvers import reverse
 from django.views.decorators.http import condition
 from django.template.loader import get_template
 from django.template import Context
@@ -332,7 +333,11 @@ class ElocusHomeView(ElocusMixin, View):
     template_name = "ecorse/home.html"
     def get(self, request):
         reports = self.get_report_list()
+        ariane = [{'label':'EcoRSE','url':'http://www.ecorse.eu'},
+                  {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')}]
+             
         context = self.get_context_data({
+            'ariane':ariane,
             'releases':reports,
             "territoire":request.user.userprofile.activeproject,
             "territoires":request.user.userproject_set.all(),
@@ -358,11 +363,18 @@ class ElocusReportView(ElocusMixin, View):
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
             menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+            reportname = self.get_report_name(release_path)
+            ariane = [{'label':'EcoRSE','url':'http://www.ecorse.eu'},
+                      {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')},
+                      {'label':reportname,'url':reverse('elocusreport') + '?release=' + release_path}]
             if not section is None:
                 libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
+                ariane.append({'label':reportname,'url':reverse('elocusreport') + '?release=' + release_path + '&section=' + section})
             else:
                 libs = {'css':'', 'scripts':''}
+
             context.update({
+                "ariane":ariane,
                 "content":content,
                 "current":assembly_name,
                 "reportname":self.get_report_name(release_path),
