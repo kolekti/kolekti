@@ -26,9 +26,11 @@ urlpatterns = patterns('',
 
     # ECOres specific wiews
     # url(r'^$', ElocusHomeView.as_view(), name='elocushome'),
-    url(r'^elocus/$', ElocusReportView.as_view(), name='home'),
+    url(r'^elocus/$', ElocusHomeView.as_view(), name='elocushome'),
+
+    url(r'^elocus/report/$', ElocusReportView.as_view(), name='elocusreport'),
     
-    url(r'^elocus/report/$', ElocusReportShareView.as_view(), name='elocusreport'),
+    url(r'^elocus/report/share$', ElocusReportShareView.as_view(), name='elocusreportshare'),
     url(r'^elocus/report/create$', ElocusReportCreateView.as_view(), name='elocusreportcreate'),
     url(r'^elocus/report/publish$', ElocusReportPublishView.as_view(), name='elocusreportpublish'),
     url(r'^elocus/report/update$', ElocusReportUpdateView.as_view(), name='elocusreportupdate'),

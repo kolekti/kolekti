@@ -49,7 +49,7 @@
       </xsl:when>
       <xsl:otherwise>
 	
-	<a href="?release={$path}&amp;section={@id}">
+	<a href="/report/?release={$path}&amp;section={@id}">
 	  <xsl:attribute name="class">
 	    <xsl:value-of select="html:h1/@class"/>
 	    <xsl:text> list-group-item</xsl:text>

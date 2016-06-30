@@ -40,28 +40,16 @@
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topictitle"/>
 
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicbody">
-    <xsl:apply-templates mode="topicbody"/>
+    <div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
+      <xsl:apply-templates/>
+    </div>
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelaction"/>
 
-  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelbutton">
-    <a aria-controls="collapseAnalyse{ancestor::html:div[@class='topic']/@id}"
-       aria-expanded="false"
-       href="#collapseAnalyse{ancestor::html:div[@class='topic']/@id}"
-       data-toggle="collapse"
-       role="button" class="btn btn-default btn-xs ecorse-action-collapse"><i class="fa fa-pencil"></i> Description</a>
-  </xsl:template>
+  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelbutton"/>
   
-  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanel">
-    <div role="tabpanel" id="collapseDescription{ancestor::html:div[@class='topic']/@id}"
-	 class="collapseDescription collapseTopic collapse">
-      <div class="well">
-	<div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
-	  <xsl:apply-templates/>
-	</div>
-      </div>
-    </div>
-  </xsl:template>
+  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanel"/>
+
 
 </xsl:stylesheet>

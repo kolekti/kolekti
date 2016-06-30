@@ -327,11 +327,22 @@ class ElocusTopicSaveView(ElocusMixin, View):
                                             'msg':traceback.format_exc()}),content_type="application/json")
         return HttpResponse(json.dumps({'status':'ok'}),
                             content_type="application/json")
-    
+
+class ElocusHomeView(ElocusMixin, View):
+    template_name = "ecorse/home.html"
+    def get(self, request):
+        reports = self.get_report_list()
+        context = self.get_context_data({
+            'releases':reports,
+            "territoire":request.user.userprofile.activeproject,
+            "territoires":request.user.userproject_set.all(),
+            })
+
+        return self.render_to_response(context)
+        
 class ElocusReportView(ElocusMixin, View):
     template_name = "ecorse/report.html"
     def get(self, request):
-            
         release_path = request.GET.get('release','')
         section = request.GET.get('section')
         releases = self.get_report_list()
