@@ -1,0 +1,85 @@
+
+0.7.0d - 20/10/2015
+
+Fonctionalités :
+- Fonction d'ajout/supression de fichiers de la synchro (intégré aux explorateurs kolekti)
+- Fonction de téléchargement et de dépot d'assemblages dans les versions
+- Différenciation et fonction de selection des langues pour la publication directe des trames et de création de versions
+
+Correctifs :
+- Correction des plugins de publication hlp et chm
+- Correctifs sur le processus de synchro
+- Supression bouton d'export ods sur les fichiers de parametres programmable
+- Modification de la structure générée par les tableaux de param. programmables
+
+
+0.7.0e - 11/01/2016
+
+Fonctionalités :
+- Amélioration de la vue blocks dans l'éditeur de modules
+- Versions : gestion des états et des focus
+- Versions : téléchargement des assemblages en langue source
+
+Correctifs:
+- Correction des plugins de publication hlp : publication dans dossier temporaire pour contourner le probleme de longueur des chemins de fichiers
+- Correction de l'affichage des tableaux de parametres programmables
+- Remplacement automatique des caractères interdits dans le noms de fichiers
+- Reprise des intitulés des écrans de synchro
+- Ajout de la dtd xhtml dans l'installeur windows et utilisation de la dtd dans le parser xml (gestion des entités &xyz;)
+- Amélioration du retour visuel des zones de Drag and drop
+
+
+0.7.1 - 02/03/2016
+
+Fonctionalités :
+	- Accès aux ressources dans les ecrans de versions
+	- Retours arrière intégré à tous els écrans kolekti
+	- Ajout fonction suppression DIV dans CkEditor
+	- Repise de l'organisation des menus
+	- Ajout de la version de kolekti dans la page d'accueil
+
+Correctifs
+	- Vignette image enlevée sur suppression d'image
+	- Changement de theme ck editor
+	- Modification fenertre proporiétés du document CKeditor
+	- Suppression options sur clieck droit dans ck Editor en mode blocks
+	- modification des pictos de synchronisation
+	- Tri des listes de fichiers par ordre alphabétique (parametres)
+	- Prise en compte de la navigation dans les explorateurs dans l'historique de navigation
+	- Correction de la substitution de variables dans les chemins des parametres de publication
+	- Le click sur les pictogrammes de synchro ne fait plus changer de page
+
+
+0.7.2 - 08/04/2016
+
+Fonctionalités
+	- Reprise page accueil projet
+	- Ajout certificat https pour serveur 07.kolekti.net
+Correctifs
+	- divers correctifs interface
+	- publication chm : erreur lors de l'appel fixé
+
+0.7.3
+
+Fonctionalités
+	- Scripts de publication en plusieurs étapes
+	- Etapes de validation des versions
+	- Script Princexml en deux passes (comptage pages)
+	- Script d'optimisation du pdf (utilise ghostscript)
+	- Script de copie automatisée des publications dans un dossier
+	- Logs des actions kolekti dans un fichier
+	- Affichage des dernières publications dans les versions
+	
+Correctifs
+	- substitutions de variable dans les calculs de chemins lors de la publication des versions
+	- correction du calcul du titre des publications
+
+	A Noter :
+
+	Lors de l'installation de kolekti, l'outil ghostscript est proposé au téléchargement si celui-ci n'est pas installé sur votre système. Cet outil permet d'effectuer des traitements sur le pdf lors de la publication.
+	Si l'installateur vous redirige sur la page de téléchargement de ghostscript, il vous faut télécharger et installer la version suivante :
+	Ghostscript 9.19 for Windows (32 bit) : Ghoscript GPL Release
+
+	Pour l'utilisation des scripts de publication en plusieurs étapes, ceux-ci doivent être configurés dans les lancements, les lancements existants continuent de fonctionner, mais ne bénéficient pas des fonctions apportées par les script multi-étapes.
+
+	En particulier les versions crées antérieurement à l'utilisation de ces scripts NE SONT PAS automatiquement mises à jour pour utiliser les scripts des versions. Aussi je vous invite à vous rapprocher de Vincent pour une éventuelle mise à jour des versions en cours de traduction, au cas par cas.
