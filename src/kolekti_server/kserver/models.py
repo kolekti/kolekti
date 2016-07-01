@@ -67,6 +67,13 @@ class UserProfile(models.Model):
     def __unicode__(self):
       return self.user.username
 
+class ShareLink(models.Model):
+    project = models.ForeignKey(UserProject)
+    reportname = models.CharField(max_length = 255)
+    hashid = models.CharField(max_length = 255)
+    def __unicode__(self):
+      return u"%s [%s]"%(self.reportname, self.project)
+
 class Pack(models.Model):
     name  = models.CharField(max_length = 30)
     description  = models.TextField()
