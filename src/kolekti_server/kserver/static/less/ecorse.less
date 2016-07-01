@@ -25,8 +25,9 @@ body {
 	font-family: @texteFontFamily;
 	text-rendering: optimizeLegibility;
     color:@baseFontColor;
-	@file: "fonds/pattern.png";
+	@file: "fonds/pattern-grey.png";
 	background: url( "@{baseUrlForImages}@{file}" ) repeat scroll 0 bottom transparent;
+	background-size: 8px 4px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -320,10 +321,30 @@ body {
 	
 	.main {
 
+		/* page-header */
+		div.page-header {
+			margin: 0px 0 25px 0;
+			border: none;
+			.pagetitle {
+				margin-top: 10px;
+			}
+			.breadcrumb {
+				padding-left: 5px;
+			}
+		}
+
 		/* breadcrumb, fil d'ariane */
+		div.breadcumb-wrapper {
+			padding: 1em;
+		}
 		ol.breadcrumb {
 			background-color: transparent;
-			margin-top: 1em;
+			margin-top: 0em;
+			margin-bottom: 0em;
+			padding: 0em;
+			li.last {
+				color: @orangeLogo;
+			}
 		}
 
 		/* titre */

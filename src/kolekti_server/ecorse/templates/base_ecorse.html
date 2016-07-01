@@ -12,24 +12,35 @@
     <div class="col-sm-12  main">
     {% endif %}
 
+    
     {% comment %}
-    <ol class="breadcrumb">
-      <li><a href="/">Accueil</a></li>
-      
-      {% if release %}
-      <li><a href="#">{{ release }}</a></li>
-      {% if section %}
-      <li class="active">{{ reportname }}</li>
-      {% endif %}
-      {% endif %}
-    </ol>
-    {% endcomment %}
-
-    {% if release %}    
-    <div class="jumbotron">
-      <h1 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h1>
+    <div class="well breadcumb-wrapper">
+      <ol class="breadcrumb">
+        {% for ariane_elt in ariane %}
+          <li><a href="{{ ariane_elt.url }}">{{ ariane_elt.label }}</a></li>
+          {% if forloop.last %}
+            <li class="last">{{ ariane_elt.label }}</li>
+          {% endif %}
+        {% endfor %}        
+      </ol>
     </div>
-    {% endif %}
+    {% endcomment %}
+   
+    
+    <div class="page-header">
+      {% if release %}
+        <h2 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h2>
+      {% endif %}
+      <ol class="breadcrumb">
+        {% for ariane_elt in ariane %}
+          <li><a href="{{ ariane_elt.url }}">{{ ariane_elt.label }}</a></li>
+          {% if forloop.last %}
+            <li class="last">{{ ariane_elt.label }}</li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </div>
+
 
     {% block content %}generic template{% endblock %}
 
