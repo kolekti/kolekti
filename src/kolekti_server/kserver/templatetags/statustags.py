@@ -7,6 +7,8 @@ register = template.Library()
 @register.filter(is_safe=True)
 def statustext(string):
     res =  "Non initialisé"
+    if string is None:
+        return res
     if len(string):
         if string == 'edition':
             res =  "Nouveau"
