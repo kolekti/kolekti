@@ -306,7 +306,20 @@ $(document).ready(function() {
 	
     })
     $('.ecorse-action-dl-html').on('click', function() {
-	$("#modal_share").modal("show")
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/elocus/report/sharelink",
+	    method:'GET',
+	    data:$.param({
+		'release': release,
+	    })
+	}).done(function(data) {
+	    $("#modal_share #ecorse_share_url").val(data.url);
+	    $("#modal_share #ecorse_share_link").attr('href',data.url);
+	    $("#modal_share").modal("show")
+	}).fail(function(data) {
+	});
+	
     })
 
     // Actions sur les indicateurs
