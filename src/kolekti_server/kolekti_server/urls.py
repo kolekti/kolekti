@@ -30,7 +30,7 @@ urlpatterns = patterns('',
 
     url(r'^elocus/report/$', ElocusReportView.as_view(), name='elocusreport'),
     
-    url(r'^elocus/report/share$', ElocusReportShareView.as_view(), name='elocusreportshare'),
+    url(r'^elocus/report/sharelink$', ElocusReportShareUrlView.as_view(), name='elocusreportshareurl'),
     url(r'^elocus/report/create$', ElocusReportCreateView.as_view(), name='elocusreportcreate'),
     url(r'^elocus/report/publish$', ElocusReportPublishView.as_view(), name='elocusreportpublish'),
     url(r'^elocus/report/update$', ElocusReportUpdateView.as_view(), name='elocusreportupdate'),
@@ -43,7 +43,10 @@ urlpatterns = patterns('',
 
     url(r'^elocus/communes$', ElocusCommunesView.as_view(), name='elocuscommunes'),
     url(r'^elocus/referentiels$', ElocusReferentielsView.as_view(), name='elocusreferentiels'),
-    
+
+    url(r'^elocus/public/(?P<hashid>[0-9a-f]+)/$', ElocusReportShareView.as_view(), name='elocusreportshare'),
+
+        
     url(r'^$', HomeView.as_view(), name='root'),
     url(r'^kolekti/$', KolektiView.as_view(), name='kolekti'),
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
