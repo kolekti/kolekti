@@ -57,16 +57,18 @@ $(document).ready(function() {
 
     $('.modal-topic-details').on('shown.bs.modal', function(e) {
 	var editor, edid = $(e.target).find('.anaeditor').attr('id')
-	var h = $(window).height() - 300;
-	if (CKEDITOR.instances[edid] == undefined)
-	    
-	    editor = CKEDITOR.replace(edid,{startupFocus : true, height: h })
-	else {
-	    editor = CKEDITOR.instances[edid]
-	    editor.focus()
+	console.log(edid)
+	if (edid) {
+	    var h = $(window).height() - 300;
+	    if (CKEDITOR.instances[edid] == undefined)
+		
+		editor = CKEDITOR.replace(edid,{startupFocus : true, height: h })
+	    else {
+		editor = CKEDITOR.instances[edid]
+		editor.focus()
+	    }
+	    editor.ecorse_state = false
 	}
-	editor.ecorse_state = false
-
     });
     
     $('.modal-topic-details').on('confirm.bs.modal', function(e) {
@@ -81,7 +83,7 @@ $(document).ready(function() {
 	
 	elocus_params['release'] = $('.report').data('release');
 	elocus_params['topic'] =  topic.attr('id');
-	elocus_params['wysiswygdata'] = data;	
+	elocus_params['wysiwygdata'] = data;	
 	modal.data('elocus_params', elocus_params);
     });
 })

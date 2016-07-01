@@ -40,6 +40,16 @@
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topictitle"/>
   
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicbody">
+    <xsl:call-template name="chartbody"/>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelinfo">
+    <xsl:call-template name="chartbody"/>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelbody"/>
+    
+  <xsl:template name="chartbody">
     <xsl:variable name="data" select="string(html:div[@class='kolekti-sparql']/html:div[@class='kolekti-sparql-result']/html:div[@class='kolekti-sparql-result-json'])"/>
     <xsl:if test="string-length($data)">
       <div class="ecorse-chart">
@@ -60,29 +70,32 @@
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelaction">
-    <span class="btn-group">
-      <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-	<i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
-      </button>
-      <xsl:variable name="ckind" select="@data-chartkind"/>
-      <ul class="dropdown-menu" role="menu">
-	<li role="presentation">
-	  <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="bar">
-	    <xsl:text>Histogramme </xsl:text>
-	  </a>
-	</li>
-	<li role="presentation">
-	  <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="line">
-	    <xsl:text>Linéaire </xsl:text>
-	  </a>
-	</li>
-	<!--
-	<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
-	<li role="presentation" class="divider"/>
-	<li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_options">Options...</a></li>
-	-->
-      </ul>
-    </span>
+    <xsl:variable name="data" select="string(html:div[@class='kolekti-sparql']/html:div[@class='kolekti-sparql-result']/html:div[@class='kolekti-sparql-result-json'])"/>
+    <xsl:if test="string-length($data)">
+      <span class="btn-group">
+	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
+	</button>
+	<xsl:variable name="ckind" select="@data-chartkind"/>
+	<ul class="dropdown-menu" role="menu">
+	  <li role="presentation">
+	    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="bar">
+	      <xsl:text>Histogramme </xsl:text>
+	    </a>
+	  </li>
+	  <li role="presentation">
+	    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="line">
+	      <xsl:text>Linéaire </xsl:text>
+	    </a>
+	  </li>
+	  <!--
+	      <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
+	      <li role="presentation" class="divider"/>
+	      <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_options">Options...</a></li>
+	  -->
+	</ul>
+      </span>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelbutton"/>

@@ -29,7 +29,7 @@ $(document).ready(function() {
     
     $('.modal-topic-details').on('shown.bs.modal', function(e) {
 	console.log('show modal');
-	$(e.target).find('.leafletmap').each(function() {
+	$(e.target).find('.leafletmappanel').each(function() {
 	    if (! $(this).find('div').length) {
 		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
 		var geodata = JSON.parse(geojson)
@@ -53,7 +53,7 @@ $(document).ready(function() {
     })
    
     var resize =  function() {
-	$('.collapse.in').find('.leafletmap').each(function(e,i) {
+	$('.collapse.in').find('.leafletmap, .leafletmappanel').each(function(e,i) {
 
 	    var wwidth = $(this).width();
 	    var wheight = (wwidth / 2) + 3;

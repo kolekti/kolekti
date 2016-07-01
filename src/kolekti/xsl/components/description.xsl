@@ -45,11 +45,13 @@
     </div>
   </xsl:template>
   
+  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelinfo"/>
+
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelaction"/>
 
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelbutton"/>
   
-  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanel"/>
+  <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelbody"/>
 
 
 </xsl:stylesheet>

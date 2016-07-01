@@ -87,6 +87,22 @@
   </xsl:template>
   
   <xsl:template match = "html:body/html:div[@class='section']">
+    <xsl:variable name="url">
+      <xsl:choose>
+	<xsl:when test="$share='False'">
+	  <xsl:text>/elocus/report/?release=</xsl:text>
+	  <xsl:value-of select="$path"/>
+	  <xsl:text>&amp;</xsl:text>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:text>?</xsl:text>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>section=</xsl:text>
+      <xsl:value-of select="@id"/>
+    </xsl:variable>
+    
+    
     <div class="col-lg-3 col-md-6">
       <div class="panel panel-primary {html:h1/@class}">
 	<div class="panel-heading">
@@ -105,7 +121,7 @@
 	    </div>
 	  </div>
 	</div>
-	<a href="?release={$path}&amp;section={@id}">
+	<a href="{$url}">
 	  <div class="panel-footer">
 	    <span class="pull-left">
 	      Voir les détails

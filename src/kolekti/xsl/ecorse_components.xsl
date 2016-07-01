@@ -73,11 +73,12 @@
      <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelbutton"/>
      <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelaction"/>
 
-     <xsl:template match = "html:div[@class='topicinfo']" mode="topicbody"/>
      <xsl:template match = "html:div[@class='topicinfo']" mode="topictitle"/>
-     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanel"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicbody"/>     
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelinfo"/>
      <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelaction"/>
      <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelbutton"/>
+     <xsl:template match = "html:div[@class='topicinfo']" mode="topicpanelbody"/>
 
      
 </xsl:stylesheet>

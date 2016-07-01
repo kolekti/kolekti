@@ -31,11 +31,27 @@
 	       omit-xml-declaration="yes"
 	       />
   
+  <xsl:param name="share"/>
   <xsl:param name="path"/>
   <xsl:param name="section"/>
    
   
   <xsl:template match = "html:div[@class='section']">
+    <xsl:variable name="url">
+      <xsl:choose>
+	<xsl:when test="$share='False'">
+	  <xsl:text>/elocus/report/?release=</xsl:text>
+	  <xsl:value-of select="$path"/>
+	  <xsl:text>&amp;</xsl:text>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:text>?</xsl:text>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>section=</xsl:text>
+      <xsl:value-of select="@id"/>
+    </xsl:variable>
+    
     <xsl:choose>
       <xsl:when test="@id = $section">
 	<span>
@@ -49,7 +65,7 @@
       </xsl:when>
       <xsl:otherwise>
 	
-	<a href="/elocus/report/?release={$path}&amp;section={@id}">
+	<a href="{$url}">
 	  <xsl:attribute name="class">
 	    <xsl:value-of select="html:h1/@class"/>
 	    <xsl:text> list-group-item</xsl:text>

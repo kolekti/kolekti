@@ -46,9 +46,10 @@
 
   
   <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicbody"/>
+  <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicpanelinfo"/>
   <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicpanelaction"/>
   <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicpanelbutton"/>  
-  <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicpanel"/>
+  <xsl:template match="html:div[@class='kolekti-component-title']" mode="topicpanelbody"/>
 
   
 </xsl:stylesheet>

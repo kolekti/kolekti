@@ -47,8 +47,16 @@
       
     </div>
   </xsl:template>
+  
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelinfo">
+    <div class="lfcontainer">
+      <div class="leafletmappanel" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 100%; height: 245px">
+      </div>
+      
+    </div>
+  </xsl:template>
   <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelaction"/>
   <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelbutton"/>
-  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanel"/>
+  <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelbody"/>
 
 </xsl:stylesheet>

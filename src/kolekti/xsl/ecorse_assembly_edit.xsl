@@ -162,18 +162,30 @@
 	      <div class="modal-body">
 		<div class="row">
 		  <div class="col-md-4">
-		    <xsl:apply-templates mode="topicbody"/>
-		    <xsl:apply-templates mode="topicpanelaction"/>
+		    <xsl:apply-templates mode="topicpanelinfo"/>
+		    <xsl:if test="$share='False'">
+		      <hr/>
+		    
+		      <h5>Actions</h5>
+		      <xsl:apply-templates mode="topicpanelaction"/>
+		    </xsl:if>
 		  </div>
 		  <div class="col-md-8">
 		    <xsl:apply-templates mode="topicpanelbutton"/>
-		    <xsl:apply-templates mode="topicpanel"/>
+		    <xsl:apply-templates mode="topicpanelbody"/>
 		  </div>
 		</div>
 	      </div>
 	      <div class="modal-footer">
-		<button type="button" class="btn btn-primary modal-topic-details-ok">Valider</button>
-		<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+		<xsl:choose>
+		  <xsl:when test="$share='True'">
+		    <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+		  </xsl:when>
+		  <xsl:otherwise>
+		    <button type="button" class="btn btn-primary modal-topic-details-ok">Valider</button>
+		    <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+		  </xsl:otherwise>
+		</xsl:choose>
 	      </div>
 	    </div><!-- /.modal-content -->
 	  </div><!-- /.modal-dialog -->
