@@ -99,12 +99,18 @@ $(document).ready(function() {
     
     var get_ref_parameters = function() {
 	var ref = $("#ecorse_select_referentiel").val();
-	if (!ref_parameters.hasOwnProperty(ref))
+	if (!ref_parameters.hasOwnProperty(ref)) {
+	    $('#create_form_parameters').html('');
+	    $("#create_form_parameters_loading").show();
 	    $.get('/elocus/refparameters',{'referentiel':ref})
-	    .done(function(data) {
-		ref_parameters[ref] = data;
-		build_create_fields();
-	    })
+		.done(function(data) {
+		    ref_parameters[ref] = data;
+		    build_create_fields();
+		})
+		.always(function() {
+		    $("#create_form_parameters_loading").hide();
+		});
+	}
 	else
 	    build_create_fields();
 	
@@ -115,8 +121,7 @@ $(document).ready(function() {
 	var parameters =  {};
 	$.map(ref_parameters[ref], function(v) {
 	    var val = $('#'+v.id).typeahead("getActive")
-	    if (!val) val = {'id':''}
-	    parameters['uservar_'+v.id] = val;
+	    if (typeof val != 'undefined') parameters['uservar_'+v.id] = val;
 	})
 	return parameters;
     }
@@ -166,30 +171,53 @@ $(document).ready(function() {
     });
     
     // typeahead
+    $('#modal_create').on('show.bs.modal', function () {
+	$("#create_form_parameters_loading").hide();
+	$("#create_form_parameters_error").hide();
+	$("#create_form_parameters").removeClass("has-error")
+	$(".form-group").removeClass('has-error');
+	$("span.help-block").remove();
+	$('#titre_rapport').val('')
+    })
+    
     $('#modal_create').on('shown.bs.modal', function () {
 	// recupere la liste des referentiels
-	$.get('/elocus/referentiels').done(function(data) {
-	    $('#ecorse_select_referentiel').find('option').remove()
-	    $(data).each(function(i,v) {
-		$('#ecorse_select_referentiel').append(
-		    $('<option>',{'value':v, 'html':v.replace('.html','')})
-		);
+	$.get('/elocus/referentiels')
+	    .done(function(data) {
+		$('#ecorse_select_referentiel').find('option').remove()
+		$(data).each(function(i,v) {
+		    $('#ecorse_select_referentiel').append(
+			$('<option>',{'value':v, 'html':v.replace('.html','')})
+		    );
+		});
+		get_ref_parameters();
 	    });
-	    get_ref_parameters();
-	});
 	$('.typeahead').each(function(){
 	    $(this).val('')
-	})
+	});
 	$('#ecorse_select_referentiel').focus();
-
     })
-
+			  
     $('#modal_create_ok').on('click', function () {
 	var referentiel = $("#ecorse_select_referentiel").val();
 	var title = $('#titre_rapport').val()
+	if (title =="") {
+	    $("#create_title_field").addClass('has-error')
+	    $("#create_title_field").find('input').after($('<span>',{
+		"class":"help-block",
+		"html":'Ce champ est obligatoire'}))
+	    return;
+	}
+	
 	var params = get_selected_parameters();
+	if(Object.keys(params).length == 0) {
+	    $("#create_form_parameters_error").show()
+	    return
+	}
+	
 	params['title'] = title;
-	params['toc'] = referentiel; 
+	params['toc'] = referentiel;
+	
 	$('#modal_create').hide()
 	$('#modal_create_processing').show()
 	$.ajax({
