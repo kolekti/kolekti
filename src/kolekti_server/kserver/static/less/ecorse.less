@@ -159,10 +159,12 @@ body {
 	    border-color: darken(@cielLogo, 20%);
 	    margin-bottom: 0;
 
-	    a {
+	    ul li a {
 	    	color: @orangeDarken;
-	    	&:hover {
-	    		color: @orangeLogo;
+	    	&:hover, &:focus {
+	    		//color: @orangeLogo;
+	    		color: @blanc;
+	    		background: @orangeDarken;
 	    	}
 	    }
 
@@ -177,12 +179,12 @@ body {
 		}
 
 	    .dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
-			background-color: @orangeLogo;
+			background-color: @orangeDarken;
 			color: #fff;
 		}
 
 		.dropdown-menu > li > a:hover {
-			color: @orangeLogo;
+			color: @blanc;
 		}
 
 		.navbar-form {
@@ -193,14 +195,15 @@ body {
 			margin-left: 8px;			
 		}
 		.btn {
-			background-color: @noirClair;
+			background-color: @blanc;
 			color: @orangeDarken;
 			&:hover, a:hover, &:hover i {
-	    		color: @orangeLogo;
+	    		color: @blanc;
+	    		background-color: @orangeDarken;
 	    	}
 		}
 		.dropdown a .caret {
-			color: @noirClair;
+			color: @blanc;
 		}
 	}
 

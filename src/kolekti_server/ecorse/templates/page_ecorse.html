@@ -86,40 +86,47 @@
 					</ul>
 
 					<ul class="nav navbar-nav navbar-right">
-					  <li><a href="http://www.ecorse.eu">À propos</a></li>
-					  {% if user.is_authenticated %}  
-					  <li class="dropdown">
-					    <a href="#" data-toggle="dropdown" class="dropdown-toggle" aria-expanded="false">
-		                        <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
-		                    </a>
-		                    <ul class="dropdown-menu dropdown-user">
-		                      <li><a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
-		                      </li>
-				      {% comment %}
-		                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
-		                        </li>
-					{% endcomment %}
-		                        <li class="divider"></li>
-		                        <li><a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
-		                        </li>
-		                    </ul>
-		                    <!-- /.dropdown-user -->
-                                  </li>
-                                  {% endif %}
-{% comment %}
-                                   <li>
-							<form class="navbar-form navbar-left" role="search">
-								<div class="form-group input-group custom-search-form">
-	                                <input type="text" placeholder="Search..." class="form-control">
-	                                <span class="input-group-btn">
-	                                <button type="button" class="btn btn-default">
-	                                    <i class="fa fa-search"></i>
-	                                </button>
-	                            </span>
-	                            </div>
-                            </form>
-			   </li>
-{% endcomment %}
+					    {% comment %}
+						    <li>
+						    	<a href="http://www.ecorse.eu">À propos</a>
+						    </li>
+					    {% endcomment %}
+					    {% if user.is_authenticated %}    
+						    <li class="dropdown">
+						        <a href="#" data-toggle="dropdown" class="dropdown-toggle" aria-expanded="false">
+	                                <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
+	                            </a>
+	                            <ul class="dropdown-menu dropdown-user">
+									<li>
+										<a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
+									</li>
+									{% comment %}
+										<li>
+											<a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
+										</li>
+									{% endcomment %}
+									<li class="divider"></li>
+									<li>
+										<a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
+									</li>
+	                            </ul>
+	                            <!-- /.dropdown-user -->
+	                        </li>
+                        {% endif %}
+						{% comment %}
+	                        <li>
+								<form class="navbar-form navbar-left" role="search">
+									<div class="form-group input-group custom-search-form">
+		                                                                <input type="text" placeholder="Search..." class="form-control">
+		                                <span class="input-group-btn">
+		                                <button type="button" class="btn btn-default">
+		                                    <i class="fa fa-search"></i>
+		                                </button>
+		                            </span>
+		                            </div>
+	                            </form>
+			    			</li>
+						{% endcomment %}
 						<li>
 							<button id="fullscreen" type="button" class="btn btn-default navbar-btn">
 								<a title="Plein écran" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a>
@@ -169,14 +176,17 @@
 	                <div class="col-md-4">
 	                    <span class="copyright">Copyright © 2016</span>
 	                </div>
-	                <div class="col-md-offset-4 col-md-4">
-	                    <ul class="list-inline social-buttons">
-	                        <li><a href="https://twitter.com/ecorse"><i class="fa fa-twitter"></i></a>
-	                        </li>
-	                        <li><a href="https://www.facebook.com/ecorse/"><i class="fa fa-facebook"></i></a>
-	                        </li>          
-	                    </ul>
-	                </div>
+	                
+	                {% comment %}
+		                <div class="col-md-offset-4 col-md-4">
+		                    <ul class="list-inline social-buttons">
+		                        <li><a href="https://twitter.com/ecorse"><i class="fa fa-twitter"></i></a>
+		                        </li>
+		                        <li><a href="https://www.facebook.com/ecorse/"><i class="fa fa-facebook"></i></a>
+		                        </li>          
+		                    </ul>
+		                </div>
+	                {% endcomment %}
 	            </div>
 	        </div>
 	    </footer>
@@ -216,9 +226,10 @@
 		-->
 
 		{# scripts additionnels Felix #}
-		<script>
-			// jQuery for page scrolling feature - requires jQuery Easing plugin
+		<script src="/static/js/screenfull.min.js"></script>{# cf. https://github.com/sindresorhus/screenfull.js #}
+		<script>			
 			$(function() {
+				// jQuery for page scrolling feature - requires jQuery Easing plugin
 			    $('a.page-scroll').bind('click', function(event) {
 			        var $anchor = $(this);
 			        $('html, body').stop().animate({
@@ -226,6 +237,16 @@
 			        }, 1500, 'easeInOutExpo');
 			        event.preventDefault();
 			    });
+
+			    //full screen avec sreenfull.js
+			    if (typeof screenfull == 'undefined') {
+			    	$('#fullscreen').hide();
+			    }			    
+			    $('#fullscreen').click (() => {
+				    if (screenfull.enabled) {
+				        screenfull.toggle();
+			        }
+				});
 			});
 		</script>
 		{# fin scripts additionnels Felix #}
