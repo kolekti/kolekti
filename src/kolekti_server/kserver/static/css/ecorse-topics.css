@@ -45,3 +45,7 @@
     overflow-y: scroll;
     
 }
+
+.topic.disabled {
+    opacity:0.4;
+}

@@ -282,6 +282,7 @@ class ElocusReportHideView(ElocusMixin, View):
             if(state == 'true'):
                 topic.set('data-hidden','yes')
             else:
+                print topic.attrib
                 del topic.attrib['data-hidden']
             self.write_report(report, release_path)
         except:

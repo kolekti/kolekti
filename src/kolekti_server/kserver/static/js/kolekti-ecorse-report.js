@@ -24,6 +24,8 @@ $.ajaxSetup({
     beforeSend: ajaxBeforeSend
 });
 
+
+
 $(document).ready(function() {
 
     
@@ -273,6 +275,7 @@ $(document).ready(function() {
     })
     $('.ecorse-action-dl-word').on('click', function() {
 	var release = $('.report').data('release')
+	$("#modal_export_processing").modal("show")
 	$.ajax({
 	    url:"/elocus/report/publish",
 	    method:'POST',
@@ -281,15 +284,16 @@ $(document).ready(function() {
 		'script': 'odt'
 	    })
 	}).done(function(data) {
-	    console.log(data)
+	    
 	    $.each(data, function(i,v) {
-		console.log(v)
 		if (v.event == 'result')
 		    window.location.replace(window.location.origin + v.docs[0].url)
 	    })
 	}).fail(function(data) {
-	});
-	
+	}).always(function() {
+	    $("#modal_export_processing").modal("hide")
+	})
+
     })
     $('.ecorse-action-dl-presentation').on('click', function() {
 	var release = $('.report').data('release')
@@ -373,10 +377,12 @@ $(document).ready(function() {
 		    topic.addClass("disabled")
 		    btn.addClass('ishidden')
 		    btn.removeClass('btn-default')
+		    btn.addClass('btn-primary')
 		} else {
 		    topic.removeClass("disabled")
-		    btn.addClass('ishidden')
-		    btn.removeClass('btn-warning')
+		    btn.removeClass('ishidden')
+		    btn.addClass('btn-default')
+		    btn.removeClass('btn-primary')
 		}
 	    }
 	}).fail(function(data) {
