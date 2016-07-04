@@ -39,6 +39,7 @@ urlpatterns = patterns('',
     url(r'^elocus/report/star$', ElocusReportStarView.as_view(), name='elocusreportstar'),
     url(r'^elocus/report/hide$', ElocusReportHideView.as_view(), name='elocusreporthide'),
     url(r'^elocus/report/chart$', ElocusReportChartView.as_view(), name='elocusreportchart'),
+    url(r'^elocus/report/description$', ElocusReportDescriptionView.as_view(), name='elocusreportdescription'),
     url(r'^elocus/refparameters$', ElocusRefParametersView.as_view(), name='elocusrefparameters'),
 
     url(r'^elocus/communes$', ElocusCommunesView.as_view(), name='elocuscommunes'),

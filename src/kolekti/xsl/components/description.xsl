@@ -40,9 +40,16 @@
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topictitle"/>
 
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicbody">
-    <div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
-      <xsl:apply-templates/>
-    </div>
+    <xsl:choose>
+      <xsl:when test="$share='True'">
+	<xsl:apply-templates/>
+      </xsl:when>
+      <xsl:otherwise>
+	<div contenteditable="true" class="description-editor" id="editor{ancestor::html:div[@class='topic']/@id}" >
+	  <xsl:apply-templates/>
+	</div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-description']" mode="topicpanelinfo"/>
