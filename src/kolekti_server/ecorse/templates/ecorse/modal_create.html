@@ -20,8 +20,11 @@
 		</div>
 	      </div>
 	      <hr/>
+
 	      <div id="create_form_parameters">
+		<!-- create parameters -->
 	      </div>
+	      
 	      <div id="create_form_parameters_error" class="form-group">
 		<div class="col-sm-offset-2 col-sm-10">
 		  <span class="help-block">Sélectionnez au moins un territoire</span>
@@ -86,13 +89,34 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Export du rapoort</h4>
+        <h4 class="modal-title">Export du rapport</h4>
       </div>
       <div class="modal-body">
 	<div class="alert alert-info" role="alert">
 	  <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
 	  Export du rapport en cours, cela peut prendre quelques instants
 	</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal_error">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title errortitle"></h4>
+      </div>
+      <div class="modal-body">
+	<div class="alert alert-danger" role="alert">
+	  <div class="msg">
+	    <pre class="errormessage"/>
+	  </div>
+	</div>
+      </div>
+      <div class="modal-footer">
+	
+	<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
       </div>
     </div>
   </div>
