@@ -39,12 +39,25 @@
 
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicbody"/>
+
+  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelinfo"/>
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelaction"/>
   <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelbutton"/>
-  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanel">
-    <div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
-      <xsl:apply-templates/>
-    </div>
+  <xsl:template match="html:div[@class='kolekti-component-wysiwyg']" mode="topicpanelbody">
+    <xsl:choose>
+      <xsl:when test="$share='True'">
+	<div class="panel panel-default">
+	  <div class="panel-body">
+	    <xsl:apply-templates/>
+	  </div>
+	</div>
+      </xsl:when>
+      <xsl:otherwise>
+	<div contenteditable="true" class="anaeditor" id="editor{ancestor::html:div[@class='topic']/@id}" >
+	  <xsl:apply-templates/>
+	</div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>    
 
   <!--

@@ -42,6 +42,15 @@
 }
 .modal-topic-details .modal-body {
     max-height: 80%;
-    overflow-y: scroll;
+    overflow-y: auto;
     
+}
+
+.topic.disabled {
+    opacity:0.4;
+}
+
+#modal_error .msg {
+    max-height: 320px;
+    overflow-y: auto;
 }

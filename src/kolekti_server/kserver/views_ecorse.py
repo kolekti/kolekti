@@ -34,12 +34,13 @@ from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
 
-from views import kolektiMixin
+from views import kolektiPublicMixin, LoginRequiredMixin 
+from models import ShareLink 
 
-class ElocusMixin(kolektiMixin):
+class ElocusPublicMixin(kolektiPublicMixin):
     def render_to_response(self, context):
         context.update({'DEBUG': settings.DEBUG})
-        return super(ElocusMixin, self).render_to_response(context)
+        return super(ElocusPublicMixin, self).render_to_response(context)
 
     def get_assembly_edit(self, path, release_path="", section=None, share = False):
         xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
@@ -53,17 +54,17 @@ class ElocusMixin(kolektiMixin):
         content = ''.join([str(xsl(t, path="'%s'"%release_path, share="'%s'"%share)) for t in body])
         return content
 
-    def get_assembly_menu(self, path, release_path="", section=None):
+    def get_assembly_menu(self, path, release_path="", section=None, share = False):
         xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
 #        if section is None:
 #           section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('ecorse_assembly_menu')
-        content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section)) for t in body])
+        content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section, share="'%s'"%share)) for t in body])
         return content
 
     
-    def get_assembly_libs(self, path, release_path="", section=None):
+    def get_assembly_libs(self, path, release_path="", section=None, starred = False):
         xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
             root = xassembly.xpath('/html:html/html:body',
@@ -72,7 +73,7 @@ class ElocusMixin(kolektiMixin):
             root = xassembly.xpath('/html:html/html:body/html:div[@class="section"][@id="%s"]'%section, namespaces={'html':'http://www.w3.org/1999/xhtml'})
 
         libs = {'css':'', 'scripts':''}
-        for component in self.collect_components(root[0]):
+        for component in self.collect_components(root[0], starred):
             print component
             xsl = self.get_xsl('components/%s'%component)
             xlibs = xsl(self.parse_string('<libs/>')).getroot()
@@ -84,9 +85,13 @@ class ElocusMixin(kolektiMixin):
                     libs['scripts'] += ET.tostring(scr, method="html")
         return libs
     
-    def collect_components(self, root):
+    def collect_components(self, root, starred):
         comps = set()
-        for c in root.xpath(".//*[starts-with(@class,'kolekti-component-')]/@class"):
+        if starred:
+            xpathexpr = ".//html:div[@class='topic'][@data-star='yes']//html:div[starts-with(@class,'kolekti-component-')]/@class"
+        else:
+            xpathexpr = ".//html:div[starts-with(@class,'kolekti-component-')]/@class"
+        for c in root.xpath(xpathexpr,namespaces={'html':'http://www.w3.org/1999/xhtml'}):
             comps.add(c[18:])
         return list(comps)
             
@@ -149,6 +154,17 @@ class ElocusMixin(kolektiMixin):
                 for v in var_list:
                     varset.add(v.get('class')[8:])
         return list(varset)
+
+
+class ElocusMixin(LoginRequiredMixin, ElocusPublicMixin):
+    def dispatch(self, *args, **kwargs):
+        self.kolekti_userproject = self.request.user.userprofile.activeproject
+        if self.kolekti_userproject is not None:
+            self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.kolekti_userproject.project.directory)
+        
+            self.set_project(self.kolekti_projectpath)
+            
+        return super(ElocusMixin, self).dispatch(*args, **kwargs)
         
     
 class ElocusReportCreateView(ElocusMixin, View):
@@ -234,6 +250,30 @@ class ElocusReportAnalysisView(ElocusMixin, View):
         return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
 
     
+class ElocusReportDescriptionView(ElocusMixin, View):
+    def post(self, request):
+        release_path = request.POST.get('release','')
+        topicid =  request.POST.get('topic','')
+        data =  request.POST.get('data','')
+    
+        try:
+            xdata = self.parse_html_string(data)
+            report = self.get_report(release_path)
+            ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-description']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+            for child in ana:
+                ana.remove(child)
+            for elt in xdata.xpath('/html/body/*'):
+                ana.append(elt)
+            self.write_report(report, release_path)
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(json.dumps({'status':'fail',
+                                            'msg':traceback.format_exc()}),content_type="application/json")
+        
+        return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
+
+    
 class ElocusReportStarView(ElocusMixin, View):
     def post(self, request):
         release_path = request.POST.get('release','')
@@ -270,6 +310,7 @@ class ElocusReportHideView(ElocusMixin, View):
             if(state == 'true'):
                 topic.set('data-hidden','yes')
             else:
+                print topic.attrib
                 del topic.attrib['data-hidden']
             self.write_report(report, release_path)
         except:
@@ -302,12 +343,14 @@ class ElocusReportChartView(ElocusMixin, View):
     
 class ElocusTopicSaveView(ElocusMixin, View):
     def post(self, request):
+        print "save"
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
         chartkind =  request.POST.get('chartkind',None)
         wdata =  request.POST.get('wysiwygdata',None)
         try:
             report = self.get_report(release_path)
+            print request.POST
             if not chartkind is None:
                 chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
                                         namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
@@ -315,11 +358,13 @@ class ElocusTopicSaveView(ElocusMixin, View):
                 
             if not wdata is None:
                 xdata = self.parse_html_string(wdata)
+                logger.debug(ET.tostring(xdata))
                 ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-wysiwyg']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
                 for child in ana:
                     ana.remove(child)
                 for elt in xdata.xpath('/html/body/*'):
                     ana.append(elt)
+                logger.debug(ET.tostring(ana))
             self.write_report(report, release_path)
         except:
             import traceback
@@ -371,7 +416,8 @@ class ElocusReportView(ElocusMixin, View):
                 libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
                 ariane.append({'label':reportname,'url':reverse('elocusreport') + '?release=' + release_path + '&section=' + section})
             else:
-                libs = {'css':'', 'scripts':''}
+                libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section, starred=True)
+#                libs = {'css':'', 'scripts':''}
 
             context.update({
                 "ariane":ariane,
@@ -397,18 +443,43 @@ class ElocusReportView(ElocusMixin, View):
 
         return self.render_to_response(context)
     
-        
-class ElocusReportShareView(ElocusMixin, View):
-    template_name = "ecorse/share.html"
-    def get(self, request):
-            
+class ElocusReportShareUrlView(ElocusMixin, View):
+    def get(self, request):            
         release_path = request.GET.get('release','')
+        reportname = release_path.rsplit('/',1)[1]
+        assembly_name = release_path.rsplit('/',1)[1]
+        try:
+            sl = ShareLink.objects.get(project__user = request.user, reportname = reportname)
+        except ShareLink.DoesNotExist:
+            import md5
+            h = md5.md5(unicode(self.kolekti_userproject) + reportname) 
+            reportid = h.hexdigest()
+            sl = ShareLink(project = self.kolekti_userproject,
+                           reportname = reportname,
+                           hashid = reportid)
+            sl.save()
+        url = "http://%s%s"%(request.META['HTTP_HOST'],reverse('elocusreportshare', kwargs = {'hashid':str(sl.hashid)}))
+        return HttpResponse(json.dumps({'url':url}),content_type="application/json")
+    
+class ElocusReportShareView(ElocusPublicMixin, TemplateView):
+    template_name = "ecorse/share.html"
+    def get(self, request, hashid):
+        sl = ShareLink.objects.get(hashid = hashid)
+        release_path = '/releases/%s'%sl.reportname
         section = request.GET.get('section')
+
+        # initialize kolekti context
+        self.kolekti_userproject = sl.project
+        if self.kolekti_userproject is not None:
+            self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, sl.project.user.username, self.kolekti_userproject.project.directory)
+        
+            self.set_project(self.kolekti_projectpath)
+
         try:
             assembly_name = release_path.rsplit('/',1)[1]
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
             content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section, share = True)
-            menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+            menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section, share = True)
             libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
             
         except IndexError:

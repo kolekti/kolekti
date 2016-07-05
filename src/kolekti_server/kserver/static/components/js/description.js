@@ -36,16 +36,38 @@ $(document).ready(function() {
 	});
 	editor.on( 'blur', function () {
 	    if (editor.ecorse_state) {
-		
+		console.log('blur')
+		var topic = $(element.$).closest('.topic'),
+		    topicid = $(topic).attr('id'),
+		    data = editor.getData(),
+		    params = {
+			'release':$('.report').data('release'),
+			'topic':topicid,
+			'data':data};
+		$.ajax({
+		    url:"/elocus/report/description",
+		    method:'POST',
+		    data:$.param(params)
+		}).done(function(data) {
+		    console.log('topic post done')
+		    if (data.status == 'ok') {
+			console.log('desc post ok')
+			editor.ecorse_state = false;
+		    } else {
+			console.log(data)
+		    }
+		}).fail(function(data) {
+		    console.log('chart post fail')
+		});
 	    }
 	});
     } );
     
     // collapse : initialisation CKEditor sur déroulé
-    $('.collapseWysiwyg').on('shown.bs.collapse', function () {
-	var editor, edid = $(this).find('.anaeditor').attr('id')
+    $('.section-content.collapse').on('shown.bs.collapse', function () {
+	var editor, edid = $(this).find('.description-editor').attr('id')
 	if (CKEDITOR.instances[edid] == undefined)
-	    editor = CKEDITOR.inline(edid,{startupFocus : true})
+	    editor = CKEDITOR.replace(edid,{startupFocus : true})
 	else {
 	    editor = CKEDITOR.instances[edid]
 	    editor.focus()
@@ -54,7 +76,7 @@ $(document).ready(function() {
     })
 
     // initialisation CKEditor dans modal edition topic
-
+/*
     $('.modal-topic-details').on('shown.bs.modal', function(e) {
 	var editor, edid = $(e.target).find('.anaeditor').attr('id')
 	console.log(edid)
@@ -86,4 +108,5 @@ $(document).ready(function() {
 	elocus_params['wysiwygdata'] = data;	
 	modal.data('elocus_params', elocus_params);
     });
+*/
 })

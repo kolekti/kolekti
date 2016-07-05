@@ -28,8 +28,11 @@
   <xsl:template match="html:div[@class='kolekti-component-details']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicbody"/>
 
-  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelaction">
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelinfo">
     <xsl:apply-templates mode="compdetails"/>
+  </xsl:template>
+
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelaction">
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelbutton"/>
@@ -42,7 +45,7 @@
   </xsl:template>
   -->
   
-  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanel"/>
+  <xsl:template match="html:div[@class='kolekti-component-details']" mode="topicpanelbody"/>
 <!--    <xsl:call-template name="makepanel">
       <xsl:with-param name="content">
 	<xsl:apply-templates mode="compdetails"/>

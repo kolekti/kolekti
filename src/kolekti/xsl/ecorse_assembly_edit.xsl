@@ -85,25 +85,22 @@
   </xsl:template>
 
   <xsl:template match = "html:div[@class='section'][count(ancestor::html:div[@class='section'])=1]">
-      <!--
-	  <xsl:copy>
-      -->
-	  <div class="panel panel-default" id="{@id}">
-	  <div class="panel-heading" role="tab" id="heading_{@id}">
-	    <h3 class="panel-title {html:h1/@class}">
-	      <a data-toggle="collapse" href="#collapse_section_{@id}" aria-controls="collapse_section_{@id}" data-parent="#section_{ancestor::html:div[@class='section']/@id}">
-		<xsl:apply-templates select="html:h1/node()"/>
-	      </a>
-	    </h3>
+    <xsl:if test="$share='False' or html:div[@class='topic'][not(@data-hidden='yes')]">
+      <div class="panel panel-default" id="{@id}">
+	<div class="panel-heading" role="tab" id="heading_{@id}">
+	  <h3 class="panel-title {html:h1/@class}">
+	    <a data-toggle="collapse" href="#collapse_section_{@id}" aria-controls="collapse_section_{@id}" data-parent="#section_{ancestor::html:div[@class='section']/@id}">
+	      <xsl:apply-templates select="html:h1/node()"/>
+	    </a>
+	  </h3>
+	</div>
+	<div  class="panel-collapse collapse section-content" role="tabpanel" aria-labelledby="heading_{@id}" id="collapse_section_{@id}">
+	  <div class="panel-body">
+	    <xsl:apply-templates select="html:div"/>
 	  </div>
-	  <div  class="panel-collapse collapse section-content" role="tabpanel" aria-labelledby="heading_{@id}" id="collapse_section_{@id}">
-	    <div class="panel-body">
-	      <xsl:apply-templates select="html:div"/>
-	    </div>
-	  </div>
-	  </div>
-
-<!--      </xsl:copy>-->
+	</div>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="node()|@*" mode="topicbody">
@@ -116,70 +113,76 @@
 
   
   <xsl:template match = "html:div[@class='topic']">
-    <div class="col-sm-12 col-lg-6">
-      <xsl:copy>
-	<xsl:apply-templates select="@*"/>
-	<div class="panel panel-default">
-	  <div class="panel-heading">
-	    <xsl:apply-templates mode="topictitle"/>
-	  </div>
-	  <div class="panel-body">
+    <xsl:if test="$share='False' or not(@data-hidden='yes')">
+      <div class="col-sm-12 col-lg-6">
+	<xsl:copy>
+	  <xsl:apply-templates select="@*"/>
+	  <xsl:attribute name="class">
+	    <xsl:text>topic</xsl:text>
+	    <xsl:if test="@data-hidden = 'yes'">
+	      <xsl:text> disabled</xsl:text>
+	    </xsl:if>
+	  </xsl:attribute>
+	  
+	  <div class="panel panel-default">
+	    <div class="panel-heading">
+	      <xsl:apply-templates mode="topictitle"/>
+	    </div>
 	    
-	    <!-- création du corps du topic -->
-	    <xsl:apply-templates mode="topicbody"/>
-	  </div>
-	  <!-- pied de topic : collapse / boutons action-->
-	  <div class="panel-footer">
-	    <p>&#xA0;
-	    <xsl:call-template name="topic-controls"/>
-	    </p>
-	    <!--
-	    <div class="topicCollapses" id="collapseTopic{@id}" role="tablist">
-	      -->
-	      <!-- bouttons de controle -->
-
+	    <div class="panel-body">
 	      
-	      <!-- panneaux -->
-	      <!--
-	      <xsl:apply-templates select="html:div[starts-with(@class,'kolekti-component-')]"
-				   mode="topicpanel"/>
-	      -->
-	      <!--	      <xsl:apply-templates select="html:div[@class='details']"/>
-		  <xsl:call-template name="topic-analyse"/>
-		  <xsl:call-template name="topic-visuels"/>
-	      -->
-
+	      <!-- création du corps du topic -->
+	      <xsl:apply-templates mode="topicbody"/>
+	    </div>
+	    <!-- pied de topic : collapse / boutons action-->
+	    <div class="panel-footer">
+	      <p>&#xA0;
+	      <xsl:call-template name="topic-controls"/>
+	      </p>
+	    </div>
 	  </div>
-	</div>
-	<div class="modal fade modal-topic-details">
-	  <div class="modal-dialog modal-lg">
-	    <div class="modal-content">
-	      <div class="modal-header">
-		<h4 class="modal-title">
-		  <xsl:apply-templates mode="topictitle"/>
-		</h4>
-	      </div>
-	      <div class="modal-body">
-		<div class="row">
-		  <div class="col-md-4">
-		    <xsl:apply-templates mode="topicbody"/>
-		    <xsl:apply-templates mode="topicpanelaction"/>
-		  </div>
-		  <div class="col-md-8">
-		    <xsl:apply-templates mode="topicpanelbutton"/>
-		    <xsl:apply-templates mode="topicpanel"/>
+	  <div class="modal fade modal-topic-details">
+	    <div class="modal-dialog modal-lg">
+	      <div class="modal-content">
+		<div class="modal-header">
+		  <h4 class="modal-title">
+		    <xsl:apply-templates mode="topictitle"/>
+		  </h4>
+		</div>
+		<div class="modal-body">
+		  <div class="row">
+		    <div class="col-md-4">
+		      <xsl:apply-templates mode="topicpanelinfo"/>
+		      <xsl:if test="$share='False'">
+			<hr/>
+			
+			<h5>Actions</h5>
+			<xsl:apply-templates mode="topicpanelaction"/>
+		      </xsl:if>
+		    </div>
+		    <div class="col-md-8">
+		      <xsl:apply-templates mode="topicpanelbutton"/>
+		      <xsl:apply-templates mode="topicpanelbody"/>
+		    </div>
 		  </div>
 		</div>
-	      </div>
-	      <div class="modal-footer">
-		<button type="button" class="btn btn-primary modal-topic-details-ok">Valider</button>
-		<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-	      </div>
-	    </div><!-- /.modal-content -->
-	  </div><!-- /.modal-dialog -->
-	</div><!-- /.modal -->
-      </xsl:copy>
-    </div>  
+		<div class="modal-footer">
+		  <xsl:choose>
+		    <xsl:when test="$share='True'">
+		      <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+		    </xsl:when>
+		    <xsl:otherwise>
+		      <button type="button" class="btn btn-primary modal-topic-details-ok">Valider</button>
+		      <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+		    </xsl:otherwise>
+		  </xsl:choose>
+		</div>
+	      </div><!-- /.modal-content -->
+	    </div><!-- /.modal-dialog -->
+	  </div><!-- /.modal -->
+	</xsl:copy>
+      </div>
+    </xsl:if>
   </xsl:template>
 
 
@@ -210,10 +213,22 @@
 	    <i class="fa fa-star-o"></i>
 	  </button>
 	  
-	  <button title="Supprimer" class="btn btn-xs btn-default  ecorse-action-hide">
+	  <button title="Supprimer">
+	    <xsl:attribute name="class">
+	      <xsl:text>btn btn-xs ecorse-action-hide </xsl:text>
+	      <xsl:choose>
+		<xsl:when test="@data-hidden = 'yes'">
+		  <xsl:text>btn-primary ishidden</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:text>btn-default</xsl:text>
+		</xsl:otherwise>
+	      </xsl:choose>
+	    </xsl:attribute>
 	    <i class="fa fa-trash-o"></i>
 	  </button>
 	</xsl:if>
+	
 	<button title="Détails" class="btn btn-xs btn-default  ecorse-action-showdetails">
 	  <i class="fa fa-info"></i><xsl:text> Détails</xsl:text>
 	</button>

@@ -6,6 +6,10 @@
 	{{ title }}
 {% endblock %}
 
+{% block extrascripts %}	
+	{{ libs.scripts|safe }}
+{% endblock %}
+
 {% block sidebar %}
 	<div id="side-menu" class="visible-lg-block">
 	

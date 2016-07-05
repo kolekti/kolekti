@@ -122,24 +122,28 @@
 		</a>
 		
 		<ul class="dropdown-menu btn-sm-dropdown" role="menu">
+		  {% comment %}
 		  <li role="presentation">
 		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
 		      <i class="fa fa-file-pdf-o"></i>&nbsp;
 		      Pdf
 		    </a>
 		  </li>
+		  {% endcomment %}
 		  <li role="presentation">
 		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
 		      <i class="fa fa-file-word-o"></i>&nbsp;
 		      Word
 		    </a>
 		  </li>
+		  {% comment %}
 		  <li role="presentation">
 		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
 		      <i class="fa fa-file-powerpoint-o"></i>&nbsp;
 		      PowerPoint
 		    </a>
 		  </li>
+		  {% endcomment %}
 		  <li role="presentation">
 		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
 		      <i class="fa fa-share-alt"></i>&nbsp;
@@ -166,7 +170,6 @@
 	</div>
 	
 	{% include "ecorse/modal_create.html" %}
-	{% include "ecorse/modal_topic_details.html" %}
 		
 {% endblock %}
 

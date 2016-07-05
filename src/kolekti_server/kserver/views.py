@@ -85,21 +85,12 @@ class LoginRequiredMixin(object):
     def as_view(cls, **initkwargs):
         view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
         return login_required(view)
-                            
 
-class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
+class kolektiPublicMixin(TemplateResponseMixin, kolektiBase):
         
     def config(self):
         return self._config
 
-    def dispatch(self, *args, **kwargs):
-        self.kolekti_userproject = self.request.user.userprofile.activeproject
-        if self.kolekti_userproject is not None:
-            self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.kolekti_userproject.project.directory)
-        
-            self.set_project(self.kolekti_projectpath)
-            
-        return super(kolektiMixin, self).dispatch(*args, **kwargs)
 
     def projects(self):
         projects = []
@@ -273,7 +264,19 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             path = path + default
         return path
 
+
+                            
+class kolektiMixin(LoginRequiredMixin, kolektiPublicMixin):
+    def dispatch(self, *args, **kwargs):
+        self.kolekti_userproject = self.request.user.userprofile.activeproject
+        if self.kolekti_userproject is not None:
+            self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.kolekti_userproject.project.directory)
         
+            self.set_project(self.kolekti_projectpath)
+            
+        return super(kolektiMixin, self).dispatch(*args, **kwargs)
+
+            
 class HomeView(kolektiMixin, View):
     def get(self, request):
         return HttpResponseRedirect('/elocus/') 

@@ -24,6 +24,8 @@ $.ajaxSetup({
     beforeSend: ajaxBeforeSend
 });
 
+
+
 $(document).ready(function() {
 
     
@@ -116,12 +118,25 @@ $(document).ready(function() {
 	
     }
 
-    var get_selected_parameters = function() {
+    var check_selected_parameters = function() {
 	var ref = $("#ecorse_select_referentiel").val();
 	var parameters =  {};
 	$.map(ref_parameters[ref], function(v) {
 	    var val = $('#'+v.id).typeahead("getActive")
 	    if (typeof val != 'undefined') parameters['uservar_'+v.id] = val;
+	})
+	return Object.keys(parameters).length > 0;
+    }
+    
+    var get_selected_parameters = function() {
+	var ref = $("#ecorse_select_referentiel").val();
+	var parameters =  {};
+	$.map(ref_parameters[ref], function(v) {
+	    var val = $('#'+v.id).typeahead("getActive")
+	    if (typeof val == 'undefined')
+		parameters['uservar_'+v.id] = {'id':'',name:''};
+	    else
+		parameters['uservar_'+v.id] = val;
 	})
 	return parameters;
     }
@@ -171,14 +186,20 @@ $(document).ready(function() {
     });
     
     // typeahead
-    $('#modal_create').on('show.bs.modal', function () {
+
+    var reset_errors = function() {
 	$("#create_form_parameters_loading").hide();
 	$("#create_form_parameters_error").hide();
 	$("#create_form_parameters").removeClass("has-error")
 	$(".form-group").removeClass('has-error');
-	$("span.help-block").remove();
+	$("#create_title_field span.help-block").remove();
+    }	
+    
+    $('#modal_create').on('show.bs.modal', function () {
+	reset_errors();
 	$('#titre_rapport').val('')
     })
+
     
     $('#modal_create').on('shown.bs.modal', function () {
 	// recupere la liste des referentiels
@@ -199,6 +220,7 @@ $(document).ready(function() {
     })
 			  
     $('#modal_create_ok').on('click', function () {
+	reset_errors();
 	var referentiel = $("#ecorse_select_referentiel").val();
 	var title = $('#titre_rapport').val()
 	if (title =="") {
@@ -209,17 +231,19 @@ $(document).ready(function() {
 	    return;
 	}
 	
-	var params = get_selected_parameters();
-	if(Object.keys(params).length == 0) {
-	    $("#create_form_parameters_error").show()
+	if(!check_selected_parameters()) {
+	    $("#create_form_parameters_error").show();
+	    $("#create_form_parameters .form-group").addClass('has-error');
 	    return
 	}
+
+	var params = get_selected_parameters();
 	
 	params['title'] = title;
 	params['toc'] = referentiel;
 	
-	$('#modal_create').hide()
-	$('#modal_create_processing').show()
+	$('#modal_create').modal('hide');
+	$('#modal_create_processing').modal('show');
 	$.ajax({
 	    url:"/elocus/report/create",
 	    method:'POST',
@@ -241,7 +265,7 @@ $(document).ready(function() {
     // Actualisation des données
     $('.ecorse-action-update-data').on('click', function() {
 	var release = $('.report').data('release')
-	$('#modal_update_processing').show()
+	$('#modal_update_processing').modal('show')
 	$.ajax({
 	    url:"/elocus/report/update",
 	    method:'POST',
@@ -249,12 +273,25 @@ $(document).ready(function() {
 		'release': release
 	    })
 	}).done(function(data) {
+	    $('#modal_update_processing').modal('hide');
 	    if (data.status == 'ok') {
 		window.location.reload(true)
+	    } else {
+		$('#modal_error')
+		    .find('.errortitle').html("Une erreur s'est produite lors de l'actualisation des données");
+		$('#modal_error')
+		    .find('.errormessage').html(data.msg)	    
+		$('#modal_error').modal('show');
 	    }
 	}).fail(function(data) {
-	});
-    })
+	    $('#modal_update_processing').modal('hide')
+	    $('#modal_error')
+		.find('.errortitle').html("Une erreur s'est produite lors de l'actualisation des données");
+	    $('#modal_error')
+		.find('.errormessage').html("Coupure de la communication avec le serveur");	    
+	    $('#modal_error').modal('show');
+	});	       
+    });
 
     // Téléchargement (publication kolekti)
     $('.ecorse-action-dl-pdf').on('click', function() {
@@ -273,6 +310,7 @@ $(document).ready(function() {
     })
     $('.ecorse-action-dl-word').on('click', function() {
 	var release = $('.report').data('release')
+	$("#modal_export_processing").modal("show")
 	$.ajax({
 	    url:"/elocus/report/publish",
 	    method:'POST',
@@ -281,15 +319,16 @@ $(document).ready(function() {
 		'script': 'odt'
 	    })
 	}).done(function(data) {
-	    console.log(data)
+	    
 	    $.each(data, function(i,v) {
-		console.log(v)
 		if (v.event == 'result')
 		    window.location.replace(window.location.origin + v.docs[0].url)
 	    })
 	}).fail(function(data) {
-	});
-	
+	}).always(function() {
+	    $("#modal_export_processing").modal("hide")
+	})
+
     })
     $('.ecorse-action-dl-presentation').on('click', function() {
 	var release = $('.report').data('release')
@@ -306,7 +345,20 @@ $(document).ready(function() {
 	
     })
     $('.ecorse-action-dl-html').on('click', function() {
-	$("#modal_share").modal("show")
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/elocus/report/sharelink",
+	    method:'GET',
+	    data:$.param({
+		'release': release,
+	    })
+	}).done(function(data) {
+	    $("#modal_share #ecorse_share_url").val(data.url);
+	    $("#modal_share #ecorse_share_link").attr('href',data.url);
+	    $("#modal_share").modal("show")
+	}).fail(function(data) {
+	});
+	
     })
 
     // Actions sur les indicateurs
@@ -360,10 +412,12 @@ $(document).ready(function() {
 		    topic.addClass("disabled")
 		    btn.addClass('ishidden')
 		    btn.removeClass('btn-default')
+		    btn.addClass('btn-primary')
 		} else {
 		    topic.removeClass("disabled")
-		    btn.addClass('ishidden')
-		    btn.removeClass('btn-warning')
+		    btn.removeClass('ishidden')
+		    btn.addClass('btn-default')
+		    btn.removeClass('btn-primary')
 		}
 	    }
 	}).fail(function(data) {
