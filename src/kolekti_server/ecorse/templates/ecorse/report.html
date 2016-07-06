@@ -101,61 +101,57 @@
 	      <h3 class="panel-title"><a href="/"><strong>{{ territoire.project.description }}</strong></a></h3>
 	    </div>
 	    
-	    <div class="panel-heading">
-	      <h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h3>
+	    <div class="panel-body">
+	    	{# <h4><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h4> #}
+	    	<h4>{{ reportname }}</h4>
+			<div class="btn-group">
+				<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
+					<i class="fa fa-refresh"></i>&nbsp;
+					Actualiser
+				</a>
+			</div>
+			<div class="btn-group">
+				<a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+					<i class="fa fa-download"></i>&nbsp;
+					Télécharger&nbsp;
+					<span class="caret"></span>
+				</a>
+
+				<ul class="dropdown-menu btn-sm-dropdown" role="menu">
+					{% comment %}
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
+								<i class="fa fa-file-pdf-o"></i>&nbsp;
+								Pdf
+							</a>
+						</li>
+					{% endcomment %}
+					<li role="presentation">
+						<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
+							<i class="fa fa-file-word-o"></i>&nbsp;
+							Word
+						</a>
+					</li>
+					{% comment %}
+						<li role="presentation">
+							<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
+								<i class="fa fa-file-powerpoint-o"></i>&nbsp;
+								PowerPoint
+							</a>
+						</li>
+					{% endcomment %}
+					<li role="presentation">
+						<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
+							<i class="fa fa-share-alt"></i>&nbsp;
+							Partager
+						</a>
+					</li>
+				</ul>			
+	    	</div>
 	    </div>
-	    
-	    
 	    
 	    <div class="panel-footer">
-	      <div class="btn-group">
-		<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
-		  <i class="fa fa-refresh"></i>&nbsp;
-		  Actualiser
-		</a>
-	      </div>
-	      <div class="btn-group">
-		<a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-		  <i class="fa fa-download"></i>&nbsp;
-		  Télécharger&nbsp;
-		  <span class="caret"></span>
-		</a>
-		
-		<ul class="dropdown-menu btn-sm-dropdown" role="menu">
-		  {% comment %}
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
-		      <i class="fa fa-file-pdf-o"></i>&nbsp;
-		      Pdf
-		    </a>
-		  </li>
-		  {% endcomment %}
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
-		      <i class="fa fa-file-word-o"></i>&nbsp;
-		      Word
-		    </a>
-		  </li>
-		  {% comment %}
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
-		      <i class="fa fa-file-powerpoint-o"></i>&nbsp;
-		      PowerPoint
-		    </a>
-		  </li>
-		  {% endcomment %}
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
-		      <i class="fa fa-share-alt"></i>&nbsp;
-		      Partager
-		    </a>
-		  </li>
-		</ul>			
-	      </div>
-	    </div>
-  	    
-  	    <div class="panel-body">
-	      {{ menu|safe }}
+    		{{ menu|safe }}
 	    </div>
 	  </div>
 	</div>

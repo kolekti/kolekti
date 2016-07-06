@@ -28,14 +28,13 @@
    
     
     <div class="page-header">
-      {% if release %}
-        <h2 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h2>
-      {% endif %}
+      {# {% if release %}<h2 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h2>{% endif %} #}
       <ol class="breadcrumb">
-        {% for ariane_elt in ariane %}
-          <li><a href="{{ ariane_elt.url }}">{{ ariane_elt.label }}</a></li>
+        {% for ariane_elt in ariane %}          
           {% if forloop.last %}
             <li class="last">{{ ariane_elt.label }}</li>
+          {% else %}
+            <li><a href="{{ ariane_elt.url }}">{{ ariane_elt.label }}</a></li>
           {% endif %}
         {% endfor %}
       </ol>

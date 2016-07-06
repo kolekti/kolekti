@@ -38,8 +38,9 @@ Variables
 
 @baseFontColor : @gray-dark; //#5b565a; //#09090A;
 
-@linkColor : @marineLogo;
+@linkColor : darken(@cielLogo, 5%);
 @linkColorHover : @orangeLogo;
+@linkColorActive : @orangeDarken;
 
 @admLinkColor : @rougeFonce;
 @admLinkColorHover : @orangeDarken;
@@ -87,7 +88,7 @@ Variables
 @texteFontFamily:        @font-family-sans-serif ;
 @hsFontFamily:       @font-family-sans-serif ;
 @hsFontWeight: 500;
-@hsColor: @baseFontColor;
+@hsColor: @marineLogo;
 @menuFontFamily:      @hsFontFamily;
 
 
@@ -132,15 +133,15 @@ Fonts
 Fonctions
 ========================================== */
 .box-shadow-color(@style, @c) when (iscolor(@c)) {
-    // @style: (inset) horizontal vertical blur spread
-    // cf. http://box-shadow.info
+  // @style: (inset) horizontal vertical blur spread
 	box-shadow:         @style @c;
 	-webkit-box-shadow: @style @c;
 	-moz-box-shadow:    @style @c;
 }
 .box-shadow-color(@style, @alpha: 50%) when (isnumber(@alpha)) {
-    // @alpha 0.5 par exemple
-	.box-shadow(@style rgba(0, 0, 0, @alpha)); //@style : décalage x, décalage y, spread
+  // @alpha 0.5 par exemple
+  // @style : (inset) horizontal vertical blur (spread)
+	.box-shadow(@style rgba(0, 0, 0, @alpha)); 
 }
 
 .border-radius(@radius) {
