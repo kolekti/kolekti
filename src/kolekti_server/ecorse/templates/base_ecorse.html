@@ -4,12 +4,14 @@
 <div class="container-fluid">
   <div class="row">
     {% if release %}
-    <div class="col-sm-3 col-md-2 sidebar">
-      {% block sidebar %}{% endblock %}
-    </div>
-    <div class="col-sm-9 col-md-offset-2 col-md-10 main">
+    <div class="col-sm-3 col-md-2">
+        <div class="sidebar">
+          {% block sidebar %}{% endblock %}
+        </div>
+      </div>
+      <div class="col-sm-9 col-md-10 main">
     {% else %}
-    <div class="col-sm-12  main">
+    <div class="col-sm-12 main">
     {% endif %}
 
     
