@@ -52,12 +52,13 @@
 		<nav class="navbar navbar-ecorse navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					{% comment %} <button type="button" class="navbar-toggle collapsed btn btn-default navbar-btn" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar" title="Afficher/Cacher le menu">
 						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
+						<i class="fa fa-reorder"></i>
+					</button> {% endcomment %}
+					<button class="navbar-toggle collapsed btn btn-default navbar-btn" type="button" id="hide-menu"  data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+								<a href="javascript:void(0);" data-action="toggleMenu" title="Afficher/Cacher le menu"><i class="fa fa-reorder"></i></a>
+							</button>
 					<a class="navbar-brand page-scroll" href="/"><img height="40px" src="/static/img/logo.png" alt="logo Ecorse"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
@@ -117,7 +118,7 @@
 	                        <li>
 								<form class="navbar-form navbar-left" role="search">
 									<div class="form-group input-group custom-search-form">
-		                                                                <input type="text" placeholder="Search..." class="form-control">
+                                        <input type="text" placeholder="Search..." class="form-control">
 		                                <span class="input-group-btn">
 		                                <button type="button" class="btn btn-default">
 		                                    <i class="fa fa-search"></i>
@@ -131,18 +132,6 @@
 							<button id="fullscreen" type="button" class="btn btn-default navbar-btn">
 								<a title="Plein écran" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a>
 							</button>
-							<!-- <button type="button" class="btn btn-default navbar-btn">Sign in</button>
-							<div class="btn-header transparent pull-right" id="fullscreen">
-								<span> <a title="Full Screen" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a> </span>
-							</div> -->
-						</li>
-						<li>
-							<button id="hide-menu" type="button" class="btn btn-default navbar-btn">
-								<a title="Afficher/Cacher le menu" data-action="toggleMenu" href="javascript:void(0);"><i class="fa fa-reorder"></i></a>
-							</button>
-							<!-- <div class="btn-header pull-right" id="hide-menu">
-								<span> <a title="Collapse Menu" data-action="toggleMenu" href="javascript:void(0);"><i class="fa fa-reorder"></i></a> </span>
-							</div> -->
 						</li>
 					</ul>
 					
@@ -173,7 +162,7 @@
 		<footer class="footer">
 	        <div class="container-fluid">
 	            <div class="row">
-	                <div class="col-md-4">
+	                <div class="col-md-12">
 	                    <span class="copyright">Copyright © 2016</span>
 	                </div>
 	                

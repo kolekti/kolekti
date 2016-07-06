@@ -171,6 +171,11 @@ body {
 		    }
 	    }
 
+	    button.navbar-toggle {
+	    	padding: 6px 11px;
+	    	border-color: #ccc;
+	    }
+
 	    .navbar-nav {
 			padding-right: 10px;
 			padding-top: 0px;
@@ -510,7 +515,7 @@ body {
 	/* ==== Right menus ==== */
 
 	/* ==== Footer ==== */
-	@footerHeight: 60px ;
+	@footerHeight: 40px ;
 	body {
 		/* Margin bottom by footer height */
 	  	margin-bottom: @footerHeight;
@@ -523,9 +528,11 @@ body {
 	    /* Set the fixed height of the footer here */
 	    height: @footerHeight;
 	    background-color: darken(@marineLogo, 10%);
-	    padding: 1.5em 0 ;
+	    padding: 0.9em 0 ;
 	    .copyright {
 	    	color: @blanc;
+	    	float: right;
+	    	font-size: 0.9em;
 	    }
 	}
 
