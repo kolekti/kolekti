@@ -78,8 +78,23 @@
 
 
 {% block content %}
-	<div class="report" data-release="{{ release }}">
-		{{ content|safe}}
+	<div class="row">
+	  {% for project in projects %}
+	  <div class="col-md-6">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+		{{ project.title }}
+	      </div>
+	      <div class="panel-body">
+		<ul>
+		  {% for report in project.reports %}
+		  <li><a href="{{ report.url }}">{{ report.title }}</a></li>
+		  {% endfor %}
+		</ul>
+	      </div>
+	    </div>
+	  </div>
+	  {% endfor %}
 	</div>
 	
 	{% include "ecorse/modal_create.html" %}

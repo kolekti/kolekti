@@ -85,7 +85,18 @@ class ElocusPublicMixin(kolektiPublicMixin):
                 for scr in xlibs.xpath('html:scripts/*',namespaces={'html':'http://www.w3.org/1999/xhtml'}):
                     libs['scripts'] += ET.tostring(scr, method="html")
         return libs
-    
+
+    def get_project_reports(self, project):
+        releasespath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project.directory, 'releases')
+        for report in os.listdir(releasespath):
+#            job = self.get_job(release_path)
+#            return job.xpath("string(/job/@pubname)")
+            report_title = report
+            report_url = '/projects/activate?project=%s&redirect=/elocus/report/?release=/releases/%s'%(project.directory, report)
+            yield {'title': report_title,
+                   'url': report_url
+                   }
+        
     def collect_components(self, root, starred):
         comps = set()
         if starred:
@@ -376,15 +387,25 @@ class ElocusTopicSaveView(ElocusMixin, View):
 class ElocusHomeView(ElocusMixin, View):
     template_name = "ecorse/home.html"
     def get(self, request):
-        reports = self.get_report_list()
-        ariane = [{'label':'EcoRSE','url':'http://www.ecorse.eu'},
-                  {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')}]
+        
+        projects = []
+        for up in request.user.userproject_set.all():
+            p = {'title' :up.project.description ,
+                 'reports':self.get_project_reports(up.project)}
+            projects.append(p)
+                 
+            
+        # reports = self.get_report_list()
+        ariane = [{'label':'EcoRSE','url':'http://www.ecorse.eu'}]
+        #,
+        #          {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')}]
              
         context = self.get_context_data({
             'ariane':ariane,
-            'releases':reports,
-            "territoire":request.user.userprofile.activeproject,
-            "territoires":request.user.userproject_set.all(),
+            'projects':projects,
+#            'releases':reports,
+#            "territoire":request.user.userprofile.activeproject,
+#            "territoires":request.user.userproject_set.all(),
             })
 
         return self.render_to_response(context)
