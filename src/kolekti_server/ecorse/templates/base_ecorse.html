@@ -31,6 +31,7 @@
     
     <div class="page-header">
       {# {% if release %}<h2 class="pagetitle"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h2>{% endif %} #}
+      {% if ariane %}
       <ol class="breadcrumb">
         {% for ariane_elt in ariane %}          
           {% if forloop.last %}
@@ -40,6 +41,7 @@
           {% endif %}
         {% endfor %}
       </ol>
+      {% endif %}
     </div>
 
 

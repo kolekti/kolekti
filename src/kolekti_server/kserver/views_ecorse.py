@@ -401,7 +401,7 @@ class ElocusHomeView(ElocusMixin, View):
         #          {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')}]
              
         context = self.get_context_data({
-            'ariane':ariane,
+#            'ariane':ariane,
             'projects':projects,
 #            'releases':reports,
 #            "territoire":request.user.userprofile.activeproject,
