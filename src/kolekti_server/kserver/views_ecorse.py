@@ -42,8 +42,10 @@ class ElocusPublicMixin(kolektiPublicMixin):
         context.update({'DEBUG': settings.DEBUG})
         return super(ElocusPublicMixin, self).render_to_response(context)
 
-    def get_assembly_edit(self, path, release_path="", section=None, share = False):
-        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
+    def get_xassembly(self, path):
+        return self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
+        
+    def get_assembly_edit(self, xassembly, release_path="", section=None, share = False):
         if section is None:
             xsl = self.get_xsl('ecorse_assembly_home')
             body = xassembly.getroot()
@@ -54,18 +56,17 @@ class ElocusPublicMixin(kolektiPublicMixin):
         content = ''.join([str(xsl(t, path="'%s'"%release_path, share="'%s'"%share)) for t in body])
         return content
 
-    def get_assembly_menu(self, path, release_path="", section=None, share = False):
-        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
-#        if section is None:
-#           section = xassembly.xpath('string(/html:html/html:body/html:div[1]/@id)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+    def get_assembly_menu(self, xassembly, release_path="", section=None, share = False):
         body = xassembly.xpath('/html:html/html:body/*', namespaces={'html':'http://www.w3.org/1999/xhtml'})
         xsl = self.get_xsl('ecorse_assembly_menu')
         content = ''.join([str(xsl(t, path="'%s'"%release_path, section="'%s'"%section, share="'%s'"%share)) for t in body])
         return content
 
-    
-    def get_assembly_libs(self, path, release_path="", section=None, starred = False):
-        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
+    def get_assembly_section_title(self, xassembly, section):
+        sect_title = xassembly.xpath('string(/html:html/html:body/html:div[@class="section"][@id="%s"]/html:h1[1])'%section, namespaces={'html':'http://www.w3.org/1999/xhtml'})
+        return sect_title
+        
+    def get_assembly_libs(self, xassembly, release_path="", section=None, starred = False):
         if section is None:
             root = xassembly.xpath('/html:html/html:body',
                                    namespaces={'html':'http://www.w3.org/1999/xhtml'})
@@ -124,9 +125,8 @@ class ElocusPublicMixin(kolektiPublicMixin):
         return reports
 
     
-    def assembly_user_vars(self, path, section=None):
+    def assembly_user_vars(self, xassembly, section=None):
         varset = set()
-        xassembly = self.parse(path.replace('{LANG}',self.kolekti_userproject.publang))
         if section is None:
             varxpath = '/html:html/html:body//html:var[startswith(@class,"uservar:")]'
         else:
@@ -172,7 +172,6 @@ class ElocusReportCreateView(ElocusMixin, View):
         try:
             title = request.POST.get('title','')
             toc = request.POST.get('toc')
-            print dict(request.POST)
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
             reportdir = get_valid_filename(title)
@@ -406,17 +405,19 @@ class ElocusReportView(ElocusMixin, View):
             assembly_name = release_path.rsplit('/',1)[1]
             self._checkout(release_path)
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
-            content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section)
-            menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section)
+            xassembly = self.get_xassembly(assembly_path)
+            content = self.get_assembly_edit(xassembly, release_path = release_path, section = section)
+            menu = self.get_assembly_menu(xassembly, release_path = release_path, section = section)
             reportname = self.get_report_name(release_path)
             ariane = [{'label':'EcoRSE','url':'http://www.ecorse.eu'},
                       {'label':request.user.userprofile.activeproject.project.description,'url':reverse('elocushome')},
                       {'label':reportname,'url':reverse('elocusreport') + '?release=' + release_path}]
             if not section is None:
-                libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
-                ariane.append({'label':reportname,'url':reverse('elocusreport') + '?release=' + release_path + '&section=' + section})
+                libs = self.get_assembly_libs(xassembly, release_path = release_path, section = section)
+                sect_title = self.get_assembly_section_title(xassembly, section) 
+                ariane.append({'label':sect_title,'url':reverse('elocusreport') + '?release=' + release_path + '&section=' + section})
             else:
-                libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section, starred=True)
+                libs = self.get_assembly_libs(xassembly, release_path = release_path, section = section, starred=True)
 #                libs = {'css':'', 'scripts':''}
 
             context.update({
@@ -478,9 +479,10 @@ class ElocusReportShareView(ElocusPublicMixin, TemplateView):
         try:
             assembly_name = release_path.rsplit('/',1)[1]
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
-            content = self.get_assembly_edit(assembly_path, release_path = release_path, section = section, share = True)
-            menu = self.get_assembly_menu(assembly_path, release_path = release_path, section = section, share = True)
-            libs = self.get_assembly_libs(assembly_path, release_path = release_path, section = section)
+            xassembly = self.get_xassembly(assembly_path)
+            content = self.get_assembly_edit(xassembly, release_path = release_path, section = section, share = True)
+            menu = self.get_assembly_menu(xassembly, release_path = release_path, section = section, share = True)
+            libs = self.get_assembly_libs(xassembly, release_path = release_path, section = section)
             
         except IndexError:
             content = "Selectionnez un rapport"
