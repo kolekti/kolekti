@@ -1,7 +1,26 @@
+var locale_fr = {
+    "decimal": ",",
+    "thousands": " ",
+    "grouping": [3],
+    "currency": ["€", ""],
+    "dateTime": "%a %b %e %X %Y",
+    "date": "%d/%m/%Y",
+    "time": "%H:%M:%S",
+    "periods": ["AM", "PM"],
+    "days": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    "shortDays": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+    "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"],
+    "shortMonths": ["Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Oct", "Nov", "Dec"]
+};
+
+
+
 var drawchart = function(elt, anim, windowwidth) {
     var data = $(elt).data('chartdata')['results']['bindings'];
 	//var series = [
 
+    var fr = d3.locale(locale_fr);
+    
     var by_year = d3.nest()
 	    .key(function(d) { return d.year.value; })
 	    .sortKeys(d3.ascending)
@@ -62,7 +81,9 @@ var drawchart = function(elt, anim, windowwidth) {
     var yAxis = d3.svg.axis()
 	.scale(y)
 	.orient("left")
-	.ticks(10);
+	.ticks(10)
+	.tickFormat(fr.numberFormat(",.0f"))
+    ;
     
     var chart = d3.select(elt).append("svg")
 	.attr("width", width + margin.left + margin.right)
