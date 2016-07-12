@@ -2,7 +2,7 @@
 Page d'accueil
 ========================================== */
 
-.main .accueil {
+.main .accueil, .main .accueil-general {
 
 
     // Custom Colored Panels
@@ -73,6 +73,20 @@ Page d'accueil
         }
         &.transport .panel-heading {
             background-color: fadeout(@transport, 10%);
+        }
+        &.test .panel-heading {
+            //background-color: fadeout('@{custom-color-}02', 10%);
+            //.custom-color('background-color', 3);
+        }
+
+        //ceci est une fonction recursive pour générer les classes bg-custom-color-{i} :
+        .generate-bg-by-class(17);
+        .generate-bg-by-class(@n, @i: 1) when (@i =< @n) {
+            &.bg-custom-color-@{i} .panel-heading {
+                @string:replace('custom-color-1','1','@{i}');
+                background-color: @@string;
+            }
+            .generate-bg-by-class(@n, (@i + 1));
         }
 
         .picto {
