@@ -129,7 +129,7 @@
 			    			</li>
 						{% endcomment %}
 						<li>
-							<button id="fullscreen" type="button" class="btn btn-default navbar-btn">
+							<button id="fullscreen" type="button" class="btn btn-default navbar-btn hidden-xs" data-toggle="modal" data-target="#FullScreenModal">
 								<a title="Plein écran" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a>
 							</button>
 						</li>
@@ -202,6 +202,27 @@
 			</div><!-- /.modal -->
 		{% endcomment %}
 
+		<!-- Modal pour explication full screen -->
+		<div class="modal fade hidden-xs" id="FullScreenModal" tabindex="-1" role="dialog" aria-labelledby="FullScreenModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Passer en mode plein écran</h4>
+					</div>
+					<div class="modal-body">
+						<p>
+							Pour enclencher la fonction plein écran, utilisez la touche <strong>F11</strong> de votre clavier. Celle-ci permet de faire basculer votre navigateur entre le mode normal et le mode plein écran.<br>
+							Pour sortir du mode plein écran, utilisez la touche <strong>echap</strong> ou de nouveau la touche F11.  
+						</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 		<script src="/static/jquery.js"></script>
 		<script src="/static/jquery-ui.min.js"></script>
@@ -216,8 +237,9 @@
 		-->
 
 		{# scripts additionnels Felix #}
-		<script src="/static/js/screenfull.min.js"></script>{# cf. https://github.com/sindresorhus/screenfull.js #}
+		{# retiré car sort du plein écran lorsqu'on change d'url <script src="/static/js/screenfull.min.js"></script> cf. https://github.com/sindresorhus/screenfull.js #}
 		<script>			
+			
 			$(function() {
 				// jQuery for page scrolling feature - requires jQuery Easing plugin
 			    $('a.page-scroll').bind('click', function(event) {
@@ -228,15 +250,17 @@
 			        event.preventDefault();
 			    });
 
+			    /* retiré car sort du plein écran lorsqu'on change d'url
 			    //full screen avec sreenfull.js
 			    if (typeof screenfull == 'undefined') {
 			    	$('#fullscreen').hide();
-			    }			    
+			    }    
 			    $('#fullscreen').click (() => {
 				    if (screenfull.enabled) {
-				        screenfull.toggle();
+				        //screenfull.toggle();
+				        screenfull.request();
 			        }
-				});
+				}); */
 			});
 
 			/* $('.sidebar').affix({

@@ -126,7 +126,7 @@
 	<a href="{$url}">
 	  <div class="panel-footer">
 	    <span class="pull-left">
-	      Voir les détails
+	      Accéder aux indicateurs
 	    </span>
 	    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
 	    <div class="clearfix"></div>
