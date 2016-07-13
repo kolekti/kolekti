@@ -21,7 +21,8 @@ $(document).ready(function() {
 	    map.fitBounds(myLayer.getBounds()) ;
 	}
     });
-
+    
+    $("body").trigger( "elocus.graphics.displayed", [ "map" ] );
     
     // deroulement de la section (affichage des topics)
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {

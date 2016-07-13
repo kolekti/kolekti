@@ -7,7 +7,9 @@ $(document).ready(function() {
 	$('.alaune .ecorse-chart').each(function() {
 		drawchart(this, true)
 	});
-	
+
+	$("body").trigger( "elocus.graphics.displayed", [ "map" ] );
+
 	// remove chart drawing on section collapse hide
 	$('.section-content.collapse').on('hidden.bs.collapse', function(e) {
 	    if ($(e.target).hasClass('section-content')) {
