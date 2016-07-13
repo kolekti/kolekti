@@ -74,12 +74,8 @@ Page d'accueil
         &.transport .panel-heading {
             background-color: fadeout(@transport, 10%);
         }
-        &.test .panel-heading {
-            //background-color: fadeout('@{custom-color-}02', 10%);
-            //.custom-color('background-color', 3);
-        }
 
-        //ceci est une fonction recursive pour générer les classes bg-custom-color-{i} :
+        //ceci est une fonction recursive pour générer les classes bg-custom-color-{i} pour la page d'accueil générale:
         .generate-bg-by-class(17);
         .generate-bg-by-class(@n, @i: 1) when (@i =< @n) {
             &.bg-custom-color-@{i} .panel-heading {
@@ -153,6 +149,87 @@ Page d'accueil
         }           
 
     }
+
+
+
+
+
+
+
+
+
+    // Pour les indicateurs à la une
+    &.alaune .row .panel {
+        border-color: @grisClair;
+        .panel-heading {
+            color: @baseFontColor;
+            background-color: @grisClairPlusPlus;
+            border-color: @grisClair;
+        }
+
+        .picto {
+            &.bien-etre {
+                background-position: -850px -100px;
+            }
+            &.economie {
+                background-position: -800px -100px;
+            }
+            &.education {
+                background-position: -750px -100px;
+            }
+            &.energie {
+                background-position: -700px -100px;
+            } 
+            &.environnement {
+                background-position: -650px -100px;
+            } 
+            &.evolution {
+                background-position: -600px -100px;
+            }
+            &.immobilier {
+                background-position: -550px -100px;
+            }
+            &.logement {
+                background-position: -500px -100px;
+            }
+            &.meteo {
+                background-position: -450px -100px;
+            }
+            &.politique {
+                background-position: -400px -100px;
+            }
+            &.sante {
+                background-position: -350px -100px;
+            }
+            &.ski {
+                background-position: -3000px -100px;
+            }
+            &.social {
+                background-position: -250px -100px;
+            }
+            &.sport {
+                background-position: -200px -100px;
+            }
+            &.technologie {
+                background-position: -150px -100px;
+            }
+            &.tourisme {
+                background-position: -100px -100px;
+            }
+            &.transport {
+                background-position: -50px -100px;
+            }
+
+        }           
+
+    }
+
+
+
+
+
+
+
 
 }
 
