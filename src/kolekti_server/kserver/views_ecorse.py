@@ -355,28 +355,28 @@ class ElocusReportChartView(ElocusMixin, View):
     
 class ElocusTopicSaveView(ElocusMixin, View):
     def post(self, request):
-        print "save"
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
         chartkind =  request.POST.get('chartkind',None)
         wdata =  request.POST.get('wysiwygdata',None)
         try:
             report = self.get_report(release_path)
-            print request.POST
             if not chartkind is None:
                 chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
                                         namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
                 chart.set('data-chartkind', chartkind )
                 
             if not wdata is None:
-                xdata = self.parse_html_string(wdata)
-                logger.debug(ET.tostring(xdata))
-                ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-wysiwyg']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
-                for child in ana:
-                    ana.remove(child)
-                for elt in xdata.xpath('/html/body/*'):
-                    ana.append(elt)
-                logger.debug(ET.tostring(ana))
+                try:
+                    xdata = self.parse_html_string(wdata)
+
+                    ana = report.xpath("//html:div[@id = '%s']/html:div[@class='kolekti-component-wysiwyg']"%topicid, namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+                    for child in ana:
+                        ana.remove(child)
+                    for elt in xdata.xpath('/html/body/*'):
+                        ana.append(elt)
+                except ET.XMLSyntaxError:
+                    pass
             self.write_report(report, release_path)
         except:
             import traceback
