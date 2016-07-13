@@ -97,6 +97,10 @@ $(document).ready(function() {
 		$(this).html('')
 		drawchart(this, false)
 	    });
+	    $('.alaune').find('.ecorse-chart').each(function() {
+		$(this).html('')
+		drawchart(this, false)
+	    });
 	    
 	})
 	
