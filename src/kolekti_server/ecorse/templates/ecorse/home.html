@@ -11,91 +11,38 @@
 {% endblock %}
 
 {% block sidebar %}
-	<div id="side-menu" class="">
-	
-	  <div class="panel panel-default">
-	    <div class="panel-heading">
-	      <h3 class="panel-title"><a href="/"><strong>{{ territoire.project.description }}</strong></a></h3>
-	    </div>
-	    
-	    <div class="panel-heading">
-	      <h3 class="panel-title"><a href="?release=/releases/{{ current }}"><strong>{{ reportname }}</strong></a></h3>
-	    </div>
-	    
-	    
-	    
-	    <div class="panel-footer">
-	      <div class="btn-group">
-		<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
-		  <i class="fa fa-refresh"></i>&nbsp;
-		  Actualiser
-		</a>
-	      </div>
-	      <div class="btn-group">
-		<a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-		  <i class="fa fa-download"></i>&nbsp;
-		  Télécharger&nbsp;
-		  <span class="caret"></span>
-		</a>
-		
-		<ul class="dropdown-menu btn-sm-dropdown" role="menu">
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
-		      <i class="fa fa-file-pdf-o"></i>&nbsp;
-		      Pdf
-		    </a>
-		  </li>
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
-		      <i class="fa fa-file-word-o"></i>&nbsp;
-		      Word
-		    </a>
-		  </li>
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
-		      <i class="fa fa-file-powerpoint-o"></i>&nbsp;
-		      PowerPoint
-		    </a>
-		  </li>
-		  <li role="presentation">
-		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
-		      <i class="fa fa-share-alt"></i>&nbsp;
-		      Partager
-		    </a>
-		  </li>
-		</ul>			
-	      </div>
-	    </div>
-  	    
-  	    <div class="panel-body">
-	      {{ menu|safe }}
-	    </div>
-	  </div>
-	</div>
-
-
+	{# ce block n'est chargé que si on a un release, ce qui n'est pas le cas pour la page d'accueil #}	
 {% endblock %}
 
 
 {% block content %}
-	<div class="row">
-	  {% for project in projects %}
-	  <div class="col-md-6">
-	    <div class="panel panel-default">
-	      <div class="panel-heading">
-		{{ project.title }}
-	      </div>
-	      <div class="panel-body">
-		<ul>
-		  {% for report in project.reports %}
-		  <li><a href="{{ report.url }}">{{ report.title }}</a></li>
-		  {% endfor %}
-		</ul>
-	      </div>
-	    </div>
-	  </div>
-	  {% endfor %}
+	<div class="accueil-general">
+		<div class="row">
+			<div class="col-md-offset-2 col-md-8">
+				<div class="row">
+					{% for project in projects %}
+					<div class="col-md-6">
+						<div class="panel panel-default bg-custom-color-{{ forloop.counter }}">
+							<div class="panel-heading">
+							<div class="huge">
+								{{ project.title }} 
+								</div>
+							</div>
+							<div class="panel-body">
+								<ul>
+									{% for report in project.reports %}
+									<li><a href="{{ report.url }}">{{ report.title }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
 	</div>
+	
 	
 	{% include "ecorse/modal_create.html" %}
 		

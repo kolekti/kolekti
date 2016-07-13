@@ -62,9 +62,10 @@
 					<a class="navbar-brand page-scroll" href="/"><img height="40px" src="/static/img/logo.png" alt="logo Ecorse"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
+					{% if release %}
 					<ul class="nav navbar-nav">
-					  <li class="active"><a href="/">Accueil</a></li>
-					  {% if user.is_authenticated %}  
+					    <li class="active"><a href="/">Accueil</a></li>
+					    {% if user.is_authenticated %}  
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Rapports &nbsp;<span class="caret"></span></a>
 							<ul class="dropdown-menu">
@@ -85,51 +86,52 @@
 						</li>
 						{% endif %}
 					</ul>
+					{% endif %}
 
 					<ul class="nav navbar-nav navbar-right">
 					    {% comment %}
-						    <li>
-						    	<a href="http://www.ecorse.eu">À propos</a>
-						    </li>
+					    <li>
+					    	<a href="http://www.ecorse.eu">À propos</a>
+					    </li>
 					    {% endcomment %}
 					    {% if user.is_authenticated %}    
-						    <li class="dropdown">
-						        <a href="#" data-toggle="dropdown" class="dropdown-toggle active" aria-expanded="false">
-	                                <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
-	                            </a>
-	                            <ul class="dropdown-menu dropdown-user">
-									<li>
-										<a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
-									</li>
-									{% comment %}
-										<li>
-											<a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
-										</li>
-									{% endcomment %}
-									<li class="divider"></li>
-									<li>
-										<a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
-									</li>
-	                            </ul>
-	                            <!-- /.dropdown-user -->
-	                        </li>
+					    <li class="dropdown">
+					        <a href="#" data-toggle="dropdown" class="dropdown-toggle active" aria-expanded="false">
+                                <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user">
+								<li>
+									<a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
+								</li>
+								{% comment %}
+								<li>
+									<a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
+								</li>
+								{% endcomment %}
+								<li class="divider"></li>
+								<li>
+									<a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
+								</li>
+                            </ul>
+                            <!-- /.dropdown-user -->
+                        </li>
                         {% endif %}
 						{% comment %}
-	                        <li>
-								<form class="navbar-form navbar-left" role="search">
-									<div class="form-group input-group custom-search-form">
-                                        <input type="text" placeholder="Search..." class="form-control">
-		                                <span class="input-group-btn">
-		                                <button type="button" class="btn btn-default">
-		                                    <i class="fa fa-search"></i>
-		                                </button>
-		                            </span>
-		                            </div>
-	                            </form>
-			    			</li>
+                        <li>
+							<form class="navbar-form navbar-left" role="search">
+								<div class="form-group input-group custom-search-form">
+                                    <input type="text" placeholder="Search..." class="form-control">
+	                                <span class="input-group-btn">
+	                                <button type="button" class="btn btn-default">
+	                                    <i class="fa fa-search"></i>
+	                                </button>
+	                            </span>
+	                            </div>
+                            </form>
+		    			</li>
 						{% endcomment %}
 						<li>
-							<button id="fullscreen" type="button" class="btn btn-default navbar-btn">
+							<button id="fullscreen" type="button" class="btn btn-default navbar-btn hidden-xs" data-toggle="modal" data-target="#FullScreenModal">
 								<a title="Plein écran" data-action="launchFullscreen" href="javascript:void(0);"><i class="fa fa-arrows-alt"></i></a>
 							</button>
 						</li>
@@ -167,40 +169,39 @@
 	                </div>
 	                
 	                {% comment %}
-		                <div class="col-md-offset-4 col-md-4">
-		                    <ul class="list-inline social-buttons">
-		                        <li><a href="https://twitter.com/ecorse"><i class="fa fa-twitter"></i></a>
-		                        </li>
-		                        <li><a href="https://www.facebook.com/ecorse/"><i class="fa fa-facebook"></i></a>
-		                        </li>          
-		                    </ul>
-		                </div>
+	                <div class="col-md-offset-4 col-md-4">
+	                    <ul class="list-inline social-buttons">
+	                        <li><a href="https://twitter.com/ecorse"><i class="fa fa-twitter"></i></a>
+	                        </li>
+	                        <li><a href="https://www.facebook.com/ecorse/"><i class="fa fa-facebook"></i></a>
+	                        </li>          
+	                    </ul>
+	                </div>
 	                {% endcomment %}
 	            </div>
 	        </div>
 	    </footer>
 
-		{% comment %}
-			<div class="modal fade">
-				<div class="modal-dialog modal-lg">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
-							<h4 class="modal-title">{% block modal-title %}Modal title{% endblock %}</h4>
-						</div>
-						<form id="modalform" method="POST">
-							<div class="modal-body">
-								{% block modal-body %}<p>Generic modal</p>{% endblock %}
-							</div>
-							<div class="modal-footer">
-								{% block modal-footer %}{% endblock %}
-								<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-							</div>
-						</form>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-		{% endcomment %}
+		<!-- Modal pour explication full screen -->
+		<div class="modal fade hidden-xs" id="FullScreenModal" tabindex="-1" role="dialog" aria-labelledby="FullScreenModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Passer en mode plein écran</h4>
+					</div>
+					<div class="modal-body">
+						<p>
+							Pour enclencher la fonction plein écran, utilisez la touche <strong>F11</strong> de votre clavier. Celle-ci permet de faire basculer votre navigateur entre le mode normal et le mode plein écran.<br>
+							Pour sortir du mode plein écran, utilisez la touche <strong>echap</strong> ou de nouveau la touche F11.  
+						</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 		<script src="/static/jquery.js"></script>
@@ -216,8 +217,9 @@
 		-->
 
 		{# scripts additionnels Felix #}
-		<script src="/static/js/screenfull.min.js"></script>{# cf. https://github.com/sindresorhus/screenfull.js #}
+		{# retiré car sort du plein écran lorsqu'on change d'url <script src="/static/js/screenfull.min.js"></script> cf. https://github.com/sindresorhus/screenfull.js #}
 		<script>			
+			
 			$(function() {
 				// jQuery for page scrolling feature - requires jQuery Easing plugin
 			    $('a.page-scroll').bind('click', function(event) {
@@ -228,15 +230,17 @@
 			        event.preventDefault();
 			    });
 
+			    /* retiré car sort du plein écran lorsqu'on change d'url
 			    //full screen avec sreenfull.js
 			    if (typeof screenfull == 'undefined') {
 			    	$('#fullscreen').hide();
-			    }			    
+			    }    
 			    $('#fullscreen').click (() => {
 				    if (screenfull.enabled) {
-				        screenfull.toggle();
+				        //screenfull.toggle();
+				        screenfull.request();
 			        }
-				});
+				}); */
 			});
 
 			/* $('.sidebar').affix({

@@ -12,13 +12,16 @@
 Variables
 ========================================== */
 
-@cielLogo : rgb(0,177,216);
-@marineLogo: rgb(30,75,99);
-@orangeLogo: rgb(243,101,42);
+@cielLogo : rgb(0,177,216); // = #00B1D8
+@marineLogo: rgb(30,75,99); // = #1E4B63
+@orangeLogo: rgb(243,101,42); // = #F3652A
 //@orangeDarken : rgb(221,144,17);
 @orangeDarken : lighten(@orangeLogo, 3%);
 @orangeDarken : saturate(@orangeLogo, -2%);
 
+//couleurs graphiques 
+//dans /kolekti/src/kolekti_server/kserver/static/components/js/chart_functions.js
+// #00B1D8 #1E4B63 #F3652A #424242 #a8282e #184931
 
 
 @rougeFonce : #990000  ;
@@ -46,23 +49,46 @@ Variables
 @admLinkColorHover : @orangeDarken;
 
 
-@bien-etre : #BA1570;
-@economie : #201f1f;
-@education : #ebc53b;
-@energie : #0aae1d;
-@environnement : #358d4d;
-@evolution : #a8282e;
-@immobilier : #2e4686;
-@logement : #4b3723;
-@meteo : #00a2d7;
-@politique : #c86732;
-@sante : #a8282e;
-@ski : #4b518d;
-@social : #d48a38;
-@sport : #184931;
-@technologie : #3b49b2;
-@tourisme : #a0518c;
-@transport : #87b866;
+//palette de couleurs
+@custom-color-1 : #BA1570;
+@custom-color-2 : #201f1f;
+@custom-color-3 : #ebc53b;
+@custom-color-4 : #0aae1d;
+@custom-color-5 : #358d4d;
+@custom-color-6 : #a8282e;
+@custom-color-7 : #2e4686;
+@custom-color-8 : #4b3723;
+@custom-color-9 : #00a2d7;
+@custom-color-10 : #c86732;
+@custom-color-11 : #a8282e;
+@custom-color-12 : #4b518d;
+@custom-color-13 : #d48a38;
+@custom-color-14 : #184931;
+@custom-color-15 : #3b49b2;
+@custom-color-16 : #a0518c;
+@custom-color-17 : #87b866;
+
+@bien-etre : @custom-color-1;
+@economie : @custom-color-2;
+@education : @custom-color-3;
+@energie : @custom-color-4;
+@environnement : @custom-color-5;
+@evolution : @custom-color-6;
+@immobilier : @custom-color-7;
+@logement : @custom-color-8;
+@meteo : @custom-color-9;
+@politique : @custom-color-10;
+@sante : @custom-color-11;
+@ski : @custom-color-12;
+@social : @custom-color-13;
+@sport : @custom-color-14;
+@technologie : @custom-color-15;
+@tourisme : @custom-color-16;
+@transport : @custom-color-17;
+
+.custom-color(@number) {
+  @return: '#BA1570'; 
+}
 
 @ftSz_42px: 2.62em;
 @ftSz_25px: 1.56em;
@@ -151,7 +177,6 @@ Fonctions
   //.border-left-radius(@radius);
 }
 
-
 .threeD-ball (@colorStart, @start, @colorMiddle, @middle, @colorStop, @stop, @horizOffset, @vertOffset, @angle) {
 	// .3d-ball (yellow, 0%, red, 95%, orange, 100%, 45px, 45px, 45deg);
 	background-image: -moz-radial-gradient(@horizOffset @vertOffset @angle, circle cover, @colorStart @start, @colorStop @stop, @colorMiddle @middle );
@@ -174,3 +199,14 @@ Fonctions
   .box-shadow-color(1px 2px 3px 0px, 0);
 }
 
+/* Pour mémoire
+//ceci est une fonction recursive pour générer les classes bg-custom-color-{i} :
+.generate-bg-by-class(7);
+.generate-bg-by-class(@n, @i: 1) when (@i =< @n) {
+    &.bg-custom-color-@{i} .panel-heading {
+        @string:replace('custom-color-1','1','@{i}');
+        background-color: @@string;
+    }
+    .generate-bg-by-class(@n, (@i + 1));
+}
+*/
