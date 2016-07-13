@@ -62,9 +62,10 @@
 					<a class="navbar-brand page-scroll" href="/"><img height="40px" src="/static/img/logo.png" alt="logo Ecorse"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
+					{% if release %}
 					<ul class="nav navbar-nav">
-					  <li class="active"><a href="/">Accueil</a></li>
-					  {% if user.is_authenticated %}  
+					    <li class="active"><a href="/">Accueil</a></li>
+					    {% if user.is_authenticated %}  
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Rapports &nbsp;<span class="caret"></span></a>
 							<ul class="dropdown-menu">
@@ -85,48 +86,49 @@
 						</li>
 						{% endif %}
 					</ul>
+					{% endif %}
 
 					<ul class="nav navbar-nav navbar-right">
 					    {% comment %}
-						    <li>
-						    	<a href="http://www.ecorse.eu">À propos</a>
-						    </li>
+					    <li>
+					    	<a href="http://www.ecorse.eu">À propos</a>
+					    </li>
 					    {% endcomment %}
 					    {% if user.is_authenticated %}    
-						    <li class="dropdown">
-						        <a href="#" data-toggle="dropdown" class="dropdown-toggle active" aria-expanded="false">
-	                                <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
-	                            </a>
-	                            <ul class="dropdown-menu dropdown-user">
-									<li>
-										<a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
-									</li>
-									{% comment %}
-										<li>
-											<a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
-										</li>
-									{% endcomment %}
-									<li class="divider"></li>
-									<li>
-										<a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
-									</li>
-	                            </ul>
-	                            <!-- /.dropdown-user -->
-	                        </li>
+					    <li class="dropdown">
+					        <a href="#" data-toggle="dropdown" class="dropdown-toggle active" aria-expanded="false">
+                                <i class="fa fa-user fa-fw"></i> {{ user.first_name }} {{ user.last_name }}&nbsp;<span class="caret"></span></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user">
+								<li>
+									<a href="{% url 'user_profile' %}"><i class="fa fa-user fa-fw"></i> Mon profil</a>
+								</li>
+								{% comment %}
+								<li>
+									<a href="#"><i class="fa fa-gear fa-fw"></i> Configuration</a>
+								</li>
+								{% endcomment %}
+								<li class="divider"></li>
+								<li>
+									<a href="{% url 'logout' %}?next=/elocus/"><i class="fa fa-sign-out fa-fw"></i> Déconnexion</a>
+								</li>
+                            </ul>
+                            <!-- /.dropdown-user -->
+                        </li>
                         {% endif %}
 						{% comment %}
-	                        <li>
-								<form class="navbar-form navbar-left" role="search">
-									<div class="form-group input-group custom-search-form">
-                                        <input type="text" placeholder="Search..." class="form-control">
-		                                <span class="input-group-btn">
-		                                <button type="button" class="btn btn-default">
-		                                    <i class="fa fa-search"></i>
-		                                </button>
-		                            </span>
-		                            </div>
-	                            </form>
-			    			</li>
+                        <li>
+							<form class="navbar-form navbar-left" role="search">
+								<div class="form-group input-group custom-search-form">
+                                    <input type="text" placeholder="Search..." class="form-control">
+	                                <span class="input-group-btn">
+	                                <button type="button" class="btn btn-default">
+	                                    <i class="fa fa-search"></i>
+	                                </button>
+	                            </span>
+	                            </div>
+                            </form>
+		    			</li>
 						{% endcomment %}
 						<li>
 							<button id="fullscreen" type="button" class="btn btn-default navbar-btn hidden-xs" data-toggle="modal" data-target="#FullScreenModal">
