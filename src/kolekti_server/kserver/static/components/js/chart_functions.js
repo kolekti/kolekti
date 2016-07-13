@@ -69,8 +69,7 @@ var drawchart = function(elt, anim, windowwidth) {
 	
 	
     var seriescolor = d3.scale.ordinal()
-	.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-    
+	.range(["#00B1D8", "#1E4B63", "#F3652A", "#424242", "#a8282e", "#184931"]);    
     
     var colorscale = d3.scale.ordinal()
 	.domain(by_place.map(function(d) {
