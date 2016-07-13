@@ -89,13 +89,15 @@ class ElocusPublicMixin(kolektiPublicMixin):
     def get_project_reports(self, project):
         releasespath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project.directory, 'releases')
         for report in os.listdir(releasespath):
-#            job = self.get_job(release_path)
-#            return job.xpath("string(/job/@pubname)")
-            report_title = report
-            report_url = '/projects/activate?project=%s&redirect=/elocus/report/?release=/releases/%s'%(project.directory, report)
-            yield {'title': report_title,
-                   'url': report_url
-                   }
+            try:
+                job = ET.parse(os.path.join(releasespath, report, 'kolekti', 'publication-parameters', report + '_asm.xml' ))
+                report_title = job.xpath("string(/job/@pubname)")
+                report_url = '/projects/activate?project=%s&redirect=/elocus/report/?release=/releases/%s'%(project.directory, report)
+                yield {'title': report_title, 'url': report_url}
+            except:
+                import traceback
+                print traceback.format_exc()
+                logger.exception('projects report failed')
         
     def collect_components(self, root, starred):
         comps = set()
