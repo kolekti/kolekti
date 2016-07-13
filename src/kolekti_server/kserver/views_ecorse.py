@@ -474,7 +474,8 @@ class ElocusReportShareUrlView(ElocusMixin, View):
             sl = ShareLink.objects.get(project__user = request.user, reportname = reportname)
         except ShareLink.DoesNotExist:
             import md5
-            h = md5.md5(unicode(self.kolekti_userproject) + reportname) 
+            hstr = (unicode(self.kolekti_userproject) + reportname).encode('utf-8')             
+            h = md5.md5(hstr)
             reportid = h.hexdigest()
             sl = ShareLink(project = self.kolekti_userproject,
                            reportname = reportname,
