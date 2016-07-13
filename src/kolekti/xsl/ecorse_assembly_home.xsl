@@ -147,7 +147,7 @@
       <xsl:text>#</xsl:text>
       <xsl:value-of select="@id"/>
     </xsl:variable>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
       <div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
 	<div class="panel-heading">
 	  <div class="row">

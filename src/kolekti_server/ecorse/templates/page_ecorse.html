@@ -256,6 +256,20 @@
 					doResizeActions(mapsReady, chartsReady);
 				});
 
+
+				//pour ouverture accordéon quand on suit un lien d'indicateur à la une
+				$("#collapse_section_sidm519015344").collapse('show');
+				var pageUrl = window.location.href;
+				var hasEltIdInPageUrl = pageUrl.indexOf("#"); 
+				if (hasEltIdInPageUrl != -1) {
+					var eltIdInPageUrl = '#' + pageUrl.split('#')[1];
+					$(eltIdInPageUrl).parents().collapse('show');
+					$('html, body').animate({
+						scrollTop: $(eltIdInPageUrl).offset().top - 60
+					}, 1000);
+				}
+				
+
 			});
 
 			function doResizeActions(mapsReady, chartsReady) {
@@ -270,13 +284,14 @@
 			function equalizePanelHeadings(elt) {
 				var maxHeight = 0;
 				var panelHeadings = $('.panel .panel-heading',elt);
+				//on enlève la spécification assignée par un appel précédent à cette fonction
+				$(panelHeadings).css('height', 'inherit');
 				// Select and loop the elements you want to equalise
 				$(panelHeadings).each(function(){
 					if($(this).height() > maxHeight) {
 					  maxHeight = $(this).height(); 
 					}
-				});  
-				    
+				}); 
 				// Set the height of all those children to whichever was highest 
 				$(panelHeadings).height(maxHeight);
 			}
