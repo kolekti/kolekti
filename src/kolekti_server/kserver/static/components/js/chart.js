@@ -8,7 +8,7 @@ $(document).ready(function() {
 		drawchart(this, true)
 	});
 
-	$("body").trigger( "elocus.graphics.displayed", [ "map" ] );
+	$("body").trigger( "elocus.graphics.displayed", [ "chart" ] );
 
 	// remove chart drawing on section collapse hide
 	$('.section-content.collapse').on('hidden.bs.collapse', function(e) {

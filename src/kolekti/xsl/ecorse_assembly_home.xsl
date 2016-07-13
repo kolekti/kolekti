@@ -105,7 +105,7 @@
     </xsl:variable>
     
     
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
       <div class="panel panel-primary {html:h1/@class}">
 	<div class="panel-heading">
 	  <div class="row">

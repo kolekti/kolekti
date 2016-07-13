@@ -9,7 +9,7 @@
 		
 		<!-- Bootstrap -->
 		{% if DEBUG %} {# paramètre DEBUG dans /media/donnees/web/ecorse/kolekti/src/kolekti_server/kolekti_server/settings.py #}
-			{% with use_bsless=True %}
+			{% with use_bsless=False %}
 				<!-- Bootstrap -->
 				{% if use_bsless %}				
 					<link rel="stylesheet/less" type="text/css" href="/static/bootstrap/less/bootstrap.less"/>
@@ -241,7 +241,47 @@
 				        screenfull.request();
 			        }
 				}); */
+
+
+				// fonctions pour harmoniser les hauteurs aprés un changement de taille d'écran
+				var mapsReady = $(".leafletmap").length == 0 ? true : false;
+				var chartsReady = $(".ecorse-chart").length == 0 ? true : false;
+				doResizeActions(mapsReady, chartsReady);
+				$('body').on('elocus.graphics.displayed', function(e, component) { //evt déclarés dans chart.js et map.js
+					if(component == 'map') mapsReady = true;
+					if(component == 'chart') chartsReady = true;					
+					doResizeActions(mapsReady, chartsReady);
+				});
+				$( window ).resize(function() {
+					doResizeActions(mapsReady, chartsReady);
+				});
+
 			});
+
+			function doResizeActions(mapsReady, chartsReady) {
+				console.log ("doResizeActions (mapsReady:" + mapsReady + ", chartsReady:" + chartsReady + ")");
+				if(mapsReady && chartsReady) {
+					$('.accueil.sections').each(function(){
+						equalizePanelHeadings(this);						
+					});
+				}
+			}
+
+			function equalizePanelHeadings(elt) {
+				var maxHeight = 0;
+				var panelHeadings = $('.panel .panel-heading',elt);
+				// Select and loop the elements you want to equalise
+				$(panelHeadings).each(function(){
+					if($(this).height() > maxHeight) {
+					  maxHeight = $(this).height(); 
+					}
+				});  
+				    
+				// Set the height of all those children to whichever was highest 
+				$(panelHeadings).height(maxHeight);
+			}
+
+			
 
 			/* $('.sidebar').affix({
 			    offset: {
