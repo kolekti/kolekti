@@ -139,6 +139,14 @@
 
   <!-- topics à la une -->
   <xsl:template match = "html:div[@class='topic'][@data-star]">
+    <xsl:variable name="topiclink">
+      <xsl:text>/elocus/report/?release=</xsl:text>
+      <xsl:value-of select="$path"/>
+      <xsl:text>&amp;section=</xsl:text>
+      <xsl:value-of select="ancestor::html:div[@class='section'][last()]/@id"/>
+      <xsl:text>#</xsl:text>
+      <xsl:value-of select="@id"/>
+    </xsl:variable>
     <div class="col-lg-3 col-md-6">
       <div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
 	<div class="panel-heading">
@@ -157,6 +165,15 @@
 	  <xsl:apply-templates select=".//html:div[@class='kolekti-component-chart']" mode="topicbody"/>
 	  <xsl:apply-templates select=".//html:div[@class='kolekti-component-map']" mode="topicbody"/>
 	</div>
+	<a href="{$topiclink}">
+	  <div class="panel-footer">
+	    <span class="pull-left"> Accéder à l'indicateur </span>
+	    <span class="pull-right">
+	      <i class="fa fa-arrow-circle-right"></i>
+	    </span>
+	    <div class="clearfix"></div>
+	  </div>
+	</a>
       </div>
     </div>
 
