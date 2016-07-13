@@ -278,6 +278,13 @@
 					$('.accueil.sections').each(function(){
 						equalizePanelHeadings(this);						
 					});
+					$('.accueil.alaune .panel-body').each(function(){
+						equalizeTopics(this);						
+					});
+					$('.panel-collapse').each(function(){
+						equalizeTopics(this);						
+					});
+
 				}
 			}
 
@@ -294,6 +301,34 @@
 				}); 
 				// Set the height of all those children to whichever was highest 
 				$(panelHeadings).height(maxHeight);
+			}
+
+			function equalizeTopics(elt) {
+				var maxHeightHeadings = 0;
+				var panelHeadings = $('.panel .panel-heading',elt);
+				//on enlève la spécification assignée par un appel précédent à cette fonction
+				$(panelHeadings).css('height', 'inherit');
+				// Select and loop the elements you want to equalise
+				$(panelHeadings).each(function(){
+					if($(this).height() > maxHeightHeadings) {
+					  maxHeightHeadings = $(this).height(); 
+					}
+				}); 
+				// Set the height of all those children to whichever was highest 
+				$(panelHeadings).height(maxHeightHeadings);
+
+				var maxHeightBodys = 0;
+				var panelBodys = $('.panel .panel-body',elt);
+				//on enlève la spécification assignée par un appel précédent à cette fonction
+				$(panelBodys).css('height', 'inherit');
+				// Select and loop the elements you want to equalise
+				$(panelBodys).each(function(){
+					if($(this).height() > maxHeightBodys) {
+					  maxHeightBodys = $(this).height(); 
+					}
+				}); 
+				// Set the height of all those children to whichever was highest 
+				$(panelBodys).height(maxHeightBodys);
 			}
 
 			
