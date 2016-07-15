@@ -66,13 +66,16 @@ $(document).ready(function() {
     // collapse : initialisation CKEditor sur déroulé
     $('.section-content.collapse').on('shown.bs.collapse', function () {
 	var editor, edid = $(this).find('.description-editor').attr('id')
-	if (CKEDITOR.instances[edid] == undefined)
-	    editor = CKEDITOR.replace(edid,{startupFocus : true})
-	else {
-	    editor = CKEDITOR.instances[edid]
-	    editor.focus()
+	if (typeof(edid) != 'undefined') {
+	    if (CKEDITOR.instances[edid] == undefined)
+		editor = CKEDITOR.replace(edid,{startupFocus : true})
+	    else {
+		editor = CKEDITOR.instances[edid]
+		editor.focus()
+	    }
+	
+	    editor.ecorse_state = false
 	}
-	editor.ecorse_state = false
     })
 
     // initialisation CKEditor dans modal edition topic
