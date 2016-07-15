@@ -244,13 +244,16 @@
 
 
 				// fonctions pour harmoniser les hauteurs aprés un changement de taille d'écran
-				var mapsReady = $(".leafletmap").length == 0 ? true : false;
-				var chartsReady = $(".ecorse-chart").length == 0 ? true : false;
+				var mapsReady = ($(".leafletmap").length == 0);
+				var chartsReady = ($(".ecorse-chart").length == 0);
 				doResizeActions(mapsReady, chartsReady);
-				$('body').on('elocus.graphics.displayed', function(e, component) { //evt déclarés dans chart.js et map.js
+				$('body').on("displayed.topics.alaune", function(e, component) { //evt déclarés dans chart.js et map.js
 					if(component == 'map') mapsReady = true;
 					if(component == 'chart') chartsReady = true;					
-					doResizeActions(mapsReady, chartsReady);
+		doResizeActions(mapsReady, chartsReady);
+		if(mapsReady && chartsReady) {
+		doOpenTopic();
+		}
 				});
 				$( window ).resize(function() {
 					doResizeActions(mapsReady, chartsReady);
@@ -258,22 +261,30 @@
 
 
 				//pour ouverture accordéon quand on suit un lien d'indicateur à la une
-				$("#collapse_section_sidm519015344").collapse('show');
-				var pageUrl = window.location.href;
-				var hasEltIdInPageUrl = pageUrl.indexOf("#"); 
-				if (hasEltIdInPageUrl != -1) {
-					var eltIdInPageUrl = '#' + pageUrl.split('#')[1];
-					$(eltIdInPageUrl).parents().collapse('show');
+		var doOpenTopic = function() {
+		var pageUrl = window.location.href;
+		var hasEltIdInPageUrl = pageUrl.indexOf("#"); 
+		if (hasEltIdInPageUrl != -1) {
+		if (!$('body').data('opened')) {
+		var eltIdInPageUrl = '#' + pageUrl.split('#')[1];
+		console.log($(eltIdInPageUrl).closest(".section-content.collapse"));
+
+		                        $(eltIdInPageUrl).parents().collapse('show');
+		$(eltIdInPageUrl).closest(".section-content.collapse").trigger("shown.elocus.section");
+		
 					$('html, body').animate({
 						scrollTop: $(eltIdInPageUrl).offset().top - 60
 					}, 1000);
 				}
-				
+		}
+		$('body').data('opened',true);
+		}
 
 			});
 
 			function doResizeActions(mapsReady, chartsReady) {
-				console.log ("doResizeActions (mapsReady:" + mapsReady + ", chartsReady:" + chartsReady + ")");
+		console.log ("doResizeActions (mapsReady:" + mapsReady + ", chartsReady:" + chartsReady + ")");
+		
 				if(mapsReady && chartsReady) {
 					$('.accueil.sections').each(function(){
 						equalizePanelHeadings(this);						
@@ -281,9 +292,10 @@
 					$('.accueil.alaune .panel-body').each(function(){
 						equalizeTopics(this);						
 					});
-					$('.panel-collapse').each(function(){
+					$('.panel-collapse.in').each(function(){
 						equalizeTopics(this);						
-					});
+		});
+
 
 				}
 			}

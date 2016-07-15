@@ -88,6 +88,7 @@ $(document).ready(function() {
 		wheight = 400;
 	    $(this).attr('style','width:100%; height:'+ wheight +'px ; position:relative');
 	});
+	$("body").trigger( "elocus.graphics.displayed", [ "map" ] );
     };
     
     $(window).on('resize', resize);

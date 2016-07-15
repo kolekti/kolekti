@@ -7,8 +7,8 @@ $(document).ready(function() {
 	$('.alaune .ecorse-chart').each(function() {
 		drawchart(this, true)
 	});
+	$("body").trigger( "displayed.elocus.alaune", [ "chart" ] );
 
-	$("body").trigger( "elocus.graphics.displayed", [ "chart" ] );
 
 	// remove chart drawing on section collapse hide
 	$('.section-content.collapse').on('hidden.bs.collapse', function(e) {
@@ -18,9 +18,10 @@ $(document).ready(function() {
 		});
 	    }
 	});
-
+					  
 	// display chart drawing on section collapse show
 	$('.section-content.collapse').on('shown.bs.collapse', function(e) {
+	    console.log('collapse show');
 	    if ($(e.target).hasClass('section-content')) {
 		$('.report').attr('style','padding-bottom:1200px;')
 		$(e.target).find('.panel .ecorse-chart').each(function() {
@@ -28,8 +29,10 @@ $(document).ready(function() {
 		    drawchart(this, true)
 		});
 		$('.report').attr('style','padding-bottom:40px;')
+		$(e.target).trigger( "displayed.elocus.topics", [ "chart" ] );
 	    }
 	});
+
 	
 	// display chart drawing on edit modal show	
 	$('.modal-topic-details').on('show.bs.modal', function(e) {
@@ -97,11 +100,12 @@ $(document).ready(function() {
 		$(this).html('')
 		drawchart(this, false)
 	    });
+	    $(e.target).trigger( "displayed.elocus.topics", [ "chart" ] );
 	    $('.alaune').find('.ecorse-chart').each(function() {
 		$(this).html('')
 		drawchart(this, false)
 	    });
-	    
+	    $(e.target).trigger( "displayed.elocus.alaune", [ "chart" ] );
 	})
 	
 	
