@@ -269,10 +269,59 @@ body {
 			.panel-body {
 				h4 {
 					margin-top: 0;
+					a {
+						color: @orangeLogo;
+						font-size: 1.1em;
+					}
 				} 
-				i, .caret {
-					color: @baseFontColor;
-				}
+
+			    .btn-group, .dropdown {
+			    	a {
+			    		i, .caret {
+			    			color: @baseFontColor;
+			    			&:hover {
+				    			color: @blanc;
+				    		}
+			    		}
+			    		&:hover, &.open {
+				    			color: @blanc;
+				    			background-color: @linkColorActive;
+				    			i, .caret {
+				    				color: @blanc;
+				    			}
+			    		}
+			    	}
+			    	ul.dropdown-menu {
+			    		& > .active > a, & > .active > a:hover, & > .active > a:focus {
+							background-color: @orangeDarken;
+							color: @blanc;
+						}
+						&  > li > a:hover {
+							color: @blanc;
+						}
+						i {
+							color: @baseFontColor;
+						}
+			    	}
+			    	&.open {
+			    		a i, a .caret {
+			    			color: @blanc;
+			    		}
+			    		a.dropdown-toggle, a.dropdown-toggle.active {
+				    		color: @blanc;
+				    		background-color: @orangeDarken;
+				    		.box-shadow(inset 0 1px 3px 0px rgba(0,0,0,0.4));
+				    	}
+			    		ul.dropdown-menu {
+							a i {
+								color: @baseFontColor;
+							}
+							a:hover i {
+			    				color: @blanc;
+			    			}
+				    	}
+			    	}
+	    		}
 			}
 			.panel-footer  {
 				padding: 0;
