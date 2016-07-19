@@ -348,6 +348,7 @@ body {
 					&:before {
 						@file: "sprite.png";
 						background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
+						background-size: 900px 300px;
 						content: "";
 						display: block;
 						float: left;
@@ -469,12 +470,13 @@ body {
 			color: @blanc; //@grisFoncePlus; //@orangeLogo;
 			background-color: fadeout(@grisClair, 60%);
 			border-radius: @border-radius-base;
-			padding: 10px 30px 10px 30px;
+			padding: 10px 20px 10px 20px;
 			margin-top: -20px;
 			&:before {
 				@file: "sprite.png";
 				background: url( "@{baseUrlForImages}@{file}" ) no-repeat scroll transparent;
 				background-position: 0px 0px;
+				background-size: 900px 300px;
 				content: "";
 				display: block;
 				float: left;
