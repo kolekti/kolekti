@@ -1,19 +1,12 @@
 {% extends "page_ecorse.html" %}
 
 {% block page-content %}
-<div class="container-fluid">
-  <div class="row">
-    {% if release %}
-    <div class="col-sm-3 col-md-2">
-        <div class="sidebar">
-            {% block sidebar %}{% endblock %}
-        </div>
-    </div>
-    <div class="col-sm-9 col-md-10 main">
-    {% else %}
-    <div class="col-sm-12 main">
-    {% endif %}
 
+
+<div id="bootstrapContent" class="container-fluid">
+  <div class="row">
+
+    <div class="col-md-12 main">
     
     {% comment %}
     <div class="well breadcumb-wrapper">
@@ -43,6 +36,16 @@
       </ol>
       {% endif %}
     </div>
+
+    {% if release %}
+    <div class="visible-xs-block">
+        <div class="sidebar">                       
+            {% block sidebar %}{% endblock %}       
+        </div>
+    </div>
+    {% endif %}
+
+
 
 
     {% block content %}generic template{% endblock %}

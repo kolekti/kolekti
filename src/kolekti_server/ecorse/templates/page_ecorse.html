@@ -48,14 +48,37 @@
 	</head>
 
 	<body role="document">
+
+
+
+		{% if release %}
+		<div class="hidden-xs">
+			<div id="mySidenav" class="sidenav">
+				<div class="container-fluid">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="sidebar">						
+						        {% block sidebar %}{% endblock %}		
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>	
+		{% endif %}
+
+
+
 		<!-- Fixed navbar -->
 		<nav class="navbar navbar-ecorse navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
-					{% comment %} <button type="button" class="navbar-toggle collapsed btn btn-default navbar-btn" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar" title="Afficher/Cacher le menu">
-						<span class="sr-only">Toggle navigation</span>
+					<button id="closeNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Cacher le menu" style="display:none;">
+						<i class="fa fa-times"></i>
+					</button>
+					<button id="openNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Afficher le menu">
 						<i class="fa fa-reorder"></i>
-					</button> {% endcomment %}
+					</button> 
 					<button class="navbar-toggle collapsed btn btn-default navbar-btn" type="button" id="hide-menu"  data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 								<a href="javascript:void(0);" data-action="toggleMenu" title="Afficher/Cacher le menu"><i class="fa fa-reorder"></i></a>
 							</button>
@@ -184,7 +207,7 @@
 
 		<!-- Bouton retour haut de page -->
 	    <div id="toTop">
-			<a id="topTopLink" href="#" title="haut de page"><i class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></a>
+			<a id="topTopLink" href="#" title="haut de page"><i class="fa fa-level-up fa-2x" aria-hidden="true"></i></a>
 		</div>
 
 		<!-- Modal pour explication full screen -->
@@ -348,7 +371,7 @@
 				$(panelBodys).height(maxHeightBodys);
 			}
 
-			// *** retour haut de page
+			// retour haut de page
 			$(window).scroll(function(){
 				posScroll = $(document).scrollTop();
 				if(posScroll >=300) {
@@ -361,6 +384,31 @@
 			$('#topTopLink').click(function(){
 				$('html').animate({scrollTop:0}, 'slow');
 				return false;
+			});
+
+			//Sidenav Push Content 
+			/* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
+			function openNav() {
+			    $("#mySidenav").css("width", "300px");			    
+			    $("#bootstrapContent").css("marginLeft", "300px");
+			    $("#openNavBtn").hide('400');
+			    $("#closeNavBtn").show('400');
+			}
+
+			/* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+			function closeNav() {
+			    $("#mySidenav").css("width", "0");			    
+			    $("#bootstrapContent").css("marginLeft", "0");
+			    $("#closeNavBtn").hide('400');
+			    $("#openNavBtn").show('400');
+			}
+
+			$("#closeNavBtn").hide('0');
+			$('#openNavBtn').click(function(){
+				openNav();
+			});
+			$('#closeNavBtn').click(function(){
+				closeNav();
 			});
 
 			/* $('.sidebar').affix({
