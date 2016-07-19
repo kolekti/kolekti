@@ -182,6 +182,11 @@
 	        </div>
 	    </footer>
 
+		<!-- Bouton retour haut de page -->
+	    <div id="toTop">
+			<a id="topTopLink" href="#" title="haut de page"><i class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></a>
+		</div>
+
 		<!-- Modal pour explication full screen -->
 		<div class="modal fade hidden-xs" id="FullScreenModal" tabindex="-1" role="dialog" aria-labelledby="FullScreenModalLabel">
 			<div class="modal-dialog" role="document">
@@ -343,7 +348,20 @@
 				$(panelBodys).height(maxHeightBodys);
 			}
 
-			
+			// *** retour haut de page
+			$(window).scroll(function(){
+				posScroll = $(document).scrollTop();
+				if(posScroll >=300) {
+					$('#topTopLink').fadeIn(600);
+					$('#topTopLink').css('display','block');
+				} else {
+					$('#topTopLink').fadeOut(600);
+				}
+			});
+			$('#topTopLink').click(function(){
+				$('html').animate({scrollTop:0}, 'slow');
+				return false;
+			});
 
 			/* $('.sidebar').affix({
 			    offset: {
