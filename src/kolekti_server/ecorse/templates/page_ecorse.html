@@ -246,130 +246,8 @@
 
 		{# scripts additionnels Felix #}
 		{# retiré car sort du plein écran lorsqu'on change d'url <script src="/static/js/screenfull.min.js"></script> cf. https://github.com/sindresorhus/screenfull.js #}
+		<script src="/static/js/kolekti-ecorse-report-widgets.js"></script>
 		<script>			
-			
-			$(function() {
-				// jQuery for page scrolling feature - requires jQuery Easing plugin
-			    $('a.page-scroll').bind('click', function(event) {
-			        var $anchor = $(this);
-			        $('html, body').stop().animate({
-			            scrollTop: $($anchor.attr('href')).offset().top
-			        }, 1500, 'easeInOutExpo');
-			        event.preventDefault();
-			    });
-
-			    /* retiré car sort du plein écran lorsqu'on change d'url
-			    //full screen avec sreenfull.js
-			    if (typeof screenfull == 'undefined') {
-			    	$('#fullscreen').hide();
-			    }    
-			    $('#fullscreen').click (() => {
-				    if (screenfull.enabled) {
-				        //screenfull.toggle();
-				        screenfull.request();
-			        }
-				}); */
-
-
-				// fonctions pour harmoniser les hauteurs aprés un changement de taille d'écran
-				var mapsReady = ($(".leafletmap").length == 0);
-				var chartsReady = ($(".ecorse-chart").length == 0);
-				doResizeActions(mapsReady, chartsReady);
-				$('body').on("displayed.topics.alaune", function(e, component) { //evt déclarés dans chart.js et map.js
-					if(component == 'map') mapsReady = true;
-					if(component == 'chart') chartsReady = true;					
-		doResizeActions(mapsReady, chartsReady);
-		if(mapsReady && chartsReady) {
-		doOpenTopic();
-		}
-				});
-				$( window ).resize(function() {
-					doResizeActions(mapsReady, chartsReady);
-				});
-
-
-				//pour ouverture accordéon quand on suit un lien d'indicateur à la une
-		var doOpenTopic = function() {
-		var pageUrl = window.location.href;
-		var hasEltIdInPageUrl = pageUrl.indexOf("#"); 
-		if (hasEltIdInPageUrl != -1) {
-		if (!$('body').data('opened')) {
-		var eltIdInPageUrl = '#' + pageUrl.split('#')[1];
-		console.log($(eltIdInPageUrl).closest(".section-content.collapse"));
-
-		                        $(eltIdInPageUrl).parents().collapse('show');
-		$(eltIdInPageUrl).closest(".section-content.collapse").trigger("shown.elocus.section");
-		
-					$('html, body').animate({
-						scrollTop: $(eltIdInPageUrl).offset().top - 60
-					}, 1000);
-				}
-		}
-		$('body').data('opened',true);
-		}
-
-			});
-
-			function doResizeActions(mapsReady, chartsReady) {
-		console.log ("doResizeActions (mapsReady:" + mapsReady + ", chartsReady:" + chartsReady + ")");
-		
-				if(mapsReady && chartsReady) {
-					$('.accueil.sections').each(function(){
-						equalizePanelHeadings(this);						
-					});
-					$('.accueil.alaune .panel-body').each(function(){
-						equalizeTopics(this);						
-					});
-					$('.panel-collapse.in').each(function(){
-						equalizeTopics(this);						
-		});
-
-
-				}
-			}
-
-			function equalizePanelHeadings(elt) {
-				var maxHeight = 0;
-				var panelHeadings = $('.panel .panel-heading',elt);
-				//on enlève la spécification assignée par un appel précédent à cette fonction
-				$(panelHeadings).css('height', 'inherit');
-				// Select and loop the elements you want to equalise
-				$(panelHeadings).each(function(){
-					if($(this).height() > maxHeight) {
-					  maxHeight = $(this).height(); 
-					}
-				}); 
-				// Set the height of all those children to whichever was highest 
-				$(panelHeadings).height(maxHeight);
-			}
-
-			function equalizeTopics(elt) {
-				var maxHeightHeadings = 0;
-				var panelHeadings = $('.panel .panel-heading',elt);
-				//on enlève la spécification assignée par un appel précédent à cette fonction
-				$(panelHeadings).css('height', 'inherit');
-				// Select and loop the elements you want to equalise
-				$(panelHeadings).each(function(){
-					if($(this).height() > maxHeightHeadings) {
-					  maxHeightHeadings = $(this).height(); 
-					}
-				}); 
-				// Set the height of all those children to whichever was highest 
-				$(panelHeadings).height(maxHeightHeadings);
-
-				var maxHeightBodys = 0;
-				var panelBodys = $('.panel .panel-body',elt);
-				//on enlève la spécification assignée par un appel précédent à cette fonction
-				$(panelBodys).css('height', 'inherit');
-				// Select and loop the elements you want to equalise
-				$(panelBodys).each(function(){
-					if($(this).height() > maxHeightBodys) {
-					  maxHeightBodys = $(this).height(); 
-					}
-				}); 
-				// Set the height of all those children to whichever was highest 
-				$(panelBodys).height(maxHeightBodys);
-			}
 
 			// retour haut de page
 			$(window).scroll(function(){
@@ -400,15 +278,24 @@
 			    $("#mySidenav").css("width", "0");			    
 			    $("#bootstrapContent").css("marginLeft", "0");
 			    $("#closeNavBtn").hide('400');
-			    $("#openNavBtn").show('400');
+		$("#openNavBtn").show('400');
 			}
 
 			$("#closeNavBtn").hide('0');
 			$('#openNavBtn').click(function(){
-				openNav();
+		openNav();
+		setTimeout(function () {
+		$('body').trigger('redraw.elocus.topics');
+		}, 500);
+
+		
 			});
 			$('#closeNavBtn').click(function(){
-				closeNav();
+		closeNav();
+		setTimeout(function () {
+		$('body').trigger('redraw.elocus.topics');
+		}, 500);
+
 			});
 
 			/* $('.sidebar').affix({

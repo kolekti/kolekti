@@ -1,28 +1,28 @@
 $(document).ready(function() {
-    console.log('init map componenent');
 
-    // display map on report main page for starred topics
-    $('.alaune .leafletmap').each(function() {
-	if (! $(this).find('div').length) {
-	    var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
-	    var geodata = JSON.parse(geojson)
-	    
-	    var map = L.map($(this).get(0));
-	    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-		maxZoom: 18,
-		attribution: 'Map data ©<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-		    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-		    'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.streets'
-	    }).addTo(map);
-	    
-	    var myLayer = L.geoJson(geodata);
-	    myLayer.addTo(map) ;
-	    map.fitBounds(myLayer.getBounds()) ;
-	}
-    });
-    
-    $("body").trigger( "elocus.graphics.displayed", [ "map" ] );
+    if ($('.alaune .leafletmap').length) {
+	// display map on report main page for starred topics
+	$('.alaune .leafletmap').each(function() {
+	    if (! $(this).find('div').length) {
+		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
+		var geodata = JSON.parse(geojson)
+		
+		var map = L.map($(this).get(0));
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+		    maxZoom: 18,
+		    attribution: 'Map data ©<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		    id: 'mapbox.streets'
+		}).addTo(map);
+		
+		var myLayer = L.geoJson(geodata);
+		myLayer.addTo(map) ;
+		map.fitBounds(myLayer.getBounds()) ;
+	    }
+	});
+        $(".alaune").trigger( "elocus.graphics.displayed", [ "map" ] );
+    }
     
     // deroulement de la section (affichage des topics)
     $('.section-content.collapse').on('shown.bs.collapse', function(e) {
@@ -55,7 +55,6 @@ $(document).ready(function() {
     })
     
     $('.modal-topic-details').on('shown.bs.modal', function(e) {
-	console.log('show modal');
 	$(e.target).find('.leafletmappanel').each(function() {
 	    if (! $(this).find('div').length) {
 		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
@@ -88,7 +87,7 @@ $(document).ready(function() {
 		wheight = 400;
 	    $(this).attr('style','width:100%; height:'+ wheight +'px ; position:relative');
 	});
-	$("body").trigger( "elocus.graphics.displayed", [ "map" ] );
+	$(".collapse.in").trigger( "elocus.graphics.displayed", [ "map" ] );
     };
     
     $(window).on('resize', resize);

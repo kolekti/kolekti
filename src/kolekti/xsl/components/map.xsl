@@ -29,11 +29,15 @@
     <libs>
       <css>
 	<link rel="stylesheet" type="text/css" href="/static/components/css/map.css"/>
-	<link href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" rel="stylesheet"/>
+	<!--<link href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" rel="stylesheet"/>-->
+	<link rel="stylesheet" href="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.css" />
+	
       </css>
       <scripts>
-	  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-	  <script src="/static/leaflet.min.js"/>
+<!--	<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>-->
+	<script src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js"></script>
+
+<!--	  <script src="/static/leaflet.min.js"/>-->
 	<script src="/static/components/js/map.js"/>
       </scripts>
     </libs>

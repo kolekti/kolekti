@@ -148,35 +148,37 @@
       <xsl:value-of select="@id"/>
     </xsl:variable>
     <div class="col-lg-4 col-md-6">
-      <div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
-	<div class="panel-heading">
-	  <div class="row">
-	    <div class="col-xs-3">
-	      <div class="picto {ancestor::html:div[@class='section']/html:h1/@class}"></div>
-	    </div>
-	    <div class="col-xs-9 text-right">
-	      <div>
-		<xsl:apply-templates select=".//html:div[@class='kolekti-component-title']" mode="topictitle"/>
+      <div class="topic">
+	<div class="panel panel-default {ancestor::html:div[@class='section']/html:h1/@class}">
+	  <div class="panel-heading">
+	    <div class="row">
+	      <div class="col-xs-3">
+		<div class="picto {ancestor::html:div[@class='section']/html:h1/@class}"></div>
+	      </div>
+	      <div class="col-xs-9 text-right">
+		<div>
+		  <xsl:apply-templates select=".//html:div[@class='kolekti-component-title']" mode="topictitle"/>
+		</div>
 	      </div>
 	    </div>
 	  </div>
-	</div>
-	<div class="panel-body">
-	  <xsl:apply-templates select=".//html:div[@class='kolekti-component-chart']" mode="topicbody"/>
-	  <xsl:apply-templates select=".//html:div[@class='kolekti-component-map']" mode="topicbody"/>
-	</div>
-	<a href="{$topiclink}">
-	  <div class="panel-footer">
-	    <span class="pull-left"> Accéder à l'indicateur </span>
-	    <span class="pull-right">
-	      <i class="fa fa-arrow-circle-right"></i>
-	    </span>
-	    <div class="clearfix"></div>
+	  
+	  <div class="panel-body">
+	    <xsl:apply-templates select=".//html:div[@class='kolekti-component-chart']" mode="topicbody"/>
+	    <xsl:apply-templates select=".//html:div[@class='kolekti-component-map']" mode="topicbody"/>
 	  </div>
-	</a>
+	  <a href="{$topiclink}">
+	    <div class="panel-footer">
+	      <span class="pull-left"> Accéder à l'indicateur </span>
+	      <span class="pull-right">
+		<i class="fa fa-arrow-circle-right"></i>
+	      </span>
+	      <div class="clearfix"></div>
+	    </div>
+	  </a>
+	</div>
       </div>
     </div>
-
   </xsl:template>
 
 

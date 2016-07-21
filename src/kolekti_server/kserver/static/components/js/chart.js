@@ -1,14 +1,15 @@
-
-
 $(document).ready(function() {
     $.getScript('/static/components/js/chart_functions.js', function(){
 
-	// display chart on report main page for starred topics
-	$('.alaune .ecorse-chart').each(function() {
+	// affichage des charts dans les topics à la une sur la page principale du rapport
+	
+	if ($('.alaune .ecorse-chart').length) {
+	    // display chart on report main page for starred topics
+	    $('.alaune .ecorse-chart').each(function() {
 		drawchart(this, true)
-	});
-	$("body").trigger( "displayed.elocus.alaune", [ "chart" ] );
-
+	    });
+	    $(".alaune").trigger( "displayed.elocus.topics", [ "chart" ] );
+	}
 
 	// remove chart drawing on section collapse hide
 	$('.section-content.collapse').on('hidden.bs.collapse', function(e) {
@@ -21,14 +22,13 @@ $(document).ready(function() {
 					  
 	// display chart drawing on section collapse show
 	$('.section-content.collapse').on('shown.bs.collapse', function(e) {
-	    console.log('collapse show');
 	    if ($(e.target).hasClass('section-content')) {
-		$('.report').attr('style','padding-bottom:1200px;')
+//		$('.report').attr('style','padding-bottom:1200px;')
 		$(e.target).find('.panel .ecorse-chart').each(function() {
 		    $(this).attr('style','');
 		    drawchart(this, true)
 		});
-		$('.report').attr('style','padding-bottom:40px;')
+//		$('.report').attr('style','padding-bottom:40px;')
 		$(e.target).trigger( "displayed.elocus.topics", [ "chart" ] );
 	    }
 	});
@@ -57,7 +57,6 @@ $(document).ready(function() {
 
 	// prepare request parameter on edit modal confirm
 	$('.modal-topic-details').on('confirm.bs.modal', function(e) {
-	    console.log('chart modal confirm');
 	    var modal = $(e.target).closest('.modal'),
 		dchart = $(modal).find('.ecorse-chart'),
 		topic = $(modal).closest('.topic'),
@@ -70,7 +69,6 @@ $(document).ready(function() {
 	});
 
 	$('.modal-topic-details').on('confirmed.bs.modal', function(e) {
-	    console.log('chart modal confirmed');
 	    var modal = $(e.target).closest('.modal'),
 		topic = $(modal).closest('.topic'),
 		dchart = $(modal).find('.ecorse-chart'),
@@ -85,7 +83,6 @@ $(document).ready(function() {
 
 	// remove chart in modal when closed
 	$('.modal-topic-details').on('hide.bs.modal', function(e) {
-	    console.log('chart modal hide');
 	    var modal = $(e.target).closest('.modal');
 	    var dchart = $(modal).find('.ecorse-chart');
 	    var topic = $(modal).closest('.topic');
@@ -94,19 +91,33 @@ $(document).ready(function() {
 	    
 	})
 
+	// redraw function for handling resize & menu hide/show events
+
+	var redraw = function(e) {
+	    console.log("redraw")
+	    console.log(e)
+	    if ($('.collapse.in .ecorse-chart').length) {
+		$('.collapse.in').find('.ecorse-chart').each(function() {
+		    $(this).html('')
+		    drawchart(this, false)
+		});
+		$('.collapse.in').trigger( "displayed.elocus.topics", [ "chart" ] );
+	    }
+	    
+	    if ($('.alaune .ecorse-chart').length) {
+		$('.alaune').find('.ecorse-chart').each(function() {
+		    $(this).html('')
+		    drawchart(this, false)
+		});
+		$('.alaune').trigger( "displayed.elocus.topics", [ "chart" ] );
+	    }
+	}
+
 	// redraw chart on window resize
-	$(window).on('resize', function() {
-	    $('.collapse.in').find('.ecorse-chart').each(function() {
-		$(this).html('')
-		drawchart(this, false)
-	    });
-	    $(e.target).trigger( "displayed.elocus.topics", [ "chart" ] );
-	    $('.alaune').find('.ecorse-chart').each(function() {
-		$(this).html('')
-		drawchart(this, false)
-	    });
-	    $(e.target).trigger( "displayed.elocus.alaune", [ "chart" ] );
-	})
+	$(window).on('resize', redraw);
+
+	// redraw chart on menu hide/show
+	$('body').on('redraw.elocus.topics', redraw);
 	
 	
 	// menu selection graphique
