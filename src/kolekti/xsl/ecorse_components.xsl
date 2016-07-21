@@ -29,6 +29,7 @@
      <xsl:include href="components/details.xsl"/>
      <xsl:include href="components/chart.xsl"/>
      <xsl:include href="components/map.xsl"/>
+     <xsl:include href="components/animated-heatmap.xsl"/>
      
      <xsl:include href="components/wysiwyg.xsl"/>
      <xsl:include href="components/description.xsl"/>
