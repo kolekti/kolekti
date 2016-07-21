@@ -36,6 +36,7 @@
 
   <xsl:template match="html:div[@class='kolekti-component-title']" mode="topictitle">
     <xsl:apply-templates select =".//html:div[@class='kolekti-sparql-result-template']" mode="topictitle"/>
+        <xsl:apply-templates select ="html:h1|html:h2" mode="topictitle"/>
   </xsl:template>
 
   <xsl:template match = "html:h1|html:h2|html:h3|html:h4|html:h5|html:h6" mode="topictitle">
