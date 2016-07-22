@@ -34,6 +34,7 @@
      <xsl:include href="components/wysiwyg.xsl"/>
      <xsl:include href="components/description.xsl"/>
      <xsl:include href="components/title.xsl"/>
+     <xsl:include href="components/svg.xsl"/>
     
      <!--
       <xsl:include href="components/pad.xsl"/>
@@ -61,16 +62,42 @@
      </xsl:template>
 
 
-     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanel"/>
-     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelbutton"/>
-     <xsl:template match="html:div[@class='kolekti-sparql-query']" mode="topicpanelaction"/>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topicbody">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topictitle">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topicpanelinfo">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topicpanelaction">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topicpanelbutton">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template match="html:div[@class='kolekti-sparql']" mode="topicpanelbody">
+       <xsl:call-template name="kolekti-sparql"/>
+     </xsl:template>
+     <xsl:template name="kolekti-sparql"  match="html:div[@class='kolekti-sparql']">
+       <xsl:choose>
+	 <xsl:when test="node()[@class='kolekti-sparql-template']">
+	   <xsl:apply-templates select="html:div[@class='kolekti-sparql-result']/node()[@class='kolekti-sparql-result-template']"/>
+	 </xsl:when>
+	 <xsl:otherwise>
+	   <xsl:copy-of select="html:div[@class='kolekti-sparql-result']/node()[@class='kolekti-sparql-result-json']"/>
+	 </xsl:otherwise>
+       </xsl:choose>
+     </xsl:template>
+
+
      
      <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanel">
        <xsl:copy>
 	 <xsl:apply-templates select="node()|@*"/>
        </xsl:copy>
      </xsl:template>
-     
      <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelbutton"/>
      <xsl:template match="html:div[@class='kolekti-sparql-result-json']" mode="topicpanelaction"/>
 
