@@ -16,7 +16,9 @@ $(document).ready(function() {
 		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
 		var geodata = JSON.parse(geojson)
 		
-		var map = L.map($(this).get(0));
+		var map = L.map($(this).get(0), {
+		    fullscreenControl: true,
+		});
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 		    maxZoom: 18,
 		    attribution: 'Map data ©<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -44,8 +46,11 @@ $(document).ready(function() {
 			var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
 			var geodata = JSON.parse(geojson)
 		    
-			var map = L.map($(this).get(0));
+			var map = L.map($(this).get(0), {
+			    fullscreenControl: true,
+			});
 			L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+
 			    maxZoom: 18,
 			    attribution: 'Map data ©<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -71,7 +76,9 @@ $(document).ready(function() {
 		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
 		var geodata = JSON.parse(geojson)
 		
-		var map = L.map($(this).get(0));
+		var map = L.map($(this).get(0), {
+		    fullscreenControl: true,
+		});
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 		    maxZoom: 18,
 		    attribution: 'Map data ©<a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
