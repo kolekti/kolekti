@@ -83,3 +83,12 @@ Correctifs
 	Pour l'utilisation des scripts de publication en plusieurs étapes, ceux-ci doivent être configurés dans les lancements, les lancements existants continuent de fonctionner, mais ne bénéficient pas des fonctions apportées par les script multi-étapes.
 
 	En particulier les versions crées antérieurement à l'utilisation de ces scripts NE SONT PAS automatiquement mises à jour pour utiliser les scripts des versions. Aussi je vous invite à vous rapprocher de Vincent pour une éventuelle mise à jour des versions en cours de traduction, au cas par cas.
+
+
+0.7.3a
+
+Correctifs
+	- ajout des langues hu, pl, ro, hr, ru, bg, el, tr, he, ar, ja, jp dans la déclaration d'encodage du plugin chm (affichage du volet latéral)
+	- Correctif sortie webhelp
+
+	
