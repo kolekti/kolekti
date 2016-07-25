@@ -1,3 +1,12 @@
+var mapsreg = {}
+var register_map = function(map, id) {
+    mapsreg[id] = map
+}
+
+var get_map = function(id) {
+    return mapsreg[id]
+}
+
 $(document).ready(function() {
 
     if ($('.alaune .leafletmap').length) {
@@ -19,6 +28,7 @@ $(document).ready(function() {
 		var myLayer = L.geoJson(geodata);
 		myLayer.addTo(map) ;
 		map.fitBounds(myLayer.getBounds());
+		register_map(map, $(this).attr('id'));
 	    }
 	});
         $(".alaune").trigger( "elocus.graphics.displayed", [ "map" ] );
@@ -46,6 +56,7 @@ $(document).ready(function() {
 			var myLayer = L.geoJson(geodata);
 			myLayer.addTo(map) ;
 			map.fitBounds(myLayer.getBounds()) ;
+			register_map(map, $(this).attr('id'));
 		    }
 		}
 	    });
@@ -72,9 +83,8 @@ $(document).ready(function() {
 		var myLayer = L.geoJson(geodata);
 		myLayer.addTo(map) ;
 		map.fitBounds(myLayer.getBounds()) ;
+		register_map(map, $(this).attr('id'));
 	    }
-
-
 	})
     })
    
@@ -86,6 +96,8 @@ $(document).ready(function() {
 	    if (wheight > 400)
 		wheight = 400;
 	    $(this).attr('style','width:100%; height:'+ wheight +'px ; position:relative');
+	    var map = get_map($(this).attr('id'));
+	    map.invalidateSize();
 	});
 	
 	$(".collapse.in").trigger( "elocus.graphics.displayed", [ "map" ] );
@@ -93,5 +105,13 @@ $(document).ready(function() {
     };
     
     $(window).on('resize', resize);
-		
+    $(window).on('redraw.elocus.topics', function(){
+	$('.collapse.in').find('.leafletmap, .leafletmappanel').each(function(e,i) {
+	    var map = get_map($(this).attr('id'));
+	    map.invalidateSize();
+	});
+    });
+
+
+    
 })
