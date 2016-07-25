@@ -74,41 +74,49 @@ function equalizePanelHeadings(elt) {
     var panelHeadings = $('.panel .panel-heading', elt);
     //on enlève la spécification assignée par un appel précédent à cette fonction
     $(panelHeadings).css('height', 'inherit');
-    // Select and loop the elements you want to equalise
-    $(panelHeadings).each(function(){
-	if($(this).height() > maxHeight) {
-	    maxHeight = $(this).height(); 
-	}
-    }); 
-    // Set the height of all those children to whichever was highest 
-    $(panelHeadings).height(maxHeight);
+    if ($(window).width() > 992) {
+	// Select and loop the elements you want to equalise
+	$(panelHeadings).each(function(){
+	    if($(this).height() > maxHeight) {
+		maxHeight = $(this).height(); 
+	    }
+	}); 
+	// Set the height of all those children to whichever was highest 
+	$(panelHeadings).height(maxHeight);
+    }
 }
 
 function equalizeTopics(elt) {
     var maxHeightHeadings = 0;
+    console.log(elt)
+    lim_width = $(elt).hasClass('alaune')?992:1200
     var panelHeadings = $('.topic .panel .panel-heading', elt);
     //on enlève la spécification assignée par un appel précédent à cette fonction
     $(panelHeadings).css('height', 'inherit');
     // Select and loop the elements you want to equalise
-    $(panelHeadings).each(function(){
-//	console.log(this)
-	if($(this).height() > maxHeightHeadings) {
-	    maxHeightHeadings = $(this).height(); 
-	}
-    }); 
-    // Set the height of all those children to whichever was highest 
-    $(panelHeadings).height(maxHeightHeadings);
+    if ($(window).width() > lim_width) {
+	$(panelHeadings).each(function(){
+	    //	console.log(this)
+	    if($(this).height() > maxHeightHeadings) {
+		maxHeightHeadings = $(this).height(); 
+	    }
+	}); 
+	// Set the height of all those children to whichever was highest 
+	$(panelHeadings).height(maxHeightHeadings);
+    }
     
     var maxHeightBodys = 0;
     var panelBodys = $('.topic .panel .panel-body',elt);
     //on enlève la spécification assignée par un appel précédent à cette fonction
     $(panelBodys).css('height', 'inherit');
     // Select and loop the elements you want to equalise
-    $(panelBodys).each(function(){
-	if($(this).height() > maxHeightBodys) {
-	    maxHeightBodys = $(this).height(); 
-	}
-    }); 
-    // Set the height of all those children to whichever was highest 
-    $(panelBodys).height(maxHeightBodys);
+    if ($(window).width() > lim_width) {
+	$(panelBodys).each(function(){
+	    if($(this).height() > maxHeightBodys) {
+		maxHeightBodys = $(this).height(); 
+	    }
+	}); 
+	// Set the height of all those children to whichever was highest 
+	$(panelBodys).height(maxHeightBodys);
+    }
 }
