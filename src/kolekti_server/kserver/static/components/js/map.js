@@ -18,7 +18,7 @@ $(document).ready(function() {
 		
 		var myLayer = L.geoJson(geodata);
 		myLayer.addTo(map) ;
-		map.fitBounds(myLayer.getBounds()) ;
+		map.fitBounds(myLayer.getBounds());
 	    }
 	});
         $(".alaune").trigger( "elocus.graphics.displayed", [ "map" ] );
@@ -46,7 +46,6 @@ $(document).ready(function() {
 			var myLayer = L.geoJson(geodata);
 			myLayer.addTo(map) ;
 			map.fitBounds(myLayer.getBounds()) ;
-			
 		    }
 		}
 	    });
@@ -56,6 +55,7 @@ $(document).ready(function() {
     
     $('.modal-topic-details').on('shown.bs.modal', function(e) {
 	$(e.target).find('.leafletmappanel').each(function() {
+	    $(this).attr('style','width:100%; height:400px ; position:relative');
 	    if (! $(this).find('div').length) {
 		var geojson = $(this).data('geojson').results.bindings[0].geojson.value	
 		var geodata = JSON.parse(geojson)
@@ -73,7 +73,7 @@ $(document).ready(function() {
 		myLayer.addTo(map) ;
 		map.fitBounds(myLayer.getBounds()) ;
 	    }
-	    $(this).attr('style','width:100%; height:240px ; position:relative');
+
 
 	})
     })
@@ -87,7 +87,9 @@ $(document).ready(function() {
 		wheight = 400;
 	    $(this).attr('style','width:100%; height:'+ wheight +'px ; position:relative');
 	});
+	
 	$(".collapse.in").trigger( "elocus.graphics.displayed", [ "map" ] );
+
     };
     
     $(window).on('resize', resize);

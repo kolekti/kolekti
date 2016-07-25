@@ -46,7 +46,7 @@
   <xsl:template match="html:div[@class='kolekti-component-map']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicbody">
     <div class="lfcontainer">
-      <div class="leafletmap" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 100%; height: 245px">
+      <div class="leafletmap" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 100%; height: 400px">
       </div>
       
     </div>
@@ -54,7 +54,7 @@
   
   <xsl:template match="html:div[@class='kolekti-component-map']" mode="topicpanelinfo">
     <div class="lfcontainer">
-      <div class="leafletmappanel" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 100%; height: 245px">
+      <div class="leafletmappanel" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}"  style="width: 100%; height: 400px">
       </div>
       
     </div>
