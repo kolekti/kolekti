@@ -88,7 +88,6 @@ function equalizePanelHeadings(elt) {
 
 function equalizeTopics(elt) {
     var maxHeightHeadings = 0;
-    console.log(elt)
     lim_width = $(elt).hasClass('alaune')?992:1200
     var panelHeadings = $('.topic .panel .panel-heading', elt);
     //on enlève la spécification assignée par un appel précédent à cette fonction
