@@ -1,0 +1,15 @@
+{% load timetags %}
+<div>
+  {% for publication in publications %}
+  {{ publication }}
+  {% comment %}
+  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item">
+    <span class="badge">{{commit.revision.number}}</span> par {{commit.author}}, le {{commit.date|print_timestamp}}
+  </a>
+  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item list-group-item-info">
+    {{commit.message}}
+  </a>
+  {% endcomment %}
+</div>
+{% endfor %}
+</div>
