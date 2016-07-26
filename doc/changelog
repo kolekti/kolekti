@@ -69,7 +69,7 @@ Fonctionalités
 	- Script de copie automatisée des publications dans un dossier
 	- Logs des actions kolekti dans un fichier
 	- Affichage des dernières publications dans les versions
-	
+
 Correctifs
 	- substitutions de variable dans les calculs de chemins lors de la publication des versions
 	- correction du calcul du titre des publications
@@ -91,4 +91,7 @@ Correctifs
 	- ajout des langues hu, pl, ro, hr, ru, bg, el, tr, he, ar, ja, jp dans la déclaration d'encodage du plugin chm (affichage du volet latéral)
 	- Correctif sortie webhelp
 
-	
+0.7.3b
+
+Correctifs
+	- Correction de l'acces au pivot filtré depuis les enchainements de scripts utilisant des commandes shell (princexml)
