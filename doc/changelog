@@ -95,3 +95,4 @@ Correctifs
 
 Correctifs
 	- Correction de l'acces au pivot filtré depuis les enchainements de scripts utilisant des commandes shell (princexml)
+	- Calcul du path lors de la création de nouveaux parametres de publication (windows)
