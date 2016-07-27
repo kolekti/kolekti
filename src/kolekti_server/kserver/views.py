@@ -18,7 +18,11 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-   
+
+import logging
+logger = logging.getLogger(__name__)
+    
+       
 from models import Settings, ReleaseFocus
 from forms import UploadFileForm
 
@@ -885,12 +889,8 @@ class JobCreateView(kolektiMixin, View):
         try:
             path = request.POST.get('path')
             path = self.set_extension(path, ".xml")
-            ospath = self.getOsPath(path)
-            jobid, ext = os.path.splitext(os.path.basename(path))
-            if not len(ext):
-                ext = ".xml"
-            job = self.parse_string('<job id="%s"><dir value="%s"/><criteria/><profiles/><scripts/></job>'%(jobid, jobid))
-            self.xwrite(job, os.path.join(os.path.dirname(path),jobid + ext))
+            job = self.parse_string('<job><criteria/><profiles/><scripts/></job>')
+            self.xwrite(job, path)
             return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
         except:
             import traceback
