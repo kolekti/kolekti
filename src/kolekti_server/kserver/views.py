@@ -20,8 +20,7 @@ except ImportError:
     from StringIO import StringIO
 
 import logging
-logger = logging.getLogger(__name__)
-    
+logger = logging.getLogger('kolekti.'+__name__)
        
 from models import Settings, ReleaseFocus
 from forms import UploadFileForm
