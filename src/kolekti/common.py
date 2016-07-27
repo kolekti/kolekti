@@ -579,8 +579,8 @@ class kolektiBase(object):
 
         try:
             shutil.rmtree(ospath)
-        except:            
-            pass
+        except:
+            logger.exception('could not remove directory')           
         return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
 
 
