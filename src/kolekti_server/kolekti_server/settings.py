@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import json
+import logging
+logger = logging.getLogger('kolekti.'+__name__)
 from kolekti.settings import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -31,7 +33,6 @@ KOLEKTI_SVN_ROOT = __get_config('KOLEKTI_SVN_ROOT','InstallSettings','svnroot')
 KOLEKTI_SVN_PASSFILE = __get_config('KOLEKTI_SVN_PASSFILE','InstallSettings','svnpassfile')
 KOLEKTI_SVN_GROUPFILE = __get_config('KOLEKTI_SVN_GROUPFILE','InstallSettings','svngroupfile')
 KOLEKTI_LANGS = ['fr','en','us','de','it']
-
 
 KOLEKTI_SVNTPL_USER = __get_config('KOLEKTI_SVNTPL_USER','SvnRemotes','svnuser')
 KOLEKTI_SVNTPL_PASS = __get_config('KOLEKTI_SVNTPL_PASS','SvnRemotes','svnpass')
