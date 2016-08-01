@@ -10,10 +10,24 @@ logger = logging.getLogger('kolekti.'+__name__)
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.text import get_valid_filename
 
-from kserver.models import UserProject
+from kserver.models import Project, UserProject
 
 from kolekti.synchro import SVNProjectManager
+from kserver.svnutils import SVNProjectCreator
+
+@receiver(post_save, sender=Project)
+def post_save_project_callback(sender, **kwargs):
+    created = kwargs['created']
+    instance = kwargs['instance']
+    logger.debug('post save handler: projects')
+    if created:
+        # export the project template
+        project_directory = "%05d_%s"%(instance.owner.pk, get_valid_filename(instance.name))
+        pc = SVNProjectCreator()
+        pc.create_from_template(instance.template.svn, project_directory, instance.owner.username)
+
 
 @receiver(post_save, sender=UserProject)
 def post_save_userproject_callback(sender, **kwargs):
