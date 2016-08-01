@@ -177,15 +177,21 @@ ACCOUNT_ACTIVATION_DAYS = 7
 
 
     
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'read_default_file': '/home/waloo/my.cnf',
+#         },
+#     }
+#}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/home/waloo/my.cnf',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_NAME,
         },
-    }
-}
-
+}                    
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
