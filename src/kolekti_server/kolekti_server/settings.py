@@ -62,13 +62,15 @@ ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
 # SMTP config
 
-EMAIL_HOST="mail.gandi.net"
-EMAIL_PORT=465
-EMAIL_HOST_USER="kolekti@kolekti.net"
-EMAIL_HOST_PASSWORD="yofUden8"
-EMAIL_USE_TLS=False
-EMAIL_USE_SSL=True
-DEFAULT_FROM_EMAIL="kolekti@kolekti.net"
+email_config = KOLEKTI_CONFIG.get('smtp_ssl')
+if email_config is not None:
+    EMAIL_HOST = email_config.get('host','')
+    EMAIL_PORT = email_config.get('port','')
+    EMAIL_HOST_USER = email_config.get('user','')
+    EMAIL_HOST_PASSWORD = email_config.get('pass','')
+    EMAIL_USE_TLS=False
+    EMAIL_USE_SSL=True
+    DEFAULT_FROM_EMAIL = email_config.get('from','')
 
 # Application definition
 
