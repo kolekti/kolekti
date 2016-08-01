@@ -37,10 +37,12 @@ def post_save_userproject_callback(sender, **kwargs):
     if created:
         username = instance.user.username
         # TODO : use urllib (Win compatibility)
-        url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, instance.project.directory)
+        project_directory = "%05d_%s"%(instance.project.owner.pk, instance.project.directory)
+
+        url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
         logger.debug('checkout %s %s'%(username, url))
         projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
         try:
-            SVNProjectManager(projectsroot, username = username).checkout_project(instance.project.directory, url)
+            SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
         except:
             logger.exception('error during checkout')
