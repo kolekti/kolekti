@@ -20,9 +20,7 @@ from kserver.models import UserProject
 
 def check_password(environ, user, password):
     repo_dir = environ.get("PATH_INFO").split("/")[2]
-    repo_owner_pk, repo_name = repo_dir.split('_', 1)
     
-    repo_owner = User.objects.get(pk = repo_owner_pk)
     # checks that the username is valid
     try:
         user = User.objects.get(username=user, is_active=True)
@@ -35,7 +33,7 @@ def check_password(environ, user, password):
     
     try:
         
-        userproject = UserProject.objects.get(project__directory = repo_name, project__owner = repo_owner)
+        userproject = UserProject.objects.get(project__directory = repo_dir)
         return True
     except UserProject.DoesNotExist:
         return False
