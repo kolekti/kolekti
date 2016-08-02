@@ -205,7 +205,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': DB_NAME,
         },
-}                    
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
