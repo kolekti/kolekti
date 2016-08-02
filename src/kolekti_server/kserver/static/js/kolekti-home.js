@@ -21,13 +21,13 @@ $(document).ready(function() {
 		    }),
 		    $('<div>', {
 			"class":"panel-body",
-			"html":	wdef.content()
 		    })
 		]
 	    })
 	})
-
 	$('#widgets_main').append(w);
+	w.find('div.panel-body').html(wdef.content())
+	
 //	$('#col_'+wcol).append(w);
 	wdef.render && wdef.render(w)
 	return w
@@ -36,6 +36,16 @@ $(document).ready(function() {
     var widget_loader = function(url, wdiv) {
 	var wdiv = $('<div>', {
 	    "class":"widget",
+	    "html":	$('<span>',{
+		'class':'spinner',
+		'html':[
+		    $('<i>', {
+			'class':'fa fa-spin fa-spinner'
+		    }),
+		    ' Chargement...']
+		
+	    })
+
 	});
 	$.get(url, function(data) {
 	    wdiv.html(data)

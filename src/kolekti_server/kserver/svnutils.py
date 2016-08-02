@@ -21,6 +21,7 @@ from kolekti.synchro import SVNProjectManager
 class CMDMixin(object):
     LOCAL_ENCODING=sys.getfilesystemencoding()
     def start_cmd(self, cmd):
+        logger.debug(cmd)
         try:
             exccmd = subprocess.Popen(
                 cmd,
@@ -33,17 +34,17 @@ class CMDMixin(object):
             exccmd.communicate()
             err=err.decode(self.LOCAL_ENCODING)
             out=out.decode(self.LOCAL_ENCODING)
-            logger.debug(cmd)
             logger.debug(out)
             logger.debug(err)
+            exccmd.stderr.close()
+            exccmd.stdout.close()
+
         except:
             import traceback
             logger.debug(traceback.format_exc())
             logger.exception("Erreur lors de l'execution de la commande %(cmd)s"% {'cmd': cmd})
-
-        finally:
-            exccmd.stderr.close()
-            exccmd.stdout.close()
+            out = err = None
+            
         return out, err 
 
 

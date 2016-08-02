@@ -10,11 +10,24 @@ logger = logging.getLogger('kolekti.'+__name__)
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from registration.signals import user_activated
+from django.utils.text import get_valid_filename
 
-from kserver.models import Project,UserProject
+from kserver.models import Project, UserProject
 
 from kolekti.synchro import SVNProjectManager
+from kserver.svnutils import SVNProjectCreator
+
+@receiver(post_save, sender=Project)
+def post_save_project_callback(sender, **kwargs):
+    created = kwargs['created']
+    instance = kwargs['instance']
+    logger.debug('post save handler: projects')
+    if created:
+        # export the project template
+        project_directory = "%05d_%s"%(instance.owner.pk, get_valid_filename(instance.name))
+        pc = SVNProjectCreator()
+        pc.create_from_template(instance.template.svn, project_directory, instance.owner.username)
+
 
 @receiver(post_save, sender=UserProject)
 def post_save_userproject_callback(sender, **kwargs):
@@ -24,28 +37,13 @@ def post_save_userproject_callback(sender, **kwargs):
     if created:
         username = instance.user.username
         # TODO : use urllib (Win compatibility)
-        url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, instance.project.directory)
+        project_directory = "%05d_%s"%(instance.project.owner.pk, instance.project.directory)
+
+        url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
         logger.debug('checkout %s %s'%(username, url))
         projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
         try:
-            SVNProjectManager(projectsroot, username = username).checkout_project(instance.project.directory, url)
+            SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
         except:
             logger.exception('error during checkout')
 
-
-@receiver(user_activated)
-def user_activated_callback(sender, user, request, **kwarg):
-    user.userprofile
-    project = Project.objects.get(name='ecorse')
-    up = UserProject(user = user,
-                project = project,
-                is_saas = True,
-                is_admin = False)
-                             
-    up.save()
-    logger.debug('--------------- set kolekti project')
-    projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project.directory)
-    self.set_project(projectpath)
-    logger.debug('--------------- activate')
-    self.project_activate(up)
-    logger.debug('--------------- end ')

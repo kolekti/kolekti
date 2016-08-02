@@ -11,22 +11,32 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import json
+import logging
+logger = logging.getLogger('kolekti.'+__name__)
 from kolekti.settings import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 KOLEKTI_CONFIG = settings()
-KOLEKTI_BASE = KOLEKTI_CONFIG.get('InstallSettings').get('projectspath')
-KOLEKTI_SVN_ROOT = KOLEKTI_CONFIG.get('InstallSettings').get('svnroot','')
-KOLEKTI_SVN_PASSFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svnpassfile','')
-KOLEKTI_SVN_GROUPFILE = KOLEKTI_CONFIG.get('InstallSettings').get('svngroupfile','')
+def __get_config(env, section, item): 
+    try:
+        VALUE = os.environ[env]
+    except:
+        try:
+            VALUE = KOLEKTI_CONFIG.get(section).get(item,'')
+        except:
+            VALUE = ''
+    return VALUE
+
+KOLEKTI_BASE = __get_config('KOLEKTI_BASE','InstallSettings','projectspath')
+KOLEKTI_SVN_ROOT = __get_config('KOLEKTI_SVN_ROOT','InstallSettings','svnroot')
+KOLEKTI_SVN_PASSFILE = __get_config('KOLEKTI_SVN_PASSFILE','InstallSettings','svnpassfile')
+KOLEKTI_SVN_GROUPFILE = __get_config('KOLEKTI_SVN_GROUPFILE','InstallSettings','svngroupfile')
 KOLEKTI_LANGS = ['fr','en','us','de','it']
 
-KOLEKTI_SVNTPL_USER = KOLEKTI_CONFIG.get('SvnRemotes').get('svnuser','')
-KOLEKTI_SVNTPL_PASS = KOLEKTI_CONFIG.get('SvnRemotes').get('svnpass','')
+KOLEKTI_SVNTPL_USER = __get_config('KOLEKTI_SVNTPL_USER','SvnRemotes','svnuser')
+KOLEKTI_SVNTPL_PASS = __get_config('KOLEKTI_SVNTPL_PASS','SvnRemotes','svnpass')
 
-
-#KOLEKTI_SVN
 
 # APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
 if os.sys.platform[:3] == "win":
@@ -59,13 +69,15 @@ ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 
 # SMTP config
 
-EMAIL_HOST="mail.gandi.net"
-EMAIL_PORT=465
-EMAIL_HOST_USER="kolekti@kolekti.net"
-EMAIL_HOST_PASSWORD="yofUden8"
-EMAIL_USE_TLS=False
-EMAIL_USE_SSL=True
-DEFAULT_FROM_EMAIL="kolekti@kolekti.net"
+email_config = KOLEKTI_CONFIG.get('smtp_ssl')
+if email_config is not None:
+    EMAIL_HOST = email_config.get('host','')
+    EMAIL_PORT = email_config.get('port','')
+    EMAIL_HOST_USER = email_config.get('user','')
+    EMAIL_HOST_PASSWORD = email_config.get('pass','')
+    EMAIL_USE_TLS=False
+    EMAIL_USE_SSL=True
+    DEFAULT_FROM_EMAIL = email_config.get('from','')
 
 # Application definition
 
@@ -179,16 +191,21 @@ ACCOUNT_ACTIVATION_DAYS = 7
 #    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
 
     
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'read_default_file': '/home/waloo/my.cnf',
+#         },
+#     }
+#}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': DB_NAME,
-#        'ENGINE': 'django.db.backends.mysql',
-#        'OPTIONS': {
-#            'read_default_file': '/home/waloo/my.cnf',
-#        },
-    }
-}
+        },
+}                    
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/

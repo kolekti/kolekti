@@ -1,6 +1,6 @@
 import os
 import logging
-
+logger = logging.getLogger(__name__)
 import ConfigParser
 
 userdir = os.path.expanduser("~")
