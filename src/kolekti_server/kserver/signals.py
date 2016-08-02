@@ -20,24 +20,28 @@ from kserver.svnutils import SVNProjectCreator
 @receiver(post_save, sender=Project)
 def post_save_project_callback(sender, **kwargs):
     created = kwargs['created']
+    raw = kwargs['raw']
     instance = kwargs['instance']
     logger.debug('post save handler: projects')
-    if created:
+    
+    if created or raw:
         # export the project template
-        project_directory = "%05d_%s"%(instance.owner.pk, get_valid_filename(instance.name))
-        pc = SVNProjectCreator()
-        pc.create_from_template(instance.template.svn, project_directory, instance.owner.username)
-
+        try:
+            pc = SVNProjectCreator()
+            pc.create_from_template(instance.template.svn, instance.directory, instance.owner.username)
+        except:
+            logger.exception('could not create project from template')
 
 @receiver(post_save, sender=UserProject)
 def post_save_userproject_callback(sender, **kwargs):
     created = kwargs['created']
+    raw = kwargs['raw']
     instance = kwargs['instance']
     logger.debug('post save handler')
-    if created:
+    if created or raw:
         username = instance.user.username
         # TODO : use urllib (Win compatibility)
-        project_directory = "%05d_%s"%(instance.project.owner.pk, instance.project.directory)
+        project_directory = instance.project.directory
 
         url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
         logger.debug('checkout %s %s'%(username, url))
