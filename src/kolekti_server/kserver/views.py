@@ -49,7 +49,6 @@ from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
 
-from kserver import signals
 
 fileicons= {
     "application/zip":"fa-file-archive-o",

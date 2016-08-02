@@ -1,0 +1,45 @@
+[
+   {
+      "model" : "auth.user",
+      "fields" : {
+         "last_name" : "user",
+         "date_joined" : "2016-08-02T11:22:00Z",
+         "email" : "demo@kolekti.net",
+         "user_permissions" : [],
+         "username" : "demo",
+         "password" : "pbkdf2_sha256$15000$goxwMuw8fyPQ$O+nCFaw/jfKgQ4FjPKUClCAUGbXR//uJ3MNQz/NHWgE=",
+         "is_superuser" : false,
+         "is_active" : true,
+         "first_name" : "demo",
+         "last_login" : "2016-08-02T11:22:00Z",
+         "is_staff" : false,
+         "groups" : []
+      },
+      "pk" : 2
+   },
+   {
+      "pk" : 1,
+      "model" : "kserver.project",
+      "fields" : {
+         "name" : "test",
+         "description" : "test project",
+         "directory" : "000002_test",
+         "owner" : 2,
+         "template" : 1
+      }
+   },
+   {
+      "fields" : {
+         "phone" : "",
+         "user" : 2,
+         "zipcode" : "",
+         "address" : "",
+         "city" : "",
+         "company" : "exselt",
+         "activeproject" : null,
+         "created" : "2016-08-02"
+      },
+      "model" : "kserver.userprofile",
+      "pk" : 2
+   }
+]
