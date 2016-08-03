@@ -33,7 +33,7 @@ def check_password(environ, user, password):
     
     try:
         
-        userproject = UserProject.objects.get(project__directory = repo_dir)
+        userproject = UserProject.objects.get(user = user, project__directory = repo_dir)
         return True
     except UserProject.DoesNotExist:
         return False
