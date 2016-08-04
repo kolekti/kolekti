@@ -201,7 +201,7 @@ $(document).ready(function() {
     })
 
     
-    $('#modal_create').on('shown.bs.modal', function () {
+    $('#modal_create').on('shown.bs.modal', function (e) {
 	// recupere la liste des referentiels
 	$.get('/elocus/referentiels')
 	    .done(function(data) {
@@ -217,7 +217,19 @@ $(document).ready(function() {
 	    $(this).val('')
 	});
 	$('#ecorse_select_referentiel').focus();
+    });
+	
+    $(".ecorse-action-create-report-project").on('click', function() {
+	var project = $(this).data('project');
+	var dialog = $(this).data('target');
+	project_url = '/projects/activate?project='+project;
+	$.get(project_url)
+	    .done(function(data) {
+		$(dialog).modal();
+		$(dialog).trigget('shown.bs.modal');
+	    });
     })
+    
 			  
     $('#modal_create_ok').on('click', function () {
 	reset_errors();
