@@ -544,7 +544,16 @@ class ElocusRefParametersView(ElocusMixin, View):
                         parameters.append(deepcopy(param))
                                         
                 sparqlserver = self._project_settings.find('sparql').get('endpoint')
-                endpoint = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content)',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                try: 
+                    endpoint = xtoc.xpath('/html:html/html:head/html:meta[@name="kolekti.uservars.sparql.endpoint"]/@content',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                    if len(endpoint) == 0:
+                        endpoint = xtoc.xpath('/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content',namespaces={'html':'http://www.w3.org/1999/xhtml'})
+                    endpoint = str(enpoint[0])
+                except IndexError:
+                    logger.exception('unable to query parameters : no endpoint')
+                    result = []
+                    return HttpResponse(json.dumps(result),content_type="application/json")
+                
                 from kolekti.publish_queries import kolektiSparQL
                 sp = kolektiSparQL(sparqlserver)
                 sp.instanciate_parameters(parameters, endpoint)
@@ -555,8 +564,8 @@ class ElocusRefParametersView(ElocusMixin, View):
                         'values':[{'name':val.get('label'),'id':val.get('data')} for val in param.xpath('values/value')]}
                         )
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('unable to query parameters')
+            result = []
         return HttpResponse(json.dumps(result),content_type="application/json")
     
 class ElocusCommunesView(ElocusMixin, View):
