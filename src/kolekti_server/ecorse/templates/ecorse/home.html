@@ -7,7 +7,8 @@
 {% endblock %}
 
 {% block extrascripts %}	
-	{{ libs.scripts|safe }}
+{{ libs.scripts|safe }}
+<script src="/static/js/kolekti-ecorse-report.js"></script>
 {% endblock %}
 
 {% block sidebar %}
@@ -34,6 +35,10 @@
 									<li><a href="{{ report.url }}">{{ report.title }}</a></li>
 									{% endfor %}
 								</ul>
+							</div>
+							<div class="panel-footer">
+							  <a href="#" class="ecorse-action-create-report-project" data-target="#modal_create" data-project='{{project.id}}'>Nouveau rapport... </a>
+			
 							</div>
 						</div>
 					</div>

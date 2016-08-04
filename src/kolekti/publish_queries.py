@@ -107,7 +107,7 @@ class kolektiSparQL(object):
                         resdiv.append(elt)
 
                 except IndexError:
-                    print "no template for query"
+                    logger.debug("no template for query")
 
                 dquery.append(resdiv)
         return assembly
