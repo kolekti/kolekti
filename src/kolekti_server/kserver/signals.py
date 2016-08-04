@@ -22,7 +22,7 @@ def post_save_project_callback(sender, **kwargs):
     created = kwargs['created']
     raw = kwargs['raw']
     instance = kwargs['instance']
-    logger.debug('post save handler: projects')
+    logger.debug('post save handler: save project')
     
     if created or raw:
         # export the project template
@@ -37,7 +37,7 @@ def post_save_userproject_callback(sender, **kwargs):
     created = kwargs['created']
     raw = kwargs['raw']
     instance = kwargs['instance']
-    logger.debug('post save handler')
+    logger.debug('post save handler: save userproject')
     if created or raw:
         username = instance.user.username
         # TODO : use urllib (Win compatibility)
