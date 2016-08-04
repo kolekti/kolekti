@@ -48,9 +48,9 @@ class kolektiSparQL(object):
             else:
                 query = vardef.xpath("string(/uservariables/query[@id='%s']/sparql)"%idq)
                 results = query_results.get(idq, None)
-
             if results is None:
                 try:
+                    logger.debug('uservar query : %s %s',endpoint, query)
                     sparql.setQuery(query)
                     sparql.setReturnFormat(JSON)
                     results = sparql.query().convert()
