@@ -131,7 +131,7 @@ class kolektiPublicMixin(TemplateResponseMixin, kolektiBase):
             'active_project':self.kolekti_userproject,
             'projects':self.projects(),
         }
-        logger.debug(context)
+        # logger.debug(context)
         if self.kolekti_userproject is not None:
             languages, release_languages, default_srclang = self.project_langs()
             context.update({
@@ -1053,9 +1053,9 @@ class BrowserView(kolektiMixin, View):
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
             return self.render_to_response(context)
         except:
-            import traceback
-            print traceback.format_exc()
-
+            logger.exception('browser error')
+            return self.render_to_response({'error':"Erreur de l'explorateur"})
+        
 class BrowserReleasesView(BrowserView):
     def get_directory(self, path):
 
@@ -1068,8 +1068,7 @@ class BrowserReleasesView(BrowserView):
 
             return res
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('browser relases error')
             return super(BrowserReleasesView, self).get_directory(path)
                       
             
