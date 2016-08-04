@@ -75,11 +75,9 @@ class ElocusPublicMixin(kolektiPublicMixin):
 
         libs = {'css':'', 'scripts':''}
         for component in self.collect_components(root[0], starred):
-            print component
             xsl = self.get_xsl('components/%s'%component)
             xlibs = xsl(self.parse_string('<libs/>')).getroot()
             if not xlibs is None:
-                print ET.tostring(xlibs)
                 for css in xlibs.xpath('html:css/*',namespaces={'html':'http://www.w3.org/1999/xhtml'}):
                     libs['css'] += ET.tostring(css, method="html")
                 for scr in xlibs.xpath('html:scripts/*',namespaces={'html':'http://www.w3.org/1999/xhtml'}):
@@ -158,7 +156,6 @@ class ElocusPublicMixin(kolektiPublicMixin):
         for refmod in xtoc.xpath('/html:html/html:body//html:a[@rel="kolekti:topic"]',
                         namespaces={'html':'http://www.w3.org/1999/xhtml'}):
             moduri = refmod.get('href').split('?')[0]
-            print moduri
             if not moduri in mods:
                 mods.append(moduri)
                 xmod = self.parse(moduri)
@@ -291,7 +288,6 @@ class ElocusReportStarView(ElocusMixin, View):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
         state =  request.POST.get('state','')
-        print state
         try:
             report = self.get_report(release_path)
             topic = report.xpath("//html:div[@id = '%s']"%topicid,
@@ -314,7 +310,7 @@ class ElocusReportHideView(ElocusMixin, View):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
         state =  request.POST.get('state','')
-        print state
+
         try:
             report = self.get_report(release_path)
             topic = report.xpath("//html:div[@id = '%s']"%topicid,
@@ -548,7 +544,7 @@ class ElocusRefParametersView(ElocusMixin, View):
                     endpoint = xtoc.xpath('/html:html/html:head/html:meta[@name="kolekti.uservars.sparql.endpoint"]/@content',namespaces={'html':'http://www.w3.org/1999/xhtml'})
                     if len(endpoint) == 0:
                         endpoint = xtoc.xpath('/html:html/html:head/html:meta[@name="kolekti.sparql.endpoint"]/@content',namespaces={'html':'http://www.w3.org/1999/xhtml'})
-                    endpoint = str(enpoint[0])
+                    endpoint = str(endpoint[0])
                 except IndexError:
                     logger.exception('unable to query parameters : no endpoint')
                     result = []
