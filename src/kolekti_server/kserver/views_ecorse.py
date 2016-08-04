@@ -392,7 +392,8 @@ class ElocusHomeView(ElocusMixin, View):
         
         projects = []
         for up in request.user.userproject_set.all():
-            p = {'title' :up.project.description ,
+            p = {'id':up.project.directory,
+                 'title' :up.project.description ,
                  'reports':self.get_project_reports(up.project)}
             projects.append(p)
                  
