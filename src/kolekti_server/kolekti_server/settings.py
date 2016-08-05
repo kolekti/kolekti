@@ -44,7 +44,7 @@ if os.sys.platform[:3] == "win":
     DB_NAME = appdatadir + '\\db.sqlite3'
     DB_NAME = DB_NAME.replace('\\','/')
 else:
-    DB_NAME = os.path.join(BASE_DIR, 'db.sqlite3')
+    DB_NAME = os.getenv('KOLEKTI_DBFILE', os.path.join(BASE_DIR, 'db.sqlite3'))
 
 try:
     os.makedirs(os.path.join(KOLEKTI_BASE,'.logs'))
