@@ -27,6 +27,9 @@ from lxml import etree as ET
 from PIL import Image
 from StringIO import StringIO
 from zipfile import ZipFile
+import tempfile
+import subprocess
+import re
 
 import logging
 logger = logging.getLogger(__name__) 
@@ -79,19 +82,26 @@ class plugin(pluginBase.plugin):
         #coverfile= os.path.join(self.publisher.model.projectpath,tplpath,theme,"cover.xsl")
         #filterfile=os.path.join(self.publisher.model.projectpath,tplpath,theme,"filter.xsl")
         
-        # copy the template into the publication space
-        # shutil.copy(tfile, dfile)
-        self._generate_graphics()
+        # res.append({'type':"opendocument", "label":"sss", "url": ""})
+        # return res
 
+        # generate elocus graphics
+        self._generate_graphics()
+        
         # apply the pre filter.xsl to the pivot file
         try:
             xslt = self.get_xsl("filter", profile = self.profile, lang = self._publang)
             pivot = xslt(self.pivot)
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('error in fiter pivot')
+            pivot = self.pivot
             #debug(f.error_log )
         
+        # copy the template into the publication space
+        # shutil.copy(tfile, dfile)
+        self.xwrite(pivot, tmpdebug)
+                
+
         # uncompress the template
         with ZipFile(self.getOsPath(templatepath),'r') as zipin:
             with ZipFile(dfile,'w') as zipout:
@@ -142,8 +152,7 @@ class plugin(pluginBase.plugin):
                         except:
                             pass
                 except:
-                    import traceback
-                    print traceback.format_exc()
+                    logger.exception('could not add media to zip') 
                 mmt=mf.xpath('/manifest:manifest/manifest:file-entry[@manifest:full-path]', namespaces={'manifest':MFNS})[0]
                 mmt.set('{urn:oasis:names:tc:opendocument:xmlns:manifest:1.0}media-type','application/vnd.oasis.opendocument.text')
 
@@ -171,7 +180,7 @@ class plugin(pluginBase.plugin):
                     raise
                 try:
                     logger.debug(tmppivot)
-                    doc=xslx(tmeta, pivot="'%s'"%tmppivot.encode('utf-8'))
+                    doc=xslx(tmeta, pivot="'%s'"%tmppivot)
                 except:
                     logger.exception('XSL runtime error generate-meta odt')
                     logger.debug(xslx)
@@ -182,7 +191,7 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_xsl('generate-styles')
                 doc=xslx(styles,
-                        pivot="'%s'"%tmppivot.encode('utf-8'))
+                        pivot="'%s'"%tmppivot)
 
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
@@ -194,13 +203,13 @@ class plugin(pluginBase.plugin):
 
                 xslx = self.get_xsl('generate')
                 content=xslx(template,
-                         pivot="'%s'"%tmppivot.encode('utf-8'),
-                         styles="'%s'"%tmpstyles.encode('utf-8'),
-                         mapping="'%s'"%mapfile.encode('utf-8'))
+                         pivot="'%s'"%tmppivot,
+                         styles="'%s'"%tmpstyles,
+                         mapping="'%s'"%mapfile)
                 for entry in xslx.error_log:
                     print('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
 
-                self.xwrite(content, tmpdebug)
+                # self.xwrite(pivot, tmpdebug)
                 zipout.writestr('content.xml', bytes=str(content))
                 zipout.writestr('mimetype', bytes='application/vnd.oasis.opendocument.text')
 
@@ -227,37 +236,90 @@ class plugin(pluginBase.plugin):
 
     def _generate_graphics(self):
         self.makedirs(self.publication_plugin_dir+'/img')
-        for component in self.pivot.xpath('//h:div[starts-with(@class, "kolekti-component-")]',
+        for component in self.pivot.xpath('//h:div[starts-with(@class, "kolekti-component-")][not(@data-hidden)]',
                                       namespaces = self._ns):
-            compid = component.get('id','id' + str(uuid.uuid1()))
-            component.set('id',compid)
+            compid = component.get('id', None)
+            if compid is None:
+                compid = 'id' + str(uuid.uuid1())
+                component.set('id',compid)
             
             component_type = component.get('class').replace("kolekti-component-","")
 
             #            data = topic.xpath('string(.//h:p[@class="kolekti-sparql-result-chartjs"])',namespaces=self._ns)
-
-            renderer = getattr(self, '_render_%s'%(component_type,))
-            graphicfile = self.getOsPath(self.publication_plugin_dir + '/img/component_' + compid + '.png')
-            logger.debug('graphic export to %s'%graphicfile)
             try:
-                renderer(component,  graphicfile)
+                renderer = getattr(self, '_render_%s'%(component_type,))
+                graphicfile = self.getOsPath(self.publication_plugin_dir + '/img/component_' + compid + '.png')
+                logger.debug('graphic export to %s'%graphicfile)
+                try:
+                    renderer(component,  graphicfile)
+                except:
+                    logger.exception("unable to render component %s"%component_type)
             except:
-                logger.exception("unable to render component %s"%component_type)
+                logger.debug("no renderer for component %s"%component_type)
 
     def _render_map(self, component, imgpath):
-        pass
+        _, inpath = tempfile.mkstemp(suffix='.html')
+        logger.debug('---render map---')
+        logger.debug(ET.tostring(component))
+        xsl = self.get_system_xsl('components/render_map')
+        staticpath = os.path.join(self._appdir,'..','kolekti_server/kserver/static')
+        domhtml = xsl(component, static = "'%s'"%staticpath)
+        if domhtml.xpath('.//h:div[@data-geojson=""] or not(.//h:div[@data-geojson])', namespaces=self._ns):
+            logger.debug('json not found')
+            return
+        
+        with open(inpath, 'w') as f:
+            f.write('<!DOCTYPE html>\n')
+            f.write(ET.tostring(domhtml, method="html", xml_declaration=None, pretty_print=True))
+        self._rasterize_phantom("rasterize-map.js", inpath, imgpath)
+        
     
     def _render_chart(self, component, imgpath):
+        _, inpath = tempfile.mkstemp(suffix='.html')
         xsl = self.get_system_xsl('components/render_chart')
-        domhtml = xsl(component)
-        css = os.path.join(self._appdir,'..','kolekti_server/kserver/static/components/css/chart.css')
-          
-        from d3js2img import d3staticsvg
-        pngdata = d3staticsvg.to_png(ET.tostring(domhtml), css)
-        with open(imgpath,'wb') as gf:
-            gf.write(pngdata)
+        staticpath = os.path.join(self._appdir,'..','kolekti_server/kserver/static')
+        domhtml = xsl(component, static = "'%s'"%staticpath)
+        with open(inpath, 'w') as f:
+            f.write('<!DOCTYPE html>\n')
+            f.write(ET.tostring(domhtml, method="html", xml_declaration=None, pretty_print=True))
+        self._rasterize_phantom("rasterize-chart.js", inpath, imgpath)
+        os.unlink(inpath)
         
+
+    def _rasterize_phantom(self, script, inpath, imgpath):
+        try:
+            cmd = ['phantomjs','kserver/static/'+script, inpath, imgpath.encode('utf-8'), "600px"]
+            logger.debug(' '.join(cmd))
+            exccmd = subprocess.Popen(
+                cmd,
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=True)
+            err=exccmd.stderr.read()
+            out=exccmd.stdout.read()
+            exccmd.communicate()
+            err=err.decode(self.LOCAL_ENCODING)
+            out=out.decode(self.LOCAL_ENCODING)
+            for line in err.split('\n'):
+                # Doesn't display licence warning
+                if re.search('license.dat', line):
+                    continue
+                # display warning or error
+                if re.search('warning', line):
+                    logger.info("Attention %(warn)s"% {'warn': line})
+                elif re.search('error', line) or re.search('not found', line):
+                    logger.error(line)
+                    errmsg = "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(self.LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')}
+                    logger.error(errmsg)
+                    raise PublishException([errmsg] + err.split('\n'))
+        except:
+            logger.exception('error when raterize %s', str(cmd))
+            
     def _render_details(self, component, imgpath):
+        pass
+
+    def _render_title(self, component, imgpath):
         pass
 
     def _render_wysiwyg(self, component, imgpath):

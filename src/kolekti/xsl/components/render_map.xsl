@@ -25,19 +25,35 @@
     exclude-result-prefixes="html"
     version="1.0">
   
-  <xsl:include href="chart.xsl"/>
+  <xsl:include href="map.xsl"/>
   
   <xsl:template match="/html:div">
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;</xsl:text>
     <html>
       <head>
-	<link rel='stylesheet' type="text/css" link="{$static}/components/css/chart.css"/>
-	<script src="{$static}/jquery.js"/>
-	<script src="{$static}/d3.min.js"/>
-	<script src="{$static}/components/js/chart_functions.js"/>
+	<title>Leaflet</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+	<link rel="stylesheet" href="{$static}/leaflet/leaflet.css" />	  
+	<link rel='stylesheet' type="text/css" link="{$static}/components/css/map.css"/>
+	<script src="{$static}/jquery.js"> </script>
+	<script src="{$static}/leaflet/leaflet.js"> </script>
+	<script src="{$static}/components/js/map_functions.js"> </script>
       </head>
       <body>
-	<xsl:apply-templates select="." mode="topicbody"/>
+	<div class="leafletmap" data-geojson="{string(.//html:div[@class='kolekti-sparql-result-json'])}" style="width: 600px; height: 400px"></div>
+<!--
+	<script>
+	  $(function() {
+	  var maplist = $('div');
+	  console.log($('div'));
+	  window.drawmap(maplist.get(0), function() {
+	  console.log("done");
+	  });
+	  });
+	</script>
+-->
       </body>
     </html>
   </xsl:template>
