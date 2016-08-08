@@ -170,7 +170,7 @@ $(document).ready(function() {
 	    }})
 	})
     }
-    
+/*    
     $('.typeahead_').typeahead({source:function(query, process) {
 	var ref = $("#ecorse_select_referentiel").val();
 	if (ref_communes.hasOwnProperty(ref))
@@ -179,7 +179,8 @@ $(document).ready(function() {
 	    return process([]);
 	}
     }})
-
+*/
+    
     $('#ecorse_select_referentiel').on('change', function() {
 	$('.typeahead').val('')
 	get_ref_parameters();
