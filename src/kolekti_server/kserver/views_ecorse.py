@@ -84,14 +84,17 @@ class ElocusPublicMixin(kolektiPublicMixin):
                     libs['scripts'] += ET.tostring(scr, method="html")
         return libs
 
-    def get_project_reports(self, project):
+    def get_project_reports(self, project=None):
+        if project is None:
+            project = self.request.user.userprofile.activeproject.project
         releasespath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project.directory, 'releases')
         for report in os.listdir(releasespath):
             try:
+                logger.debug('report %s : %s',releasespath,report)
                 job = ET.parse(os.path.join(releasespath, report, 'kolekti', 'publication-parameters', report + '_asm.xml' ))
                 report_title = job.xpath("string(/job/@pubname)")
                 report_url = '/projects/activate?project=%s&redirect=/elocus/report/?release=/releases/%s'%(project.directory, report)
-                yield {'title': report_title, 'url': report_url}
+                yield {'title': report_title, 'url': report_url, 'dir':report}
             except:
                 import traceback
                 print traceback.format_exc()
@@ -126,13 +129,18 @@ class ElocusPublicMixin(kolektiPublicMixin):
         pass
 
     def get_report_name(self, release_path=""):
+        logger.debug(release_path)
         job = self.get_job(release_path)
+
         return job.xpath("string(/job/@pubname)")
 
     def get_report_list(self):
         reports = self.get_directory('/releases')
-        for report in reports:
-            report.update({'label':self.get_report_name('/releases/%s'%report.get('name'))})
+        try:
+            for report in reports:
+                report.update({'label':self.get_report_name('/releases/%s'%report.get('name'))})
+        except:
+            logger.exception('')
         return reports
 
     
@@ -413,8 +421,9 @@ class ElocusReportView(ElocusMixin, View):
     template_name = "ecorse/report.html"
     def get(self, request):
         release_path = request.GET.get('release','')
+        logger.debug(release_path)
         section = request.GET.get('section')
-        releases = self.get_report_list()
+        releases = self.get_project_reports()
         context = {
             'releases':releases,
             'release':release_path,
@@ -425,7 +434,9 @@ class ElocusReportView(ElocusMixin, View):
             assembly_name = release_path.rsplit('/',1)[1]
             self._checkout(release_path)
             assembly_path = "/".join([release_path,"sources","fr","assembly",assembly_name+"_asm.html"])
+            logger.debug('assembly_path %s', assembly_path)
             xassembly = self.get_xassembly(assembly_path)
+            
             content = self.get_assembly_edit(xassembly, release_path = release_path, section = section)
             menu = self.get_assembly_menu(xassembly, release_path = release_path, section = section)
             reportname = self.get_report_name(release_path)
