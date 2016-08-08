@@ -117,9 +117,9 @@ class Publisher(PublisherMixin, kolektiBase):
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
             })
-            print traceback.format_exc()
-            logging.debug("W: unable to create assembly directory")
-            logging.debug(traceback.format_exc())
+
+            logging.exception("impossible d'executer les requetes sparql")
+
 
         # calculate the publication name
         pubname = xjob.get('id','')
