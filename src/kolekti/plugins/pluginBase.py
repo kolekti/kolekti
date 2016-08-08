@@ -59,7 +59,8 @@ class plugin(PublisherMixin,kolektiBase):
         self._draft = True
         
     def get_xsl(self, xslfile, **kwargs):
-        logger.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl %s from plugin %s", xslfile, self._plugindir)
+        xsl = None
         try:
             xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
             xsl = super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
@@ -69,12 +70,22 @@ class plugin(PublisherMixin,kolektiBase):
                                                 **kwargs)
     
         except:
-            xsl = super(plugin,self).get_xsl(xslfile,
-                                            extclass = self.__ext,
-                                            xsldir = os.path.join(self._plugindir,'xsl'),
-                                            system_path = True,
-                                            resdir = self.assembly_dir,
-                                            **kwargs)
+            logger.debug('load project xsl failed')
+            if xsl is not None:
+                for entry in xsl.error_log:
+                    logger.debug('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
+            try:
+                xsl = super(plugin,self).get_xsl(xslfile,
+                                                extclass = self.__ext,
+                                                xsldir = os.path.join(self._plugindir,'xsl'),
+                                                system_path = True,
+                                                resdir = self.assembly_dir,
+                                                **kwargs)
+            except:
+                logger.exception('load plugin xsl failed')
+                if xsl is not None:
+                    for entry in xsl.error_log:
+                        logger.debug('message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
         return xsl
     
     def get_project_xsl(self,xslfile, **kwargs):
