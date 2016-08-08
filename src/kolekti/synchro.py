@@ -33,7 +33,7 @@ def initLocale():
             locale.setlocale( locale.LC_ALL, '%s.%s' % (language_code, encoding) )
         except locale.Error:
             # force a locale that will work
-            locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
+            locale.setlocale( locale.LC_ALL, 'C.UTF-8' )
 initLocale()
 
 
