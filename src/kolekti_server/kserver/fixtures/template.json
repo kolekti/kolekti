@@ -1,0 +1,11 @@
+[
+   {
+      "fields" : {
+         "name" : "elocus",
+         "description" : "elocus default template",
+         "svn" : "https://07.kolekti.net/svn/eLocus"
+      },
+      "pk" : 1,
+      "model" : "kserver.template"
+   }
+]

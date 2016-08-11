@@ -29,6 +29,19 @@
       }
    },
    {
+      "pk" : 1,
+      "model" : "kserver.userproject",
+      "fields" : {
+          "project" : 1,
+          "user" : 2,
+          "srclang" : "fr",
+          "publang" : "fr",
+          "is_saas" : true,
+          "is_admin" : false
+
+      }
+   },
+   {
       "fields" : {
          "phone" : "",
          "user" : 2,
@@ -36,7 +49,7 @@
          "address" : "",
          "city" : "",
          "company" : "exselt",
-         "activeproject" : null,
+         "activeproject" : 1,
          "created" : "2016-08-02"
       },
       "model" : "kserver.userprofile",

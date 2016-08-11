@@ -4,10 +4,22 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import django.db.models.deletion
 from django.conf import settings
-
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 
 class Migration(migrations.Migration):
 
+    def create_admin_user(apps, schema_editor):
+        #    User = apps.get_model('django.contrib.auth', 'User')
+        admin = User(
+            username='admin',
+            email='admin@kolekti.net',
+            password=make_password('kolektiadmin'),
+            is_superuser=True,
+            is_staff=True,
+        )
+        admin.save()
+            
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -148,4 +160,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
+        migrations.RunPython(create_admin_user),
+                
     ]

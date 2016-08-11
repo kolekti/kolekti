@@ -1,0 +1,19 @@
+[
+   {
+      "fields" : {
+         "is_superuser" : true,
+         "username" : "admin",
+         "email" : "admin@kolekti.net",
+         "is_staff" : true,
+         "groups" : [],
+         "last_login" : "2016-08-03T23:17:55.606Z",
+         "is_active" : true,
+         "last_name" : "",
+         "first_name" : "",
+         "user_permissions" : [],
+         "password" : "pbkdf2_sha256$15000$gmWUTX2OTOa0$zjeVp5dska0ycPshiw+k1A4aXhAIsRS9l1GeJSgJ5do=",
+         "date_joined" : "2016-08-02T16:37:47.241Z"
+      },
+      "model" : "auth.user"
+   }
+]
