@@ -43,14 +43,15 @@ var drawchart = function(elt, anim, windowwidth) {
 	    wwidth = wwidth/ 3 * 2;
 */
     var wheight = wwidth / 2;
+/*
     if (wheight > 400)
 	wheight = 400;
-    
+*/    
 	
     var margin = {top: 20, right: 20, bottom: 30+(20*places.length), left: 60},
 	width = wwidth - margin.left - margin.right,
 	height = wheight - margin.top - margin.bottom;
-    
+
 	// Parse the date / time
     varparseDate = d3.time.format("%Y-%m").parse;
     
