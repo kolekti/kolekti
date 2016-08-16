@@ -327,7 +327,18 @@
       <xsl:apply-templates/>
     </text:p>
   </xsl:template>
+  
+  <xsl:template match="html:p[html:ul|html:ol]">
+    <text:p>
+      <xsl:call-template name="style">
+        <xsl:with-param name="ns" select="'text'"/>
+      </xsl:call-template>
+      <xsl:apply-templates select="node()[not(self::html:ul)][not(self::html:ol)]"/>
+    </text:p>
+    <xsl:apply-templates select="html:ul|html:ol"/>
+  </xsl:template>
 
+  
   <xsl:template match="html:ol">
     <text:list>
       <xsl:call-template name="style">
@@ -452,29 +463,31 @@
     </xsl:variable>
 
     <table:table table:name="Tableau{$tnum}" table:style-name="Tableau{$tnum}">
-    <xsl:comment>a<xsl:value-of select="concat('Tableau',$tnum,'. ',$tablestyle)"/></xsl:comment>
-    <xsl:for-each select="$template-tables[@table:name=$tablestyle]/table:table-column">
-
-    <xsl:comment>col <xsl:value-of select="local-name()"/></xsl:comment>
-       <xsl:copy>
-         <xsl:copy-of select="@*"/>
-         <xsl:attribute name="table:style-name">
-           <xsl:value-of select="concat('Tableau',$tnum,'.')"/>
-           <xsl:value-of select="substring-after(@table:style-name,'.')"/>
+      <!--
+	  <xsl:comment>a<xsl:value-of select="concat('Tableau',$tnum,'. ',$tablestyle)"/></xsl:comment>
+	  <xsl:for-each select="$template-tables[@table:name=$tablestyle]/table:table-column">
+	  
+	  <xsl:comment>col <xsl:value-of select="local-name()"/></xsl:comment>
+	  <xsl:copy>
+          <xsl:copy-of select="@*"/>
+          <xsl:attribute name="table:style-name">
+          <xsl:value-of select="concat('Tableau',$tnum,'.')"/>
+          <xsl:value-of select="substring-after(@table:style-name,'.')"/>
          </xsl:attribute>
-       </xsl:copy>
-    </xsl:for-each>
+	 </xsl:copy>
+	 </xsl:for-each>
+	 -->
 
-<!--
       <xsl:for-each select="html:tbody[1]/html:tr[1]/html:td|html:tbody[1]/html:tr[1]/html:th">
-        <xsl:variable name="colid" select="translate(string(position()),'123456789','ABCDEFGHI')"/>
-        <xsl:if test="$automatic-styles/style:style[@style:family='table-column'][@style:name=concat($tablestyle,'.',$colid)]">
-	<table:table-column table:style-name="Tableau{$tnum}.{translate(string(position()),'123456789','ABCDEFGHI')}"/>
+	<xsl:variable name="colid" select="translate(string(position()),'123456789','ABCDEFGHI')"/>
+	<table:table-column table:style-name="Tableau{$tnum}.{$colid}"/>
       </xsl:for-each>
--->
-      <table:table-header-rows>
-	<xsl:apply-templates select="html:thead/html:tr"/>
-      </table:table-header-rows>
+      
+      <xsl:if test="html:thead">
+	<table:table-header-rows>
+	  <xsl:apply-templates select="html:thead/html:tr"/>
+	</table:table-header-rows>
+      </xsl:if>
       <xsl:apply-templates select="html:tbody/html:tr"/>
       <xsl:apply-templates select="html:tfoot/html:tr"/>
     </table:table>
@@ -520,23 +533,24 @@
          <xsl:attribute name="table:number-columns-spanned">
             <xsl:value-of select="@colspan" />
          </xsl:attribute>
-      </xsl:if>
-      <xsl:choose>
-	<xsl:when test="node()[1][self::html:p] or node()[1][self::html:ol] or node()[1][self::html:ul]">
-	  <xsl:apply-templates/>
-	</xsl:when>
-	<xsl:otherwise>
-	  <text:p>
-	    <xsl:call-template name="style">
-	      <xsl:with-param name="ns" select="'text'"/>
-	    </xsl:call-template>
-	    <xsl:apply-templates/>
-	  </text:p>
-	</xsl:otherwise>
-      </xsl:choose>
+      </xsl:if>      
+      <xsl:apply-templates mode="tablecell"/>
     </table:table-cell>
   </xsl:template>
 
+  <xsl:template match="*" mode="tablecell">
+    <xsl:apply-templates select="."/>
+  </xsl:template>
+  
+  <xsl:template match="text()[normalize-space(.)]" mode="tablecell">
+    <text:p>
+      <xsl:call-template name="style">
+	<xsl:with-param name="ns" select="'text'"/>
+      </xsl:call-template>
+      <xsl:apply-templates/>
+    </text:p>
+  </xsl:template>
+  
   <xsl:template match="html:img[@class]" mode="styles"> 
     <style:style style:name="fr{1+count(preceding::html:img)}" style:family="graphic" style:parent-style-name="{@class}">
     </style:style>

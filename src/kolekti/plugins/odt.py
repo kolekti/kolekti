@@ -95,12 +95,11 @@ class plugin(pluginBase.plugin):
         except:
             logger.exception('error in fiter pivot')
             pivot = self.pivot
-            #debug(f.error_log )
+            debug(f.error_log )
         
         # copy the template into the publication space
         # shutil.copy(tfile, dfile)
         self.xwrite(pivot, tmpdebug)
-                
 
         # uncompress the template
         with ZipFile(self.getOsPath(templatepath),'r') as zipin:
@@ -260,9 +259,10 @@ class plugin(pluginBase.plugin):
     def _render_map(self, component, imgpath):
         _, inpath = tempfile.mkstemp(suffix='.html')
         logger.debug('---render map---')
-        logger.debug(ET.tostring(component))
+#        logger.debug(ET.tostring(component))
         xsl = self.get_system_xsl('components/render_map')
         staticpath = os.path.join(self._appdir,'..','kolekti_server/kserver/static')
+        logger.debug(staticpath)
         domhtml = xsl(component, static = "'%s'"%staticpath)
         if domhtml.xpath('.//h:div[@data-geojson=""] or not(.//h:div[@data-geojson])', namespaces=self._ns):
             logger.debug('json not found')
@@ -272,7 +272,7 @@ class plugin(pluginBase.plugin):
             f.write('<!DOCTYPE html>\n')
             f.write(ET.tostring(domhtml, method="html", xml_declaration=None, pretty_print=True))
         self._rasterize_phantom("rasterize-map.js", inpath, imgpath)
-        
+        os.unlink(inpath)        
     
     def _render_chart(self, component, imgpath):
         _, inpath = tempfile.mkstemp(suffix='.html')
@@ -283,12 +283,12 @@ class plugin(pluginBase.plugin):
             f.write('<!DOCTYPE html>\n')
             f.write(ET.tostring(domhtml, method="html", xml_declaration=None, pretty_print=True))
         self._rasterize_phantom("rasterize-chart.js", inpath, imgpath)
-        os.unlink(inpath)
+#        os.unlink(inpath)
         
 
     def _rasterize_phantom(self, script, inpath, imgpath):
         try:
-            cmd = ['phantomjs','kserver/static/'+script, inpath, imgpath.encode('utf-8'), "600px"]
+            cmd = ['phantomjs','--disk-cache=true','kserver/static/'+script, inpath, imgpath.encode('utf-8'), "600px"]
             logger.debug(' '.join(cmd))
             exccmd = subprocess.Popen(
                 cmd,
@@ -302,17 +302,10 @@ class plugin(pluginBase.plugin):
             err=err.decode(self.LOCAL_ENCODING)
             out=out.decode(self.LOCAL_ENCODING)
             for line in err.split('\n'):
-                # Doesn't display licence warning
-                if re.search('license.dat', line):
-                    continue
-                # display warning or error
-                if re.search('warning', line):
-                    logger.info("Attention %(warn)s"% {'warn': line})
-                elif re.search('error', line) or re.search('not found', line):
-                    logger.error(line)
-                    errmsg = "Erreur lors de l'exécution de la commande : %(cmd)s:\n  %(error)s"%{'cmd': cmd.decode(self.LOCAL_ENCODING).encode('utf-8'),'error': line.encode('utf-8')}
-                    logger.error(errmsg)
-                    raise PublishException([errmsg] + err.split('\n'))
+                logger.error(line)
+            for line in out.split('\n'):
+                logger.info(line)
+                
         except:
             logger.exception('error when raterize %s', str(cmd))
             
@@ -324,8 +317,7 @@ class plugin(pluginBase.plugin):
 
     def _render_wysiwyg(self, component, imgpath):
         pass
-
-        
+       
     def _generate_Bar(self, data, chartfile):
         bar_chart = pygal.Bar()
         bar_chart.x_labels = data['labels']
