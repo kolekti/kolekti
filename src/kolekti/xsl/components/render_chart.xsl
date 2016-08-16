@@ -30,7 +30,7 @@
   <xsl:template match="/html:div">
     <html>
       <head>
-	<link rel='stylesheet' type="text/css" link="{$static}/components/css/chart.css"/>
+	<link rel='stylesheet' type="text/css" href="{$static}/components/css/chart.css"/>
 	<script src="{$static}/jquery.js"/>
 	<script src="{$static}/d3.min.js"/>
 	<script src="{$static}/components/js/chart_functions.js"/>
