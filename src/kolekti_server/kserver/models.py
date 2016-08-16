@@ -14,6 +14,8 @@ class Template(models.Model):
     name = models.CharField(max_length = 64)
     description = models.TextField()
     svn = models.CharField(max_length = 255)
+    svn_user = models.CharField(max_length = 255, default = "")
+    svn_pass = models.CharField(max_length = 255, default = "")
     
     def __unicode__(self):
         return self.name
