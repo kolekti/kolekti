@@ -205,7 +205,7 @@ class ElocusReportCreateView(ElocusMixin, View):
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI2","value":commune2})
 #            ET.SubElement(criteria, 'criterion', attrib={"code":"placeURI3","value":commune3})
             r = publish.Releaser(self.kolekti_projectpath, lang = lang)
-            pp = r.make_release(tocpath, xjob)
+            pp = r.make_release(tocpath, xjob, release_title = title)
         except:
             import traceback
             print traceback.format_exc()
