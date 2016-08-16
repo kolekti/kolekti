@@ -28,7 +28,7 @@ def post_save_project_callback(sender, **kwargs):
         # export the project template
         try:
             pc = SVNProjectCreator()
-            pc.create_from_template(instance.template.svn, instance.directory, instance.owner.username)
+            pc.create_from_template(instance.template.svn, instance.directory, instance.owner.username, instance.template.svn_user, instance.template.svn_pass)
         except:
             logger.exception('could not create project from template')
 
