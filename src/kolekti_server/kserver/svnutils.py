@@ -61,14 +61,16 @@ class SVNUserManager(CMDMixin):
     
         
 class SVNProjectCreator(CMDMixin):
-    def create_from_template(self, template_url, project_directory, username):
+    def create_from_template(self, template_url, project_directory, username, svn_user = settings.KOLEKTI_SVNTPL_USER, svn_pass = settings.KOLEKTI_SVNTPL_PASS):
+        logger.debug("create repo from template")
         repo_path = os.path.join(settings.KOLEKTI_SVN_ROOT,project_directory)
         # export template to temp dir
         tmpd = os.path.join(tempfile.mkdtemp(),project_directory)
         client = pysvn.Client()
 
         def get_login( realm, username, may_save ):
-            return True, settings.KOLEKTI_SVNTPL_USER, settings.KOLEKTI_SVNTPL_PASS, True
+            logger.debug("login callback")
+            return True, svn_user, svn_pass, True
         client.callback_get_login = get_login
 
         def callback_accept_cert(arg):
