@@ -55,7 +55,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 		var svg = d3.select(window.document.body).select('div');
 		var svglist = window.document.getElementsByTagName('div');
 		try {
-		    window.drawchart(svglist[0], false, 725);
+		    window.drawchart(svglist[0], false, 600);
 		}
 		catch(e) {
 		    $('body').html('Erreur a la génération du graphique');
