@@ -1017,7 +1017,7 @@ class Releaser(Publisher):
             assembly_dir += "/"
         return assembly_dir
 
-    def make_release(self, toc, job, release_name=None):
+    def make_release(self, toc, job, release_title = None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
@@ -1025,8 +1025,6 @@ class Releaser(Publisher):
         logger.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
-            if release_name is None:
-                raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
         #        release_name = os.path.splitext(pubdir.rsplit("/", 1)[1])[0]
@@ -1035,12 +1033,20 @@ class Releaser(Publisher):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        release_name = xjob.get('pubdir', release_name)
+            
+        release_name = xjob.get('pubdir')
         xjob.set('id',release_name + '_asm')
-
-        # xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
-        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
-
+        
+        if release_title is None:
+            release_title = release_name
+            
+        try:
+            # xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
+            ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_title})
+            
+            xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_title
+        except:
+            logger.exception('could not set release name')
         # assembly
         logger.debug('********************************** CREATE ASSEMBLY')
         assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
