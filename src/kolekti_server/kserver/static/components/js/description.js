@@ -24,12 +24,13 @@ $(document).ready(function() {
 	    editor.config.toolbarGroups = [
 		{ name: 'editing', groups: [ 'basicstyles', 'links', 'image' ] },
 		{ name: 'undo' },
+		{ name: 'insert', groups: [ 'table' ]},
 		{ name: 'clipboard', groups: [ 'selection', 'clipboard' ] },
 		{ name :"paragraph", groups :['list','blocks']},
 		{ name: 'about' }
 	    ];
 	    
-	    editor.config.removeButtons='Strike,Anchor,Styles,Specialchar,CreateDiv,SelectAll'
+	    editor.config.removeButtons='Strike,Anchor,Styles,Specialchar,CreateDiv,RemoveDiv,SelectAll'
 	} );
 	editor.on('change', function() {
 	    editor.ecorse_state = true
