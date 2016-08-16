@@ -58,9 +58,11 @@ if (system.args.length < 3 || system.args.length > 5) {
 		    window.drawmap(maplist.get(0), function() {
 			  window.setTimeout(function(){
 			    window.callPhantom("done");
-			}, 100);
-			
+			  }, 500);
 		    });
+		    window.setTimeout(function(){
+			window.callPhantom("done");
+		    }, 5000);
 		});
 	    });
 	}
