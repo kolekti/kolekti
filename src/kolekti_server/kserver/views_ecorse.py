@@ -94,6 +94,7 @@ class ElocusPublicMixin(kolektiPublicMixin):
                 job = ET.parse(os.path.join(releasespath, report, 'kolekti', 'publication-parameters', report + '_asm.xml' ))
                 report_title = job.xpath("string(/job/@pubname)")
                 report_url = '/projects/activate?project=%s&redirect=/elocus/report/?release=/releases/%s'%(project.directory, report)
+                                                   
                 yield {'title': report_title, 'url': report_url, 'dir':report}
             except:
                 import traceback
@@ -173,7 +174,12 @@ class ElocusPublicMixin(kolektiPublicMixin):
                     varset.add(v.get('class')[8:])
         return list(varset)
 
+    def _is_shared(self, release):
+        shared = False
+        status = self.syncMgr.statuses('/'.join(["/releases", release, 'kolekti', 'publication-parameters', release+'_asm.xml']), recurse=False)
+        return len(status['commit']) == 0
 
+    
 class ElocusMixin(LoginRequiredMixin, ElocusPublicMixin):
     def dispatch(self, *args, **kwargs):
         self.kolekti_userproject = self.request.user.userprofile.activeproject
@@ -183,7 +189,7 @@ class ElocusMixin(LoginRequiredMixin, ElocusPublicMixin):
             self.set_project(self.kolekti_projectpath)
             
         return super(ElocusMixin, self).dispatch(*args, **kwargs)
-        
+
     
 class ElocusReportCreateView(ElocusMixin, View):
     def post(self, request):
@@ -192,7 +198,7 @@ class ElocusReportCreateView(ElocusMixin, View):
             toc = request.POST.get('toc')
             tocpath = '/sources/fr/tocs/ecorse/'+toc
             xjob = self.parse('/kolekti/publication-parameters/report.xml')
-            reportdir = get_valid_filename(title)
+            reportdir = "%06d_%s"%(request.user.id,get_valid_filename(title))
             xjob.getroot().set('pubdir', reportdir)
             xjob.getroot().set('pubname', title)
             lang=self.kolekti_userproject.srclang
@@ -452,6 +458,7 @@ class ElocusReportView(ElocusMixin, View):
 #                libs = {'css':'', 'scripts':''}
 
             context.update({
+                "shared": self._is_shared(assembly_name),
                 "ariane":ariane,
                 "content":content,
                 "current":assembly_name,

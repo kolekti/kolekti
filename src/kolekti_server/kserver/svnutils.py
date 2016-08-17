@@ -88,4 +88,11 @@ class SVNProjectCreator(CMDMixin):
         client = pysvn.Client()
         client.set_default_username(username)
         client.import_(tmpd,'file://'+repo_path, log_message="initial import")
+
+        # create hooks environement
+        hooksenvfile = os.path.join(settings.KOLEKTI_SVN_ROOT, project_directory, "conf", "hooks-env")
+        with open(hooksenvfile, 'w') as f:
+            f.write("[default]\n")
+            f.write("LANG = C.UTF-8")
+            
     
