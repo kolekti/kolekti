@@ -102,8 +102,39 @@
 	    </div>
 	    
 	    <div class="panel-body">
-	    	<h4><a href="?release=/releases/{{ current }}">{{ reportname }}</a></h4>
-			<div class="btn-group">
+	      <h4><a href="?release=/releases/{{ current }}">{{ reportname }}</a></h4>
+{% comment %} future shared functionality
+	      {% if shared %}
+
+	      <div class="btn-group">
+		<a href="#" class="btn btn-default btn-xs disabled">
+		  <i class="fa fa-users"></i> partagé&nbsp;
+		</a>
+	      </div>
+	      
+	      {% else %}
+
+	      <div class="btn-group">
+		<a href="#" class="btn btn-default btn-xs disabled">
+		  <i class="fa fa-user"></i> personnel&nbsp;
+		</a>
+	      </div>
+	      <br/>
+	      <div class="btn-group">
+		<a href="#" class="btn btn-default btn-sm ">
+		  <i class="fa fa-trash"></i> supprimer&nbsp;
+		</a>
+	      </div>
+	      <div class="btn-group">
+		<a href="#" class="btn btn-default btn-sm ">
+		  <i class="fa fa-share"></i> partager&nbsp;
+		</a>
+	      </div>
+	      
+	      {% endif %}
+{% endcomment %}
+	      <br/>
+	      <div class="btn-group">
 				<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">
 					<i class="fa fa-refresh"></i>&nbsp;
 					Actualiser
