@@ -70,7 +70,7 @@ class SVNProjectCreator(CMDMixin):
 
         def get_login( realm, username, may_save ):
             logger.debug("login callback")
-            return True, svn_user, svn_pass, True
+            return True, svn_user, svn_pass, False
         client.callback_get_login = get_login
 
         def callback_accept_cert(arg):
