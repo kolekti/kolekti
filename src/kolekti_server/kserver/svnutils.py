@@ -75,7 +75,7 @@ class SVNProjectCreator(CMDMixin):
 
         def callback_accept_cert(arg):
             if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
-                return  True, 12, True
+                return  True, 12, False
             raise Exception("cert not valid")
         client.callback_ssl_server_trust_prompt = callback_accept_cert
         
