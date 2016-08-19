@@ -38,8 +38,9 @@ def post_save_project_callback(sender, **kwargs):
 @receiver(post_delete, sender = Project)
 def post_delete_project_callback(sender, **kwargs):
     instance = kwargs['instance']
-    project_directory = instance.directory
-    shutil.rmtree(os.path.join(settings.KOLEKTI_SVN_ROOT, project_directory))
+    project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT, instance.directory)
+    if os.path.exists(project_directory):
+        shutil.rmtree(project_directory)
             
 @receiver(post_save, sender=UserProject)
 def post_save_userproject_callback(sender, **kwargs):
@@ -64,9 +65,10 @@ def post_save_userproject_callback(sender, **kwargs):
 @receiver(post_delete, sender = UserProject)
 def post_delete_userproject_callback(sender, **kwargs):
     instance = kwargs['instance']
-    project_directory = instance.project.directory
     username = instance.user.username
-    shutil.rmtree(os.path.join(settings.KOLEKTI_BASE, username, project_directory))
+    project_directory = os.path.join(settings.KOLEKTI_BASE, username, instance.project.directory)
+    if os.path.exists(project_directory):
+        shutil.rmtree(project_directory)
     __generate_hooks(instance.project)
 
 def __generate_hooks(project):
