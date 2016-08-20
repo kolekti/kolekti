@@ -285,6 +285,16 @@ class plugin(pluginBase.plugin):
         self._rasterize_phantom("rasterize-chart.js", inpath, imgpath)
 #        os.unlink(inpath)
         
+    def _render_svg(self, component, imgpath):
+        _, inpath = tempfile.mkstemp(suffix='.html')
+        xsl = self.get_system_xsl('components/render_svg')
+        staticpath = os.path.join(self._appdir,'..','kolekti_server/kserver/static')
+        domhtml = xsl(component, static = "'%s'"%staticpath)
+        with open(inpath, 'w') as f:
+            f.write('<!DOCTYPE html>\n')
+            f.write(ET.tostring(domhtml, method="html", xml_declaration=None, pretty_print=True))
+        self._rasterize_phantom("rasterize-svg.js", inpath, imgpath)
+
 
     def _rasterize_phantom(self, script, inpath, imgpath):
         try:
