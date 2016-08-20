@@ -20,6 +20,7 @@
 -->
 <xsl:stylesheet
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
+    xmlns:svg="http://www.w3.org/2000/svg"
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns="http://www.w3.org/1999/xhtml" 
     exclude-result-prefixes="html"
@@ -28,22 +29,38 @@
   <xsl:template match="/libs">
     <libs>
       <css>
+	<link rel="stylesheet" type="text/css" href="/static/components/css/svg.css"/>
       </css>
       <scripts>
       </scripts>
     </libs>
   </xsl:template>
 
+
+  <xsl:template match="svg:svg" mode="svgcomponent">
+    <xsl:copy>
+<!--      <xsl:apply-templates select="@*"/>-->
+      <xsl:attribute name="viewBox">
+	<xsl:text>0 0 </xsl:text>
+	<xsl:value-of select="@width"/>
+	<xsl:text> </xsl:text>
+	<xsl:value-of select="@height"/>
+      </xsl:attribute>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+
+  
   <xsl:template match="html:div[@class='kolekti-component-svg']" mode="topictitle"/>
   <xsl:template match="html:div[@class='kolekti-component-svg']" mode="topicbody">
     <div class="svgcontent">
-      <xsl:apply-templates/>
+      <xsl:apply-templates select=".//*[@class='kolekti-sparql-result-template']//svg:svg" mode="svgcomponent"/>
     </div>
   </xsl:template>
   
   <xsl:template match="html:div[@class='kolekti-component-svg']" mode="topicpanelinfo">
     <div class="svgcontent">
-      <xsl:apply-templates/>
+      <xsl:apply-templates select=".//*[@class='kolekti-sparql-result-template']//svg:svg" mode="svgcomponent"/>
     </div>
   </xsl:template>
 
