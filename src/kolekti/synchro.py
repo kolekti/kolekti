@@ -71,9 +71,14 @@ class SvnClient(object):
         self.__accept_cert = accept_cert
         
         def get_login( realm, username, may_save ):
-            if self.__username is None:
-                raise ExcSyncRequestAuth
-            return True, self.__username, self.__password, True
+            try:
+                if self.__username is None:
+                    raise ExcSyncRequestAuth
+                return True, self.__username, self.__password, True
+            except:
+                logger.exception('callback svn get_login')
+                return False,None,None,False
+            
         self._client.callback_get_login = get_login
 
         self._messages = []
