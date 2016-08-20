@@ -28,7 +28,9 @@
   <xsl:template match="/libs">
     <libs>
       <css>
-	<link rel="stylesheet" type="text/css" href="/static/components/css/wysiwyg.css"/>
+<!--
+    <link rel="stylesheet" type="text/css" href="/static/components/css/wysiwyg.css"/>
+-->
       </css>
       <scripts>
 	<script src="/static/ckeditor/ckeditor.js"/>
