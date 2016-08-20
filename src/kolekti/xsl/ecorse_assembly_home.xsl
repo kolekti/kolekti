@@ -164,6 +164,7 @@
 	  </div>
 	  
 	  <div class="panel-body">
+	    <xsl:apply-templates select=".//html:div[@class='kolekti-component-svg']" mode="topicbody"/>
 	    <xsl:apply-templates select=".//html:div[@class='kolekti-component-chart']" mode="topicbody"/>
 	    <xsl:apply-templates select=".//html:div[@class='kolekti-component-map']" mode="topicbody"/>
 	  </div>
