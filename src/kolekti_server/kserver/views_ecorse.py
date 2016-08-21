@@ -175,10 +175,11 @@ class ElocusPublicMixin(kolektiPublicMixin):
         return list(varset)
 
     def _is_shared(self, release):
-        shared = False
-        status = self.syncMgr.statuses('/'.join(["/releases", release, 'kolekti', 'publication-parameters', release+'_asm.xml']), recurse=False)
-        return len(status['commit']) == 0
-
+        try:
+            status = self.syncMgr.statuses('/'.join(["/releases", release, 'kolekti', 'publication-parameters', release+'_asm.xml']), recurse=False)
+            return len(status['commit']) == 0
+        except:
+            return False
     
 class ElocusMixin(LoginRequiredMixin, ElocusPublicMixin):
     def dispatch(self, *args, **kwargs):
