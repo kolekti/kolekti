@@ -14,8 +14,23 @@ var locale_fr = {
 };
 
 
+var chartoptions = {
+    "chartkind":"bar",
+    "windowwidth":null,
+    "show_icon":true,
+    "bar_as_icon":false,
+    "anim":true
+    
+}
 
-var drawchart = function(elt, anim, windowwidth) {
+var drawchart = function(elt, options) {
+    var opts = $.extend({},chartoptions, options);
+    
+    if ($(elt).attr("data-chartkind")=="bar")
+	opts.chartkind = "bar";
+    if ($(elt).attr("data-chartkind")=="line")
+	opts.chartkind = "line";
+
     var data = $(elt).data('chartdata')['results']['bindings'];
 	//var series = [
 
@@ -37,7 +52,7 @@ var drawchart = function(elt, anim, windowwidth) {
 	    return item.values[0].placeLabel.value;
 	})
 
-    var wwidth = windowwidth?windowwidth:$(elt).width();
+    var wwidth = opts.windowwidth?opts.windowwidth:$(elt).width();
 	/*
 	if ($('body').width() > 980)
 	    wwidth = wwidth/ 3 * 2;
@@ -156,7 +171,7 @@ var drawchart = function(elt, anim, windowwidth) {
 		return x1(d.name);
 	    })
 	
-	if (anim)
+	if (opts.anim)
 	    rect.attr("y", function(d) {return y(0)})
 	    .attr("height", function(d) { return 0})
 	    .transition()
@@ -170,8 +185,16 @@ var drawchart = function(elt, anim, windowwidth) {
 		return d3.min([y(d.value),y(0)]);
 	    })		
 	    .attr("height", function(d) { return Math.abs(y(0) - y(d.value)); });
-	    
-	if (anim)
+
+	if (opts.show_icon) {
+	    var scale = (height / 48);
+	    var translate = (width / 2) - (scale * 24);
+	    $(opts.icon_element).attr('transform','translate('+translate+',0) scale('+scale+')');
+	    $(opts.icon_element).attr('style','opacity:0.8');
+
+	    chart.node().appendChild(opts.icon_element)
+	}
+	if (opts.anim)
 	    year.append("rect")
 	    .attr('class','eventrect')
 	    .attr('x', 0)
@@ -287,16 +310,59 @@ var drawchart = function(elt, anim, windowwidth) {
 	    .on("mouseout", function(){
 		chart.select('.charttooltip').style("visibility", "hidden");
 	    });
-	
+	if (opts.show_icon) {
+	    var scale = (height / 48);
+	    var translate = (width / 2) - (scale * 24);
+	    $(opts.icon_element).attr('transform','translate('+translate+',0) scale('+scale+')');
+	    $(opts.icon_element).attr('style','opacity:0.8');
+	    
+	    chart.node().appendChild(opts.icon_element)
+	}
+
 	
 	
     } // linechart
     
+
+    var calldraw = function() {
+	if (opts.chartkind == "bar")
+	    barchart();
+	if (opts.chartkind == "line")
+	    linechart();
+    }
+
+    if (opts.show_icon && data[0].hasOwnProperty("icon")) {
+	var icon = data[0].icon.value;
+	console.log('icon '+icon);
+	
+	$.get('/static/components/'+icon)
+	    .done(function(data) {
+/*
+		$(data.documentElement).find('path').each(function() {
+		    $(this).attr('style','fill:#D0D0D0');
+		});
+*/
+		opts.icon_element = $(data.documentElement).find('g')[0];
+		var svg_group = $(data.documentElement).find('g')[0];
+		calldraw();
+
+		/*
+		var scale = (height / 48);
+		console.log(by_year.length)
+		console.log(width)
+		var translate = margin.left + ((width / by_year.length) * .2); 
+
+		chart.select('.year').node().insertBefore(svg_group,chart.select('.eventrect').node());
+		$(svg_group).attr('transform','translate('+translate+',0) scale('+scale+')');
+		$(svg_group).attr('style','opacity:0.8');
+*/
+	    })
+    } else {
+	calldraw()
+    }
     
-    if ($(elt).attr("data-chartkind")=="bar")
-	barchart();
-    if ($(elt).attr("data-chartkind")=="line")
-	linechart();
+
+
     
     // adds legend
 	
@@ -323,7 +389,7 @@ var drawchart = function(elt, anim, windowwidth) {
 
 	// overlay for tooltips interactivity
 
-    if (anim) {
+    if (opts.anim) {
 	var tooltipelt = chart.append("g")
 	    .attr("class", "charttooltip")
     
