@@ -72,29 +72,38 @@
   <xsl:template match="html:div[@class='kolekti-component-chart']" mode="topicpanelaction">
     <xsl:variable name="data" select="string(html:div[@class='kolekti-sparql']/html:div[@class='kolekti-sparql-result']/html:div[@class='kolekti-sparql-result-json'])"/>
     <xsl:if test="string-length($data)">
-      <span class="btn-group">
-	<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-	  <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
-	</button>
-	<xsl:variable name="ckind" select="@data-chartkind"/>
-	<ul class="dropdown-menu" role="menu">
-	  <li role="presentation">
-	    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="bar">
-	      <xsl:text>Histogramme </xsl:text>
-	    </a>
-	  </li>
-	  <li role="presentation">
-	    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart" data-chartkind="line">
-	      <xsl:text>Linéaire </xsl:text>
-	    </a>
-	  </li>
-	  <!--
-	      <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_pie">Circulaire</a></li>
-	      <li role="presentation" class="divider"/>
-	      <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="btn_chart_options">Options...</a></li>
-	  -->
-	</ul>
-      </span>
+      <div class="row">
+	<div class="col-sm-4">Type de graphique</div>
+	<div class="col-sm-6">
+	  <span class="btn-group">
+	    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+	      <i class="fa fa-bar-chart-o"></i>&#xA0;<span class="caret"> </span>
+	    </button>
+	    <xsl:variable name="ckind" select="@data-chartkind"/>
+	    <ul class="dropdown-menu" role="menu">
+	      <li role="presentation">
+		<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart-kind" data-chartkind="bar">
+		  <xsl:text>Histogramme </xsl:text>
+		</a>
+	      </li>
+		  <li role="presentation">
+		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart-kind" data-chartkind="line">
+		      <xsl:text>Linéaire </xsl:text>
+		    </a>
+		  </li>
+		  <li role="presentation">
+		    <a role="menuitem" tabindex="-1" href="#" class="ecorse-action-chart-kind" data-chartkind="draw">
+		      <xsl:text>Illustrations</xsl:text>
+		    </a>
+		  </li>
+	    </ul>
+	  </span>
+	</div>
+	<div class="col-sm-4">Afficher l'icone</div>
+	<div class="col-sm-6"><input type="checkbox" class="ecorse-action-chart-icon"/></div>
+	<div class="col-sm-4">Texte du graphique</div>
+	<div class="col-sm-6"><input type="text" class="ecorse-action-chart-text"/></div>
+      </div>
     </xsl:if>
   </xsl:template>
   

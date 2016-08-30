@@ -465,6 +465,7 @@ var drawchart = function(elt, options) {
 		calldraw();
 	    })
     } else {
+
 	opts.show_icon = false;
 	calldraw()
     }

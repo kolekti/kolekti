@@ -155,9 +155,9 @@
 		      <xsl:apply-templates mode="topicpanelinfo"/>
 		      <xsl:if test="$share='False'">
 			<hr/>
-			
-			<h5>Actions</h5>
-			<xsl:apply-templates mode="topicpanelaction"/>
+			<div class="well well-sm">
+			  <xsl:apply-templates mode="topicpanelaction"/>
+			</div>
 		      </xsl:if>
 		    </div>
 		    <div class="col-md-8">

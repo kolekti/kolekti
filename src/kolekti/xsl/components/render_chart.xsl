@@ -34,7 +34,7 @@
 	<script src="{$static}/jquery.js"/>
 	<script src="{$static}/d3.min.js"/>
 	<script src="{$static}/components/js/chart_functions.js"/>
-
+	<base href="{$static}"/>
       </head>
       <body>
 	<xsl:apply-templates select="." mode="topicbody"/>
