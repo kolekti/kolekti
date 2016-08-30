@@ -24,13 +24,20 @@ var chartoptions = {
 }
 
 var drawchart = function(elt, options) {
-    var opts = $.extend({},chartoptions, options);
+    var co = {};
+    if ($(elt).attr("data-chartopts")) {
+	co = $(elt).data("chartopts")
+    }
     
+    var opts = $.extend({}, chartoptions, co, options);
+
+    /*
     if ($(elt).attr("data-chartkind")=="bar")
 	opts.chartkind = "bar";
     if ($(elt).attr("data-chartkind")=="line")
 	opts.chartkind = "line";
-
+    */
+    
     var data = $(elt).data('chartdata')['results']['bindings'];
 	//var series = [
 
@@ -93,7 +100,7 @@ var drawchart = function(elt, options) {
 	}))
 	.rangeRoundBands([0, places.length]);
 
-    console.log("chart w: " + width + " h: " + height);
+//    console.log("chart w: " + width + " h: " + height);
 
     var yticks = (height < 60)?2:(height < 130)?5:10;
     
@@ -426,11 +433,7 @@ var drawchart = function(elt, options) {
 
     if (opts.show_icon && data[0].hasOwnProperty("icon")) {
 	var icon = data[0].icon.value;
-	console.log('get '+icon);
 	$( document ).ajaxError(function(e,x,s,err) {
-	    console.log(e)
-	    console.log(x)
-	    console.log(s)
 	    console.log(err)
 	});
 	$.get('/static/components/'+icon)
@@ -440,14 +443,12 @@ var drawchart = function(elt, options) {
 		    $(this).attr('style','fill:#D0D0D0');
 		});
 */
-		console.log('xhr ok');
 		opts.icon_element = $(data.documentElement).find('g')[0];
 		var svg_group = $(data.documentElement).find('g')[0];
 
 		/*
 		var scale = (height / 48);
-		console.log(by_year.length)
-		console.log(width)
+
 		var translate = margin.left + ((width / by_year.length) * .2); 
 
 		chart.select('.year').node().insertBefore(svg_group,chart.select('.eventrect').node());
@@ -456,12 +457,9 @@ var drawchart = function(elt, options) {
 */
 	    })
 	    .fail(function(data) {
-		console.log('xhr error');
 		opts.draw_icon = false;
-		console.log(data);
 	    })
 	    .always(function() {
-		console.log('xhr draw');
 		calldraw();
 	    })
     } else {

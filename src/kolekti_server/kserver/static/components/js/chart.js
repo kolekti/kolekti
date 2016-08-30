@@ -42,15 +42,22 @@ $(document).ready(function() {
 	    var modal = $(e.target).closest('.modal');
 	    var topic = $(modal).closest('.topic');
 	    var tchart = $(topic).find('.panel .ecorse-chart')
-	    var chartkind = tchart.attr('data-chartkind');
-	    var chartopts = tchart.attr('data-chartopts');
+	    //	    var chartkind = tchart.attr('data-chartkind');
+	    var chartopts = tchart.data('chartopts');
+	    var chartkind = chartopts.hasOwnProperty("chartkind")?chartopts['chartkind']:"bar";
 	    $(e.target).find('.ecorse-chart').each(function() {
 		$(this).html('')
-		$(this).attr('data-chartkind',chartkind);
-		$(this).attr('data-chartopts',chartopts);
-		
+		//		$(this).attr('data-chartkind',chartkind);
+		$(this).data('chartopts',chartopts);
+		$(this).attr('data-chartopts',JSON.stringify(chartopts));
 	    });
-	    $(modal).find('.ecorse-action-chart[data-chartkind='+chartkind +']').append($('<i>', { 'class':'fa fa-check'}));
+	    console.log(chartopts)
+	    // initialize menu in options
+	    $(modal).find('.ecorse-action-chart-kind[data-chartkind='+chartkind +']').append($('<i>', { 'class':'fa fa-check'}));
+
+	    // initialize show drawing checkbox
+	    var is_checked = chartopts.hasOwnProperty("show_icon")?chartopts['show_icon']:true;
+	    $(modal).find('.ecorse-action-chart-icon').prop('checked', is_checked);
 	    
 	});
 
@@ -68,12 +75,12 @@ $(document).ready(function() {
 	    var modal = $(e.target).closest('.modal'),
 		dchart = $(modal).find('.ecorse-chart'),
 		topic = $(modal).closest('.topic'),
-		chartkind = dchart.attr('data-chartkind'),
+//		chartkind = dchart.attr('data-chartkind'),
 		chartopts = dchart.attr('data-chartopts'),
 		elocus_params = modal.data('elocus_params')
 	    elocus_params['release'] = $('.report').data('release');
 	    elocus_params['topic'] =  topic.attr('id');
-	    elocus_params['chartkind'] = chartkind;
+//	    elocus_params['chartkind'] = chartkind;
 	    elocus_params['chartopts'] = chartopts;
 	    modal.data('elocus_params', elocus_params);
 	});
@@ -84,11 +91,11 @@ $(document).ready(function() {
 	    var modal = $(e.target).closest('.modal'),
 		topic = $(modal).closest('.topic'),
 		dchart = $(modal).find('.ecorse-chart'),
-		chartkind = dchart.attr('data-chartkind'),
+//		chartkind = dchart.attr('data-chartkind'),
 		chartopts = dchart.attr('data-chartopts');
 
 	    $(topic).find('.panel .ecorse-chart').each(function() {
-		$(this).attr('data-chartkind',chartkind);
+//		$(this).attr('data-chartkind',chartkind);
 		$(this).attr('data-chartopts',chartopts);
 		$(this).html('')
 		drawchart(this, {"anim":true});
@@ -101,7 +108,7 @@ $(document).ready(function() {
 	    var modal = $(e.target).closest('.modal');
 	    var dchart = $(modal).find('.ecorse-chart');
 	    var topic = $(modal).closest('.topic');
-	    $(modal).find('.ecorse-action-chart i').remove();
+	    $(modal).find('.ecorse-action-chart-kind i').remove();
 	    
 	})
 
@@ -146,14 +153,20 @@ $(document).ready(function() {
 
 		btn.closest('ul').find('i').remove();
 		btn.append($('<i>', { 'class':'fa fa-check'}));
-		chart.attr('data-chartkind',chartkind)
+		var opts = chart.data('chartopts');
+		opts = opts?opts:{};
+		opts['chartkind'] = chartkind;
+		chart.data('chartopts', opts);
+		chart.attr('data-chartopts', JSON.stringify(opts));
+//		chart.attr('data-chartkind',chartkind)
 		chart.html('')
-		drawchart(chart.get(0), {"chartkind":chartkind, "anim":true});
+		drawchart(chart.get(0), opts);
 		
 		/* should be done a modal validation */
 	    }
 	})
-	// menu selection graphique
+	
+	// menu afficher icone
 	$('.ecorse-action-chart-icon').on('click', function(e) {
 	    var dialog = $(this).closest('.modal')
 	    var chart = dialog.find('.ecorse-chart')
@@ -162,6 +175,7 @@ $(document).ready(function() {
 	    opts = opts?opts:{};
 	    opts['show_icon'] = $(this).is(':checked'); 
 	    chart.data('chartopts', opts);
+	    chart.attr('data-chartopts', JSON.stringify(opts));
 	    console.log(opts);
 	    chart.html('');
 	    drawchart(chart.get(0), opts);

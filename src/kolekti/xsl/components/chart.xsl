@@ -53,17 +53,9 @@
     <xsl:variable name="data" select="string(html:div[@class='kolekti-sparql']/html:div[@class='kolekti-sparql-result']/html:div[@class='kolekti-sparql-result-json'])"/>
     <xsl:if test="string-length($data)">
       <div class="ecorse-chart">
-      
+	<xsl:copy-of select="@data-chartopts"/>
 	<xsl:attribute name="data-chartdata">
 	  <xsl:value-of select="$data"/>
-	</xsl:attribute>
-	<xsl:attribute name="data-chartkind">
-	  <xsl:choose>
-	    <xsl:when test="@data-chartkind">
-	      <xsl:value-of select="@data-chartkind"/>
-	    </xsl:when>
-	    <xsl:otherwise>bar</xsl:otherwise>
-	  </xsl:choose>
 	</xsl:attribute>
       </div>
     </xsl:if>
