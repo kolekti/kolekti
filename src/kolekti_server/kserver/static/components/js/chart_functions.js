@@ -92,13 +92,19 @@ var drawchart = function(elt, options) {
 	    return d.key;
 	}))
 	.rangeRoundBands([0, places.length]);
+
+    console.log("chart w: " + width + " h: " + height);
+
+    var yticks = (height < 60)?2:(height < 130)?5:10;
     
     var yAxis = d3.svg.axis()
 	.scale(y)
 	.orient("left")
-	.ticks(10)
+	.ticks(yticks)
 	.tickFormat(fr.numberFormat(",.0f"))
     ;
+
+    
     
     var chart = d3.select(elt).append("svg")
 	.attr("width", width + margin.left + margin.right)
@@ -186,12 +192,12 @@ var drawchart = function(elt, options) {
 	    })		
 	    .attr("height", function(d) { return Math.abs(y(0) - y(d.value)); });
 
-	if (opts.show_icon) {
+	if (opts.show_icon && opts.icon_element) {
 	    var scale = (height / 48);
 	    var translate = (width / 2) - (scale * 24);
 	    $(opts.icon_element).attr('transform','translate('+translate+',0) scale('+scale+')');
 	    $(opts.icon_element).attr('style','opacity:0.8');
-
+	    $(opts.icon_element).attr('class','icon-layer');
 	    chart.node().appendChild(opts.icon_element)
 	}
 	if (opts.anim)
@@ -201,16 +207,18 @@ var drawchart = function(elt, options) {
 	    .attr('width', x0.rangeBand())
 	    .attr('y', 0)
 	    .attr('height', height )
-	
+	/*
 	    .on("mouseover", function(d){
 		var mouse = d3.mouse(this);
 		
 		tooltip(d.key, x0(d.key), mouse[1]);
 		chart.select('.charttooltip').style("visibility", "visible");
 	    })
+*/
 	    .on("mousemove", function(d){
 		var mouse = d3.mouse(this);
 		tooltip(d.key, x0(d.key), mouse[1]);
+		chart.select('.charttooltip').style("visibility", "visible");
 	    })
 	
 	    .on("mouseout", function(){
@@ -310,11 +318,12 @@ var drawchart = function(elt, options) {
 	    .on("mouseout", function(){
 		chart.select('.charttooltip').style("visibility", "hidden");
 	    });
-	if (opts.show_icon) {
+	if (opts.show_icon && opts.icon_element) {
 	    var scale = (height / 48);
 	    var translate = (width / 2) - (scale * 24);
 	    $(opts.icon_element).attr('transform','translate('+translate+',0) scale('+scale+')');
 	    $(opts.icon_element).attr('style','opacity:0.8');
+	    $(opts.icon_element).attr('class','icon-layer');
 	    
 	    chart.node().appendChild(opts.icon_element)
 	}
@@ -324,17 +333,106 @@ var drawchart = function(elt, options) {
     } // linechart
     
 
+
+
+    
+    // adds legend
+    var legend_layer = function() {
+	var legend = chart.selectAll(".legend")
+	    .data(by_place)
+	    .enter().append("g")
+	    .attr("class", "legend")
+	    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+	
+	legend.append("rect")
+	    .attr("x", 0)
+	    .attr("y", height + 22)
+	    .attr("width", 18)
+	    .attr("height", 18)
+	    .style("fill", function(d){return(seriescolor(colorscale(d.key)))});
+	
+	legend.append("text")
+	    .attr("x", 24)
+	    .attr("y", height + 22)
+	//	.attr("dy", "1.2em")
+    	    .attr("dy", "14")
+	    .style("text-anchor", "start")
+	    .text(function(d) { return d.values[0].placeLabel.value; });
+	
+	// overlay for tooltips interactivity
+    };
+
+    var tooltipelt;
+    
+    var tooltip_layer = function() {
+	if (opts.anim) {
+	    tooltipelt = chart.append("g")
+		.attr("class", "charttooltip")
+	    
+	    tooltipelt.append('rect')
+		.attr("x",1)
+		.attr("y",0)
+		.attr("rx",3)
+		.attr("ry",3)
+		.attr("width",80)
+		.attr("class","tooltipbg")
+	}
+    };
+    
+    var tooltipyear;
+    var tooltip = function(year, xpos, ypos) {
+	var values = by_year.filter(function(d) { return d.key == year})[0].values
+	tooltipelt.attr("transform", "translate(" + xpos + "," + (ypos - ((values.length + 1) * 20))  + ")")
+	
+	tooltipelt.select('.tooltipbg').attr("height",3+((values.length ) * 20) )
+	
+	
+	if (year == tooltipyear)
+	    return
+	tooltipyear = year;
+	var tipdata = values.map(function(d,i) { return {"key":d.placeURI.value, "value":d.xapprox.value}})
+	tooltipelt.selectAll('.tip').remove()
+	var tips = tooltipelt.selectAll('.tip')
+	    .data(tipdata)
+	
+	var tipline = tips.enter()
+	    .append('g')
+	    .attr("class","tip")
+	    .attr("transform", function(d, i) { return "translate(3," + (i-1) * 20 + ")"; });
+	
+	tipline.append("rect")
+	    .attr("x", 0)
+	    .attr("y", 22)
+	    .attr("width", 18)
+	    .attr("height", 18)
+	    .style("fill", function(d){return(seriescolor(colorscale(d.key)))})
+		
+	tipline.append("text")
+	    .attr("x", 24)
+	    .attr("y", 22)
+	    .attr("dy", "1.2em")
+	    .style("text-anchor", "start")
+	    .text(function(d) { return d.value; });
+    }
+
     var calldraw = function() {
 	if (opts.chartkind == "bar")
 	    barchart();
 	if (opts.chartkind == "line")
 	    linechart();
+	tooltip_layer();
+	legend_layer()
     }
 
     if (opts.show_icon && data[0].hasOwnProperty("icon")) {
 	var icon = data[0].icon.value;
-	console.log('icon '+icon);
-	
+	console.log('get '+icon);
+	$( document ).ajaxError(function(e,x,s,err) {
+	    console.log(e)
+	    console.log(x)
+	    console.log(s)
+	    console.log(err)
+	});
 	$.get('/static/components/'+icon)
 	    .done(function(data) {
 /*
@@ -342,9 +440,9 @@ var drawchart = function(elt, options) {
 		    $(this).attr('style','fill:#D0D0D0');
 		});
 */
+		console.log('xhr ok');
 		opts.icon_element = $(data.documentElement).find('g')[0];
 		var svg_group = $(data.documentElement).find('g')[0];
-		calldraw();
 
 		/*
 		var scale = (height / 48);
@@ -357,87 +455,20 @@ var drawchart = function(elt, options) {
 		$(svg_group).attr('style','opacity:0.8');
 */
 	    })
+	    .fail(function(data) {
+		console.log('xhr error');
+		opts.draw_icon = false;
+		console.log(data);
+	    })
+	    .always(function() {
+		console.log('xhr draw');
+		calldraw();
+	    })
     } else {
 	opts.show_icon = false;
 	calldraw()
     }
     
 
-
-    
-    // adds legend
-	
-    var legend = chart.selectAll(".legend")
-	.data(by_place)
-	.enter().append("g")
-	.attr("class", "legend")
-	.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-	
-    legend.append("rect")
-	.attr("x", 0)
-	.attr("y", height + 22)
-	.attr("width", 18)
-	.attr("height", 18)
-	.style("fill", function(d){return(seriescolor(colorscale(d.key)))});
-    
-    legend.append("text")
-	.attr("x", 24)
-	.attr("y", height + 22)
-    //	.attr("dy", "1.2em")
-    	.attr("dy", "14")
-	.style("text-anchor", "start")
-	.text(function(d) { return d.values[0].placeLabel.value; });
-
-	// overlay for tooltips interactivity
-
-    if (opts.anim) {
-	var tooltipelt = chart.append("g")
-	    .attr("class", "charttooltip")
-    
-	tooltipelt.append('rect')
-	    .attr("x",1)
-	    .attr("y",0)
-	    .attr("rx",3)
-	    .attr("ry",3)
-	    .attr("width",80)
-	    .attr("class","tooltipbg")
-	
-	var tooltipyear;
-	var tooltip = function(year, xpos, ypos) {
-	    var values = by_year.filter(function(d) { return d.key == year})[0].values
-	    tooltipelt.attr("transform", "translate(" + xpos + "," + (ypos - ((values.length + 1) * 20))  + ")")
-	    
-	    tooltipelt.select('.tooltipbg').attr("height",3+((values.length ) * 20) )
-	    
-	    
-	    if (year == tooltipyear)
-		return
-	    tooltipyear = year;
-	    var tipdata = values.map(function(d,i) { return {"key":d.placeURI.value, "value":d.xapprox.value}})
-	    tooltipelt.selectAll('.tip').remove()
-	    var tips = tooltipelt.selectAll('.tip')
-		.data(tipdata)
-	    
-	    var tipline = tips.enter()
-		.append('g')
-		.attr("class","tip")
-		.attr("transform", function(d, i) { return "translate(3," + (i-1) * 20 + ")"; });
-	
-		tipline.append("rect")
-		.attr("x", 0)
-		.attr("y", 22)
-		.attr("width", 18)
-		.attr("height", 18)
-		.style("fill", function(d){return(seriescolor(colorscale(d.key)))})
-	
-		tipline.append("text")
-		.attr("x", 24)
-		.attr("y", 22)
-		.attr("dy", "1.2em")
-		.style("text-anchor", "start")
-		.text(function(d) { return d.value; });
-	}
-	    
-    }	
     
 }; // drawchart
