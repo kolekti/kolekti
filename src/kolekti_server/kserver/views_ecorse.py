@@ -125,6 +125,8 @@ class ElocusPublicMixin(kolektiPublicMixin):
         report_name = release_path.rsplit('/',1)[1]
         report_path = "/".join([release_path,"sources","fr","assembly",report_name+"_asm.html"])
         self.xwrite(report, report_path)
+        logger.debug('commit %s'%report_path)
+        self.syncMgr.commit([report_path],"report update")
         
     def _checkout(self, release):
         pass
@@ -369,6 +371,7 @@ class ElocusTopicSaveView(ElocusMixin, View):
         release_path = request.POST.get('release','')
         topicid =  request.POST.get('topic','')
         chartkind =  request.POST.get('chartkind',None)
+        chartopts =  request.POST.get('chartopts',None)
         wdata =  request.POST.get('wysiwygdata',None)
         try:
             report = self.get_report(release_path)
@@ -376,6 +379,11 @@ class ElocusTopicSaveView(ElocusMixin, View):
                 chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
                                         namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
                 chart.set('data-chartkind', chartkind )
+                
+            if not chartopts is None:
+                chart = report.xpath("//html:div[@id = '%s']//html:div[@class='kolekti-component-chart']"%topicid,
+                                        namespaces={'html':'http://www.w3.org/1999/xhtml'})[0]
+                chart.set('data-chartopts', chartopts )
                 
             if not wdata is None:
                 try:
@@ -482,6 +490,12 @@ class ElocusReportView(ElocusMixin, View):
             raise
 
         return self.render_to_response(context)
+
+class ElocusReportShareView(ElocusMixin, View):
+    def get(self, request):            
+        release_path = request.GET.get('release','')
+        self.syncMgr.commit([release_path], "elocus share")
+        return HttpResponse(json.dumps({'status':'ok'}),content_type="application/json")
     
 class ElocusReportShareUrlView(ElocusMixin, View):
     def get(self, request):            
@@ -499,10 +513,10 @@ class ElocusReportShareUrlView(ElocusMixin, View):
                            reportname = reportname,
                            hashid = reportid)
             sl.save()
-        url = "http://%s%s"%(request.META['HTTP_HOST'],reverse('elocusreportshare', kwargs = {'hashid':str(sl.hashid)}))
+        url = "http://%s%s"%(request.META['HTTP_HOST'],reverse('elocusreportpublic', kwargs = {'hashid':str(sl.hashid)}))
         return HttpResponse(json.dumps({'url':url}),content_type="application/json")
     
-class ElocusReportShareView(ElocusPublicMixin, TemplateView):
+class ElocusReportPublicView(ElocusPublicMixin, TemplateView):
     template_name = "ecorse/share.html"
     def get(self, request, hashid):
         sl = ShareLink.objects.get(hashid = hashid)
