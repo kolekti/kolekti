@@ -93,8 +93,10 @@
 	</div>
 	<div class="col-sm-4">Afficher l'icone</div>
 	<div class="col-sm-6"><input type="checkbox" class="ecorse-action-chart-icon"/></div>
-	<div class="col-sm-4">Texte du graphique</div>
-	<div class="col-sm-6"><input type="text" class="ecorse-action-chart-text"/></div>
+	<!--
+	    <div class="col-sm-4">Texte du graphique</div>
+	    <div class="col-sm-6"><input type="text" class="ecorse-action-chart-text"/></div>
+	-->
       </div>
     </xsl:if>
   </xsl:template>
