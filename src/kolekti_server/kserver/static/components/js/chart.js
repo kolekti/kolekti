@@ -42,8 +42,11 @@ $(document).ready(function() {
 	    var modal = $(e.target).closest('.modal');
 	    var topic = $(modal).closest('.topic');
 	    var tchart = $(topic).find('.panel .ecorse-chart')
+	    if (tchart.length == 0)
+		return;
 	    //	    var chartkind = tchart.attr('data-chartkind');
-	    var chartopts = tchart.data('chartopts');
+	    var chartopts = tchart.data('chartopts')|| new Object();
+	    
 	    var chartkind = chartopts.hasOwnProperty("chartkind")?chartopts['chartkind']:"bar";
 	    $(e.target).find('.ecorse-chart').each(function() {
 		$(this).html('')
