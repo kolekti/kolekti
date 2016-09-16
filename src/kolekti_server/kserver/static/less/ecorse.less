@@ -247,9 +247,8 @@ body {
 	}
 
 
-	/* ==== Left menus ==== */
-	 /* The side navigation menu */
-	.sidenav {
+	/* ==== Left menus ==== */	 
+	.sidenav { /* The side navigation menu */
 	    height: 100%; /* 100% Full-height */
 	    width: 0; /* 0 width - change this with JavaScript */
 	    position: fixed; /* Stay in place */
@@ -257,8 +256,11 @@ body {
 	    top: 0;
 	    left: 0;
 	    overflow-x: hidden; /* Disable horizontal scroll */
-	    padding-top: 60px; /* Place content 60px from the top */
-	    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+	    padding-top: 60px; 
+	    transition: 0.4s; /* transition effect to slide in the sidenav */
+	    &.no-transition {
+	    	transition: 0s; /* transition effect to slide in the sidenav */
+	    }
 	}
 
 	#openNavBtn, #closeNavBtn {
@@ -269,7 +271,10 @@ body {
 
 	/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
 	#bootstrapContent {
-	    transition: margin-left .5s;
+	    transition: margin-left .4s;
+	    &.no-transition {
+	    	transition: 0s; /* transition effect to slide in the sidenav */
+	    }
 	}
 
 

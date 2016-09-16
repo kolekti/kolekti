@@ -15,12 +15,17 @@ $('#topTopLink').click(function(){
 
 //Sidenav Push Content 
 /* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
-function openNav(navbarState) {
-	console.log('navbarState:' + navbarState);
+function openNav() {
+	var transitionTime = 400;
+	if (sessionStorage && (sessionStorage.getItem("navbar-state") == 'true')) {
+		transitionTime = 0;
+		$("#mySidenav").addClass("no-transition");
+		$("#bootstrapContent").addClass("no-transition");
+	}
 	$("#mySidenav").css("width", "300px");			    
 	$("#bootstrapContent").css("marginLeft", "300px");
-	$("#openNavBtn").hide('400');
-	$("#closeNavBtn").show('400');
+	$("#openNavBtn").hide(transitionTime);
+	$("#closeNavBtn").show(transitionTime);
 	sessionStorage && sessionStorage.setItem("navbar-state", true)
 	setTimeout(function () {
 		equalizePanelHeadings($('.accueil.sections'));
@@ -35,6 +40,8 @@ function closeNav() {
 	$("#closeNavBtn").hide('400');
 	$("#openNavBtn").show('400');
 	sessionStorage && sessionStorage.setItem("navbar-state", false)
+	$("#mySidenav").removeClass("no-transition");
+	$("#bootstrapContent").removeClass("no-transition");
 	setTimeout(function () {
 		equalizePanelHeadings($('.accueil.sections'));
 		$('body').trigger('redraw.elocus.topics');
@@ -44,8 +51,8 @@ function closeNav() {
 $("#closeNavBtn").hide('0');
 $('#openNavBtn').click(openNav);
 $('#closeNavBtn').click(closeNav);
- 
-sessionStorage && sessionStorage.getItem("navbar-state") && openNav(navbarState); 
+
+sessionStorage && (sessionStorage.getItem("navbar-state") == 'true') && openNav()
 
 /* $('.sidebar').affix({
     offset: {
