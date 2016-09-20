@@ -227,7 +227,7 @@ $(document).ready(function() {
 	$.get(project_url)
 	    .done(function(data) {
 		$(dialog).modal();
-		$(dialog).trigget('shown.bs.modal');
+		$(dialog).trigger('shown.bs.modal');
 	    });
     })
     
@@ -374,6 +374,24 @@ $(document).ready(function() {
 	
     })
 
+    // partage de rapport
+    $('.elocus-action-report-share').on('click', function() {
+	var release = $('.report').data('release')
+	$.ajax({
+	    url:"/elocus/report/share",
+	    method:'GET',
+	    data:$.param({
+		'release': release,
+	    })
+	}).done(function(data) {
+	    window.location.reload(true)
+	}).fail(function(data) {
+	    window.location.reload(true)
+	});
+	
+    })
+	
+    
     // Actions sur les indicateurs
     // A la une (star)
     $('.ecorse-action-star').on('click', function() {

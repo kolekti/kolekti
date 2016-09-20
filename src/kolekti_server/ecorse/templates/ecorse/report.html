@@ -13,85 +13,20 @@
 	<script src="/static/js/kolekti-ecorse-report.js"></script>
 {% endblock %}
 
+{% block button-collapse-menu %}
+	<button id="closeNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Cacher le menu" style="display:none;">
+		<i class="fa fa-times"></i>
+	</button>
+	<button id="openNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Afficher le menu">
+		<i class="fa fa-reorder"></i>
+	</button>
+{% endblock %} 
+
 {% block page-title %}
 	{{ title }}
 {% endblock %}
 
 {% block sidebar %}
-	{% comment "Déjà présent dans la navbar..." %}
-		<ul class="list-group user">
-			<li class="list-group-item">Administrateur</li>
-		</ul>
-	{% endcomment %}
-	
-	{% comment "Déplacé dans la navbar dans le dropdown rapports..." %}	
-		<ul class="list-group user">
-			<li class="list-group-item">
-				<a href="#" class="ecorse-action-create-report" data-toggle="modal" data-target="#modal_create">Créer rapport... </a>
-			</li>
-		</ul>
-	{% endcomment %}
-		
-	{% comment "Autres rapports déplacés dans la navbar rapports..." %}	
-		<ul class="list-group list-releases">
-			{% for release in releases %}
-				<li class="list-group-item">
-					<a href="?release=/releases/{{release.name}}"><strong>{{release.label}}</strong></a>
-					{% if release.name == current %}
-						<br/>
-						
-						<div class="list-group">
-							<div class="list-group-item">
-								<div class="btn-group">
-									<a href="#" class="btn btn-default btn-xs ecorse-action-update-data">
-										<i class="fa fa-refresh"></i>&nbsp;
-										Actualiser
-									</a>
-								</div>
-								<div class="btn-group">
-									<a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-										<i class="fa fa-download"></i>&nbsp;
-										Télécharger&nbsp;
-										<span class="caret"></span>
-									</a>
-								 
-									<ul class="dropdown-menu" role="menu">
-										<li role="presentation">
-											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-pdf">
-												<i class="fa fa-file-pdf-o"></i>&nbsp;
-												Pdf
-											</a>
-										</li>
-										<li role="presentation">
-											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-word">
-												<i class="fa fa-file-word-o"></i>&nbsp;
-												Word
-											</a>
-										</li>
-										<li role="presentation">
-											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-presentation">
-												<i class="fa fa-file-powerpoint-o"></i>&nbsp;
-												PowerPoint
-											</a>
-										</li>
-										<li role="presentation">
-											<a role="menuitem" tabindex="-1" href="#" class="ecorse-action-dl-html">
-												<i class="fa fa-share-alt"></i>&nbsp;
-												Partager
-											</a>
-										</li>
-									</ul>
-								</div>
-							</div>
-							
-							{{ menu|safe }}
-						
-						</div>
-					{% endif %}
-				</li>
-			{% endfor %}
-		</ul>
-	{% endcomment %}
 
 	{# remplace le menu ci dessus #}
 	<div id="side-menu" class="">
@@ -103,7 +38,7 @@
 	    
 	    <div class="panel-body">
 	      <h4><a href="?release=/releases/{{ current }}">{{ reportname }}</a></h4>
-{% comment %} future shared functionality
+
 	      {% if shared %}
 
 	      <div class="btn-group">
@@ -121,18 +56,18 @@
 	      </div>
 	      <br/>
 	      <div class="btn-group">
-		<a href="#" class="btn btn-default btn-sm ">
+		<a href="#" class="btn btn-default btn-sm elocus-action-report-delete">
 		  <i class="fa fa-trash"></i> supprimer&nbsp;
 		</a>
 	      </div>
 	      <div class="btn-group">
-		<a href="#" class="btn btn-default btn-sm ">
+		<a href="#" class="btn btn-default btn-sm elocus-action-report-share">
 		  <i class="fa fa-share"></i> partager&nbsp;
 		</a>
 	      </div>
 	      
 	      {% endif %}
-{% endcomment %}
+
 	      <br/>
 	      <div class="btn-group">
 				<a href="#" class="btn btn-default btn-sm ecorse-action-update-data">

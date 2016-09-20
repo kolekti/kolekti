@@ -70,14 +70,16 @@ ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
 # SMTP config
 
 email_config = KOLEKTI_CONFIG.get('smtp_ssl')
-if email_config is not None:
-    EMAIL_HOST = email_config.get('host','')
-    EMAIL_PORT = email_config.get('port','')
-    EMAIL_HOST_USER = email_config.get('user','')
-    EMAIL_HOST_PASSWORD = email_config.get('pass','')
-    EMAIL_USE_TLS=False
-    EMAIL_USE_SSL=True
-    DEFAULT_FROM_EMAIL = email_config.get('from','')
+if email_config is None:
+    email_config = {}
+
+EMAIL_HOST = os.getenv('KOLEKTI_EMAIL_HOST',email_config.get('host',''))
+EMAIL_PORT = os.getenv('KOLEKTI_EMAIL_PORT',email_config.get('port',''))
+EMAIL_HOST_USER = os.getenv('KOLEKTI_EMAIL_USER',email_config.get('user',''))
+EMAIL_HOST_PASSWORD = os.getenv('KOLEKTI_EMAIL_PASSWORD',email_config.get('pass',''))
+EMAIL_USE_TLS=False
+EMAIL_USE_SSL=True
+DEFAULT_FROM_EMAIL = os.getenv('KOLEKTI_EMAIL_FROM',email_config.get('from',''))
 
 # Application definition
 

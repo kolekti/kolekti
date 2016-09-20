@@ -73,12 +73,8 @@
 		<nav class="navbar navbar-ecorse navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
-					<button id="closeNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Cacher le menu" style="display:none;">
-						<i class="fa fa-times"></i>
-					</button>
-					<button id="openNavBtn" type="button" class="btn btn-default navbar-btn hidden-xs" title="Afficher le menu">
-						<i class="fa fa-reorder"></i>
-					</button> 
+					{% block button-collapse-menu %}
+					{% endblock %}
 					<button class="navbar-toggle collapsed btn btn-default navbar-btn" type="button" id="hide-menu"  data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 								<a href="javascript:void(0);" data-action="toggleMenu" title="Afficher/Cacher le menu"><i class="fa fa-reorder"></i></a>
 							</button>
@@ -247,66 +243,7 @@
 		{# scripts additionnels Felix #}
 		{# retiré car sort du plein écran lorsqu'on change d'url <script src="/static/js/screenfull.min.js"></script> cf. https://github.com/sindresorhus/screenfull.js #}
 		<script src="/static/js/kolekti-ecorse-report-widgets.js"></script>
-		<script>			
-
-			// retour haut de page
-			$(window).scroll(function(){
-				posScroll = $(document).scrollTop();
-				if(posScroll >=300) {
-					$('#topTopLink').fadeIn(600);
-					$('#topTopLink').css('display','block');
-				} else {
-					$('#topTopLink').fadeOut(600);
-				}
-			});
-			$('#topTopLink').click(function(){
-				$('html').animate({scrollTop:0}, 'slow');
-				return false;
-			});
-
-			//Sidenav Push Content 
-		/* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
-		function openNav() {
-		$("#mySidenav").css("width", "300px");			    
-		$("#bootstrapContent").css("marginLeft", "300px");
-		$("#openNavBtn").hide('400');
-		$("#closeNavBtn").show('400');
-		sessionStorage && sessionStorage.setItem("navbar-state", true)
-		setTimeout(function () {
-		equalizePanelHeadings($('.accueil.sections'));
-		$('body').trigger('redraw.elocus.topics');
-		}, 500);
-
-		}
-		
-		/* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
-		function closeNav() {
-		$("#mySidenav").css("width", "0");			    
-		$("#bootstrapContent").css("marginLeft", "0");
-		$("#closeNavBtn").hide('400');
-		$("#openNavBtn").show('400');
-		sessionStorage && sessionStorage.setItem("navbar-state", false)
-		setTimeout(function () {
-		equalizePanelHeadings($('.accueil.sections'));
-		$('body').trigger('redraw.elocus.topics');
-		}, 500);
-		}
-
-		$("#closeNavBtn").hide('0');
-		$('#openNavBtn').click(openNav);
-		$('#closeNavBtn').click(closeNav);
-
-		sessionStorage && sessionStorage.getItem("navbar-state") && openNav() 
-		
-			/* $('.sidebar').affix({
-			    offset: {
-			        top: 100,
-			        bottom: function () {
-			            return (this.bottom = $('.footer').outerHeight(true))
-			        }
-			    }
-			}) */
-		</script>
+		<script src="/static/js/elocus-main.js"></script>
 		{# fin scripts additionnels Felix #}
 	
 		{% block extrascripts %}{% endblock %}

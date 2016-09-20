@@ -1,5 +1,5 @@
 .ecorse-chart {
-    font: 10px sans-serif;
+    font: 12px sans-serif;
 }
 
 
@@ -33,6 +33,11 @@
     fill-opacity:0;
     stroke-width:2;
 }
+
+.icon-layer path{
+    pointer-events:none;
+}
+
 .eventrect {
     fill-opacity:0;
 }
