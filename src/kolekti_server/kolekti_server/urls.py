@@ -37,6 +37,7 @@ urlpatterns = patterns('',
     
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
+    url(r'^variables/create/$', VariablesCreateView.as_view(), name='variablecreate'),
     url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
     url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
 

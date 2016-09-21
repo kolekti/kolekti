@@ -221,6 +221,7 @@ var kolekti_browser = function(args) {
 	e.prepend(
 	    ['Nouveau fichier : ',
 	     $('<input>',{ 'type':"text",
+			   "id":"new_name",
 			  'class':"form-control filename"
 			})]
 	)

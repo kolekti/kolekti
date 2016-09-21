@@ -774,16 +774,28 @@ class VariablesUploadView(kolektiMixin, TemplateView):
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            
+            print "form valid"
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
             projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
             converter = OdsToXML(projectpath)
-            varpath = path + "/" + uploaded_file.name.replace('.ods', '.xml')
-            converter.convert(uploaded_file, varpath)
+            converter.convert(uploaded_file, path)
             # self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
+            return HttpResponse(status=500)
+
+class VariablesCreateView(kolektiMixin, TemplateView):
+    def post(self, request):
+        try:
+            path = request.POST.get('path')
+            path = self.set_extension(path, ".xml")
+            varx = self.parse_string('<variables><critlist>:LANG</critlist></variables>')
+            self.xwrite(varx, path)
+            return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
+        except:
+            import traceback
+            print traceback.format_exc()
             return HttpResponse(status=500)
 
 class VariablesODSView(kolektiMixin, View):
