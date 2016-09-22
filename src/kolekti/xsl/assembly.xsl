@@ -159,7 +159,8 @@
     <div class="topic" id="{generate-id()}">
       <div class="topicinfo">
          <xsl:comment>Do not translate</xsl:comment>
-         <p><span class="infolabel">source</span><span class="infovalue"><a href="{$topic_url}"><xsl:value-of select="$topic_url"/></a></span></p>
+	 <p><span class="infolabel">source</span><span class="infovalue"><a href="{@href}"><xsl:value-of select="$href"/></a></span></p>
+	 <p><span class="infolabel">localsource</span><span class="infovalue"><a href="{$topic_url}"><xsl:value-of select="$topic_url"/></a></span></p>
          <xsl:apply-templates select="$topic/html:html/html:head/html:meta|$topic/html/head/meta" mode="topic_info"/>
       </div>
 
