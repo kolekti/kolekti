@@ -107,12 +107,13 @@
           <xsl:value-of select="substring-after(@href,'#')"/>
         </xsl:when>
 
-        <!-- lien absolu (/projects/PNAME/topics/... -->
+        <!-- lien absolu (/sources/[lg]/topics/... -->
         <xsl:when test="starts-with($tmod, '/')">
           <!--
           <xsl:variable name="ref" select="kfp:normpath(string($tmod))" />
           -->
-          <xsl:variable name="ref" select="kfp:gettopic(string($tmod))" />
+<!--          <xsl:variable name="ref" select="kfp:gettopic(string($tmod))" />-->
+	  <xsl:variable name="ref" select="$tmod" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -129,7 +130,10 @@
           <!--
                <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
           -->
-          <xsl:variable name="ref" select="kfp:gettopic( string($tmod),string($modpath))" />
+	  <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
+	  <!--
+              <xsl:variable name="ref" select="kfp:gettopic( string($tmod),string($modpath))" />
+	  -->
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -145,6 +149,10 @@
     </xsl:variable>
 
     <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="href">
+        <xsl:value-of select="$href"/>
+      </xsl:attribute>
       <xsl:if test="$href='#'">
         <!-- add class="brokenlink" if link is broken -->
         <xsl:attribute name="class">
@@ -154,12 +162,14 @@
           </xsl:if>
           <xsl:text>brokenlink</xsl:text>
         </xsl:attribute>
+	<xsl:comment>
+	  ref <xsl:value-of select="@href"/>
+	  source <xsl:value-of select="$modpath"/>
+	</xsl:comment>
       </xsl:if>
-      <xsl:attribute name="href">
-        <xsl:value-of select="$href"/>
-      </xsl:attribute>
-      <xsl:apply-templates select="node()|@*"/>
+      <xsl:apply-templates select="node()"/>
     </xsl:copy>
+    
   </xsl:template>
 
   <xsl:template match="html:a/@href"/>
