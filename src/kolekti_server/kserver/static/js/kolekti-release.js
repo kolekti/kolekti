@@ -250,10 +250,14 @@ Defines events for languages and release state in toolbar
     })
 
     var get_publish_languages = function(all_languages) {
+	console.log(all_languages)
 	if (all_languages) {
 	    var langs = []
-	    $('#kolekti_tools .btn-lang-menu-publication').each( function() {
-		langs.push($(this).prev().first().data('lang'));
+	    console.log($('#release_tabs a'))
+	    $('#release_tabs a').each( function() {
+		console.log($(this))
+		if ($(this).data('state') != "unknown")
+		    langs.push($(this).data('lang'));
 	    });
 	    return langs;
 	} else {

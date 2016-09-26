@@ -35,9 +35,20 @@
 
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
-	<div class="btn-group btn-group-justified" role="group">
-	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
+	<div class="input-group">
+	  <!--	    
+		    <div class="btn-group btn-group-justified">
+		      <div class="btn-group" role="group">
+			-->
+	  <button type="button" class="btn btn-primary btn-group-justified btn_publish" id="btn_publish">Publier</button>
+	  <div class="input-group-btn">
+	    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	      <span class="caret"></span>
+	      <span class="sr-only">Plus d'options</span>
+	    </button>
+	    <ul class="dropdown-menu dropdown-menu-right">
+	      <li><a id="btn_publish_all" class="btn_publish" href="#">Publier toutes les langues</a></li>
+	    </ul>
 	  </div>
 	</div>
       </div>

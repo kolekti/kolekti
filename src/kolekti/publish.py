@@ -212,7 +212,7 @@ class Publisher(PublisherMixin, kolektiBase):
             if profile.get('enabled','0') == '1':
                 profilename = profile.find('label').text
 
-                yield {'event':'profile', 'label':profilename}
+                yield {'event':'profile', 'label':'%s [%s]'%(profilename, self._publang)}
 
                 # creates the document (pivot) file
                 try:
@@ -1146,7 +1146,7 @@ class ReleasePublisher(Publisher):
                     return
 
                 xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
-        
+
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     langpubevt.append(pubres)
                     yield pubres
