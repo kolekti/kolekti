@@ -117,8 +117,8 @@ class SynchroManager(SvnClient):
     def geturl(self):
         return self._info.get('repos')
 
-    def history(self):
-        return self._client.log(self._base)
+    def history(self, limit=20):
+        return self._client.log(self._base, limit = limit)
 
     def rev_number(self):
         #headrev = self._client.info(self._base)
