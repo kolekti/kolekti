@@ -544,6 +544,8 @@ $(document).ready( function () {
 	enable_save()
     })
 
+    // job selection menu items
+    
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
@@ -568,6 +570,7 @@ $(document).ready( function () {
 	enable_save()
     });
 
+    
     // contextual menus
 
     // modify topic / section

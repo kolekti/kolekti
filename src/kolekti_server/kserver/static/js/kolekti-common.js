@@ -11,7 +11,7 @@ $(function() {
 	// console.log(data.revision.status);
 	switch(data.revision.status) {
 	case '*':
-	    color="info"
+	    color="warning"
 	    $('#btn_rev').attr('title', 'vos modifications locales n\'ont pas été synchronisées')
 	    break;
 	case 'N':
@@ -23,7 +23,7 @@ $(function() {
 	    $('#btn_rev').attr('title', 'une erreur est survenue')
 	    break;
 	case 'C':
-	    color="warning"
+	    color="danger"
 	    $('#btn_rev').attr('title', 'le projet est en conflit')
 	    break;
 	case 'M':
@@ -31,14 +31,15 @@ $(function() {
 	    $('#btn_rev').attr('title', 'des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles')
 	    break;
 	case 'U':
-	    color="info"
+	    color="warning"
 	    $('#btn_rev').attr('title', 'mise a jour disponible')
 	    break;
 	}
 	$('#btn_rev>span span').hide()
 	$('#btn_rev>span').removeClass('strong text-success text-default text-warning text-danger text-info')
-	$('#btn_rev>span').addClass('text-'+color)
+	$('#btn_rev').addClass('btn-'+color)
 	if (color != 'default') {
+	    $('#btn_rev>span').addClass('strong')
 	    $('#btn_rev>span span').show()
 	}
     })
@@ -49,6 +50,29 @@ $(function() {
 	window.history.back();
     })
 	
+    // menu selection filter
+
+    $('body').on('click',".input-filter-menu", function(e) {
+	e.stopPropagation()
+    });
+    
+    $('body').on('keyup',".input-filter-menu", function(e) {
+	var filter = this.value;
+	$(this).closest('ul').find('li.filterable')
+	    .each(function() {
+		$(this).show();
+		var itemval = $(this).attr('data-filter-value')
+		if (! itemval.startsWith(filter))
+		    $(this).hide();
+	    });
+    });
+
+    $(document).on('shown.bs.dropdown','.filterable-menu', function () {
+	$(this).find('.input-filter-menu').val('');
+	$(this).find('.input-filter-menu').focus();
+    })
+
+
 })
 
 var formatTime = function(unixTimestamp) {

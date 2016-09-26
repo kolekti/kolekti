@@ -16,7 +16,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:div[@class='topicinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]">
+  <xsl:template match="html:div[@class='topicinfo']/html:p[html:span[@class='infolabel' and text() = 'localsource']]">
     <xsl:variable name="src">
       <xsl:value-of select="html:span/html:a/@href"/>
     </xsl:variable>
@@ -26,7 +26,7 @@
     </p>
     <p>
       <span class="infolabel">source</span>
-      <span class="infovalue"><a href="/{substring-after(substring-after($src,'/releases/'),'/')}">/<xsl:value-of select="substring-after(substring-after($src,'/releases/'),'/')"/></a></span>
+      <span class="infovalue"><a href="/sources/{substring-after($src,'/sources/')}">/sources/<xsl:value-of select="substring-after($src,'/sources/')"/></a></span>
     </p>
   </xsl:template>
 

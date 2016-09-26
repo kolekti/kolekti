@@ -27,7 +27,7 @@ $(document).ready(function() {
 		"data-codevalue":"*",
 		"html":[i,
 			$('<span>', {
-			    "class":"pull-right",
+			    "class":"pull-right filterable-menu",
 			    "html":[
 				$("<button>", {
 				    "type":"button",
@@ -43,7 +43,25 @@ $(document).ready(function() {
 		    ]
 	      }).appendTo($('#userconditions'));
 
+	    // filtre sur la liste
+	    
 	    $('<li>', {
+		"role":"presentation",
+		html:
+		$('<input>', {
+		    "placeholder":"Filtrer la liste",
+		    "class":"form-control input-filter-menu",
+		    "type":"text",
+		    "id":"toclistfilter"
+		})
+	    }).appendTo($('#uc_' + i + " ul"));
+	    
+	    $('<li>', {
+		"class":"divider"
+	    }).appendTo($('#uc_' + i + " ul"));
+
+	    $('<li>', {
+		"role":"presentation",
 		html:
 		$('<a>', {
 		    "href":"#",
@@ -57,8 +75,15 @@ $(document).ready(function() {
 		})
 	    }).appendTo($('#uc_' + i + " ul"));
 	    
+	    $('<li>', {
+		"class":"divider"
+	    }).appendTo($('#uc_' + i + " ul"));
+
 	    $.each(c,function(j,v){
 		$('<li>', {
+		    "role":"presentation",
+		    "class":"filterable",
+		    "data-filter-value":v,
 		    html:
 			$('<a>', {
 			    "href":"#",

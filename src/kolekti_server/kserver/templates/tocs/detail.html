@@ -102,7 +102,7 @@
 	  <h5>
 	  Fichier de paramètres
 	  </h5>
-	  <span class="btn-group">
+	  <span class="btn-group filterable-menu">
 	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
 	      <span class="label_job">
 		{% if tocmeta.kolekti_job %}
@@ -114,8 +114,12 @@
 	      <span class="caret"></span>
 	    </button>
 	    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-	      {% for job in jobs %}
 	      <li role="presentation">
+		<input placeholder="Filtrer la liste" class="form-control input-filter-menu" type="text" id="toclistfilter"/>
+	      </li>
+	      <li class="divider"></li>
+	      {% for job in jobs %}
+	      <li role="presentation" class="filterable" data-filter-value="{{job.name}}">
 		<a href="#" role="menuitem" tabindex="-1" class="entry_tocjob" 
 		   data-kolekti-jobclass="{{ job.name|csssafe }}" data-kolekti-jobpath="{{ job.path }}">
 		  {{ job.name }}
