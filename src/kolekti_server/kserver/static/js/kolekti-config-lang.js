@@ -55,6 +55,8 @@ $(document).ready(function() {
 	    $new.addClass('btn-lang')
 	    $new.find('.lang').html(new_lang)
 	    enable_save()
+	    $(this).closest('.btn-lang-group').find('input').val('')
+	    $(this).closest('.btn-lang-group').find('input').focus()
 	}
     })
     
