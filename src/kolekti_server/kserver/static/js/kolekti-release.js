@@ -157,8 +157,6 @@ Defines events for languages and release state in toolbar
 
 	$('#release_tabs .active .state-picto').removeClass('state_'+oldstate);
 	$('#release_tabs .active .state-picto').addClass('state_'+newstate);
-	console.log(oldstate);
-	console.log(newstate);
     });
 	
     $('#btn_assembly').on('click', function() {
@@ -174,7 +172,6 @@ Defines events for languages and release state in toolbar
 	$(this).addClass('active')
 	$('.release-panel-part').addClass('hidden')
 	$('#illust_pane').removeClass('hidden')
-	console.log($('#main').data('release'))
 	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
 			 'parent':"#illust_pane",
 			 'title':" ",
@@ -254,12 +251,9 @@ Defines events for languages and release state in toolbar
     })
 
     var get_publish_languages = function(all_languages) {
-	console.log(all_languages)
 	if (all_languages) {
 	    var langs = []
-	    console.log($('#release_tabs a'))
 	    $('#release_tabs a').each( function() {
-		console.log($(this))
 		if ($(this).data('state') != "unknown")
 		    langs.push($(this).data('lang'));
 	    });
