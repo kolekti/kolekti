@@ -139,6 +139,7 @@ Defines events for languages and release state in toolbar
 	});
     })
 
+    //chagement d'état
     
     $('.release-state').on('click', function() {
 	var lang = $(this).closest('ul').data('target-lang');
@@ -147,14 +148,17 @@ Defines events for languages and release state in toolbar
 	var labelstate = $(this).find('span').html()
 	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
 	enable_save()
-	$('#release_tabs .active img').attr('src','/static/img/release_status_'+newstate+'.png')
 	$('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
+	$('.btn-lang-menu-'+lang).data('state',newstate);
 	$('.btn-lang-menu-'+lang+' .state').html(labelstate);
 
 	$('#main').data('state', newstate)
 	$('#main').attr('data-state', newstate)
 
-	
+	$('#release_tabs .active .state-picto').removeClass('state_'+oldstate);
+	$('#release_tabs .active .state-picto').addClass('state_'+newstate);
+	console.log(oldstate);
+	console.log(newstate);
     });
 	
     $('#btn_assembly').on('click', function() {

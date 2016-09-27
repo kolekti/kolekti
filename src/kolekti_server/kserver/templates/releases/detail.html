@@ -123,8 +123,10 @@
 	 {% endif %}
 	 >
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
+
 	{% for rlang, state,focus in langstates %}
-	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
+	
+	<li role="presentation"class="{% if rlang == lang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
 	 
 	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
@@ -135,12 +137,17 @@
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
 	     >
-	    <span class="state lead">{{ rlang }}</span>
-	    <br>
-	    <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+	    <span class="state-picto state_{{state}}">
+	      <div class="state_status_background">
+		<div class="state_status_inside">
+		</div>
+	      </div>
+	      <span class="state lead">{{ rlang }}</span>
+	    </span>
 	  </a>
 	     
 	</li>
+
 	{% endfor %}
       </ul>
       <!-- Tab panes -->
