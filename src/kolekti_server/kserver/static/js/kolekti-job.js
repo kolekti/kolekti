@@ -164,7 +164,7 @@ $(document).ready(function() {
     })
 
     // change any text field
-    $('#job_body input[type=text]').on('change', function(e) {
+    $('#job_body').on('change', 'input', function(e) {
 	enable_save();
     })
 
