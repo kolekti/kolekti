@@ -240,7 +240,7 @@
 	<xsl:value-of select="@code"/>
       </div>
       <div class="col-xs-9">
-	<div class="btn-group">
+	<div class="btn-group filterable-menu">
 	  <button type="button" class="btn btn-default dropdown-toggle form-control" data-toggle="dropdown" aria-expanded="false">
 	    <span class="kolekti-crit-value-menu">
 	      <xsl:call-template name="criterion-value">
@@ -251,9 +251,15 @@
 	    <span class="caret"/>
 	  </button>
 	  <ul class="dropdown-menu" role="menu">
+	    <li role="presentation">
+	      <input placeholder="Filtrer la liste" class="form-control input-filter-menu" type="text" id="toclistfilter"/>
+	    </li>
+	    <li class="divider"></li>
+
 	    <xsl:apply-templates>
 	      <xsl:with-param name="profile" select="$profile"/>
 	    </xsl:apply-templates>
+	    
 	    <li class="divider"></li>
 	    <xsl:if test="$template or $profile != ''">
 	      <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="*">Sélection utilisateur</a></li>
@@ -267,7 +273,9 @@
   </xsl:template>
 
   <xsl:template match="settings/criteria/criterion/value">
-    <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="{.}"><xsl:value-of select="."/></a></li>
+    <li class="filterable" data-filter-value="{.}">
+      <a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="{.}"><xsl:value-of select="."/></a>
+    </li>
   </xsl:template>
 
 
