@@ -527,6 +527,17 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     #    return HttpResponse("ok")
         return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(path,dstlang))
     
+class ReleaseDeleteView(kolektiMixin, View):
+    def post(self,request):
+        try:
+            release = request.POST.get('release')
+            lang = request.POST.get('lang')
+            self.delete_resource('%s/sources/%s'%(release, lang))
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        except:
+            logger.exception("Could not delete release")
+            return HttpResponse(status=500)
+            
 class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request):
         try:

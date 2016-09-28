@@ -307,7 +307,22 @@ Defines events for languages and release state in toolbar
     load_publications();
 
 
-
+    // supression langue
+    $('#suppr_lang').on('click', function() {
+	var url='/releases/delete/'
+	var params = {
+	    'release':$('#main').data('release'),
+	    'lang':get_publish_languages(false)[0]
+	}
+	if(confirm('Voulez vous réellement supprimer cette langue ?'))
+	    $.ajax({
+		url:url,
+		type:'POST',
+		data:params,
+	    }).done(function(data) {
+		window.location.href = "/releases/detail/?release="+params['release']+"&lang="+params['lang'];
+	    })
+    });
     
     // publication button
 
