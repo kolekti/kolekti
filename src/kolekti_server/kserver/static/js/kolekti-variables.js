@@ -74,7 +74,7 @@ $(document).ready(function() {
 
     $.get('/settings.json').success(
 	function(data) {
-	    var langs = data['srclangs'];
+	    var langs = data['releaselangs'] ;
 	    $.get('/criteria.json').success(
 		function(data) {
 		    criteria = data
