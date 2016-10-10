@@ -149,13 +149,13 @@ class RegistrationView(DefaultRegistrationView):
     form_class = kolektiRegistrationForm
             
     def register(self,request, **cleaned_data):
-        user = super(RegistrationView, self).register(request, **cleaned_data)
-        svnum = SVNUserManager()
-        user.firstname = cleaned_data['firstname']
-        user.lastname = cleaned_data['lastname']
-        user.save()
-        svnum.add_user(user.username, cleaned_data['password1'])
-        
+        #user = super(RegistrationView, self).register(request, **cleaned_data)
+        #svnum = SVNUserManager()
+        #user.firstname = cleaned_data['firstname']
+        #user.lastname = cleaned_data['lastname']
+        #user.save()
+        #svnum.add_user(user.username, cleaned_data['password1'])
+        pass
         
 @receiver(user_registered)
 def user_registered_callback(sender, **kwargs):
