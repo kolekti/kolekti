@@ -37,6 +37,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import condition
 from django.template.loader import get_template
 from django.template import Context
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.decorators import login_required
 
 # kolekti imports
 from kolekti.common import kolektiBase
@@ -74,27 +76,50 @@ fileicons= {
     "text/directory":"fa-folder-o",
     }
 
-class kolektiMixin(TemplateResponseMixin, kolektiBase):
-    def __init__(self, *args, **kwargs):
-        self.user_settings = Settings.objects.get()
-        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
-        super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
+
+    
+class LoginRequiredMixin(object):
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
+        return login_required(view)
+
+class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
+#    def __init__(self, *args, **kwargs):
+#        self.user_settings = Settings.objects.get()
+#        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
+#        super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
 
     def config(self):
         return self._config
 
+
+    def dispatch(self, *args, **kwargs):
+        self.kolekti_userproject = self.request.user.userprofile.activeproject
+        if self.kolekti_userproject is not None:
+            self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.kolekti_userproject.project.directory)
+        
+            self.set_project(self.kolekti_projectpath)
+            
+        return super(kolektiMixin, self).dispatch(*args, **kwargs)
+
+    
     def projects(self):
         projects = []
-        for projectname in os.listdir(settings.KOLEKTI_BASE):
-            project={'name':projectname, 'id':projectname.replace(' ','_')}
+        for up in UserProject.objects.filter(user = self.request.user):
+            project={
+                'userproject':up,
+                'name':up.project.name,
+                'id':up.project.pk,
+            }
             try:
-                projectsettings = ET.parse(os.path.join(settings.KOLEKTI_BASE, projectname, 'kolekti', 'settings.xml'))
-                if projectsettings.xpath('string(/settings/@version)') != '0.7':
+                if self._project_settings.xpath('string(/settings/@version)') != '0.7':
                     continue
-                project.update({'languages':[l.text for l in projectsettings.xpath('/settings/languages/lang')],
-                                'defaultlang':projectsettings.xpath('string(/settings/@sourcelang)')})
+                project.update({'languages':[l.text for l in self._project_settings.xpath('/settings/languages/lang')],
+                                'defaultlang':self._project_settings.xpath('string(/settings/@sourcelang)')})
             except:
                 continue
+
 
             try:
                 from kolekti.synchro import SynchroManager
@@ -109,30 +134,30 @@ class kolektiMixin(TemplateResponseMixin, kolektiBase):
 
     def project_langs(self, project):
         try:
-            projectsettings  = ET.parse(os.path.join(settings.KOLEKTI_BASE, project, 'kolekti', 'settings.xml'))     
-            return ([l.text for l in projectsettings.xpath('/settings/languages/lang')],
-                    [l.text for l in projectsettings.xpath('/settings/releases/lang')],
-                    projectsettings.xpath('string(/settings/@sourcelang)'))
+            return ([l.text for l in self._project_settings.xpath('/settings/languages/lang')],
+                    [l.text for l in self._project_settings.xpath('/settings/releases/lang')],
+                    self._project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
     
     def get_context_data(self, data={}, **kwargs):
-        prj = self.user_settings.active_project
-        try:
-            ET.parse(os.path.join(settings.KOLEKTI_BASE, prj, 'kolekti', 'settings.xml'))
-        except IOError:
-            prj = None
-                     
-        languages, release_languages, default_lang = self.project_langs(self.user_settings.active_project)
-        context = {}
-        context['kolekti'] = self._config
-        context['projects'] = self.projects()
-        context['srclangs'] = languages
-        context['releaselangs'] = release_languages
-        context["active_project"] = prj
-        context["active_srclang"] = self.user_settings.active_srclang
-        context['syncnum'] = self._syncnumber
-        context['kolektiversion'] = self._kolektiversion
+        context= {
+            'active_project':self.kolekti_userproject,
+            'projects':self.projects(),
+        }
+
+        if self.kolekti_userproject is not None:
+            languages, release_languages, default_srclang = self.project_langs()
+            context.update({
+                'kolekti':self._config,
+                'srclangs' : languages,
+                'releaselangs' : release_languages,
+                'default_srclang':default_srclang,
+                'active_project_name' : self.kolekti_userproject.project.name,
+                'active_srclang' : self.kolekti_userproject.srclang,
+                'syncnum' : self._syncnumber,
+                'kolektiversion' : self._kolektiversion,
+            })
         context.update(data) 
         return context
 

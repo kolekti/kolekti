@@ -1,0 +1,29 @@
+{% extends "manage-base.html" %}
+{% block page-content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-md-9 main">
+      {% if user.is_authenticated %}
+      <h1>Kolekti</h1>
+      <p>Welcome, {{ user.first_name }}. Thanks for logging in.</p>
+
+      {% for project in user.projects %}
+      <div class="project">	
+      </div>
+      {% endfor %}
+      
+      {% else %}
+      {% block menu %}
+      {% endblock %}
+      {% endif %}
+
+
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+
+
