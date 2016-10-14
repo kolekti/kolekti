@@ -70,7 +70,7 @@ class SVNProjectCreator(CMDMixin):
     def create_from_template(self, template_url, project_directory, username, svn_user = settings.KOLEKTI_SVNTPL_USER, svn_pass = settings.KOLEKTI_SVNTPL_PASS):
         """ Creates a new project in local repository. Init the new project repo with template export from svn url
         """
-        logger.debug("create repo from template")
+        logger.debug("create repo %s from template %s [%s / %s]", project_directory, template_url, svn_user, svn_pass)
         repo_path = os.path.join(settings.KOLEKTI_SVN_ROOT,project_directory)
         # export template to temp dir
         tmpd = os.path.join(tempfile.mkdtemp(),project_directory)

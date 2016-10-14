@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 from django.forms.models import model_to_dict
 from django.views.generic import View, TemplateView
 from django.dispatch import receiver
+from django.shortcuts import render
 from django.utils.text import get_valid_filename
 from registration.signals import user_registered, user_activated
 from registration.backends.default.views import RegistrationView as DefaultRegistrationView
@@ -21,19 +22,14 @@ from kserver_saas.models import UserProfile, Pack, Template, UserProject, Projec
 from kserver.views import kolektiMixin
 from kserver_saas.forms import kolektiRegistrationForm, NewProjectForm, UserProfileForm
 #from kserver.svnutils import SVNUserManager, SVNProjectCreator
+from kserver_saas.svnutils import SVNProjectCreator
 from kolekti.synchro import SVNProjectManager, ExcSyncNoSync
 
-class SaasProjectsView(kolektiMixin, View):
-    template_name = "saas/projects.html"
-
+class KolektiSaasMixin(object):
     def _project_starters(self, user, from_form = None, from_template = None):
         starters = []
         for pack in Pack.objects.all():
             for template in pack.templates.all():
-                logger.debug(template)
-                logger.debug(type(template.pk))
-                logger.debug(type(from_template))
-                logger.debug(unicode(template.pk) == from_template)
                 if unicode(template.pk) == from_template:
                     logger.debug('from template')
                     form = from_form
@@ -45,8 +41,36 @@ class SaasProjectsView(kolektiMixin, View):
                                  'id':template.pk,
                                  'idpack':pack.pk,
                                  'form':form})
-        #TODO : add remote svn account  if ingroup user, remotesvn
+        # logger.debug(starters)
+        # TODO : add remote svn account  if ingroup user, remotesvn
         return starters
+
+class KolektiSaasMiddleware(KolektiSaasMixin):
+    """ redirects to project vcreation when no currect project is set
+        sets request.kolekti_userproject and request.kolekti_projectpath
+    """
+    def process_request(self,request):
+        request.kolekti_userproject = None
+        request.kolekti_projectpath = ''
+
+        
+        if request.path[:7] == '/admin/':
+            return None
+        
+        if request.user.is_authenticated() and request.META.get('REQUEST_METHOD') == "GET":
+            try:
+                request.kolekti_userproject = request.user.userprofile.activeproject
+                request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, request.kolekti_userproject.project.directory)
+        
+            except:    
+                logger.warning('user %s has no active_project', str(request.user))
+                return None
+                return render(request,'welcome.html', dictionary={"project_starters":self._project_starters(request.user)})
+        return None
+
+
+class SaasProjectsView(KolektiSaasMixin, kolektiMixin, View):
+    template_name = "welcome.html"
 
         
     def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
@@ -71,8 +95,8 @@ class SaasProjectsView(kolektiMixin, View):
 
             logger.debug('--------------- create svn repository')            
             # create svn project
-            pm = SVNProjectCreator()
-            pm.create_from_template(template.svn, project_directory, request.user.username)
+#            pm = SVNProjectCreator()
+#            pm.create_from_template(template.svn, project_directory, request.user.username)
             logger.debug('--------------- create project object')
             
             project = Project(name = form.cleaned_data['projectname'],
@@ -149,13 +173,15 @@ class RegistrationView(DefaultRegistrationView):
     form_class = kolektiRegistrationForm
             
     def register(self,request, **cleaned_data):
-        #user = super(RegistrationView, self).register(request, **cleaned_data)
+        
+        user = super(RegistrationView, self).register(request, **cleaned_data)
         #svnum = SVNUserManager()
-        #user.firstname = cleaned_data['firstname']
-        #user.lastname = cleaned_data['lastname']
-        #user.save()
+        user.firstname = cleaned_data['firstname']
+        user.lastname = cleaned_data['lastname']
+        user.save()
         #svnum.add_user(user.username, cleaned_data['password1'])
-        pass
+        return user
+        
         
 @receiver(user_registered)
 def user_registered_callback(sender, **kwargs):

@@ -19,6 +19,8 @@ from kserver_saas.models import Project, UserProject
 from kolekti.synchro import SVNProjectManager
 from kserver_saas.svnutils import SVNProjectCreator
 
+logger.debug('signals loaded')
+
 @receiver(post_save, sender=Project)
 def post_save_project_callback(sender, **kwargs):
     created = kwargs['created']
@@ -72,14 +74,17 @@ def post_delete_userproject_callback(sender, **kwargs):
     __generate_hooks(instance.project)
 
 def __generate_hooks(project):
-    hooksfile = os.path.join(settings.KOLEKTI_SVN_ROOT, project.directory, "hooks", "post-commit")
-    with open(hooksfile, 'w') as hooks:
-        hooks.write("#!/bin/bash\n")
-        for user_project in UserProject.objects.filter(project = project):
-            username = user_project.user.username
-            cmd = "/usr/bin/svn update %s\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
-            hooks.write(cmd)
-    st = os.stat(hooksfile)
-    os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+    if os.path.exists(project_directory):
+        hooksfile = os.path.join(project_directory, "hooks", "post-commit")
+
+        with open(hooksfile, 'w') as hooks:
+            hooks.write("#!/bin/bash\n")
+            for user_project in UserProject.objects.filter(project = project):
+                username = user_project.user.username
+                cmd = "/usr/bin/svn update %s\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
+                hooks.write(cmd)
+        st = os.stat(hooksfile)
+        os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     

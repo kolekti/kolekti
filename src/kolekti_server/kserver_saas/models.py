@@ -29,7 +29,7 @@ class Project(models.Model):
     template = models.ForeignKey(Template)
 
     def __unicode__(self):
-        return u"%s/%s"%(self.name, self.owner.username)
+        return u"%s / %s"%(self.owner.username,self.name)
     
     
   
@@ -44,7 +44,7 @@ class UserProject(models.Model):
     publang = models.CharField(max_length = 5)
 
     def __unicode__(self):
-        return u"%s/%s"%(self.user.username, self.project.name)
+        return u"%s / %s"%(self.user.username, self.project.name)
 
     def checkout_project(self):
         username = self.user.username

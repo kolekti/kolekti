@@ -151,8 +151,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'registration',
     'bootstrapform',
+    'registration',
     'kserver',
     'kserver_saas',
 )
@@ -164,6 +164,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'kserver_saas.views.KolektiSaasMiddleware',
 )
 
 ROOT_URLCONF = 'kolekti_server.urls'
@@ -225,4 +226,5 @@ STATICFILES_DIRS = (
 KOLEKTI_LANGS = ['fr','en','us','de','it']
 
 # settings for active project
+
 

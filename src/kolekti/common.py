@@ -66,9 +66,10 @@ class kolektiBase(object):
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
         try:
-            Config = settings()
+            self._app_config = settings()
             self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
-        except : 
+        except :
+            self._app_config = {'InstallSettings':{'installdir':os.path.realpath( __file__), 'kolektiversion':"0.7"}}
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         if path is not None:
             self.set_project(path)
@@ -112,7 +113,7 @@ class kolektiBase(object):
             import traceback
             logger.debug(traceback.format_exc() )
         self._version = self._config['version']
-        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
+        self._kolektiversion = self._app_config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
