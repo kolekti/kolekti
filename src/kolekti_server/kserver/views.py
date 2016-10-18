@@ -97,6 +97,8 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         return self._config
 
     def dispatch(self, *args, **kwargs):
+        logger.debug('dispatch')
+        logger.debug(self.request.kolekti_userproject)
         if self.request.kolekti_userproject is not None:
             self.set_project(self.request.kolekti_projectpath)
         # try:

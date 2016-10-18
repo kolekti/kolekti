@@ -57,7 +57,7 @@ class KolektiSaasMiddleware(KolektiSaasMixin):
         if request.path[:7] == '/admin/':
             return None
         
-        if request.user.is_authenticated() and request.META.get('REQUEST_METHOD') == "GET":
+        if request.user.is_authenticated():
             try:
                 request.kolekti_userproject = request.user.userprofile.activeproject
                 request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, request.kolekti_userproject.project.directory)
