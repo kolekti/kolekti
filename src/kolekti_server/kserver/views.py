@@ -97,8 +97,6 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         return self._config
 
     def dispatch(self, *args, **kwargs):
-        logger.debug('dispatch')
-        logger.debug(self.request.kolekti_userproject)
         if self.request.kolekti_userproject is not None:
             self.set_project(self.request.kolekti_projectpath)
         # try:
@@ -277,6 +275,9 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         logger.debug(userproject)
         self.request.user.userprofile.activeproject = userproject
         self.request.user.userprofile.save()
+
+        self.request.kolekti_userproject = userproject
+        self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.request.kolekti_userproject.project.directory)
         try:
             languages, rlang, defaultlang = self.project_langs()
             if not self.request.kolekti_userproject.srclang in languages:
