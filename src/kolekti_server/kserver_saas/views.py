@@ -131,6 +131,29 @@ class SaasProjectsView(KolektiSaasMixin, kolektiMixin, View):
             
         return self.render_to_response(context)
 
+
+class SaasProjectsActivateView(SaasProjectsView):
+    def get(self, request):
+        project = request.GET.get('project')
+        redirect =request.GET.get('redirect','')
+        #        redirect = request.META.get('HTTP_REFERER', '')
+        userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
+        self.project_activate(userproject)
+        if redirect == '':
+            return super(SaasProjectsActivateView, self).get(request)
+        else:
+            
+            return HttpResponseRedirect(redirect)
+
+
+class SaasProjectsLanguageView(SaasProjectsView):
+    def get(self, request):
+        project = request.GET.get('lang')
+        self.language_activate(project)
+        return super(SaasProjectsLanguageView, self).get(request)
+
+
+    
 class UserProfileView(kolektiMixin, View):
     template_name = "registration/profile.html"
     def get(self, request):
