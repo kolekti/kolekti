@@ -68,8 +68,8 @@ urlpatterns = patterns('',
     url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
     
     url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
-    url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+    url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
+    url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
     url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
     url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
 
