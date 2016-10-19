@@ -64,8 +64,8 @@ SECRET_KEY = '47+&9*yikq4^1_fpxaf32!u^5&m(tw7dssr+h-%4sq&3uzz7q9'
 DEBUG = True
 TEMPLATE_DEBUG = False
 
-HOSTNAME='0.0.0.0'
-ALLOWED_HOSTS = ['192.168.1.234','citrouille','127.0.0.1', 'localhost']
+HOSTNAME=os.getenv('VIRTUAL_HOST','0.0.0.0')
+ALLOWED_HOSTS = [HOSTNAME,'127.0.0.1', 'localhost']
 
 # SMTP config
 
