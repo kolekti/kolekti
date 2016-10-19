@@ -276,7 +276,6 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
 
     def project_activate(self,userproject):
         # get userdir
-        logger.debug(userproject)
         self.request.user.userprofile.activeproject = userproject
         self.request.user.userprofile.save()
 

@@ -31,7 +31,6 @@ class KolektiSaasMixin(object):
         for pack in Pack.objects.all():
             for template in pack.templates.all():
                 if unicode(template.pk) == from_template:
-                    logger.debug('from template')
                     form = from_form
                 else:
                     form = NewProjectForm(user = user)
@@ -87,8 +86,6 @@ class SaasProjectsView(KolektiSaasMixin, kolektiMixin, View):
         ## return post from one of the starters list
         form = NewProjectForm(request.POST, user = request.user)
         template_id = request.POST.get('template_id')
-        logger.debug(request.POST)
-        logger.debug('----------------')
         if form.is_valid():
             template = Template.objects.get(pk = template_id)
             project_directory = "%05d_%s"%(request.user.pk, get_valid_filename(form.cleaned_data['projectname']))
