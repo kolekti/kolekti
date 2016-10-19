@@ -111,7 +111,11 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             
         return super(kolektiMixin, self).dispatch(*args, **kwargs)
 
-
+    def process_svn_url(self, url):
+        localpath = "file://%s/"%(settings.KOLEKTI_SVN_ROOT,)
+        remotepath = "http://%s/svn/"%(settings.HOSTNAME,)
+#        return localpath
+        return url.replace(localpath, remotepath)
     
     def projects(self):
         projects = []
@@ -132,9 +136,9 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
 
             try:
                 from kolekti.synchro import SynchroManager
-                synchro = SynchroManager(os.path.join(settings.KOLEKTI_BASE, up.project.directory))
+                synchro = SynchroManager(os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory))
                 projecturl = synchro.geturl()
-                project.update({"status":"svn","url":projecturl})
+                project.update({"status":"svn","url":self.process_svn_url(projecturl)})
             except ExcSyncNoSync:
                 project.update({"status":"local"})
             projects.append(project)
