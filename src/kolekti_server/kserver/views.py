@@ -1338,9 +1338,10 @@ class TopicEditorView(kolektiMixin, View):
         try:
             path = request.GET['topic']
             topic = request.body
+            xtopic = self.parse_string(topic)
+
             self.write(topic, path)
             #print topic[:100]
-            #xtopic = self.parse_html_string(topic)
             #print dir(xtopic)
             #print xtopic[0]
             
@@ -1358,11 +1359,12 @@ class TopicEditorView(kolektiMixin, View):
             #         ET.SubElement(xtopic.xpath('/h:html/h:head',namespaces={'h':'http://www.w3.org/1999/xhtml'})[0], "{http://www.w3.org/1999/xhtml}meta", {"name":metaname,"content":metacontent})                    
                     
             #self.xwrite(xtopic, path)
-            return HttpResponse(json.dumps({'status':'ok'}))
+            return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
         except:
-            import  traceback
-            print traceback.format_exc()
-            return HttpResponse(json.dumps({'status':'error'}))
+            logger.exception('invalid topic structure')
+            import traceback
+            msg = traceback.format_exc().split('\n')[-2]
+            return HttpResponse(json.dumps({'status':'error', 'msg':msg}), content_type="application/json")
 
 class TopicMetaJsonView(kolektiMixin, View):
     def get(self, request):
@@ -1370,7 +1372,7 @@ class TopicMetaJsonView(kolektiMixin, View):
         xtopic = self.parse(path.replace('{LANG}',self.request.kolekti_userproject.srclang))
         metaelts = xtopic.xpath('/h:html/h:head/h:meta[@name][@content]',namespaces={'h':'http://www.w3.org/1999/xhtml'})
         meta = [{'name':m.get('name'),'content':m.get('content')} for m in metaelts]
-        return HttpResponse(json.dumps(meta))
+        return HttpResponse(json.dumps(meta), content_type="application/json")
     
 class TopicCreateView(kolektiMixin, View):
     template_name = "home.html"
