@@ -84,8 +84,8 @@ var setup_varfile = function(browser, file_element, dir, filename){
 		  'html':[
 		      $('<span>', {'class':"glyphicon glyphicon-export",
 				   'aria-hidden':"true"}),
-		      $('<span>', {'class':'label ',
-				   'html':'exporter ods'
+		      $('<span>', {
+				   'html':' exporter ods'
 				  })]
 		 }),
 	    "&nbsp;",
@@ -96,8 +96,8 @@ var setup_varfile = function(browser, file_element, dir, filename){
 		      'html':[
 			  $('<span>', {'class':"glyphicon glyphicon-import",
 				       'aria-hidden':"true"}),
-			  $('<span>', {'class':'label ',
-				       'html':'importer ods'
+			  $('<span>', {
+				       'html':' importer ods'
 				      })]
 		     })
 	]
