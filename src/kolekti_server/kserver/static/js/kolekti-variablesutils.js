@@ -80,7 +80,7 @@ var setup_varfile = function(browser, file_element, dir, filename){
 	[
 	$('<a>', {'href':"/variables/ods?path="+dir+'/'+filename,
 		  'title':'générer fichier ods',
-		  'class':'btn btn-xs btn-primary',
+		  'class':'btn btn-xs btn-default',
 		  'html':[
 		      $('<span>', {'class':"glyphicon glyphicon-export",
 				   'aria-hidden':"true"}),
@@ -92,7 +92,7 @@ var setup_varfile = function(browser, file_element, dir, filename){
 	    $('<a>', {'href':"#",
 		      'title':'dépposer fichier ods',
 		      'data-path':dir+'/'+filename,
-		      'class':'btn btn-xs btn-primary upload-varfile',
+		      'class':'btn btn-xs btn-default upload-varfile',
 		      'html':[
 			  $('<span>', {'class':"glyphicon glyphicon-import",
 				       'aria-hidden':"true"}),
