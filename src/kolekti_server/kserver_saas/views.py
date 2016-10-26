@@ -56,7 +56,7 @@ class KolektiSaasMiddleware(KolektiSaasMixin):
         if request.path[:7] == '/admin/':
             return None
         
-        if request.user.is_authenticated():
+        if settings.KOLEKTI_MULTIUSER:
             try:
                 request.kolekti_userproject = request.user.userprofile.activeproject
                 request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, request.kolekti_userproject.project.directory)
@@ -65,6 +65,10 @@ class KolektiSaasMiddleware(KolektiSaasMixin):
                 logger.warning('user %s has no active_project', str(request.user))
                 return None
                 return render(request,'welcome.html', dictionary={"project_starters":self._project_starters(request.user)})
+        else:
+            request.kolekti_userproject = UserProfile.objects.get().activeproject
+            request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.kolekti_userproject.project.directory)
+            
         return None
 
 

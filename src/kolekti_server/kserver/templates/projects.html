@@ -19,7 +19,7 @@
     {% for project in projects %}
 
     <div class="panel-heading">
-      <a data-toggle="collapse" {% if project.name != active_project %}class="collapsed"{% endif %} href="#collapse_{{ project.id }}">
+      <a data-toggle="collapse" {% if project.name != active_project_name %}class="collapsed"{% endif %} href="#collapse_{{ project.id }}">
 	<small>
 	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"> </span>
 		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"> </span>
@@ -35,15 +35,15 @@
 	{% endifequal %}
       </span>
 		
-      {% if project.name == active_project %}
+      {% if project.name == active_project_name %}
       <span class="label label-warning pull-right">Actif</span>
       <span>  </span>
       {% endif %}
     </div>
   
-    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project %}in{% endif %}">
+    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project_name %}in{% endif %}">
       <div class="panel-body">
-	{% if project.name == active_project %}
+	{% if project.name == active_project_name %}
 	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
 	  {% for lang in project.languages %}
 	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
@@ -57,7 +57,8 @@
 	<p>url du dépot SVN : {{ project.url }}</p>
 	<hr/>
 	{% endifequal  %}
-	{% if project.name != active_project %}
+
+	{% if project.name != active_project_name %}
 	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
 	{% endif %}
       </div>      
@@ -74,6 +75,9 @@
     <h4>Nouveau projet</h4>
   </div>
   <div class="panel-body">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% endif %}
     <form method="POST" action="/projects/">
       <div class="form-group">
 	<label for="project">Dossier projet</label>

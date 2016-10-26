@@ -11,9 +11,7 @@ from django.views.static import serve as staticView
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('',
-
-
+urls = [
     url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
     url(r'^accounts/', include('registration.backends.default.urls')),
@@ -66,13 +64,27 @@ urlpatterns = patterns('',
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
     url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
     url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
-    
-    url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
-    url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
-    url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
-    url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
+]
 
+if os.sys.platform[:3] == "win":
+    urls.extend([
+        url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
+        url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
+        url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+        url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+        url(r'^projects/new$', ProjectsView.as_view(), name='projects_new'),
+        ])
+else:
+    # Saas
+    urls.extend([
+        url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
+        url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
+        url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
+        url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+        url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
+        ])
+
+urls.extend([
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
     url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
@@ -118,11 +130,12 @@ urlpatterns = patterns('',
     
     url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
-
+])
+    
 #    url(r'^publications', staticView, name="kolekti_raw_publication"),
 #    url(r'^drafts', staticView, name="kolekti_raw_draft"),
 
-                       
-)
+
+urlpatterns = patterns('', *urls)
 
 
