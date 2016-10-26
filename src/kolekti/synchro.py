@@ -121,9 +121,11 @@ class SynchroManager(SvnClient):
         return self._client.log(self._base, limit = limit)
 
     def rev_number(self):
-        #headrev = self._client.info(self._base)
-        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
-        return {"revision":{"number":headrev}}
+        info = self._client.info2(self._base, recurse = False)
+        headrev = info[0][1].rev
+        print self._client.info(self._base)
+        #headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
+        return {"revision":{"number":headrev.number}}
     
     def rev_state(self):
         #headrev = self._client.info(self._base)

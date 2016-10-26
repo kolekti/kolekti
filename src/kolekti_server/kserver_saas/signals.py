@@ -27,7 +27,6 @@ def post_save_project_callback(sender, **kwargs):
     raw = kwargs['raw']
     instance = kwargs['instance']
     logger.debug('post save handler: save project')
-    
     if created or raw:
         # export the project template
         try:
@@ -50,41 +49,44 @@ def post_save_userproject_callback(sender, **kwargs):
     raw = kwargs['raw']
     instance = kwargs['instance']
     logger.debug('post save handler: save userproject')
-    if created or raw:
-        username = instance.user.username
-        # TODO : use urllib (Win compatibility)
-        project_directory = instance.project.directory
+    if instance.is_saas:
+        if created or raw:
+            username = instance.user.username
+            # TODO : use urllib (Win compatibility)
+            project_directory = instance.project.directory
 
-        url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
-        logger.debug('checkout %s %s'%(username, url))
-        projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
-        try:
-            SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
-        except:
-            logger.exception('error during checkout')
-        __generate_hooks(instance.project)
+            url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
+            logger.debug('checkout %s %s'%(username, url))
+            projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
+            try:
+                SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
+            except:
+                logger.exception('error during checkout')
+            __generate_hooks(instance.project)
 
 @receiver(post_delete, sender = UserProject)
 def post_delete_userproject_callback(sender, **kwargs):
     instance = kwargs['instance']
-    username = instance.user.username
-    project_directory = os.path.join(settings.KOLEKTI_BASE, username, instance.project.directory)
-    if os.path.exists(project_directory):
-        shutil.rmtree(project_directory)
-    __generate_hooks(instance.project)
+    if instance.is_saas:
+        username = instance.user.username
+        user_project_directory = os.path.join(settings.KOLEKTI_BASE, username, instance.project.directory)
+        if os.path.exists(user_project_directory):
+            shutil.rmtree(user_project_directory)
+        __generate_hooks(instance.project)
 
 def __generate_hooks(project):
-    project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
-    if os.path.exists(project_directory):
-        hooksfile = os.path.join(project_directory, "hooks", "post-commit")
+    if settings.KOLEKTI_AUTOSYNC:
+        project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+        if os.path.exists(project_directory):
+            hooksfile = os.path.join(project_directory, "hooks", "post-commit")
 
-        with open(hooksfile, 'w') as hooks:
-            hooks.write("#!/bin/bash\n")
-            for user_project in UserProject.objects.filter(project = project):
-                username = user_project.user.username
-                cmd = "/usr/bin/svn update %s\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
-                hooks.write(cmd)
-        st = os.stat(hooksfile)
-        os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+            with open(hooksfile, 'w') as hooks:
+                hooks.write("#!/bin/bash\n")
+                for user_project in UserProject.objects.filter(project = project):
+                    username = user_project.user.username
+                    cmd = "/usr/bin/svn update %s\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
+                    hooks.write(cmd)
+            st = os.stat(hooksfile)
+            os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     

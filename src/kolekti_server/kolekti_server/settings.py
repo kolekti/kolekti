@@ -38,7 +38,11 @@ KOLEKTI_LANGS = ['fr','en','us','de','it']
 KOLEKTI_SVNTPL_USER = __get_config('KOLEKTI_SVNTPL_USER','SvnRemotes','svnuser')
 KOLEKTI_SVNTPL_PASS = __get_config('KOLEKTI_SVNTPL_PASS','SvnRemotes','svnpass')
 
-
+KOLEKTI_AUTOSYNC = False
+KOLEKTI_MULTIUSER = True
+if os.sys.platform[:3] == "win":
+    KOLEKTI_MULTIUSER = False
+    
 # APP_DIR  = KOLEKTI_CONFIG.get('InstallSettings').get('installdir')
 if os.sys.platform[:3] == "win":
     appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')

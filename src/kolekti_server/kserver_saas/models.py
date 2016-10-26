@@ -26,7 +26,7 @@ class Project(models.Model):
     directory = models.CharField(max_length = 32)
     description = models.CharField(max_length = 255)
     owner = models.ForeignKey(User)
-    template = models.ForeignKey(Template)
+    template = models.ForeignKey(Template, blank = True, null = True)
 
     def __unicode__(self):
         return u"%s / %s"%(self.owner.username,self.name)
@@ -45,16 +45,6 @@ class UserProject(models.Model):
 
     def __unicode__(self):
         return u"%s / %s"%(self.user.username, self.project.name)
-
-    def checkout_project(self):
-        username = self.user.username
-        svnurl = self.project.directory
-        logger.debug('checkout')
-        
-    def save(self):
-        if self.pk is None:
-            self.checkout_project()
-        return super(UserProject,self).save()
               
 class UserProfile(models.Model):
     user = models.OneToOneField(User)

@@ -22,8 +22,7 @@ except ImportError:
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
        
-from models import Settings, ReleaseFocus
-from kserver_saas.models import UserProject
+from kserver_saas.models import Project, UserProfile, UserProject
 from forms import UploadFileForm
 
 from django.http import Http404
@@ -40,6 +39,7 @@ from django.views.decorators.http import condition
 from django.template.loader import get_template
 from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 # kolekti imports
@@ -85,7 +85,10 @@ class LoginRequiredMixin(object):
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
-        return login_required(view)
+        if settings.KOLEKTI_MULTIUSER:
+            return login_required(view)
+        else:
+            return view
 
 class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
 #    def __init__(self, *args, **kwargs):
@@ -119,24 +122,32 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
     
     def projects(self):
         projects = []
-        for up in UserProject.objects.filter(user = self.request.user):
+        logger.debug(self.request.user.username)
+        if settings.KOLEKTI_MULTIUSER:
+            userprojects = UserProject.objects.filter(user = self.request.user)
+        else:
+            userprojects = UserProject.objects.all()
+        logger.debug(userprojects)
+        for up in userprojects:
             project={
                 'userproject':up,
                 'name':up.project.name,
                 'id':up.project.pk,
             }
             try:
-                if self._project_settings.xpath('string(/settings/@version)') != '0.7':
+                project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory)
+                project_settings = ET.parse(os.path.join(project_path, 'kolekti', 'settings.xml')).getroot()
+                if project_settings.xpath('string(/settings/@version)') != '0.7':
                     continue
-                project.update({'languages':[l.text for l in self._project_settings.xpath('/settings/languages/lang')],
-                                'defaultlang':self._project_settings.xpath('string(/settings/@sourcelang)')})
+                project.update({'languages':[l.text for l in project_settings.xpath('/settings/languages/lang')],
+                                'defaultlang':project_settings.xpath('string(/settings/@sourcelang)')})
             except:
                 continue
 
 
             try:
                 from kolekti.synchro import SynchroManager
-                synchro = SynchroManager(os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory))
+                synchro = SynchroManager(project_path)
                 projecturl = synchro.geturl()
                 project.update({"status":"svn","url":self.process_svn_url(projecturl)})
             except ExcSyncNoSync:
@@ -158,7 +169,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             'active_project':self.request.kolekti_userproject,
             'projects':self.projects(),
         }
-
+        
         if self.request.kolekti_userproject is not None:
             languages, release_languages, default_srclang = self.project_langs()
             context.update({
@@ -171,7 +182,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                 'syncnum' : self._syncnumber,
                 'kolektiversion' : self._kolektiversion,
             })
-        context.update(data) 
+        context.update(data)
         return context
 
     def get_toc_edit(self, path):
@@ -276,11 +287,17 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
 
     def project_activate(self,userproject):
         # get userdir
-        self.request.user.userprofile.activeproject = userproject
-        self.request.user.userprofile.save()
-
+        if settings.KOLEKTI_MULTIUSER:
+            self.request.user.userprofile.activeproject = userproject
+            self.request.user.userprofile.save()
+            self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, userproject.project.directory)
+        else:
+            userprofile = UserProfile.objects.get()
+            userprofile.activeproject = userproject
+            userprofile.save()
+            self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, userproject.project.directory)        
         self.request.kolekti_userproject = userproject
-        self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.request.kolekti_userproject.project.directory)
+        self.set_project(self.request.kolekti_projectpath)
         try:
             languages, rlang, defaultlang = self.project_langs()
             if not self.request.kolekti_userproject.srclang in languages:
@@ -324,10 +341,13 @@ class HomeView(kolektiMixin, View):
 
 class ProjectsView(kolektiMixin, View):
     template_name = "projects.html"
-    def get(self, request, require_svn_auth=False, project_folder="", project_url=""):
+    def get(self, request, require_svn_auth=False, project_folder="", project_url="", error = None):
         
         context = self.get_context_data({
                     "require_svn_auth":require_svn_auth,
+                    "projectfolder":project_folder,
+                    "projecturl":project_url,
+                    "error":error,
                     })
         if self.request.kolekti_userproject is not None:
             context.update({
@@ -344,19 +364,42 @@ class ProjectsView(kolektiMixin, View):
         password = request.POST.get('password',None)
         from kolekti.synchro import SVNProjectManager
         sync = SVNProjectManager(settings.KOLEKTI_BASE,username,password)
+
         if project_url=="":
         # create local project
             #sync.export_project(project_folder)
-            self.create_project(project_folder, settings.KOLEKTI_BASE)
-            
-            self.project_activate(project_folder)
-            return self.get(request)
+            try:
+                self.create_project(project_folder, settings.KOLEKTI_BASE)
+                self.project_activate(project_folder)
+            except:
+                logger.exception('unable to create new project')
+                return self.get(request,project_folder=project_folder, error="Erreur à la création du projet")
         else:
             try:
                 sync.checkout_project(project_folder, project_url)
-                return self.get(request)
             except ExcSyncNoSync:
-                return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url)
+                logger.exception('unable to checkout project')
+                return self.get(request, require_svn_auth=True, project_folder=project_folder, project_url=project_url, error="Erreur à la récupération du projet")
+            
+        project = Project(
+            name = project_folder,
+            description = "Kolekti project %s"%project_folder,
+            directory = project_folder,
+            owner = User.objects.get(),
+            template = None,
+            )
+        project.save()
+                              
+        up = UserProject(
+            user = User.objects.get(),
+            project = project,
+            is_saas = False,
+            is_admin = True,
+            )
+        up.save()
+        
+        return self.get(request)
+        
             
 class ProjectsConfigView(kolektiMixin, View):
     template_name = "projects-config.html"
@@ -411,7 +454,10 @@ class ProjectsActivateView(ProjectsView):
         project = request.GET.get('project')
         redirect =request.GET.get('redirect','')
         #        redirect = request.META.get('HTTP_REFERER', '')
-        userproject = UserProject.objects.get(user = self.request.user, project__name = project)
+        if settings.KOLEKTI_MULTIUSER:
+            userproject = UserProject.objects.get(user = self.request.user, project__name = project)
+        else:
+            userproject = UserProject.objects.get(project__name = project)        
         self.project_activate(userproject)
         if redirect == '':
             return super(ProjectsActivateView, self).get(request)
