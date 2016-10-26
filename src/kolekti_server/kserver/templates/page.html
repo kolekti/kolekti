@@ -108,7 +108,7 @@
 		  </button>
 		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 		    {% for project in projects %}
-		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.name }}&redirect=/">{{project.name}}</a></li>
+		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li>
 		    {% endfor %}
 		  </ul>
 		</div>
