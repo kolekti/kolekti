@@ -128,7 +128,7 @@ urls.extend([
 
     url(r'^admin/', include(admin.site.urls)),
     
-    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
+    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : settings.STATIC_PATH}),
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
 ])
     
