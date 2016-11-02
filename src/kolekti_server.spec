@@ -1,27 +1,34 @@
 # -*- mode: python -*-
 from glob import glob
+import os
+cwd = os.getcwd()
 
+# a = Analysis(['kolekti_server\\server.py', 'kolekti_server\\manage.py'],
 a = Analysis(['kolekti_server\\server.py'],
-             pathex=['F:\\Bureau\\kolekti\\sources\\0.7\\kolekti\\src'],
-             hiddenimports=['htmlentitydefs',
-                            'HTMLParser',
-                            'markupbase',
-                            'PIL',
-                            'django.contrib.sessions.serializers',
-                            'kolekti.publish_utils',
-#                            'kolekti.plugins.pluginBase',                            
-#                            'kolekti.plugins.chm',
-#                            'kolekti.plugins.hlp',
-#                            'kolekti.plugins.WebHelp5',
-#                            'kolekti.plugins.WebHelp5.ac_index',
-                            'kserver.templatetags.ostags',
-                            'kserver.templatetags.difftags',
-                            'kserver.templatetags.timetags',
-                            'kserver.templatetags.statustags',
-                            'kserver.templatetags.csssafe',
-                            ],
-             hookspath=None,
-             runtime_hooks=None)
+             pathex=[cwd],
+#              hiddenimports=[
+#                  'htmlentitydefs',
+#                  'HTMLParser',
+#                  'markupbase',
+#                  'PIL',
+#                             'django.contrib.sessions.serializers',
+#                             'kolekti.publish_utils',
+# #                            'kolekti.plugins.pluginBase',                            
+# #                            'kolekti.plugins.chm',
+# #                            'kolekti.plugins.hlp',
+# #                            'kolekti.plugins.WebHelp5',
+# #                            'kolekti.plugins.WebHelp5.ac_index',
+#                             'kserver.templatetags.ostags',
+#                             'kserver.templatetags.difftags',
+#                             'kserver.templatetags.timetags',
+#                             'kserver.templatetags.statustags',
+#                             'kserver.templatetags.csssafe',
+#                  ],
+#              hookspath=None,
+#              runtime_hooks=None)
+)
+
+
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
@@ -81,7 +88,8 @@ def extra_plugins():
 
 data_files = [('LICENSE','LICENCE','DATA'),
               ('kolekti.ico','kolekti.ico','DATA'),
-              ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3.ref'),'DATA'),
+#              (os.path.join('kolekti_server','kserver_saas','fixtures','singleuser.json'),'DATA'),
+#              ('db.sqlite3',os.path.join('kolekti_server','db.sqlite3.ref'),'DATA'),
               (os.path.join('kolekti','pubscripts.xml'),os.path.join('kolekti','pubscripts.xml'),'DATA'),
               ] +    extra_datas('kolekti/templates')+    extra_datas('kolekti/dtd') +    extra_datas('kolekti/xsl') +    extra_plugins()
 
