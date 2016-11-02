@@ -1,0 +1,12 @@
+# requirements kolekti 1.7.4
+# install python /
+Django>=1.8
+django-registration
+django-bootstrap-form
+Whoosh
+PyPDF2
+# lxml -> http://www.lfd.uci.edu/~gohlke/pythonlibs/dp2ng7en/lxml-3.6.4-cp27-cp27m-win32.whl
+# PIL -> http://effbot.org/downloads/PIL-1.1.7.win32-py2.7.exe
+# wxPython -> http://downloads.sourceforge.net/wxpython/wxPython3.0-win32-3.0.2.0-py27.exe
+# PySVN -> http://pysvn.tigris.org/files/documents/1233/49356/py27-pysvn-svn185-1.7.9-1572.exe
+PyInstaller
