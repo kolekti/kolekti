@@ -67,7 +67,8 @@ class KolektiSaasMiddleware(KolektiSaasMixin):
                 return render(request,'welcome.html', dictionary={"project_starters":self._project_starters(request.user)})
         else:
             request.kolekti_userproject = UserProfile.objects.get().activeproject
-            request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.kolekti_userproject.project.directory)
+            if request.kolekti_userproject is not None:
+                request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, request.kolekti_userproject.project.directory)
             
         return None
 
