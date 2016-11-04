@@ -312,7 +312,8 @@ $(document).ready( function () {
 	    'root':'/sources/'+kolekti.lang+'/tocs',
 	    'title':"Enregistrer sous...",
 	    'mode':"create",
-	    'editable_path':false
+	    'editable_path':false,
+	    'update_url':false
 	}).select(function(path) {
 	    console.log(path);
 	    $('#toc_root').attr('data-kolekti-path', path);
@@ -950,7 +951,8 @@ $(document).ready( function () {
 		 'parent':".insert-main",
 		 'titleparent':".new-module-title",
 		 'create_actions':'yes',
-		 'create_builder':create_builder
+		 'create_builder':create_builder,
+		 'update_url':'no'
 		})
 		.select(insert_topic)
 		.create(function(browser, folder, update_function) {
