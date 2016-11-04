@@ -966,7 +966,6 @@ $(document).ready( function () {
 			   }).fail(function() {
 			       console.log("error")
 			   }).always(function() {
-			       console.log("fter")
 			   });
 		})
 
