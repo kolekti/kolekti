@@ -532,7 +532,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
     def start_script(self, script, profile, assembly_dir, inputs):
         logger.debug('start script')
-        logger.debug(inputs)
+        # logger.debug(inputs)
         res = None
         #print "script",self._publang, ET.tostring(profile)
         #print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
@@ -1215,7 +1215,7 @@ class ReleasePublisher(Publisher):
             outdata = self.start_script(script, xprofile, assembly_dir, indata)
             listres.append(outdata)
             indata = outdata
-        print outdata
+
         return {
             'event':'result',
             'script':scriptname,
