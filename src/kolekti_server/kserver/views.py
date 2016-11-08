@@ -163,6 +163,8 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                     self._project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
+        except AttributeError:
+            return ['en'],['en','fr','de'],'en'
     
     def get_context_data(self, data={}, **kwargs):
         context= {
