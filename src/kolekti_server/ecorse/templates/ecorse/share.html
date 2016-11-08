@@ -4,13 +4,18 @@
 
 
 {% block extracss %}
-	{{ libs.css|safe }}
+{{ libs.css|safe }}
+{% endblock %}
+
+{% block extraless %}
+<link rel="stylesheet/less" type="text/css" href="/static/pganim/page-de-garde.less"/>
 {% endblock %}
 
 
 {% block extrascripts %}
 	{{ libs.scripts|safe }}
-	<script src="/static/js/kolekti-ecorse-report.js"></script>
+<script src="/static/js/kolekti-ecorse-report.js"></script>
+	<script src="/static/pganim/page-de-garde.js"></script>
 {% endblock %}
 
 {% block button-collapse-menu %}

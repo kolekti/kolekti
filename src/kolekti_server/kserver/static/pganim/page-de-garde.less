@@ -1,0 +1,76 @@
+/* page-de-garde */
+@ecorse-bleu-ciel: #00B1D8;
+@ecorse-bleu-marine: #1E4B63;
+div.page-de-garde {
+  display: none; //le display est modifié par le js
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  padding: 0;
+  overflow: hidden;
+  background-color: @ecorse-bleu-marine;
+  /* si photo sur toute la page... * /
+  background-image: url("Koala.jpg");
+  background-size: cover;
+  // */
+  opacity: 1;
+  div.signature {
+    position: absolute;
+    z-index: 2200;
+    bottom: 15px;
+    right: 15px;
+    width: 70%;
+    max-height: 85%;
+    background-color: @ecorse-bleu-ciel;
+    padding: 1.5% 2% 0.5% 2%;
+    border-radius: 30px;
+    div.svg-container {
+      width: 100%;
+      position: relative;
+      object.logo-ecorse, img.logo-ecorse {
+        //width: 100%;
+      }
+    }
+    div.mentions-elocus {
+      padding-top: 2em;
+      color: #fff;
+      p.slogan {
+        font-family: "Open Sans","Helvetica Neue",Arial,sans-serif;
+        span.slogan-start {
+          text-transform: uppercase;
+          font-size: 2.5em;
+          font-weight: lighter;
+        }
+        span.slogan-end {
+          text-transform: uppercase;
+          font-weight: bolder;
+          font-size: 1.5em;
+        }
+      }
+      p.powered-by-elocus {
+        font-style: italic;
+        text-align: center;
+        margin-bottom: 0;
+        font-family: Merriweather,"Helvetica Neue",Arial,sans-serif;
+      }
+    }
+  }
+  div.frise {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2100;
+    background-image: url("textureEcorse.png");
+    background-repeat: repeat-x;
+    background-size: 800px auto;
+    background-position: 0 bottom;
+  }
+}
+
+div.main-content {
+  //display: none;
+  //opacity: 0;
+  
+}
+
