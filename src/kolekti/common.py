@@ -469,18 +469,20 @@ class kolektiBase(object):
         with open(ospath, "r") as f:
             return f.read()
 
-    def write(self, content, filename, mode="w"):
+    def write(self, content, filename, mode="w", sync = True):
         ospath = self.__makepath(filename)
         with open(ospath, mode) as f:
             f.write(content)
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
         
-    def write_chunks(self, chunks, filename, mode="w"):
+    def write_chunks(self, chunks, filename, mode="w", sync = True):
         ospath = self.__makepath(filename)
         with open(ospath, mode) as f:
             for chunk in chunks():
                 f.write(chunk)
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
         
     def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 

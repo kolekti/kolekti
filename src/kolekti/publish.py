@@ -974,12 +974,6 @@ class DraftPublisher(Publisher):
         finally:
             self.purge_manifest_events(pubevents)    
             try:
-                manifest = self.getOsPath(assembly_dir + '/manifest.json')
-#                mfevents = []
-#                if os.path.exists(manifest):
-#                    with open(manifest, 'r') as mf:
-#                        mfevents = json.loads(mf.read())
-                        
                 mfevents = {
                     "event":"publication",
                     "path":assembly_dir,
@@ -988,8 +982,7 @@ class DraftPublisher(Publisher):
                     "time": int(time.time()),
                     "content":pubevents,
                     }
-                with open(manifest, 'w') as mf:
-                    mf.write(json.dumps(mfevents))
+                self.write(json.dumps(mfevents), assembly_dir+"/manifest.json", sync = False)
     
             except:
                 import traceback
@@ -1054,7 +1047,7 @@ class Releaser(Publisher):
                     })
 
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
-        self.write(json.dumps(res), assembly_dir+"/manifest.json")
+        self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         #if self.syncMgr is not None :
         #    try:
@@ -1185,7 +1178,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":pubevents,
                     })
-                self.write(json.dumps(mfevents), self._release_dir + '/manifest.json')
+                self.write(json.dumps(mfevents), self._release_dir + '/manifest.json', sync = False)
     
             except:
                 import traceback
@@ -1284,7 +1277,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":valevents,
                     })
-                self.write(json.dumps(mf), self._release_dir + '/manifest.json')
+                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync=False)
     
             except:
                 import traceback
