@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
+
 import os
 import tempfile
 import shutil
@@ -153,21 +158,37 @@ class SynchroManager(SvnClient):
                     self._base,
                     pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
                     )
-        
-        rev_info = None,
-        # rev_info = self._client.info2(self._base,
-        #                         revision = pysvn.Revision(pysvn.opt_revision_kind.number,rev)
-        #                         )
-        tmpdir = tempfile.mkdtemp()
-        diff_text = self._client.diff(tmpdir,
-                               self._base,
-                               pysvn.Revision(pysvn.opt_revision_kind.number,rev),
-                               self._base,
-                               pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
-                               header_encoding="utf-8")
 
+        tmpdir = tempfile.mkdtemp()
+        try:
+            diff_text = self._client.diff(tmpdir,
+                                self._base,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
+                                self._base,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                                header_encoding="UTF-8")
+        except:
+            logger.exception('could not calculate diff')
+            diff_text = "impossible de calculer les différences" 
+        shutil.rmtree(tmpdir)
+        return [dict(item) for item in rev_summ], None, diff_text
+
+    def revision_diff(self, revision, path):
+        ospath = self.__makepath(path)
+        tmpdir = tempfile.mkdtemp()
+        try:
+            diff_text = self._client.diff(tmpdir,
+                                ospath,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
+                                ospath,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                                header_encoding="utf-8")
+        except:
+            diff_text = "impossible de calculer les différences" 
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
+
+
         
     def statuses(self, path="", recurse = True):
         res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
