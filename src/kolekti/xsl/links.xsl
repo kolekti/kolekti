@@ -31,8 +31,10 @@
     doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
+  <!-- associe a chaque element topic son path source -->
   <xsl:key name="modref" match="//html:div[@class='topic']" use="string(html:div[@class='topicinfo']/html:p[html:span[@class='infolabel' and text() = 'source']]/html:span[@class='infovalue']/html:a/@href)"/>
 
+  <!-- associe a chaque element portant un attribut id, la valeur de ce attribut -->
   <xsl:key name="id" match="//html:div[@class='topic']//*[@id]" use="@id"/>
 
   <xsl:template match="node()|@*">
@@ -42,6 +44,7 @@
   </xsl:template>
 
   <!-- transforme tous les id internes (id) aux topic (m)  en m_id -->
+  
   <xsl:template match="html:div[@class='topic']//*[@id]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
@@ -54,7 +57,7 @@
     </xsl:copy>
   </xsl:template>
 
-
+  <!-- genere un attribut id sur les topics -->
   <xsl:template match="html:div[@class='topic']">
     <xsl:copy>
       <xsl:attribute name="id">
@@ -64,9 +67,10 @@
     </xsl:copy>
   </xsl:template>
   
-  <!-- supprime tous les topics portant un id ?!? -->
+  <!-- supprime tous attributs id existant sur les elements topic  -->
   <xsl:template match="html:div[@class='topic']/@id"/>
 
+  
   <xsl:template match="html:div[@class='topicinfo']">
     <xsl:copy-of select="."/>
   </xsl:template>
@@ -90,12 +94,13 @@
       </xsl:choose>
     </xsl:variable>
 
+    
     <!-- calcul du nouveau lien -->
     <xsl:variable name="href">
       <xsl:choose>
 
         <!-- lien externe -->
-        <xsl:when test="starts-with(@href,'http://')">
+        <xsl:when test="starts-with(@href,'http://') or starts-with(@href,'https://')">
           <xsl:value-of select="@href" />
         </xsl:when>
         
@@ -109,10 +114,6 @@
 
         <!-- lien absolu (/sources/[lg]/topics/... -->
         <xsl:when test="starts-with($tmod, '/')">
-          <!--
-          <xsl:variable name="ref" select="kfp:normpath(string($tmod))" />
-          -->
-<!--          <xsl:variable name="ref" select="kfp:gettopic(string($tmod))" />-->
 	  <xsl:variable name="ref" select="$tmod" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
@@ -127,13 +128,8 @@
 
         <!-- lien relatif -->
         <xsl:otherwise>
-          <!--
-               <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
-          -->
+	  <!-- calcul du chemin absolu de la référence -->
 	  <xsl:variable name="ref" select="kfp:normpath( string($tmod),string($modpath))" />
-	  <!--
-              <xsl:variable name="ref" select="kfp:gettopic( string($tmod),string($modpath))" />
-	  -->
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
