@@ -131,6 +131,7 @@ class kolektiBase(object):
         try:
             return self.syncMgr.rev_number()
         except:
+            logger.exception('error getting sync number')
             return "?"
             
     @property

@@ -60,6 +60,7 @@ urls = [
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
     url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
+    url(r'^sync/remotestatus$', SyncRemoteStatusView.as_view(), name='syncremotestatus'),
     url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
     url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),

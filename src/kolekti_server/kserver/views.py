@@ -181,7 +181,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                 'default_srclang':default_srclang,
                 'active_project_name' : self.request.kolekti_userproject.project.name,
                 'active_srclang' : self.request.kolekti_userproject.srclang,
-                'syncnum' : self._syncnumber,
+#                'syncnum' : self._syncnumber,
                 'kolektiversion' : self._kolektiversion,
             })
         context.update(data)
@@ -1582,6 +1582,15 @@ class SyncStatusView(kolektiMixin, View):
             return HttpResponse(json.dumps(states),content_type="application/json")
         except:
             logger.exception("Unable to get project sync status")
+            return HttpResponse(json.dumps({'revision':{'status':'E'}}),content_type="application/json")
+
+class SyncRemoteStatusView(kolektiMixin, View):
+    def get(self, request):
+        try:
+            return HttpResponse(json.dumps(self._syncnumber),content_type="application/json")
+        except:
+            logger.exception("Unable to get project remote sync status")
+            return HttpResponse(json.dumps({'revision':{'number':'!'}}),content_type="application/json")
             
 class SyncResStatusView(kolektiMixin, View):
     def get(self, request):
@@ -1593,7 +1602,7 @@ class SyncResStatusView(kolektiMixin, View):
             return HttpResponse(json.dumps(state),content_type="application/json")
         except:
             logger.exception("Unable to get file sync status : %s"%path)
-
+            return HttpResponse(json.dumps({'revision':{'status':'E'}}),content_type="application/json")
 
 class SyncAddView(kolektiMixin, View):
     def post(self, request):

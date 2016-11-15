@@ -607,7 +607,7 @@ var kolekti_browser = function(args) {
 	    if (modal)
 		$('.modal').modal();
 	});
-
+	$(window).trigger('kolektibrowserchange');
     } // end update function
 
     var browser_move_dialog = function(filename, newpath, newfilename) {
