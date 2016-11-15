@@ -48,7 +48,9 @@
     stroke : black;
     strocke-with:2;
     stroke-opacity:0.72;
-    
-		 
+
+
 }
-	    
+.icon-layer * {
+  fill: grey !important;
+}
