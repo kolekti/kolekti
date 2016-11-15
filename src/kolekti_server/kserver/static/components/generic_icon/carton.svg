@@ -13,8 +13,8 @@
    height="48px"
    id="svg3210"
    version="1.1"
-   inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="maison-check.svg">
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="carton.svg">
   <defs
      id="defs3212" />
   <sodipodi:namedview
@@ -33,8 +33,8 @@
      inkscape:document-units="px"
      inkscape:window-width="605"
      inkscape:window-height="601"
-     inkscape:window-x="2638"
-     inkscape:window-y="1104"
+     inkscape:window-x="2034"
+     inkscape:window-y="421"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata3215">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,31 +53,37 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <g
-       id="g11332"
-       transform="matrix(0.9095397,0,0,-0.9095397,24.610207,24.890064)">
-      <path
-         d="m 0,0 0.01,-0.008 0,-0.015 0.021,0 8.254,-6.129 12.113,6.989 -8.275,6.491 -11.469,-6.933 0,13.668 11.469,-6.735 6.647,0.607 -10.061,5.851 -8.055,0.447 0,0.018 -0.252,0 -0.07,0 -0.252,0 0,-0.018 L -7.971,13.786 -18.035,7.935 -11.389,7.328 0.01,14.02 0.01,0.005 0,0 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path11334"
-         inkscape:connector-curvature="0" />
-    </g>
-    <g
-       id="g11336"
-       transform="matrix(0.9095397,0,0,-0.9095397,6.5668457,23.999152)">
-      <path
-         d="m 0,0 11.488,-7.471 8.35,6.492 L 8.027,6.082 0,0 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path11338"
-         inkscape:connector-curvature="0" />
-    </g>
-    <g
-       id="g11340"
-       transform="matrix(0.9095397,0,0,-0.9095397,24.640404,25.992426)">
-      <path
-         d="m 0,0 -8.42,-6.535 -3.687,2.33 -0.002,-2.715 12.035,-6.989 12.111,6.848 0.039,3.184 L 8.326,-6.331 0,0 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path11342"
-         inkscape:connector-curvature="0" />
+       id="g2988">
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(0.9095397,0,0,-0.9095397,24.610207,24.890064)"
+         id="g11332">
+        <path
+           inkscape:connector-curvature="0"
+           id="path11334"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 0.01,-0.008 0,-0.015 0.021,0 8.254,-6.129 12.113,6.989 -8.275,6.491 -11.469,-6.933 0,13.668 11.469,-6.735 6.647,0.607 -10.061,5.851 -8.055,0.447 0,0.018 -0.252,0 -0.07,0 -0.252,0 0,-0.018 L -7.971,13.786 -18.035,7.935 -11.389,7.328 0.01,14.02 0.01,0.005 0,0 z" />
+      </g>
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(0.9095397,0,0,-0.9095397,6.5668457,23.999152)"
+         id="g11336">
+        <path
+           inkscape:connector-curvature="0"
+           id="path11338"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 11.488,-7.471 8.35,6.492 L 8.027,6.082 0,0 z" />
+      </g>
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(0.9095397,0,0,-0.9095397,24.640404,25.992426)"
+         id="g11340">
+        <path
+           inkscape:connector-curvature="0"
+           id="path11342"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 -8.42,-6.535 -3.687,2.33 -0.002,-2.715 12.035,-6.989 12.111,6.848 0.039,3.184 L 8.326,-6.331 0,0 z" />
+      </g>
     </g>
   </g>
 </svg>

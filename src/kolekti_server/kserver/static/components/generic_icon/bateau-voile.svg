@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="bateau-moteur.svg">
+   sodipodi:docname="bateau-voile.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -74,8 +74,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7"
-     inkscape:cx="38.032362"
-     inkscape:cy="35.428571"
+     inkscape:cx="8.336565"
+     inkscape:cy="-10.285715"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
@@ -83,7 +83,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,37.920144,35.082282)"
-       id="g6705">
+       id="g6705"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6707"
@@ -112,7 +113,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,24.929344,37.129382)"
-       id="g6709">
+       id="g6709"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6711"
@@ -121,7 +123,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,40.671444,40.528982)"
-       id="g6713">
+       id="g6713"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6715"
@@ -130,7 +133,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,20.183244,42.521282)"
-       id="g6717">
+       id="g6717"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6719"

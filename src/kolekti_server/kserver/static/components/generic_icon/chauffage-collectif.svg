@@ -49,6 +49,13 @@
          d="m 327.592,1644.05 0.004,0 0,0 -0.004,0 z"
          id="path4867" />
     </clipPath>
+    <foreignObject
+       id="foreignObject6"
+       height="1"
+       width="1"
+       y="0"
+       x="0"
+       requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" />
   </defs>
   <metadata
      id="metadata28088">
@@ -63,74 +70,19 @@
     </rdf:RDF>
   </metadata>
   <g
-     transform="matrix(1.2513318,0,0,1.2513318,-283.84528,-619.07312)"
-     id="g4"
-     style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
+     id="g3023">
     <g
-       id="g6"
-       style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-      <g
-         id="g8"
-         style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-        <path
-           d="m 333,520 h 1 v -4 h -2 l 2,-3 h 1 l 2,-6 h -3 l -1,-1 h -3 l -6,-4 v -1 l -2,1 v 2 l -1,1 h -2 v 1 h -4 v -1 h -2 l 2,4 h -3 l -1,-1 -4,1 v 2 l 5,2 2,3 2,1 -2,9 8,3 h 3 v -3 l 2,-1 h 2 l 2,2 h 2 l 3,-4 h -2 l -1,-3 z"
-           id="path10"
-           style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-      </g>
-      <polygon
-         points="342,523 342,528 340,527 339,524 "
-         id="polygon12"
-         style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       transform="matrix(0.70495087,0,0,-0.71983102,30.258879,12.46166)"
+       id="g13711"
+       style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.98143566;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
+      <path
+         d="M 0,0 C 1.324,0 2.396,1.072 2.396,2.396 2.396,3.717 1.324,4.791 0,4.791 -1.322,4.791 -2.395,3.717 -2.395,2.396 -2.395,1.072 -1.322,0 0,0 m 5.703,-0.224 c 1.561,0 2.83,1.267 2.83,2.829 0,1.562 -1.269,2.83 -2.83,2.83 -1.562,0 -2.828,-1.268 -2.828,-2.83 0,-1.562 1.266,-2.829 2.828,-2.829 m 7.067,-0.647 c 2.144,0 3.886,1.738 3.886,3.886 0,2.146 -1.742,3.885 -3.886,3.885 -2.145,0 -3.883,-1.739 -3.883,-3.885 0,-2.148 1.738,-3.886 3.883,-3.886 m 0.035,-0.743 c -1.391,0 -2.651,-0.542 -3.588,-1.422 -0.594,1.338 -1.932,2.271 -3.49,2.271 -1.159,0 -2.194,-0.516 -2.895,-1.332 -0.557,0.979 -1.607,1.639 -2.809,1.639 -1.785,0 -3.232,-1.444 -3.232,-3.23 l 0,-5.919 5.121,0 0,-1.962 5.65,0 0,-4.893 10.485,0 0,9.606 c 0,2.896 -2.352,5.242 -5.242,5.242"
+         id="path13713"
+         style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.98143566;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
     </g>
-  </g>
-  <g
-     transform="matrix(0.70495087,0,0,-0.71983102,30.258879,12.46166)"
-     id="g13711"
-     style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.98143566;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
     <path
-       d="M 0,0 C 1.324,0 2.396,1.072 2.396,2.396 2.396,3.717 1.324,4.791 0,4.791 -1.322,4.791 -2.395,3.717 -2.395,2.396 -2.395,1.072 -1.322,0 0,0 m 5.703,-0.224 c 1.561,0 2.83,1.267 2.83,2.829 0,1.562 -1.269,2.83 -2.83,2.83 -1.562,0 -2.828,-1.268 -2.828,-2.83 0,-1.562 1.266,-2.829 2.828,-2.829 m 7.067,-0.647 c 2.144,0 3.886,1.738 3.886,3.886 0,2.146 -1.742,3.885 -3.886,3.885 -2.145,0 -3.883,-1.739 -3.883,-3.885 0,-2.148 1.738,-3.886 3.883,-3.886 m 0.035,-0.743 c -1.391,0 -2.651,-0.542 -3.588,-1.422 -0.594,1.338 -1.932,2.271 -3.49,2.271 -1.159,0 -2.194,-0.516 -2.895,-1.332 -0.557,0.979 -1.607,1.639 -2.809,1.639 -1.785,0 -3.232,-1.444 -3.232,-3.23 l 0,-5.919 5.121,0 0,-1.962 5.65,0 0,-4.893 10.485,0 0,9.606 c 0,2.896 -2.352,5.242 -5.242,5.242"
-       id="path13713"
-       style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.98143566;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-  </g>
-  <switch
-     transform="matrix(0.34868407,0,0,0.34868407,0.79626958,9.5086559)"
-     id="switch4"
-     style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-    <foreignObject
-       id="foreignObject6"
-       height="1"
-       width="1"
-       y="0"
-       x="0"
-       requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" />
-    <g
-       id="g8-0"
-       style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-      <g
-         id="g10"
-         style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-        <path
-           d="M 102.2,59.2 62.6,24.1 60,21.8 l -2.6,2.3 -7.4,6.5 0,-0.2 -15.6,0 0,14 -16.6,14.8 -7.8,6.9 15.1,0 0,32.1 69.8,0 0,-32.1 15.1,0 z"
-           id="path12"
-           style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-      </g>
-    </g>
-  </switch>
-  <g
-     transform="matrix(0.34868407,0,0,0.34868407,0.50177068,9.7631865)"
-     id="g3142"
-     style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate">
-    <path
-       d="m 49.9,84.4 c -0.4,0 -0.8,-0.2 -1.1,-0.5 -0.5,-0.6 -0.5,-1.6 0.1,-2.1 1.7,-1.5 2.7,-3.5 2.7,-5.6 0,-2.1 -0.9,-4.1 -2.6,-5.7 -2.4,-2.1 -3.6,-4.9 -3.6,-7.9 0,-3 1.4,-5.8 3.7,-7.8 0.6,-0.5 1.6,-0.5 2.1,0.1 0.5,0.6 0.5,1.6 -0.1,2.1 -1.7,1.5 -2.7,3.5 -2.7,5.6 0,2.1 0.9,4.1 2.6,5.7 2.4,2.1 3.6,4.9 3.6,7.9 0,3 -1.4,5.8 -3.7,7.8 -0.3,0.3 -0.7,0.4 -1,0.4 z"
-       id="path14"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-    <path
-       d="m 59.4,84.5 c -0.4,0 -0.8,-0.2 -1.1,-0.5 -0.5,-0.6 -0.5,-1.6 0.1,-2.1 1.7,-1.5 2.7,-3.5 2.7,-5.6 0,-2.1 -0.9,-4.1 -2.6,-5.7 -2.4,-2.1 -3.6,-4.9 -3.6,-7.9 0,-3 1.4,-5.8 3.7,-7.8 0.6,-0.5 1.6,-0.5 2.1,0.1 0.5,0.6 0.5,1.6 -0.1,2.1 -1.7,1.5 -2.7,3.5 -2.7,5.6 0,2.1 0.9,4.1 2.6,5.7 2.4,2.1 3.6,4.9 3.6,7.9 0,3 -1.4,5.8 -3.7,7.8 -0.3,0.3 -0.7,0.4 -1,0.4 z"
-       id="path16"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-    <path
-       d="m 69.9,84.6 c -0.4,0 -0.8,-0.2 -1.1,-0.5 -0.5,-0.6 -0.5,-1.6 0.1,-2.1 1.7,-1.5 2.7,-3.5 2.7,-5.6 0,-2.1 -0.9,-4.1 -2.6,-5.7 -2.4,-2.1 -3.6,-4.9 -3.6,-7.9 0,-3 1.4,-5.8 3.7,-7.8 0.6,-0.5 1.6,-0.5 2.1,0.1 0.5,0.6 0.5,1.6 -0.1,2.1 -1.7,1.5 -2.7,3.5 -2.7,5.6 0,2.1 0.9,4.1 2.6,5.7 2.4,2.1 3.6,4.9 3.6,7.9 0,3 -1.4,5.8 -3.7,7.8 -0.3,0.3 -0.6,0.4 -1,0.4 z"
-       id="path18"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       d="m 21.71875,17.125 -0.90625,0.78125 -2.59375,2.28125 0,-0.09375 -5.4375,0 0,4.90625 L 7,30.15625 4.28125,32.5625 l 5.28125,0 0,11.1875 24.3125,0 0,-11.1875 5.28125,0 L 36.4375,30.15625 22.625,17.90625 21.71875,17.125 z M 18,28.75 c 0.135115,0.0044 0.256579,0.05164 0.34375,0.15625 0.174342,0.20921 0.177962,0.544408 -0.03125,0.71875 -0.592763,0.523027 -0.9375,1.236514 -0.9375,1.96875 0,0.732237 0.313487,1.442106 0.90625,2 0.836842,0.732237 1.25,1.703947 1.25,2.75 0,1.046052 -0.479277,2.021382 -1.28125,2.71875 -0.104605,0.104606 -0.239145,0.125 -0.34375,0.125 -0.139474,0 -0.270394,-0.05165 -0.375,-0.15625 -0.174342,-0.20921 -0.177962,-0.575658 0.03125,-0.75 0.592763,-0.523026 0.9375,-1.205264 0.9375,-1.9375 0,-0.732237 -0.313487,-1.442105 -0.90625,-2 -0.836842,-0.732236 -1.25,-1.703948 -1.25,-2.75 0,-1.046052 0.479276,-2.021382 1.28125,-2.71875 0.104605,-0.08717 0.239885,-0.129359 0.375,-0.125 z m 3.3125,0.03125 c 0.135115,0.0044 0.256579,0.05164 0.34375,0.15625 0.174342,0.209211 0.177962,0.575658 -0.03125,0.75 -0.592763,0.523026 -0.9375,1.205263 -0.9375,1.9375 0,0.732236 0.313487,1.442105 0.90625,2 0.836842,0.732236 1.25,1.703948 1.25,2.75 0,1.046052 -0.479277,2.021382 -1.28125,2.71875 -0.104606,0.104605 -0.239144,0.125 -0.34375,0.125 -0.139473,0 -0.270395,-0.05165 -0.375,-0.15625 -0.174342,-0.20921 -0.177962,-0.575658 0.03125,-0.75 0.592763,-0.523026 0.9375,-1.205263 0.9375,-1.9375 0,-0.732237 -0.313487,-1.442106 -0.90625,-2 -0.836842,-0.732237 -1.25,-1.703948 -1.25,-2.75 0,-1.046053 0.479277,-2.021382 1.28125,-2.71875 0.104605,-0.08717 0.239885,-0.129359 0.375,-0.125 z m 3.65625,0.03125 c 0.135115,0.0044 0.256579,0.05164 0.34375,0.15625 0.174342,0.20921 0.177962,0.575658 -0.03125,0.75 -0.592763,0.523026 -0.9375,1.205264 -0.9375,1.9375 0,0.732237 0.313487,1.442106 0.90625,2 0.836841,0.732237 1.25,1.703948 1.25,2.75 0,1.046053 -0.479276,2.021382 -1.28125,2.71875 -0.104605,0.104605 -0.204276,0.125 -0.34375,0.125 -0.139473,0 -0.270395,-0.05165 -0.375,-0.15625 -0.174342,-0.209211 -0.177962,-0.575658 0.03125,-0.75 0.592763,-0.523026 0.9375,-1.205263 0.9375,-1.9375 0,-0.732236 -0.313488,-1.442105 -0.90625,-2 -0.836842,-0.732236 -1.25,-1.703948 -1.25,-2.75 0,-1.046052 0.479277,-2.021382 1.28125,-2.71875 0.104605,-0.08717 0.239885,-0.129359 0.375,-0.125 z"
+       id="path12"
+       style="color:#000000;fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.69496155;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
   </g>
 </svg>

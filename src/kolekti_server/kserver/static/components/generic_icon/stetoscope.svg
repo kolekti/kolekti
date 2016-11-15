@@ -14,7 +14,7 @@
    id="svg3634"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="Nouveau document 2">
+   sodipodi:docname="stetoscope.svg">
   <defs
      id="defs3636" />
   <sodipodi:namedview
@@ -34,7 +34,7 @@
      inkscape:window-width="553"
      inkscape:window-height="518"
      inkscape:window-x="2589"
-     inkscape:window-y="1349"
+     inkscape:window-y="1327"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata3639">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,7 +54,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,28.739286,38.230852)"
-       id="g9799">
+       id="g9799"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path9801"

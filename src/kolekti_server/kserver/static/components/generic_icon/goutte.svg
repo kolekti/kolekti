@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="flamme.svg">
+   sodipodi:docname="goutte.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -83,7 +83,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,26.689679,36.520965)"
-       id="g4969">
+       id="g4969"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path4971"

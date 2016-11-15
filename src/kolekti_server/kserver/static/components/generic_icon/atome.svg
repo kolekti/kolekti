@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="diplome-femme.svg">
+   sodipodi:docname="atome.svg">
   <defs
      id="defs28085" />
   <sodipodi:namedview
@@ -34,7 +34,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,7 +54,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,28.129268,22.858638)"
-       id="g5193">
+       id="g5193"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5195"
@@ -63,7 +64,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,12.758167,11.555018)"
-       id="g5197">
+       id="g5197"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5199"
@@ -72,7 +74,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,35.541468,11.849148)"
-       id="g5201">
+       id="g5201"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5203"
@@ -81,7 +84,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,24.142568,4.8765179)"
-       id="g5205">
+       id="g5205"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5207"

@@ -13,8 +13,8 @@
    height="48px"
    id="svg3210"
    version="1.1"
-   inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="alliances.svg">
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="bible.svg">
   <defs
      id="defs3212" />
   <sodipodi:namedview
@@ -24,18 +24,18 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7"
-     inkscape:cx="24"
-     inkscape:cy="24"
+     inkscape:zoom="14"
+     inkscape:cx="28.006396"
+     inkscape:cy="20.639311"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="605"
-     inkscape:window-height="601"
-     inkscape:window-x="2638"
-     inkscape:window-y="1104"
-     inkscape:window-maximized="0" />
+     inkscape:window-width="1680"
+     inkscape:window-height="1026"
+     inkscape:window-x="1920"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata3215">
     <rdf:RDF>
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,31 +53,37 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <g
-       id="g17720"
-       transform="matrix(1.25,0,0,-1.25,25.711279,22.325911)">
-      <path
-         d="m 0,0 -3.287,0 0,-6.165 -1.459,0 0,6.165 -3.287,0 0,1.3 3.287,0 0,3.65 1.459,0 0,-3.65 L 0,1.3 0,0 z m -12.639,-12.765 17.244,0 0,22.278 -17.244,0 0,-22.278 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path17722"
-         inkscape:connector-curvature="0" />
-    </g>
-    <g
-       id="g17724"
-       transform="matrix(1.25,0,0,-1.25,13.391899,8.7188107)">
-      <path
-         d="m 0,0 0,-0.66 15.145,0 0,-21.619 0.642,0 L 15.787,0 0,0 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path17726"
-         inkscape:connector-curvature="0" />
-    </g>
-    <g
-       id="g17728"
-       transform="matrix(1.25,0,0,-1.25,14.925149,7.1464107)">
-      <path
-         d="m 0,0 0,-0.661 15.146,0 0,-21.617 0.641,0 L 15.787,0 0,0 z"
-         style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
-         id="path17730"
-         inkscape:connector-curvature="0" />
+       id="g2988">
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(1.25,0,0,-1.25,25.711279,22.325911)"
+         id="g17720">
+        <path
+           inkscape:connector-curvature="0"
+           id="path17722"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 -3.287,0 0,-6.165 -1.459,0 0,6.165 -3.287,0 0,1.3 3.287,0 0,3.65 1.459,0 0,-3.65 L 0,1.3 0,0 z m -12.639,-12.765 17.244,0 0,22.278 -17.244,0 0,-22.278 z" />
+      </g>
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(1.25,0,0,-1.25,13.391899,8.7188107)"
+         id="g17724">
+        <path
+           inkscape:connector-curvature="0"
+           id="path17726"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 0,-0.66 15.145,0 0,-21.619 0.642,0 L 15.787,0 0,0 z" />
+      </g>
+      <g
+         style="fill:#cfcccd"
+         transform="matrix(1.25,0,0,-1.25,14.925149,7.1464107)"
+         id="g17728">
+        <path
+           inkscape:connector-curvature="0"
+           id="path17730"
+           style="fill:#cfcccd;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           d="m 0,0 0,-0.661 15.146,0 0,-21.617 0.641,0 L 15.787,0 0,0 z" />
+      </g>
     </g>
   </g>
 </svg>

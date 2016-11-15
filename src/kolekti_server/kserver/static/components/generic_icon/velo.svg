@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="montagne.svg">
+   sodipodi:docname="velo.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -83,7 +83,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(0.77089567,0,0,-0.77089567,36.439344,33.357166)"
-       id="g8463">
+       id="g8463"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path8465"

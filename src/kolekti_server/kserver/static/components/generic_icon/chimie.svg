@@ -13,8 +13,8 @@
    height="48px"
    id="svg28083"
    version="1.1"
-   inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="tirelire.svg">
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="chimie.svg">
   <defs
      id="defs28085" />
   <sodipodi:namedview
@@ -33,8 +33,8 @@
      inkscape:document-units="px"
      inkscape:window-width="651"
      inkscape:window-height="653"
-     inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-x="2094"
+     inkscape:window-y="308"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,8 +53,9 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <g
-       transform="matrix(1.25,0,0,-1.25,34.180512,34.94875)"
-       id="g5185">
+       transform="matrix(1.25,0,0,-1.25,25.609083,32.377321)"
+       id="g5185"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5187"

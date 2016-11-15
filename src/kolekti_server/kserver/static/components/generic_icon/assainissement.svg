@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="toilette.svg">
+   sodipodi:docname="assainissement.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -83,7 +83,7 @@
      inkscape:window-width="901"
      inkscape:window-height="883"
      inkscape:window-x="2098"
-     inkscape:window-y="134"
+     inkscape:window-y="112"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -104,21 +104,22 @@
     <path
        d="m 36.525194,31.407695 c 0.91657,-0.629935 3.216311,-1.262348 3.500121,-4.678091 H 22.974686 c 0.204639,1.148037 1.283156,4.262176 3.132128,4.961519 1.848973,0.699345 2.500372,0.869292 2.500372,2.14789 0,1.393733 -1.222226,1.87245 -1.807684,2.745598 -0.245728,0.366612 -0.478628,0.783629 -0.626346,1.241963 -0.267575,0.829628 -0.272384,1.802487 -0.272384,1.802487 h 12.171747 c 0,0 -0.206242,-2.126131 -1.650345,-3.827254 -1.444102,-1.701125 -0.928394,-3.685679 0.103029,-4.394112 z"
        id="path3085"
-       style="fill:#4d4d4d"
+       style="fill:#cfcccd"
        inkscape:connector-curvature="0" />
     <path
        d="m 40.025315,24.798485 c 0,0.650868 -0.384225,1.178614 -0.857844,1.178614 H 35.87981 c -0.473819,0 -0.857843,-0.527746 -0.857843,-1.178614 V 13.264112 c 0,-0.651143 0.384225,-1.178886 0.857843,-1.178886 h 3.287661 c 0.473819,0 0.857844,0.527743 0.857844,1.178886 v 11.534373 z"
        id="path3087"
-       style="fill:#4d4d4d"
+       style="fill:#cfcccd"
        inkscape:connector-curvature="0" />
     <path
        d="m 34.789266,25.977099 c 0,-0.821917 -0.484841,-1.488485 -1.083126,-1.488485 h -9.648128 c -0.598085,0 -1.083326,0.666568 -1.083326,1.488485 h 11.81458 z"
        id="path3089"
-       style="fill:#4d4d4d"
+       style="fill:#cfcccd"
        inkscape:connector-curvature="0" />
     <g
        transform="matrix(0.68878627,0,0,-0.68878627,14.996672,25.447876)"
-       id="g4969">
+       id="g4969"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path4971"
@@ -126,7 +127,7 @@
          d="M 0,0 C -0.727,0.262 -0.926,0.659 0.064,1.253 1.053,1.846 2.57,2.901 4.418,6.335 4.418,6.335 4.09,1.187 0,0 m 0.908,16.945 c -2.178,2.31 -3.205,5.909 -3.205,5.909 0,0 -1.332,-3.555 -3.111,-5.629 C -7.184,15.152 -14.74,6.854 -7.777,0.188 -4.074,-2.923 1.258,-2.479 3.926,0.93 6.592,4.336 7.428,9.833 0.908,16.945" />
     </g>
     <rect
-       style="fill:#4d4d4d;fill-opacity:1;stroke:none"
+       style="fill:#cfcccd;fill-opacity:1;stroke:none"
        id="rect3161"
        width="35.815773"
        height="1.5878894"

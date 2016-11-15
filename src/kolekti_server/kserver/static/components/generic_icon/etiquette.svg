@@ -14,7 +14,7 @@
    id="svg3210"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="bible.svg">
+   sodipodi:docname="etiquette.svg">
   <defs
      id="defs3212" />
   <sodipodi:namedview
@@ -34,7 +34,7 @@
      inkscape:window-width="605"
      inkscape:window-height="601"
      inkscape:window-x="2638"
-     inkscape:window-y="1104"
+     inkscape:window-y="1103"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata3215">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>

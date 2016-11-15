@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="tram.svg">
+   sodipodi:docname="bateau-moteur.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -74,8 +74,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7"
-     inkscape:cx="38.032362"
-     inkscape:cy="35.428571"
+     inkscape:cx="43.380673"
+     inkscape:cy="-15.152795"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
@@ -83,7 +83,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(0.84226259,0,0,-0.84226259,33.197226,31.500581)"
-       id="g6697">
+       id="g6697"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6699"
@@ -112,7 +113,8 @@
     </g>
     <g
        transform="matrix(0.84226259,0,0,-0.84226259,17.853897,20.960844)"
-       id="g6701">
+       id="g6701"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6703"

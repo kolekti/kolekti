@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="voiture.svg">
+   sodipodi:docname="standard-telephonique.svg">
   <defs
      id="defs28085">
     <clipPath
@@ -82,8 +82,8 @@
      inkscape:document-units="px"
      inkscape:window-width="651"
      inkscape:window-height="653"
-     inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-x="2059"
+     inkscape:window-y="284"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,24.016875,36.619821)"
-       id="g6785">
+       id="g6785"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path6787"

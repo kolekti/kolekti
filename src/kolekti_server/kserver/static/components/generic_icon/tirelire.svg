@@ -14,7 +14,7 @@
    id="svg28083"
    version="1.1"
    inkscape:version="0.48.4 r9943 custom"
-   sodipodi:docname="discution.svg">
+   sodipodi:docname="tirelire.svg">
   <defs
      id="defs28085" />
   <sodipodi:namedview
@@ -25,7 +25,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7"
-     inkscape:cx="32.318076"
+     inkscape:cx="31.288221"
      inkscape:cy="24"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -34,7 +34,7 @@
      inkscape:window-width="651"
      inkscape:window-height="653"
      inkscape:window-x="1333"
-     inkscape:window-y="295"
+     inkscape:window-y="273"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata28088">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,7 +54,8 @@
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.25,0,0,-1.25,43.858021,21.460304)"
-       id="g5419">
+       id="g5419"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5421"
@@ -63,7 +64,8 @@
     </g>
     <g
        transform="matrix(1.25,0,0,-1.25,30.532821,12.375804)"
-       id="g5423">
+       id="g5423"
+       style="fill:#cfcccd">
       <path
          inkscape:connector-curvature="0"
          id="path5425"
