@@ -72,12 +72,14 @@
 						<i class="fa fa-lg fa-refresh"></i>
 					</a>
 				</div>
+				{% if not shared %}
 				<div class="btn-group">
 					<a title="Partager le rapport" href="#" class="btn btn-default btn-sm elocus-action-report-share">
 					  <i class="fa fa-lg fa-users"></i>
 
 					</a>
 	      </div>
+				{% endif %}
 				<div class="btn-group">
 					<a title="Export Word" href="#" class="btn btn-default btn-sm ecorse-action-dl-word">
 						<i class="fa fa-lg fa-file-word-o"></i>
@@ -89,11 +91,13 @@
 
 					</a>
 				</div>
+				{% if not shared %}
 				<div class="btn-group">
 					<a title="Supprimer" href="#" class="btn btn-default btn-sm elocus-action-report-delete">
 					  <i class="fa fa-lg fa-trash"></i>
 					</a>
 	      </div>
+				{% endif %}
 
 				{% comment %}
 				<div class="btn-group">
