@@ -454,18 +454,16 @@ class ProjectsConfigView(kolektiMixin, View):
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect =request.GET.get('redirect','')
-        #        redirect = request.META.get('HTTP_REFERER', '')
+        redirect =request.GET.get('redirect',reverse('home'))
+
         if settings.KOLEKTI_MULTIUSER:
             userproject = UserProject.objects.get(user = self.request.user, project__name = project)
         else:
             userproject = UserProject.objects.get(project__name = project)        
         self.project_activate(userproject)
-        if redirect == '':
-            return super(ProjectsActivateView, self).get(request)
-        else:
+        return HttpResponseRedirect(redirect)
             
-            return HttpResponseRedirect(redirect)
+
 
 
 class ProjectsLanguageView(ProjectsView):

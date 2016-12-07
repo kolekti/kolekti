@@ -9,6 +9,7 @@ logger = logging.getLogger('kolekti.'+__name__)
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.forms.models import model_to_dict
+from django.core.urlresolvers import reverse
 from django.views.generic import View, TemplateView
 from django.dispatch import receiver
 from django.shortcuts import render
@@ -137,15 +138,11 @@ class SaasProjectsView(KolektiSaasMixin, kolektiMixin, View):
 class SaasProjectsActivateView(SaasProjectsView):
     def get(self, request):
         project = request.GET.get('project')
-        redirect =request.GET.get('redirect','')
+        redirect =request.GET.get('redirect',reverse('home'))
         #        redirect = request.META.get('HTTP_REFERER', '')
         userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
         self.project_activate(userproject)
-        if redirect == '':
-            return super(SaasProjectsActivateView, self).get(request)
-        else:
-            
-            return HttpResponseRedirect(redirect)
+        return HttpResponseRedirect(redirect)
 
 
 class SaasProjectsLanguageView(SaasProjectsView):
