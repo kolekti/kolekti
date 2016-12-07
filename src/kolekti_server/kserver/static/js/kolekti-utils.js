@@ -317,7 +317,7 @@ var kolekti_browser = function(args) {
 	    if (!create_actions) {
 		$(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('.newfile_collapse div'), path)
+		create_builder($(parent).find('.newfile_collapse form'), path)
 	    }
 
 	    if (!os_actions) 
