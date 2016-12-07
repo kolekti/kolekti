@@ -5,6 +5,12 @@ $(document).ready( function () {
 	$('#btn_save').addClass('btn-warning');
     }
 
+    $(window).on('beforeunload', function(e) {
+	if($('#btn_save').hasClass('btn-warning')) {
+            return 'Trame non enregistrée';
+	}
+    });
+
     var serialize = function() {
 	buf = "<criteria>";
 	$('.criterion').each(function(i,e) {
