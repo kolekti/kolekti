@@ -395,7 +395,7 @@ $(document).ready( function () {
 	    $('#modalform').submit( function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		params['pubdir'] = $('#release_name').val()
+		params['pubdir'] = $('#release_name').val().replace('/','_')
 		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
 		$.get(assembly)
 		    .success(function() {
