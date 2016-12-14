@@ -1,4 +1,4 @@
-{% extends "base-wide.html" %}
+{% extends "base.html" %}
 
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}variable{% endblock %}
@@ -23,7 +23,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-6">
 	<h3>Liste des variables</h3>
-	<p class="info">Cliquez sur le nom d'une variable pour éditer les valeurs</p>
+	<p class="info">Cliquez sur le nom d'une variable pour éditer les valeurs pour checune des conditions</p>
 	<ul class="list-group">
 	  {% for variable in variables %}
 	  <li class="list-group-item">
@@ -52,7 +52,7 @@
       </div>
       <div class="col-sm-12 col-md-6">
 	<h3>Liste des conditions</h3>
-	<p class="info">Cliquez sur une condition pour éditer les valeurs des toutes les variables</p>
+	<p class="info">Cliquez sur une condition pour éditer les valeurs de toutes les variables</p>
 	<ul class="list-group">
 	  {% for condition in conditions %}
 	  <li class="list-group-item">
@@ -80,7 +80,7 @@
       
       <!--      <div class="col-sm-12 col-md-3">-->
 
-      // Add condition dialog
+      {# Add condition modal #}
       
       <div class="modal fade" id="modal_cond" tabindex="-1" role="dialog" aria-labelledby="label_cond">
 	<div class="modal-dialog" role="document">
@@ -99,7 +99,7 @@
 		  
 		  <label for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{crit}}</label>
 		  <div class="col-sm-8">
-		    <div class="btn-group">
+		    <div class="btn-group crit-menu" data-crit="{{ crit }}" data-value="">
 		      <button type="button" class="btn btn-default pull-right dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
 id = "id_{{forloop.counter}}"
 			      >
@@ -107,6 +107,7 @@ id = "id_{{forloop.counter}}"
 		      </button>
 
 		      <ul class="dropdown-menu">
+			<li><a class="cond_item" data-valuelabel="*" href="#">*</a></li>
 			{% for name,values in criteria.items %}
 			
 			{% if name == crit %}
@@ -120,19 +121,17 @@ id = "id_{{forloop.counter}}"
 		  </div>
 		</div>
 		{% endfor %}
+		<div class="alert alert-warning" id="alert_cond_exists">
+		  Cette condition existe deja
+		</div>
 	      </div>
 	      
-	      
-	    <div class="modal-footer">
-	      <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-	      <button type="submit" class="btn btn-warning">Enregistrer</button>
-	    </div>
-	    <!--
-		<p class="pull-right">
-		  <button class="btn btn-primary">Ajouter</button>
-		</p>
-		-->
-	  </form>
+	      <div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+		<button type="submit" class="btn btn-warning" id="cond_save">Enregistrer</button>
+	      </div>
+
+	    </form>
 	  </div>
 	</div>
       </div>
@@ -140,7 +139,7 @@ id = "id_{{forloop.counter}}"
     <!--	</div> -->
     <!-- <div class="col-sm-12 col-md-3"> -->
 
-    // Add criteria modal
+    {# Add criteria modal #}
     
     <div class="modal fade" id="modal_add_crit" tabindex="-1" role="dialog" aria-labelledby="label_add_crit">
       <div class="modal-dialog" role="document">
@@ -157,7 +156,7 @@ id = "id_{{forloop.counter}}"
 	      <div class="form-group">
 		<label for="mbtn_add_crit_cond" class="col-sm-4 control-label">Critère</label>
 		<div class="col-sm-8">
-		  <div class="btn-group">
+		  <div class="btn-group" id="crit_cond_menu">
 		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mbtn_add_crit_cond">
 		      <span class="valuelabel"><em>Selectionnez un critère</em></span> <span class="caret"></span>
 		    </button>
@@ -172,12 +171,12 @@ id = "id_{{forloop.counter}}"
 		</div>
 	      </div>
 	      
-	      <div class="form-group">
+	      <div class="form-group"  id="crit_val_menu">
 		<label for="mbtn_add_crit_val" class="col-sm-4 control-label">Valeur initiale</label>
 		<div class="col-sm-8">
 		  <div class="btn-group">
 		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		      -- <span class="caret"></span>
+		      <span class="valuelabel">*</span> <span class="caret"></span>
 		    </button>
 		    <ul class="dropdown-menu">
 		      <li><a href="#"><em>Selectionnez un critère</em></a></li>
@@ -200,16 +199,13 @@ id = "id_{{forloop.counter}}"
     
 {% endblock %}
 
-{% comment %}
+
 {% block menu %}
     <div class="row">
       <div class="col-sm-12 col-md-12">
-	<button type="button" class="btn btn-block btn-default disabled" id="btn_save"
-		data-path = "{{ path }}">
-	  Enregistrer
-	</button>
+	<a href="/variables/ods?path={{ path }}" title="générer fichier ods" class="btn btn-block btn-default"><span class="glyphicon glyphicon-export" aria-hidden="true"></span><span> exporter ods</span></a>
       </div>
     </div>
 {% endblock %}
-{% endcomment %} 
+
     
