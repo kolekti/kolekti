@@ -845,31 +845,121 @@ class ImagesDetailsView(kolektiMixin, TemplateView):
 class VariablesListView(kolektiMixin, TemplateView):
     template_name = "variables/list.html"
 
-class VariablesDetailsView(kolektiMixin, TemplateView):
-    template_name = "variables/details.html"
-    def get(self, request):
-        path = request.GET.get('path')
-        name=path.rsplit('/',1)[1]
-        ospath = self.getOsPath(path)
 
+class VariablesMixin(kolektiMixin, TemplateView):
+
+    def getval(self, val):
+        try:
+            return val.find('content').text
+        except AttributeError:
+            return ""
+        
+    def variable_details(self, path, include_values = None):
+        name=path.rsplit('/',1)[1]
+        xmlvar = self.parse(path)
+        crits = [c.text[1:] for c in xmlvar.xpath('/variables/critlist/crit')]
+        variables = xmlvar.xpath('/variables/variable/@code')
+        values = xmlvar.xpath('/variables/variable[1]/value')
+        conditions = [{
+            'label':", ".join(["=".join((c.get('name'),c.get('value')))  for c in v.findall('crit')]) ,
+            'expr':dict([(c.get('name'),c.get('value')) for c in v.findall('crit')])
+            } for v in values]
+        vardata = {
+            "crits" : crits,
+            "variables" : variables,
+            "conditions" : conditions,
+            "criteria" : self._get_criteria_def_dict(),
+            }
+        if include_values:
+            vardata.update({"values": [[self.getval(v) for v in var.xpath('value') ] for var in xmlvar.xpath('/variables/variable')]})
+            
         context = self.get_context_data({
             'name':name,
             'path':path,
+            'vardata' : json.dumps(vardata),
             })
-        return self.render_to_response(context)
+        context.update(vardata)
+        return context
 
     def post(self, request):
         try:
-            xvar = self.parse_string(request.body)
-            varpath = request.GET.get('path')
+            payload = json.loads(request.body)
+            varpath = payload.get('path')
+            xvar = self.parse(varpath)
+            for var, mvar in zip(xvar.xpath('/variables/variable'), payload.get('data')):
+                for (val, mval) in zip(var.xpath('value/content'), mvar):
+                    val.text = mval
             self.xwrite(xvar, varpath)
             return HttpResponse('ok')
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('Could not save variable')
             return HttpResponse(status=500)
+    
+class VariablesDetailsView(VariablesMixin):
+    template_name = "variables/details.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        try:
+            return self.render_to_response(self.variable_details(path))
+        except:
+            logger.exception('unable to process variable file')
+            raise
+        
+    def post(self, request):
+        action = request.POST.get('action')
+        path = request.POST.get('path')
+        xvar = self.parse(path)
+        if action == "newvar":
+            varname = request.POST.get('varname')
+            try:
+                firstvar = xvar.xpath('/variables/variable[1]')[0]
+                newvar = ET.SubElement(xvar.xpath('/variables')[0],'variable', {"code":varname})
+                for value in firstvar:
+                    newval = ET.SubElement(newvar, 'value')
+                    for crit in value.xpath('crit'):
+                        ET.SubElement(newval, 'crit',{
+                            "name":crit.get("name"),
+                            "value":crit.get("value")
+                            })
+                    ET.SubElement(newval,'content')
+            except:
+                logger.exception('could not add variable')
+                
+        if action == "delvar":
+            index = int(request.POST.get('index'))
+            delvar = xvar.xpath('/variables/variable[%d]'%index)[0]
+            delvar.remove()
+            
+        self.xwrite(xvar, path)
+        return self.render_to_response(self.variable_details(path))
+        
+class VariablesEditvarView(VariablesMixin):
+    template_name = "variables/editvar.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        index = int(request.GET.get('index',1)) - 1
+        name=path.rsplit('/',1)[1]
+        context =  self.variable_details(path, True)
+        context.update({
+            "method":"line",
+            "current":index,
+            })
+        return self.render_to_response(context)
+    
 
-
+class VariablesEditcolView(VariablesMixin):
+    template_name = "variables/editvar.html"
+    def get(self, request):
+        path = request.GET.get('path')
+        index = int(request.GET.get('index', 1)) - 1
+        name=path.rsplit('/',1)[1]
+        context =  self.variable_details(path, True)
+        context.update({
+            "method":"col",
+            "current":index,
+            })
+        return self.render_to_response(context)
+    
     
 class VariablesUploadView(kolektiMixin, TemplateView):
     def post(self, request):

@@ -51,6 +51,8 @@ urls = [
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
     url(r'^variables/create/$', VariablesCreateView.as_view(), name='variablecreate'),
     url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
+    url(r'^variables/editvar/$', VariablesEditvarView.as_view(), name='variableeditval'),
+    url(r'^variables/editcol/$', VariablesEditcolView.as_view(), name='variableeditcol'),
     url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
 
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
