@@ -22,7 +22,19 @@ $(document).ready(function() {
 	exists_condition(function() {$('.msg-exist').show()})
     })
     
+    $('#modal_add_crit .crit_cond_item').on('click', function() {
+	// condition menu
+	console.log($(this).data('valuelabel'))
+	console.log($(this).closest('.btn-group'));
+	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
+	
+    })
     
+    $('#modal_add_crit .crit_val_item').on('click', function() {
+	
+    })
+				       
     $('#modal_cond form').on('submit', function() {
 	// check
     })

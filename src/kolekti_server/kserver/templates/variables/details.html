@@ -79,6 +79,9 @@
       </div>
       
       <!--      <div class="col-sm-12 col-md-3">-->
+
+      // Add condition dialog
+      
       <div class="modal fade" id="modal_cond" tabindex="-1" role="dialog" aria-labelledby="label_cond">
 	<div class="modal-dialog" role="document">
 	  <div class="modal-content">
@@ -94,7 +97,7 @@
 		{% for crit in crits %}
 		<div class="form-group">
 		  
-		  <div for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{crit}}</div>
+		  <label for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{crit}}</label>
 		  <div class="col-sm-8">
 		    <div class="btn-group">
 		      <button type="button" class="btn btn-default pull-right dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -137,6 +140,8 @@ id = "id_{{forloop.counter}}"
     <!--	</div> -->
     <!-- <div class="col-sm-12 col-md-3"> -->
 
+    // Add criteria modal
+    
     <div class="modal fade" id="modal_add_crit" tabindex="-1" role="dialog" aria-labelledby="label_add_crit">
       <div class="modal-dialog" role="document">
 	<div class="modal-content">
@@ -144,33 +149,44 @@ id = "id_{{forloop.counter}}"
 	    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 	    <h4 class="modal-title" id="label_add_crit">Ajouter un critère</h4>
 	  </div>
-	  <form method="POST">
+	  <form method="POST" class="form-horizontal">
 	    <input type="hidden" name="action" value="newcrit"/>
 	    <input type="hidden" name="path" value="{{path}}"/>
 	    
-	    <div class="modal-body">	
-	      <div class="btn-group">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		  Critère <span class="caret"></span>
-		  </button>
-		<ul class="dropdown-menu">
-		  {% for name,values in criteria.items %}
-		    {% if name in crits %}{% else %}
-		  <li><a href="#">{{ name }}</a></li>
-		  {% endif %}
-		  {% endfor %}
-		</ul>
+	    <div class="modal-body">
+	      <div class="form-group">
+		<label for="mbtn_add_crit_cond" class="col-sm-4 control-label">Critère</label>
+		<div class="col-sm-8">
+		  <div class="btn-group">
+		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mbtn_add_crit_cond">
+		      <span class="valuelabel"><em>Selectionnez un critère</em></span> <span class="caret"></span>
+		    </button>
+		    <ul class="dropdown-menu">
+		      {% for name,values in criteria.items %}
+		      {% if name in crits %}{% else %}
+		      <li><a href="#" class="crit_cond_item" data-valuelabel="{{ name }}">{{ name }}</a></li>
+		      {% endif %}
+		      {% endfor %}
+		    </ul>
+		  </div>
+		</div>
 	      </div>
-	      <div class="btn-group">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		  Valeur par défaut<span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu">
-		    <li><a href="#">Selectionnez un critère</a></li>
-		</ul>
+	      
+	      <div class="form-group">
+		<label for="mbtn_add_crit_val" class="col-sm-4 control-label">Valeur initiale</label>
+		<div class="col-sm-8">
+		  <div class="btn-group">
+		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		      -- <span class="caret"></span>
+		    </button>
+		    <ul class="dropdown-menu">
+		      <li><a href="#"><em>Selectionnez un critère</em></a></li>
+		    </ul>
+		  </div>
+		</div>
 	      </div>
+	      
 	    </div>
-	    	      
 	    <div class="modal-footer">
 	      <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
 	      <button type="submit" class="btn btn-warning">Enregistrer</button>
