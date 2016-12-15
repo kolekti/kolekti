@@ -31,6 +31,7 @@
 	    <span class="pull-right">
 	      <button data-varindex="{{forloop.counter}}"
 		      class="btn btn-xs btn-default kolekti-action-rename-variable"
+		      data-toggle="modal" data-target="#modal_rename_variable"
 		      title="Renommer">
 		<i class="fa fa-pencil"></i>
 	      </button>
@@ -45,7 +46,7 @@
 	  {% endfor %}
 	  <li class="list-group-item">
 	    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_add_variable">
-	      Ajouter une condition...
+	      Ajouter une variable...
 	    </button>
 	  </li>
 	</ul>
@@ -98,6 +99,7 @@
 	    <form class="form form-horizontal" method="POST">
 	      <input type="hidden" name="action" value="newcond"/>
 	      <input type="hidden" name="path" value="{{path}}"/>
+	      <input type="hidden" name="condindex" value=""/>
 	      
 	      <div class="modal-body">
 		{% for crit in crits %}
@@ -243,6 +245,35 @@
     </div>
 
     {# Rename variable modal #}
+    <div class="modal fade" id="modal_rename_variable" tabindex="-1" role="dialog" aria-labelledby="label_rename_variable">
+      <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    <h4 class="modal-title" id="label_rename_variable">Renommer une variable</h4>
+	  </div>
+	  <form method="POST" class="form-horizontal">
+	    <input type="hidden" name="action" value="renamevar"/>
+	    <input type="hidden" name="path" value="{{path}}"/>
+	    <input type="hidden" name="index" id="var_rename_index" value=""/>
+
+	    <div class="modal-body">
+	      <div class="form-group">
+		<label for="var_newvar" class="col-sm-4 control-label">Nom de la variable</label>
+		<div class="col-sm-8">
+		  <input type="text" id="input_rename"  name="varname" placeholder="nouvelle variable"/>
+		</div>
+	      </div>
+	      
+	    </div>
+	    <div class="modal-footer">
+	      <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	      <button type="submit" class="btn btn-warning">Enregistrer</button>
+	    </div>
+	  </form>
+	</div>
+      </div>
+    </div>
     
 </div>
 

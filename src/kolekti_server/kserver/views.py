@@ -906,29 +906,69 @@ class VariablesDetailsView(VariablesMixin):
             raise
         
     def post(self, request):
-        action = request.POST.get('action')
-        path = request.POST.get('path')
-        xvar = self.parse(path)
-        if action == "newvar":
-            varname = request.POST.get('varname')
-            try:
-                firstvar = xvar.xpath('/variables/variable[1]')[0]
-                newvar = ET.SubElement(xvar.xpath('/variables')[0],'variable', {"code":varname})
-                for value in firstvar:
-                    newval = ET.SubElement(newvar, 'value')
-                    for crit in value.xpath('crit'):
-                        ET.SubElement(newval, 'crit',{
-                            "name":crit.get("name"),
-                            "value":crit.get("value")
-                            })
-                    ET.SubElement(newval,'content')
-            except:
-                logger.exception('could not add variable')
+        logger.debug(dict(request.POST))
+        try:
+            action = request.POST.get('action')
+            path = request.POST.get('path')
+            xvar = self.parse(path)
+            if action == "newvar":
+                varname = request.POST.get('varname')
+                varvalue = request.POST.get('varvalue')
+                try:
+                    firstvar = xvar.xpath('/variables/variable[1]')
+                    newvar = ET.SubElement(xvar.xpath('/variables')[0],'variable', {"code":varname})
+                    if len(firstvar):
+                        for value in firstvar[0]:
+                            newval = ET.SubElement(newvar, 'value')
+                            for crit in value.xpath('crit'):
+                                ET.SubElement(newval, 'crit',{
+                                    "name":crit.get("name"),                            
+                                    "value":crit.get("value")
+                                    })
+                                
+                    xcontent = ET.SubElement(newval,'content')
+                    xcontent.text = request.POST.get('varvalue','')
+                except:
+                    logger.exception('could not add variable')
+                    
+            if action == "delvar":
+                index = int(request.POST.get('index'))
+                delvar = xvar.xpath('/variables/variable[%d]'%index)[0]
+                delvar.getparent().remove(delvar)
                 
-        if action == "delvar":
-            index = int(request.POST.get('index'))
-            delvar = xvar.xpath('/variables/variable[%d]'%index)[0]
-            delvar.remove()
+            if action == "renamevar":
+                index = int(request.POST.get('index'))
+                newname = request.POST.get('varname')
+                var = xvar.xpath('/variables/variable[%d]'%index)[0]
+                var.set('code', newname)
+            
+            if action == "newcond":
+                crits = [c.text[1:] for c in xvar.xpath('/variables/critlist/crit')]
+                for var in xvar.xpath('/variables/variable'):
+                    xvalue = ET.SubElement(var,'value')
+                    for entry in crits:
+                        ET.SubElement(xvalue,'crit',{'name':entry, 'value':request.POST.get(entry)})
+                    xcontent = ET.SubElement(xvalue,'content')
+                    xcontent.text = request.POST.get('varvalue','')
+                    
+            if action == "delcond":
+                index = int(request.POST.get('index'))
+                for xcond in xvar.xpath('/variables/variable/value[%d]'%index):
+                    xcond.getparent().remove(xcond)
+                    
+            if action == "newcrit":
+                critlist = xvar.xpath('/variables/critlist')[0]
+                critdecl = ET.SubElement(critlist, 'crit')
+                critdecl.text = ":" + request.POST.get("crit")
+                for xcond in xvar.xpath('/variables/variable/value'):
+                    ET.SubElement(xcond, 'crit',{
+                        "name":request.POST.get("crit"),                            
+                        "value":request.POST.get("val")
+                        })
+                    
+                
+        except:
+            logger.exception('var action failed')
             
         self.xwrite(xvar, path)
         return self.render_to_response(self.variable_details(path))

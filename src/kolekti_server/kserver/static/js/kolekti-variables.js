@@ -1,6 +1,7 @@
 $(document).ready(function() {
     var conditions = kolekti_variable_data['conditions'];
     var criteria = kolekti_variable_data['criteria'];
+    var variables = kolekti_variable_data['variables'];
     var path = $('#main').data('path');
 
     // add condition 
@@ -46,7 +47,7 @@ $(document).ready(function() {
     $('#modal_cond').on('show.bs.modal', function (e) {
 	if($(e.relatedTarget).hasClass('kolekti-action-edit-condition')){
 	    var index = $(e.relatedTarget).data('condindex') - 1;
-	    console.log('editcond',index)
+	    $('#cond_edit_index').val(index + 1)
 	    $(this).find('.crit-menu').each(function(i,menu) {
 		console.log($(menu).data('crit'))
 		var iv = conditions[index]['expr'][$(menu).data('crit')]
@@ -164,6 +165,18 @@ $(document).ready(function() {
 	}
 	
     })
+
+    $('#modal_new_variable').on('show.bs.modal', function (e) {
+	$('#var_newvar').focus()
+    })
+
+    $('#modal_rename_variable').on('show.bs.modal', function (e) {
+	var index = $(e.relatedTarget).data('varindex');
+	$('#var_rename_index').val(index)
+	$('#input_rename').val(variables[index - 1])
+	$('#input_rename').focus()
+    })
+
     
     
     $('.kolekti-action-remove-condition').on('click', function() {
