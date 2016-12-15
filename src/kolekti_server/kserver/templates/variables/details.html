@@ -29,24 +29,24 @@
 	  <li class="list-group-item">
 	    <a href="{% url 'variableeditval' %}?path={{ path }}&index={{ forloop.counter }}">{{variable}}</a>
 	    <span class="pull-right">
-	      <button class="btn btn-xs btn-default kolekti-action-rename-variable" title="Renommer">
+	      <button data-varindex="{{forloop.counter}}"
+		      class="btn btn-xs btn-default kolekti-action-rename-variable"
+		      title="Renommer">
 		<i class="fa fa-pencil"></i>
 	      </button>
-	      <button data-varname="{{variable}}" data-varindex="{{forloop.counter}}" class="btn btn-xs btn-default kolekti-action-remove-variable" title="Supprimer">
+	      <button data-varname="{{variable}}"
+		      data-varindex="{{forloop.counter}}"
+		      class="btn btn-xs btn-default kolekti-action-remove-variable"
+		      title="Supprimer">
 		<i class="fa fa-trash"></i>
 	      </button>
 	    </span>
 	  </li>
 	  {% endfor %}
 	  <li class="list-group-item">
-	    <form method="POST">
-	      <input type="hidden" name="action" value="newvar"/>
-	      <input type="hidden" name="path" value="{{path}}"/>
-	      <input type="text" id="var_newvar" name="varname" placeholder="nouvelle variable"/>
-	      <span class="pull-right">
-		<button class="btn btn-warning btn-sm">Ajouter une variable</button>
-	      </span>
-	    </form>
+	    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_add_variable">
+	      Ajouter une condition...
+	    </button>
 	  </li>
 	</ul>
       </div>
@@ -58,10 +58,16 @@
 	  <li class="list-group-item">
 	    <a href="{% url 'variableeditcol' %}?path={{ path }}&index={{ forloop.counter }}">{{ condition.label }}</a>
 	    <span class="pull-right">
-	      <button class="btn btn-xs btn-default kolekti-action-edit-condition" title="Modifier la condition">
+	      <button data-condname="{{condition.label}}"
+		      data-condindex="{{forloop.counter}}"
+		      class="btn btn-xs btn-default kolekti-action-edit-condition"
+		      data-toggle="modal" data-target="#modal_cond"
+		      title="Modifier la condition">
 		<i class="fa fa-pencil"></i>
 	      </button>
-	      <button class="btn btn-xs btn-default kolekti-action-remove-condition" title="Supprimer">
+	      <button data-condname="{{variable}}"
+		      data-condindex="{{forloop.counter}}"
+		     class="btn btn-xs btn-default kolekti-action-remove-condition" title="Supprimer">
 		<i class="fa fa-trash"></i>
 	      </button>
 	    </span>
@@ -99,9 +105,13 @@
 		  
 		  <label for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{crit}}</label>
 		  <div class="col-sm-8">
-		    <div class="btn-group crit-menu" data-crit="{{ crit }}" data-value="">
-		      <button type="button" class="btn btn-default pull-right dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-id = "id_{{forloop.counter}}"
+		    <div class="btn-group crit-menu" data-crit="{{ crit }}" data-val="">
+		      <button type="button"
+			      class="btn btn-default pull-right dropdown-toggle"
+			      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+			      id = "id_{{forloop.counter}}"
+			      name="critmenu"
+			      value=""
 			      >
 			<span class="valuelabel">Valeur</span> <span class="caret"></span>
 		      </button>
@@ -156,7 +166,7 @@ id = "id_{{forloop.counter}}"
 	      <div class="form-group">
 		<label for="mbtn_add_crit_cond" class="col-sm-4 control-label">Critère</label>
 		<div class="col-sm-8">
-		  <div class="btn-group" id="crit_cond_menu">
+		  <div class="btn-group btn-group-add-crit" id="crit_cond_menu" data-crit="crit" data-val="{{ crit }}">
 		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mbtn_add_crit_cond">
 		      <span class="valuelabel"><em>Selectionnez un critère</em></span> <span class="caret"></span>
 		    </button>
@@ -174,7 +184,7 @@ id = "id_{{forloop.counter}}"
 	      <div class="form-group"  id="crit_val_menu">
 		<label for="mbtn_add_crit_val" class="col-sm-4 control-label">Valeur initiale</label>
 		<div class="col-sm-8">
-		  <div class="btn-group">
+		  <div class="btn-group btn-group-add-crit" id="crit_cond_menu" data-crit="val" data-val="*">
 		    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 		      <span class="valuelabel">*</span> <span class="caret"></span>
 		    </button>
@@ -194,6 +204,46 @@ id = "id_{{forloop.counter}}"
 	</div>
       </div>
     </div>
+
+    {# Add variable modal #}
+    <div class="modal fade" id="modal_add_variable" tabindex="-1" role="dialog" aria-labelledby="label_add_variable">
+      <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    <h4 class="modal-title" id="label_add_variable">Ajouter une variable</h4>
+	  </div>
+	  <form method="POST" class="form-horizontal">
+	    <input type="hidden" name="action" value="newvar"/>
+	    <input type="hidden" name="path" value="{{path}}"/>
+
+	    <div class="modal-body">
+	      <div class="form-group">
+		<label for="var_newvar" class="col-sm-4 control-label">Nom de la variable</label>
+		<div class="col-sm-8">
+		  <input type="text" id="var_newvar" name="varname" placeholder="nouvelle variable"/>
+		</div>
+	      </div>
+	      
+	      <div class="form-group">
+		<label for="var_newvar_val" class="col-sm-4 control-label">Valeur initiale</label>
+		<div class="col-sm-8">
+		  <input type="text" id="var_newvar_val" name="varvalue" placeholder=""/>
+		</div>
+	      </div>
+	      
+	    </div>
+	    <div class="modal-footer">
+	      <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	      <button type="submit" class="btn btn-warning">Enregistrer</button>
+	    </div>
+	  </form>
+	</div>
+      </div>
+    </div>
+
+    {# Rename variable modal #}
+    
 </div>
 
     

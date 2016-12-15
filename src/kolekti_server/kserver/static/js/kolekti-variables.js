@@ -9,13 +9,13 @@ $(document).ready(function() {
 	togglefct(false);
 	var exists = false;
 	$.each(conditions, function(i,v){
-	    console.log(i,v);
+//	    console.log(i,v);
 	    var matched = true;
 	    $(".crit-menu").each( function(ci, cv) {
-		console.log('crit-menu', $(cv).data('crit'))
+//		console.log('crit-menu', $(cv).data('crit'))
 		var crit = $(cv).data('crit')
-		console.log($(cv).data('value'))
-		console.log(v['expr'][crit])
+//		console.log($(cv).data('value'))
+//		console.log(v['expr'][crit])
 		if (v['expr'][crit] != $(cv).data('val'))
 		    matched = false;
 	    });
@@ -25,7 +25,7 @@ $(document).ready(function() {
 
 
     var toggle_cond = function(status){
-	console.log('toggle', status)
+//	console.log('toggle', status)
 	if(status) {
 	    $('#alert_cond_exists').show();
 	    $('#cond_save').addClass('disabled')
@@ -37,30 +37,59 @@ $(document).ready(function() {
     
     $('#modal_cond .cond_item').on('click', function() {
 	// condition menu
-	console.log($(this).data('valuelabel'))
-	console.log($(this).closest('.btn-group'));
 	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
 	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
 	exists_condition(toggle_cond)
     })
 
     $('#modal_cond').on('show.bs.modal', function (e) {
-	$(this).find('.crit-menu').each(function(i,menu) {
-	    var iv = $(menu).find('li a').first().data('valuelabel')
-	    $(menu).data('val', iv)
-	    $(menu).find('.valuelabel').html(iv)
-	})
-	exists_condition(toggle_cond)
+	if($(e.relatedTarget).hasClass('kolekti-action-edit-condition')){
+	    var index = $(e.relatedTarget).data('condindex') - 1;
+	    console.log('editcond',index)
+	    $(this).find('.crit-menu').each(function(i,menu) {
+		console.log($(menu).data('crit'))
+		var iv = conditions[index]['expr'][$(menu).data('crit')]
+		console.log(conditions[index]['expr'])
+		$(menu).data('val', iv)
+		$(menu).find('.valuelabel').html(iv)
+		$(menu).find('button').val(iv)
+	    });
+	    $('#alert_cond_exists').hide();
+	    $('#cond_save').addClass('disabled');
+	} else {
+	   
+	    $(this).find('.crit-menu').each(function(i,menu) {
+		var iv = $(menu).find('li a').first().data('valuelabel')
+		$(menu).data('val', iv)
+		$(menu).find('.valuelabel').html(iv)
+		$(menu).find('button').val(iv)
+	    });
+	    exists_condition(toggle_cond)
+	}
     })
     
 
+    $('#modal_cond form').on('submit', function() {
+	// check
+	$(this).find('.crit-menu').each(function(i,menu) {
+	    console.log( $(menu).data('crit'),$(menu).data('val'));
+	    $("<input>")
+		.attr("type", "hidden")
+		.attr("name", $(menu).data('crit'))
+		.attr("value", $(menu).data('val'))
+		.appendTo($('#modal_cond form'))
+	})
+    })
+
+    
 
     var add_crit_build_val_menu = function() {
-	console.log('val menu')
+//	console.log('val menu')
 	var crit = $('#crit_cond_menu').data('val')
-	console.log(crit)
+//	console.log(crit)
 	$("#crit_val_menu ul").html('')
-	console.log('iter', criteria[crit])
+//	console.log('iter', criteria[crit])
 	$.each(criteria[crit], function(i,v){
 //	    console.log('menu val',v)
 	    $("#crit_val_menu ul").append(
@@ -76,6 +105,7 @@ $(document).ready(function() {
 	    if (i==0) {
 		$('#crit_val_menu').find('.valuelabel').html(v)
 		$('#crit_val_menu').data('val', v)
+		$('#crit_val_menu').find('button').val(v)
 	    }
 	});
 
@@ -85,6 +115,7 @@ $(document).ready(function() {
 	// condition menu
 	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
 	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
 	add_crit_build_val_menu()
     })
 
@@ -92,6 +123,7 @@ $(document).ready(function() {
 	// value  menu
 	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
 	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
     })
 
     
@@ -100,16 +132,20 @@ $(document).ready(function() {
 	    var iv = $(menu).find('li a').first().data('valuelabel')
 	    $(menu).data('val', iv)
 	    $(menu).find('.valuelabel').html(iv)
+	    $(menu).find('button').val(iv)
 	});
 	add_crit_build_val_menu();
     })
     
-    $('#modal_cond form').on('submit', function() {
-	// check
-    })
     
     $('#modal_add_crit form').on('submit', function() {
-	// check
+	$(this).find('.btn-group-add-crit').each(function(i,menu) {
+	    $("<input>")
+		.attr("type", "hidden")
+		.attr("name", $(menu).data('crit'))
+		.attr("value", $(menu).data('val'))
+		.appendTo($('#modal_add_crit form'))
+	})
     })
     
     $('.kolekti-action-remove-variable').on('click', function() {
@@ -119,9 +155,27 @@ $(document).ready(function() {
 	    $.ajax({
 		url:'/variables/detail/',
 		type:'POST',
-		data:{"action":"dellvar",
+		data:{"action":"delvar",
 		      "path":path,
 		      "index":varindex}
+	    }).success(function(data) {
+		window.location.href='/variables/detail/?path='+path
+	    });
+	}
+	
+    })
+    
+    
+    $('.kolekti-action-remove-condition').on('click', function() {
+	var condindex = $(this).data('condindex')
+	var condname = $(this).data('condname')
+	if (confirm('Voulez vous réélement supprimer toutes les valeurs pour la condition  '+condname)) {
+	    $.ajax({
+		url:'/variables/detail/',
+		type:'POST',
+		data:{"action":"delcond",
+		      "path":path,
+		      "index":condindex}
 	    }).success(function(data) {
 		window.location.href='/variables/detail/?path='+path
 	    });
