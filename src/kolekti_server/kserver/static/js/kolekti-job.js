@@ -70,7 +70,7 @@ $(document).ready(function() {
 	    buf +='<label>' + label + '</label>';
 	    var filename = $(e).find('.script-filename').val();
 	    buf +='<filename>' + filename + '</filename>';
-	    if ($(e).data('kolekti-script-id') == 'multiscript') {
+	    if ($(e).find('.publication-scripts .script').length || $(e).find('.validation-scripts .script').length) {
 		buf += "<publication>";
 		$(e).find('.publication-scripts .script').each(function(i,pe) {
 		    buf += "<script name='"+$(pe).data("kolekti-script-id")+"'>";

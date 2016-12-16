@@ -275,6 +275,14 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         xjob = self.parse(path)
         xjob.getroot().append(copy(self._project_settings))
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
+        try:
+            xscripts = self.parse('/kolekti/publication-parameters/pubscripts.xml').getroot()
+            for pubscript in xscripts.xpath('/scripts/pubscript'):
+                pubscript.set('type',"multi")
+            xjob.getroot().find('settings').append(copy(xscripts))
+        except:
+            logger.exception('unable to get local script definitions')
+
         xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
         try:
             ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
