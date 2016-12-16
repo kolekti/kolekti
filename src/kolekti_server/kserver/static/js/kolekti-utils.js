@@ -378,8 +378,12 @@ var kolekti_browser = function(args) {
 				"type":'text',
 				"value":$(this).closest('tr').data('name')
 			    }).on('focusout',function(e){
-				if ($(this).closest('tr').data('name')!= $(this).val())
-				    browser_move_dialog($(this).closest('tr').data('name'), path, $(this).val())
+//				console.log('field focusout')
+				var value = $(this).val();
+				var name = $(this).closest('tr').data('name')
+				$(this).remove()
+				if (name != $(this).val())
+				    browser_move_dialog(name, path, value)
 /*
 				    $.post('/browse/move',
 					   {'from':path + "/" + $(this).closest('tr').data('name'),
@@ -614,7 +618,8 @@ var kolekti_browser = function(args) {
 	if (newfilename == null) {
 	    newfilename = filename;
 	}
-	
+//	console.log('browser move alert')
+	$('.browser-alert').remove();
 	$(parent).find('.browser').prepend(
 	    $('  <div>', {
 		'class':"alert alert-danger browser-alert",
@@ -639,7 +644,8 @@ var kolekti_browser = function(args) {
 				$('<button>', {
 				    'class':"btn btn-xs btn-default",
 				    'html':'Annuler'
-				}).on('click', function(){$(this).closest('.alert').remove()}),
+				    //				}).on('click', function(){$(this).closest('.alert').remove()}),
+				}).on('click', function(){update()}),
 				" ",
 				$('<button>', {
 				    'class':"btn btn-xs btn-primary",
@@ -669,7 +675,8 @@ var kolekti_browser = function(args) {
     }
     
     var browser_alert = function(msg) {
-	
+	console.log('browser-alert')
+	$('.browser-alert').remove();
 	$(parent).find('.browser').prepend(
 	    $('  <div>', {
 		'class':"alert alert-danger alert-dismissible browser-alert",
@@ -995,11 +1002,22 @@ var radicalbasename = function(path) {
 
 
 
-// affix width
 
 $(document).ready(function () {
+    // affix width
+
     $('#sideaffix').width($('#sideaffix').parent().width());
     $(window).resize(function () {
         $('#sideaffix').width($('#sideaffix').parent().width());
     });
+
+    // events on text contols
+
+    $('body').on('keyup','.kolekti-browser-name input[type=text]', function(e) {
+	if (e.keyCode == 13) {
+	    $('.btn_back').focus();
+	    $(this).trigger("focusout");
+	}
+    })
+
 });
