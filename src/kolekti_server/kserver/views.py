@@ -276,7 +276,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         xjob.getroot().append(copy(self._project_settings))
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
         try:
-            xscripts = self.parse('/kolekti/publication-parameters/pubscripts.xml').getroot()
+            xscripts = self.parse('/kolekti/pubscripts.xml').getroot()
             for pubscript in xscripts.xpath('/scripts/pubscript'):
                 pubscript.set('type',"multi")
             xjob.getroot().find('settings').append(copy(xscripts))
