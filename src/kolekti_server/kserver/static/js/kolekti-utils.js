@@ -1012,12 +1012,13 @@ $(document).ready(function () {
     });
 
     // events on text contols
-
-    $('body').on('keyup','.kolekti-browser-name input[type=text]', function(e) {
+    var handle_return = function(e) {
 	if (e.keyCode == 13) {
 	    $('.btn_back').focus();
 	    $(this).trigger("focusout");
 	}
-    })
+    }
+    $('body').on('keyup','.copynameinput', handle_return)
+    $('body').on('keyup','.kolekti-browser-name input[type=text]', handle_return)
 
 });
