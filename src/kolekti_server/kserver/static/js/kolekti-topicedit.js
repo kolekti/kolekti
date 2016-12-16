@@ -63,10 +63,17 @@ $(document).ready( function () {
 	    data:event.editor.getData(),
 	    contentType:'text/plain'
 	}).success(function(data) {
-	    savestate = 0;
-	    event.editor.commands.save.disable();
-	    //	    console.log('save ok')
-	    kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
+	    if (data.status == 'ok') {
+		savestate = 0;
+		event.editor.commands.save.disable();
+		kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
+	    } else {
+		$('#error_msg').html(data.msg);
+		$('#error_modal').modal({
+		    backdrop: false
+		});
+		$('#error_modal').modal('show');
+	    }
 	});
 
 	event.cancel();

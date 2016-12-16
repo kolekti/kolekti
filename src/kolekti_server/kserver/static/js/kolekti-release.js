@@ -139,6 +139,7 @@ Defines events for languages and release state in toolbar
 	});
     })
 
+    //chagement d'état
     
     $('.release-state').on('click', function() {
 	var lang = $(this).closest('ul').data('target-lang');
@@ -147,14 +148,15 @@ Defines events for languages and release state in toolbar
 	var labelstate = $(this).find('span').html()
 	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
 	enable_save()
-	$('#release_tabs .active img').attr('src','/static/img/release_status_'+newstate+'.png')
 	$('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
+	$('.btn-lang-menu-'+lang).data('state',newstate);
 	$('.btn-lang-menu-'+lang+' .state').html(labelstate);
 
 	$('#main').data('state', newstate)
 	$('#main').attr('data-state', newstate)
 
-	
+	$('#release_tabs .active .state-picto').removeClass('state_'+oldstate);
+	$('#release_tabs .active .state-picto').addClass('state_'+newstate);
     });
 	
     $('#btn_assembly').on('click', function() {
@@ -170,7 +172,6 @@ Defines events for languages and release state in toolbar
 	$(this).addClass('active')
 	$('.release-panel-part').addClass('hidden')
 	$('#illust_pane').removeClass('hidden')
-	console.log($('#main').data('release'))
 	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
 			 'parent':"#illust_pane",
 			 'title':" ",
@@ -252,8 +253,9 @@ Defines events for languages and release state in toolbar
     var get_publish_languages = function(all_languages) {
 	if (all_languages) {
 	    var langs = []
-	    $('#kolekti_tools .btn-lang-menu-publication').each( function() {
-		langs.push($(this).prev().first().data('lang'));
+	    $('#release_tabs a').each( function() {
+		if ($(this).data('state') != "unknown")
+		    langs.push($(this).data('lang'));
 	    });
 	    return langs;
 	} else {
@@ -305,7 +307,22 @@ Defines events for languages and release state in toolbar
     load_publications();
 
 
-
+    // supression langue
+    $('#suppr_lang').on('click', function() {
+	var url='/releases/delete/'
+	var params = {
+	    'release':$('#main').data('release'),
+	    'lang':get_publish_languages(false)[0]
+	}
+	if(confirm('Voulez vous réellement supprimer cette langue ?'))
+	    $.ajax({
+		url:url,
+		type:'POST',
+		data:params,
+	    }).done(function(data) {
+		window.location.href = "/releases/detail/?release="+params['release']+"&lang="+params['lang'];
+	    })
+    });
     
     // publication button
 

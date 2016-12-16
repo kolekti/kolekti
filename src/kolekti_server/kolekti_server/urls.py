@@ -1,15 +1,26 @@
 from django.conf.urls import patterns, include, url
+
 from kserver.views import *
+from kserver_saas.views import *
+
 from django.conf import settings
 from django.conf.urls.static import static
 
 from django.views.static import serve as staticView
 
-#from django.contrib import admin
-#admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
-urlpatterns = patterns('',
-    # Examples:
+urls = [
+    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
+    url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
+    url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^auth/', include('django.contrib.auth.urls')),
+
+
+
+        
+#    url(r'^$', HomeView.as_view(), name='home'),
     url(r'^$', HomeView.as_view(), name='home'),
 
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
@@ -30,6 +41,7 @@ urlpatterns = patterns('',
     url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
     url(r'^releases/focus/', ReleaseFocusView.as_view(), name='releasefocus'),
     url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
+    url(r'^releases/delete/', ReleaseDeleteView.as_view(), name='releasedelete'),
     url(r'^releases/publish', ReleasePublishView.as_view(),name="releasepublish"),
     url(r'^releases/validate', ReleaseValidateView.as_view(),name="releasevalidate"),
     url(r'^releases/assembly', ReleaseAssemblyView.as_view(),name="releaseassembly"),
@@ -37,7 +49,10 @@ urlpatterns = patterns('',
     
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
+    url(r'^variables/create/$', VariablesCreateView.as_view(), name='variablecreate'),
     url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
+    url(r'^variables/editvar/$', VariablesEditvarView.as_view(), name='variableeditval'),
+    url(r'^variables/editcol/$', VariablesEditcolView.as_view(), name='variableeditcol'),
     url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
 
     url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
@@ -47,16 +62,32 @@ urlpatterns = patterns('',
     url(r'^sync/$', SyncView.as_view(), name='sync'),
     url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
     url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
+    url(r'^sync/remotestatus$', SyncRemoteStatusView.as_view(), name='syncremotestatus'),
     url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
     url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
     url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
-    
-    url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
-    url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
-    url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
-    url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),    
+]
 
+if os.sys.platform[:3] == "win":
+    urls.extend([
+        url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
+        url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
+        url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+        url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+        url(r'^projects/new$', ProjectsView.as_view(), name='projects_new'),
+        ])
+else:
+    # Saas
+    urls.extend([
+        url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
+        url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
+        url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
+        url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+        url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
+        ])
+
+urls.extend([
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
     url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
@@ -98,14 +129,16 @@ urlpatterns = patterns('',
 
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
-    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : 'kolekti_server/kserver/static/'}),
+    url(r'^admin/', include(admin.site.urls)),
+    
+    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : settings.STATIC_PATH}),
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
-
+])
+    
 #    url(r'^publications', staticView, name="kolekti_raw_publication"),
 #    url(r'^drafts', staticView, name="kolekti_raw_draft"),
 
-                       
-#    (r'^admin/', include(admin.site.urls)),
-)
+
+urlpatterns = patterns('', *urls)
 
 

@@ -41,8 +41,16 @@ class fixture(kolektiBase):
                 xsl = ET.XSLT(ET.parse(os.path.join(fixdir,f)))
                 for toc in self.itertocs:
                     tpath = toc.get('path')
-                    logging.info("fix toc %s"%jpath)
+                    logging.info("fix toc %s"%tpath)
                     xtoc = self.parse(tpath)
                     newtoc = xsl(xtoc)
                     self.xwrite(newtoc, tpath)
+
+            if f == "asm.xsl":
+                xsl = ET.XSLT(ET.parse(os.path.join(fixdir,f)))
+                for asm in self.iterassemblies:
+                    logging.info("fix assembly %s"%asm)
+                    xasm = self.parse(asm)
+                    newasm = xsl(xasm)
+                    self.xwrite(newasm, asm)
 

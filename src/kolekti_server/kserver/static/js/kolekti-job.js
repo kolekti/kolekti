@@ -13,10 +13,11 @@ $(document).ready(function() {
     });
 
     var serialize = function() {
-	buf = "<job id='";
-	buf += $('#job_id').html();
-	buf += "'>";
-	buf += "<dir value='"+$('#job_id').html()+"'/>";
+	buf = "<job>";
+//	id='";
+//	buf += $('#job_id').html();
+//	buf += "'>";
+//	buf += "<dir value='"+$('#job_id').html()+"'/>";
 
 	// pre assembly filters
 	buf += "<criteria>";
@@ -69,7 +70,7 @@ $(document).ready(function() {
 	    buf +='<label>' + label + '</label>';
 	    var filename = $(e).find('.script-filename').val();
 	    buf +='<filename>' + filename + '</filename>';
-	    if ($(e).data('kolekti-script-id') == 'multiscript') {
+	    if ($(e).find('.publication-scripts .script').length || $(e).find('.validation-scripts .script').length) {
 		buf += "<publication>";
 		$(e).find('.publication-scripts .script').each(function(i,pe) {
 		    buf += "<script name='"+$(pe).data("kolekti-script-id")+"'>";
@@ -163,7 +164,7 @@ $(document).ready(function() {
     })
 
     // change any text field
-    $('#job_body input[type=text]').on('change', function(e) {
+    $('#job_body').on('change', 'input', function(e) {
 	enable_save();
     })
 

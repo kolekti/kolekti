@@ -169,143 +169,38 @@ $(document).ready(function() {
 	
 	$("#k-topic").find("*[class*='=']").each(function(e) {
 	    cl = this.className.replace(/ /g,'');
-	    if (check_condition(cl, conditions))
+	    if (eval_condition_expression(cl, conditions))
                 this.style.display = "block";
 	    else
                 this.style.display = "none";
 	});
     }
-
-    check_condition = function(expr, crit) {
-	var cond = expr.split('=');
+    
+    var eval_condition_expression = function(expr, selected_values) {
+	var cond = expr.split(';');
 	var c = cond[0];
-
-	var expr = expr.substr(cond[0].length+1, expr.length);
-
-	var r1 = !(expr.search(/,/) < 0);
-	var r2 = !(expr.search(/;/) < 0);
-	var r3 = !(expr.search(/\\/) < 0);
 	
-	// if criteria not selected
-	if(!crit[c] && !r1) {
-            return true;
-	} else if(!crit[c]) {
-            if(cond.length > 2) {
-		//NoticePapier,NoticeWeb, ZONE = WestEurope, EastEurope
-		var ncond = cond[1].split(',').pop();
-		if(ncond.search(/;/) < 0)
-                    return check_condition(expr.substr(cond[1].length-ncond.length, expr.length), crit);
-		else
-                    return false;
-            } else {
-		return true;
-            }
-	}
-	
-	// SIMPLE condition
-	if(!r1 && !r2 && !r3) {
-            return crit[c] == cond[1];
-	}
-	// EXCLUDE condition
-	else if(!r1 && !r2 && r3) {
-            return check_condition_exclude(expr, crit, c, cond[1]).result;
-	}
-	// AND condition
-	else if(!r1 && r2 && !r3) {
-            return check_condition_and(expr, crit, c);
-	}
-	// AND + EXCLUDE conditions
-	else if(!r1 && r2 && r3) {
-            var pos1 = expr.search(/;/);
-            var pos2 = expr.search(/\\/);
-            if(pos1 < pos2) {
-		return check_condition_and(expr, crit, c) && check_condition(expr.substr(pos2+1, expr.length), crit);
-            } else {
-		var exclu = check_condition_exclude(expr, crit, c, cond[1]);
-		return exclu.result && check_condition(expr.substr(exclu.pos+1, expr.length), crit);
-            }
-	}
-	// OR condition
-	else if(r1 && !r2 && !r3) {
-            return check_condition_or(expr, crit, c).result;
-	} 
-	// OR + EXCLUDE conditions
-	else if(r1 && !r2 && r3) {
-            var pos1 = expr.search(/,/);
-            var pos2 = expr.search(/\\/);
-            if(pos1 < pos2) {
-		var cor = check_condition_or(expr, crit, c)
-		return cor.result || check_condition(expr.substr(cor.pos, expr.length), crit);
-            } else {
-		var exclu = check_condition_exclude(expr, crit, c, cond[1]);
-		return exclu.result || check_condition(expr.substr(exclu.pos+1, expr.length), crit);
-            }
-	}
-	// OR + AND conditions
-	else if(r1 && r2 && !r3) {
-            var pos1 = expr.search(/,/);
-            var pos2 = expr.search(/;/);
-            if(pos1 < pos2)
-		return check_condition_or(expr, crit, c) && check_condition(expr.substr(pos2+1, expr.length), crit);
-            else
-		return check_condition_and(expr, crit, c) && check_condition(expr.substr(pos1+1, expr.length), crit);
-	} 
-	// OR + AND + EXCLUDE conditions
-	else if(r1 && r2 && r3) {
-            var pos1 = expr.search(/,/);
-            var pos2 = expr.search(/;/);
-            var pos3 = expr.search(/\\/);
-            if(pos1 < pos2 && pos1 < pos3) {
-		if(pos2 < pos3)
-                    return check_condition_or(expr, crit, c) || check_condition(expr.substr(pos2+1, expr.length), crit);
-		else
-                    return check_condition_or(expr, crit, c).result || check_condition(expr.substr(pos3+1, expr.length), crit);
-            } else if(pos2 < pos1 && pos2 < pos3) {
-		if(pos1 < pos3)
-                    return check_condition_and(expr, crit, c) && check_condition(expr.substr(pos1+1, expr.length), crit);
-		else
-                    return check_condition_and(expr, crit, c) && check_condition(expr.substr(pos3+1, expr.length), crit);
-            } else {
-		var exclu = check_condition_exclude(expr, crit, c, cond[1]);
-		return exclu.result && check_condition(expr.substr(exclu.pos+1, expr.length), crit);
-            }
-	}
-	return false;
+	for (var ic=0; ic < cond.length; ic++) {
+	    if (eval_condition_list(cond[ic], selected_values))
+		continue;
+	    return false;
+	}  
+	return true;
     }
 
 
-    // Check EXCLUDE condition
-    var check_condition_exclude = function(expr, crit, cond, val) {
-	var curpos = 0;
-	var pos = expr.search(/\\/);
-	
-	var splitVal = val.substr(pos+1,val.length).split(",");
-	if (!(expr.search(new RegExp(splitVal[splitVal.length-1]+"=")) < 0))
-            splitVal.pop();
-	
-	for(var i=0; i<splitVal.length; i++) {
-            if(crit[cond] == splitVal[i])
-		return {'result': false, 'pos': 0};
-            curpos += splitVal[i].length+1;
-	}
-	return {'result': true, 'pos': curpos};
-    }
+    var eval_condition_list = function(expr, selected_values) {
+	var crit_vals = expr.split('=');
+	var crit = crit_vals[0];
+	var vals = crit_vals[1];
+	if (!selected_values[crit]) return true;
+	if (vals[0] == '\\') return ! value_in_list(selected_values[crit], vals.substr(1));
+	return value_in_list(selected_values[crit], vals);
+    } 
 
-    // Check OR condition
-    var check_condition_or = function(expr, crit, cond) {
-	var curval;
-	var val = expr.split(/[a-zA-Z0-9]+=/)[0].split(',');
-	var curpos = 0;
-	for(i=0; i<val.length; i++) {
-            curval = val[i];
-            if(curval != "") {
-		curval = curval.split(';')[0];
-		if(crit[cond] == curval)
-                    return {'result': true, 'pos': 0};
-		curpos+= curval.length+1;
-            }
-	}
-	return {'result': false, 'pos': curpos};
+    var value_in_list = function(value, list) {
+	items = list.split(',');
+	return items.indexOf(value) != -1
     }
 
 	
@@ -313,33 +208,4 @@ $(document).ready(function() {
     build_ui();
     filter_view();
 	
-
-
- /*
-    var search = function() {
-	var words = $("#ksearchinput").val();
-	if (words.length > 2) {
-	    a_search(words);
-	    $("#search_results").show();
-	} else {
-	    $("#search_results").hide();
- 	    unhighlight();
-	}
-    }
-
-    $('#indexinner').each(function(e) {
-	var row = $(this);
-	var pos = 0;
-	$(this).find('.span3').each(function() {
-	    if (pos == 3) {
-		pos = 0;
-		newrow = $('<div class="row-fluid">');
-		row.after(newrow);
-		row = newrow;
-	    }
-	    row.append($(this));
-	    pos ++;
-	});
-    });
-   */ 
  })

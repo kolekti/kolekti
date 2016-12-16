@@ -1,9 +1,29 @@
 
 progressHandlingFunction = function(){}
 
-var upload_varfile = function(browser, folder, update_function) {
-    var thisform = browser.find('form.upload_form');
-    var formData = new FormData(thisform[0]);
+var create_varfile = function(browser, folder, update_function) {
+    var filename = $(browser).find('#new_name').val();
+    $.post('/variables/create/',
+	   {
+	       'path': folder + "/" + filename
+	   })
+	.done(
+	    function(topicpath) {
+		update_function()
+	    }
+	)
+};
+
+
+var upload_varfile_form = function(e) {
+    var path = $(this).data('path');
+    $('#variable_file_path').val(path)
+    $('#uploadmodal').modal('show');
+}
+
+var upload_varfile = function(e) {    
+    var thisform = $('form#uploadform');
+    var formData = new FormData(thisform.get()[0]);
     $.ajax({
         url: '/variables/upload',  //server script to process data
         type: 'POST',
@@ -16,7 +36,7 @@ var upload_varfile = function(browser, folder, update_function) {
         },
         //Ajax events
         success: function() {
-	    update_function()
+//	    update_function()
 	},
         error: errorHandler = function(jqXHR,textStatus,errorThrown) {
 	    console.log(textStatus);
@@ -54,17 +74,33 @@ var upload_variable_builder_builder = function() {
     }
 };
 
+
 var setup_varfile = function(browser, file_element, dir, filename){
     $(file_element).find('.kolekti-browser-item-action').append(
+	[
 	$('<a>', {'href':"/variables/ods?path="+dir+'/'+filename,
 		  'title':'générer fichier ods',
-		  'class':'btn btn-xs btn-primary',
+		  'class':'btn btn-xs btn-default',
+		  'html':[
+		      $('<span>', {'class':"glyphicon glyphicon-export",
+				   'aria-hidden':"true"}),
+		      $('<span>', {
+				   'html':' exporter ods'
+				  })]
+		 }),
+	    "&nbsp;",
+	    $('<a>', {'href':"#",
+		      'title':'dépposer fichier ods',
+		      'data-path':dir+'/'+filename,
+		      'class':'btn btn-xs btn-default upload-varfile',
 		      'html':[
-			  $('<span>', {'class':"glyphicon glyphicon-download-alt",
+			  $('<span>', {'class':"glyphicon glyphicon-import",
 				       'aria-hidden':"true"}),
-			  $('<span>', {'class':'label ',
-				       'html':'ods'
+			  $('<span>', {
+				       'html':' importer ods'
 				      })]
-		 }));
+		     })
+	]
+	);
     
 };

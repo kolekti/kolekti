@@ -1,7 +1,13 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Bootstrap -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="/static/css/kolekti-topicedit.css" rel="stylesheet">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/static/ckeditor/ckeditor.js"></script>
     <title>{{ title }}</title>
@@ -13,8 +19,29 @@
 	{{ body|safe }}
       </textarea>
     </form>
-    <script src="/settings.js"></script>
+    
+    <div class="modal fade" tabindex="-1" role="dialog" id="error_modal">
+      <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header">
+            <h4 class="modal-title">Erreur de structure</h4>
+	  </div>
+	  <div class="modal-body">
+	    <p>Corrigez les erreurs suivantes avant de sauvegarder</p>
+            <p><strong id="error_msg"></strong></p>
+	  </div>
+	  <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+	
     <script src="/static/jquery.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+	
+    <script src="/settings.js"></script>
     <script src="/static/js/kolekti-utils.js"></script>
     <script src="/static/js/kolekti-common.js"></script>
     <script src="/static/js/kolekti-topicedit.js"></script>

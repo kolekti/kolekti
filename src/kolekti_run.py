@@ -32,13 +32,15 @@ def main():
     config_sections=['server',
                      'publish',
                      ]
-    if args.verbose:
-        logging.config.fileConfig('logging-cmd-v.conf')
-        logging.debug('verbose output')
-    else:
-        logging.config.fileConfig('logging-cmd.conf')
-        #logging.basicConfig(format='%(message)s', level=logging.INFO)
-
+    try:
+        if args.verbose:
+            logging.config.fileConfig('logging-cmd-v.conf')
+            logging.debug('verbose output')
+        else:
+            logging.config.fileConfig('logging-cmd.conf')
+            #logging.basicConfig(format='%(message)s', level=logging.INFO)
+    except:
+        logging.basicConfig(level=logging.INFO)
 
         
     if args.config:

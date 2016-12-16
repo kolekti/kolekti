@@ -59,7 +59,7 @@ class KolektiHttp(Thread):
 
 class KolektiTray(wx.App):
     def OnInit(self):
-	try: 
+        try: 
             self.icon = wx.Icon('kolekti.ico', wx.BITMAP_TYPE_ICO)
             self.tb = wx.TaskBarIcon()
             self.tb.SetIcon(self.icon, "Kolekti Server")
@@ -112,28 +112,60 @@ class KolektiTray(wx.App):
 
 def bootstrap():
     # registers kolekti projects in windows libraries
-    try:
-        import pythoncom
-        from win32com.shell import shell, shellcon
+    os.environ['DJANGO_SETTINGS_MODULE']='kolekti_server.settings'
+    
+    import shutil
+    from lxml import etree as ET
+    import django
+    from django.conf import settings
+    django.setup()
+    from django.contrib.auth.models import User
+    from kserver_saas.models import Project, UserProfile, UserProject
+    from django.core import management
 
-        lib = pythoncom.CoCreateInstance(shell.CLSID_ShellLibrary, None, pythoncom.CLSCTX_INPROC, shell.IID_IShellLibrary)
+
+    
+    if os.path.exists(settings.DB_NAME):
+        shutil.move(settings.DB_NAME, settings.DB_NAME+"_backup")
+    management.call_command('migrate', verbosity=0, interactive=False)
+    management.call_command('loaddata','singleuser', verbosity=0, interactive=False)
+    user = User.objects.get()
+
+    for project_dir in os.listdir(os.path.join(settings.KOLEKTI_BASE)):
+        print project_dir
         try:
-            lib.SaveInKnownFolder(shell.FOLDERID_Libraries,"kolekti",shellcon.LSF_FAILIFTHERE)
-        except:
-            pass
-        # adds projects folders to library
-        from kolekti.settings import settings
-        s = settings()
-        projectpath = s['InstallSettings']['projectspath']
-        for prj in os.listdir(projectpath):
-            item = shell.SHCreateItemFromParsingName(os.path.join(projectpath, prj),
-                                                     None,
-                                                     shell.IID_IShellItem)
-            lib.AddFolder(item)
-        lib.Commit()
+            project_path = os.path.join(settings.KOLEKTI_BASE, project_dir)
+            project_settings = ET.parse(os.path.join(project_path, 'kolekti', 'settings.xml')).getroot()
+            if project_settings.xpath('string(/settings/@version)') != '0.7':
+                continue
+            lang = project_settings.xpath('string(/settings/@sourcelang)')
+            
+            project = Project(
+                name = project_dir,
+                directory = project_dir,
+                description = project_dir,
+                owner = user,
+                )
+            project.save()
+            
+            userproject = UserProject(
+                project = project,
+                user = user,
+                is_saas = False,
+                is_admin = True,
+                srclang = lang,
+                publang = lang
+                )
+            userproject.save()
 
-    except:
-        pass
+            userprofile = UserProfile.objects.get()
+            userprofile.activeprojects = userproject
+            userprofile.save()
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            continue
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:

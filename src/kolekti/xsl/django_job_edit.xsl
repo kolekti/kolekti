@@ -40,8 +40,8 @@
     </div>
     <div class="job-templates hidden">
       <xsl:call-template name="profil"/>
-      <xsl:call-template name="pubscripts"/>
-      <xsl:call-template name="multiscript"/>
+      <xsl:call-template name="pubscripts_templates"/>
+<!--       <xsl:call-template name="multiscript"/> -->
     </div>
   </xsl:template>
 
@@ -124,10 +124,11 @@
 	    </button>
 	    <ul class="dropdown-menu" role="menu">
 	      <xsl:apply-templates select="/job/settings/scripts/pubscript[not(@multi)]" mode="scripts_menu"/>
-
+<!--
 	      <li role="separator" class="divider"></li>
 
-	      <li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement d'actions</a></li>
+<li><a href="#" id="multiscript_button" class="script-menu-item" data-kolekti-script-id="multiscript">Enchaînement d'actions</a></li>
+-->
 	    </ul>
 	  </div>
 	</div>
@@ -135,6 +136,8 @@
     </div>
   </xsl:template>
 
+
+  
   <xsl:template match="pubscript" mode="scripts_menu">
     <li>
       <a href="#" class="" data-kolekti-script-id="{@id}">
@@ -240,7 +243,7 @@
 	<xsl:value-of select="@code"/>
       </div>
       <div class="col-xs-9">
-	<div class="btn-group">
+	<div class="btn-group filterable-menu">
 	  <button type="button" class="btn btn-default dropdown-toggle form-control" data-toggle="dropdown" aria-expanded="false">
 	    <span class="kolekti-crit-value-menu">
 	      <xsl:call-template name="criterion-value">
@@ -251,9 +254,15 @@
 	    <span class="caret"/>
 	  </button>
 	  <ul class="dropdown-menu" role="menu">
+	    <li role="presentation">
+	      <input placeholder="Filtrer la liste" class="form-control input-filter-menu" type="text" id="toclistfilter"/>
+	    </li>
+	    <li class="divider"></li>
+
 	    <xsl:apply-templates>
 	      <xsl:with-param name="profile" select="$profile"/>
 	    </xsl:apply-templates>
+	    
 	    <li class="divider"></li>
 	    <xsl:if test="$template or $profile != ''">
 	      <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="*">Sélection utilisateur</a></li>
@@ -267,7 +276,9 @@
   </xsl:template>
 
   <xsl:template match="settings/criteria/criterion/value">
-    <li><a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="{.}"><xsl:value-of select="."/></a></li>
+    <li class="filterable" data-filter-value="{.}">
+      <a href="#" class="crit-val-menu-entry" data-kolekti-crit-value="{.}"><xsl:value-of select="."/></a>
+    </li>
   </xsl:template>
 
 
@@ -275,10 +286,12 @@
 
 
   <xsl:template match="script">
-    <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
-      <div class="panel-body">
-	<h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
-	<xsl:if test="not(ancestor::script)">
+    <xsl:choose>
+      <xsl:when test="not(ancestor::script)">
+      <div class="panel panel-default job-comp script {@name}" data-kolekti-script-id="{@name}">
+	<div class="panel-body">
+	  <h5><strong><xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/@name]/name"/></strong></h5>
+	  
 	  <div class="row">
 	    <div class="col-sm-9">
 	      <div class="row">
@@ -308,25 +321,39 @@
 	    <div class="col-sm-9">
 	      <input type="text" name="script_filename" class="script-filename form-control" id="script_filename_{generate-id()}" value="{filename}"/>
 	    </div>
+	    
 	  </div>
-	</xsl:if>
- 	<xsl:apply-templates select="publication"/>
-	<xsl:apply-templates select="validation"/>
-	<xsl:apply-templates select="parameters"/>
-	<hr/>
-	<div class="pull-right">
-	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
+	  
+	  <xsl:apply-templates select="publication"/>
+	  <xsl:apply-templates select="validation"/>
+	  <xsl:apply-templates select="parameters"/>
+      <hr/>
+      <div class="pull-right">
+	<button class="btn btn-default btn-sm suppr">Supprimer</button>
+      </div>
+
 	</div>
       </div>
-    </div>
+      
+      </xsl:when>
+      <xsl:otherwise>
+	<div class="script {@name}" data-kolekti-script-id="{@name}">
+	  <xsl:apply-templates select="publication"/>
+	  <xsl:apply-templates select="validation"/>
+	  <xsl:apply-templates select="parameters"/>
+	</div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
-
+  
   <xsl:template match="publication">
     <div class="multi-area">	
-      <h5>Actions lors de la publication</h5>
+<!--      <h5>Actions lors de la publication</h5>-->
       <div class="multiscript-list publication-scripts">
 	<xsl:apply-templates select="script"/>
+<!--	<xsl:apply-templates select="refscript"/> -->
       </div>
+      <!--
       <div class="row multi-add-script-pub">
 	<div class="col-xs-4">
 	  <div class="btn-group">
@@ -340,17 +367,20 @@
 	    </ul>
 	  </div>
 	</div>
-      </div>
+	</div>
+	-->
     </div>
   </xsl:template>
   
   <xsl:template match="validation">
     <div class="multi-area">	
-      <h5>Actions lors de l'officialisation d'une version</h5>
+<!--      <h5>Actions lors de l'officialisation d'une version</h5> -->
       <div class="multiscript-list validation-scripts">
 	<xsl:apply-templates select="script"/>
+<!--	<xsl:apply-templates select="refscript"/>-->
       </div>
-      <div class="row multi-add-script-valid">
+      <!--
+	  <div class="row multi-add-script-valid">
 	<div class="col-xs-4">
 	  <div class="btn-group">
 	    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -366,21 +396,25 @@
 	    </ul>
 	  </div>
 	</div>
-      </div>
+	</div>
+	-->
     </div>
   </xsl:template>
+
   
   <xsl:template match="script/parameters/parameter">
+<!--    param <xsl:value-of select="@name"/> : <xsl:value-of select="@value"/>
+    <xsl:value-of select="/job/settings/scripts/pubscript[@id=current()/ancestor::script/@name]/@id"/> -->
     <xsl:apply-templates select="/job/settings/scripts/pubscript[@id=current()/ancestor::script/@name]/parameters/parameter[@name = current()/@name]">
       <xsl:with-param name="value" select="@value"/>
     </xsl:apply-templates>
   </xsl:template>
 
-  <xsl:template name="pubscripts">
+  <xsl:template name="pubscripts_templates">
     <xsl:apply-templates select="/job/settings/scripts/pubscript"/>
   </xsl:template>
 
-  <xsl:template match="pubscript"> <!-- template for new scripts -->
+  <xsl:template match="pubscript[not(@multi)]"> <!-- template for new scripts -->
     <div class="panel panel-default job-comp script {@id}" data-kolekti-script-id="{@id}">
       <div class="panel-body">
 	<h5><strong><xsl:value-of select="name"/></strong></h5>
@@ -416,7 +450,9 @@
 	  </div>
 	</xsl:if>
 
+
 	<xsl:apply-templates select="parameters/parameter"/>
+	<xsl:apply-templates select="publication|validation"/>
 	<hr/>
 	<div class="pull-right">
 	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
@@ -425,9 +461,25 @@
     </div>
   </xsl:template>
 
+  <xsl:template match="publication|validation ">
+    <div class="{local-name()}-scripts">
+      <xsl:apply-templates/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="pubscript[@multi]">
+    <div class="script {@id}" data-kolekti-script-id="{@id}">
+      <xsl:apply-templates select="parameters/parameter"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="refscript">
+    <xsl:apply-templates select="/job/settings/scripts/pubscript[@id = current()/@id]"/>
+  </xsl:template>
+
+
   <xsl:template match="pubscript/parameters/parameter">
     <xsl:param name="value" select="''"/>
-
     <div class="row script-parameter" data-script-param-name='{@name}' data-script-param-type='{@type}' data-kolekti-param-value="{$value}">
       <div class="col-xs-3">
 	<label for="script-param_{generate-id()}">
@@ -505,8 +557,9 @@
 
 
 	<div class="multi-area">	
-	  <h5>Actions lors de la publication</h5>
+	  <!--   <h5>Actions lors de la publication</h5> -->
 	  <div class="multiscript-list publication-scripts"/>
+	  <!-- -> avancé
 	  <div class="row multi-add-script-pub">
 	    <div class="col-xs-4">
 	      <div class="btn-group">
@@ -520,13 +573,15 @@
 		</ul>
 	      </div>
 	    </div>
-	  </div>
+	    </div>
+	    -->
 	</div>
 	
 
-	<div class="multi-area">	
-	  <h5>Actions lors de l'officialisation d'une version</h5>
+	<div class="multi-area">
+	  <!--	  <h5>Actions lors de l'officialisation d'une version</h5> -->
 	  <div class="multiscript-list validation-scripts"/>
+	  <!-- -> avancé
 	  <div class="row multi-add-script-valid">
 	    <div class="col-xs-4">
 	      <div class="btn-group">
@@ -543,14 +598,16 @@
 		</ul>
 	      </div>
 	    </div>
-	  </div>
+	    </div>
+	    -->
 	</div>
-
+<!--
 	<hr/>
 	<div class="pull-right">
 	  <button class="btn btn-default btn-sm suppr">Supprimer</button>
 	</div>
-      </div>
+	-->
+	</div>
     </div>
 
   </xsl:template>

@@ -1,0 +1,15 @@
+{% if user.is_authenticated %}
+<div class="btn-group  pull-right" role="group">
+  <div class="btn-group" role="group">
+    <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
+      {{ user.username }}
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu2">
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "user_profile" %}">Mon profil</a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "logout" %}">Déconnexion</a></li>
+
+    </ul>
+  </div>
+</div>
+{% endif %}

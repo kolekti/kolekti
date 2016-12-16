@@ -90,11 +90,13 @@
 	<div class="row">
 	  <div class="col-sm-12">
 	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
+	      {% include "user_menu.html" %}
 	      <div class="btn-group pull-right" role="group">
 		<button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
 		  <span>
-		    <span><i class="fa fa-circle"></i></span> 
-		    rev {{ syncnum.revision.number }}
+		    <span class="spinner"><i class="fa fa-spinner fa-spin"></i></span> 
+		    <span class="circle"><i class="fa fa-circle"></i></span> 
+		    rev <span id="revnum">{{ syncnum.revision.number }}</span>
 		  </span>
 		</button>
 	      </div>
@@ -102,12 +104,12 @@
 		{% block infobuttons %}
 		<div class="btn-group" role="group">
 		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		    Projet {{ active_project }} ({{ active_srclang }})
+		    Projet {{ active_project_name }} ({{ active_srclang }})
 		    <span class="caret"></span>
 		  </button>
 		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 		    {% for project in projects %}
-		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.name }}&redirect=/">{{project.name}}</a></li>
+		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li>
 		    {% endfor %}
 		  </ul>
 		</div>

@@ -212,7 +212,7 @@ class Publisher(PublisherMixin, kolektiBase):
             if profile.get('enabled','0') == '1':
                 profilename = profile.find('label').text
 
-                yield {'event':'profile', 'label':profilename}
+                yield {'event':'profile', 'label':'%s [%s]'%(profilename, self._publang)}
 
                 # creates the document (pivot) file
                 try:
@@ -530,7 +530,9 @@ class Publisher(PublisherMixin, kolektiBase):
             self.script_copy(filer, srcdir, assembly_dir, 'xml')
 
 
-    def start_script(self, script, profile, assembly_dir, pivot):
+    def start_script(self, script, profile, assembly_dir, inputs):
+        logger.debug('start script')
+        # logger.debug(inputs)
         res = None
         #print "script",self._publang, ET.tostring(profile)
         #print self.substitute_criteria(unicode(script.xpath("string(filename)")),profile)
@@ -552,13 +554,29 @@ class Publisher(PublisherMixin, kolektiBase):
             logger.error("Impossible de trouver la définition du script: %s" %scriptlabel)
             raise
 
+
+        # get the pivot ET document
+        if isinstance(inputs, ET._ElementTree):
+            pivot = inputs
+        else:
+            pivot = None
+            for item in inputs:
+                if item.get('type','') == 'pivot':
+                    if 'ET' in item.keys():
+                        pivot = item['ET']
+                    if "file"  in item.keys():
+                        pivot = self.parse(item['file'])
+                    if "data" in  item.keys():
+                        pivot = self.parse_string(item['data'])
+
+
         
         # shall we filter the pivot before applying the script
         if 'pivot_filter' in params :
             xfilter = params['pivot_filter']
             xdir = scrdef.xpath("string(parameters/parameter[@name='pivot_filter']/@dir)")
             xf = self.get_xsl(xfilter, xsldir = xdir)
-            fpivot = xf(pivot)
+            inputs = fpivot = xf(pivot)
             self.log_xsl(xf.error_log)
             
             pivfile = pubdir + "/filtered_" + pubname + ".xhtml"
@@ -593,7 +611,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logger.debug(traceback.format_exc())
                     raise
 
-                res = plugin(script, profile, assembly_dir, fpivot)
+                res = plugin(script, profile, assembly_dir, inputs)
                 logger.debug("%(label)s ok"% {'label': scriptlabel.encode('utf-8')})
 
                 
@@ -605,6 +623,10 @@ class Publisher(PublisherMixin, kolektiBase):
                 except:
                     cmd=scrdef.xpath("cmd[not(@os)]")[0].text
 
+                # if pivot on the command line, write the ET pivot into pivfile
+                if cmd.find("_PIVOT_") >= 0:
+                    self.xwrite(fpivot, pivfile, pretty_print = False, sync = False)
+                    
                 # if get file with local url                
                 if cmd.find("_PIVLOCAL_") >= 0:
                     localdocument = fpivot
@@ -652,6 +674,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         outtype=xl.get('type')
                         logger.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
                         res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
+                        
                 except:
                     import traceback
                     logger.debug(traceback.format_exc())
@@ -951,12 +974,6 @@ class DraftPublisher(Publisher):
         finally:
             self.purge_manifest_events(pubevents)    
             try:
-                manifest = self.getOsPath(assembly_dir + '/manifest.json')
-#                mfevents = []
-#                if os.path.exists(manifest):
-#                    with open(manifest, 'r') as mf:
-#                        mfevents = json.loads(mf.read())
-                        
                 mfevents = {
                     "event":"publication",
                     "path":assembly_dir,
@@ -965,8 +982,7 @@ class DraftPublisher(Publisher):
                     "time": int(time.time()),
                     "content":pubevents,
                     }
-                with open(manifest, 'w') as mf:
-                    mf.write(json.dumps(mfevents))
+                self.write(json.dumps(mfevents), assembly_dir+"/manifest.json", sync = False)
     
             except:
                 import traceback
@@ -1031,7 +1047,7 @@ class Releaser(Publisher):
                     })
 
         # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
-        self.write(json.dumps(res), assembly_dir+"/manifest.json")
+        self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         #if self.syncMgr is not None :
         #    try:
@@ -1123,7 +1139,7 @@ class ReleasePublisher(Publisher):
                     return
 
                 xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
-        
+
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     langpubevt.append(pubres)
                     yield pubres
@@ -1162,7 +1178,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":pubevents,
                     })
-                self.write(json.dumps(mfevents), self._release_dir + '/manifest.json')
+                self.write(json.dumps(mfevents), self._release_dir + '/manifest.json', sync = False)
     
             except:
                 import traceback
@@ -1192,7 +1208,7 @@ class ReleasePublisher(Publisher):
             outdata = self.start_script(script, xprofile, assembly_dir, indata)
             listres.append(outdata)
             indata = outdata
-        print outdata
+
         return {
             'event':'result',
             'script':scriptname,
@@ -1261,7 +1277,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":valevents,
                     })
-                self.write(json.dumps(mf), self._release_dir + '/manifest.json')
+                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync=False)
     
             except:
                 import traceback

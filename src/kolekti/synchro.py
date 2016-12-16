@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+#     kOLEKTi : a structural documentation generator
+#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
+
 import os
 import tempfile
 import shutil
@@ -33,7 +38,7 @@ def initLocale():
             locale.setlocale( locale.LC_ALL, '%s.%s' % (language_code, encoding) )
         except locale.Error:
             # force a locale that will work
-            locale.setlocale( locale.LC_ALL, 'fr_FR.UTF-8' )
+            locale.setlocale( locale.LC_ALL, 'C.UTF-8' )
 initLocale()
 
 
@@ -87,7 +92,7 @@ class SvnClient(object):
         self._client.callback_notify = callback_notification
         
         def callback_accept_cert(arg):
-            print arg
+            logger.debug("callback certificate %s"%arg)
             if self.__accept_cert:
                 return  True, 1, True
             if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':
@@ -110,16 +115,20 @@ class SynchroManager(SvnClient):
         pathparts=urllib2.url2pathname(path).split(os.path.sep)
         return os.path.join(self._base, *pathparts)
 
+    def _localpath(self, ospath):
+        lp = ospath.replace(self._base,'')
+        return '/'.join(lp.split(os.path.sep))        
+    
     def geturl(self):
         return self._info.get('repos')
 
-    def history(self):
-        return self._client.log(self._base)
+    def history(self, limit=20):
+        return self._client.log(self._base, limit = limit)
 
     def rev_number(self):
-        #headrev = self._client.info(self._base)
-        headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
-        return {"revision":{"number":headrev}}
+        h = self._client.log(self._base, limit = 1)
+        return {"revision":{"number":h[0].revision.number}}
+    
     
     def rev_state(self):
         #headrev = self._client.info(self._base)
@@ -147,21 +156,37 @@ class SynchroManager(SvnClient):
                     self._base,
                     pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
                     )
-        
-        rev_info = None,
-        # rev_info = self._client.info2(self._base,
-        #                         revision = pysvn.Revision(pysvn.opt_revision_kind.number,rev)
-        #                         )
-        tmpdir = tempfile.mkdtemp()
-        diff_text = self._client.diff(tmpdir,
-                               self._base,
-                               pysvn.Revision(pysvn.opt_revision_kind.number,rev),
-                               self._base,
-                               pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
-                               header_encoding="utf-8")
 
+        tmpdir = tempfile.mkdtemp()
+        try:
+            diff_text = self._client.diff(tmpdir,
+                                self._base,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
+                                self._base,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                                header_encoding="UTF-8")
+        except:
+            logger.exception('could not calculate diff')
+            diff_text = "impossible de calculer les différences" 
+        shutil.rmtree(tmpdir)
+        return [dict(item) for item in rev_summ], None, diff_text
+
+    def revision_diff(self, revision, path):
+        ospath = self.__makepath(path)
+        tmpdir = tempfile.mkdtemp()
+        try:
+            diff_text = self._client.diff(tmpdir,
+                                ospath,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
+                                ospath,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                                header_encoding="utf-8")
+        except:
+            diff_text = "impossible de calculer les différences" 
         shutil.rmtree(tmpdir)
         return [dict(item) for item in rev_summ], rev_info, diff_text
+
+
         
     def statuses(self, path="", recurse = True):
         res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
@@ -170,9 +195,9 @@ class SynchroManager(SvnClient):
                                        get_all = True,
                                        update = True)
         for status in statuses:
-            path = status.path[len(self._base):]
-            item = {"path":path,
-                    "basename":os.path.basename(path),
+            item = {"path":self._localpath(status.path),
+                    "ospath":status.path,
+                    "basename":os.path.basename(status.path),
                     "rstatus":str(status.repos_text_status),
                     "wstatus":str(status.text_status),
                     "rpropstatus":str(status.repos_prop_status),
@@ -250,10 +275,9 @@ class SynchroManager(SvnClient):
         merge_client.callback_notify = callback_notification_merge
         info = merge_client.info(path)
         rurl = info.get('url')
-#        print  'dry run '+str(dict(info))
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
-#        print "merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path)
+
         merge_client.merge(path, workrev, path, headrev, path, recurse = False, dry_run=True)
         for notif in notifications:
             if notif.get('content_state',None) == pysvn.wc_notify_state.merged:
@@ -288,9 +312,7 @@ class SynchroManager(SvnClient):
         self._client.resolved(self.__makepath(file))
 
     def update_all(self):
-#        print "update_all"
         update_revision = self._client.update(self._base, recurse = True)
-#        print "update revision", update_revision
         return update_revision
 
     def update(self, files):
@@ -314,7 +336,6 @@ class SynchroManager(SvnClient):
     def commit(self, files, log_message):
         osfiles = []
         for f in files:
-            print type(f)
             osfiles.append(self.__makepath(f))
         commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
@@ -373,8 +394,7 @@ class SynchroManager(SvnClient):
             props = self._client.propget(name, ospath)
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('Proget %s failed on path %s'%(name, path))
             return None
         
 class SVNProjectManager(SvnClient):
@@ -391,6 +411,5 @@ class SVNProjectManager(SvnClient):
         try:
             self._client.checkout(url, ospath)
         except pysvn.ClientError:
-            import traceback
-            print traceback.format_exc()
+            logger.exception("checkout of project failed : %s"%url)
             raise ExcSyncNoSync

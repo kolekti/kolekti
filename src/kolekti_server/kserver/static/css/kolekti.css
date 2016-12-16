@@ -236,3 +236,13 @@ label {
 }
 
 
+/* menu filters */
+.filterable-menu .input-filter-menu {
+    font-size: 75%;
+    height: 20px;
+    line-height: 1em;
+    margin: 0px 2%;
+    padding:0 10px;
+    width:96%;
+}
+

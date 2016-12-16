@@ -60,7 +60,7 @@ class PublisherMixin(object):
         # calculates and creates the publication directory
         pubdir = self.substitute_criteria(profile.xpath('string(dir/@value)'),profile)
         pubdir = self.substitute_variables(pubdir, profile, {"LANG":self._publang})
-        pubdir = assembly_dir + "/" + pubdir
+        pubdir = assembly_dir + "/" + pubdir + "/" + self._publang
         try:
             self.makedirs(pubdir)
         except:

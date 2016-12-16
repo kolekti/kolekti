@@ -35,9 +35,20 @@
 
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
-	<div class="btn-group btn-group-justified" role="group">
-	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-primary btn_publish" id="btn_publish">Publier</button>
+	<div class="input-group">
+	  <!--	    
+		    <div class="btn-group btn-group-justified">
+		      <div class="btn-group" role="group">
+			-->
+	  <button type="button" class="btn btn-primary btn-group-justified btn_publish" id="btn_publish">Publier</button>
+	  <div class="input-group-btn">
+	    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	      <span class="caret"></span>
+	      <span class="sr-only">Plus d'options</span>
+	    </button>
+	    <ul class="dropdown-menu dropdown-menu-right">
+	      <li><a id="btn_publish_all" class="btn_publish" href="#">Publier toutes les langues</a></li>
+	    </ul>
 	  </div>
 	</div>
       </div>
@@ -112,8 +123,10 @@
 	 {% endif %}
 	 >
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
+
 	{% for rlang, state,focus in langstates %}
-	<li role="presentation"{% if rlang == lang %} class="active"{% endif %}>
+	
+	<li role="presentation"class="{% if rlang == lang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
 	 
 	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
@@ -124,12 +137,17 @@
 	     title="Créer la version {{ rlang }}"
 	     {% endif %}
 	     >
-	    <span class="state lead">{{ rlang }}</span>
-	    <br>
-	    <span class="state"><img src="/static/img/release_status_{{state}}.png"/></span>
+	    <span class="state-picto state_{{state}}">
+	      <div class="state_status_background">
+		<div class="state_status_inside">
+		</div>
+	      </div>
+	      <span class="state lead">{{ rlang }}</span>
+	    </span>
 	  </a>
 	     
 	</li>
+
 	{% endfor %}
       </ul>
       <!-- Tab panes -->
@@ -194,6 +212,7 @@
 		      <li><a class="release-state" data-state="publication" href="#"><span class="text-success">Officialisé</a></li>
 		    </ul>
 		  </div>
+		  <a class="btn btn-sm btn-default pull-right" href="#" id="suppr_lang">Supprimer cette langue</a>
 		</div>
 		<!--
 		<div class="checkbox">
@@ -203,6 +222,7 @@
 		</div>
 		-->
 	      </form>
+	      
 	      {% endif %}
 	    </div>
 	    <div class="panel-body">

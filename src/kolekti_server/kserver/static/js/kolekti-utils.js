@@ -209,6 +209,7 @@ var kolekti_browser = function(args) {
     var titleparent = ".modal-header h4";
     var title = "Navigateur de fichiers";
     var editable_path = false
+    var update_url = true;
     var titlepath = false
     var drop_files = false
     var os_actions = false
@@ -221,6 +222,7 @@ var kolekti_browser = function(args) {
 	e.prepend(
 	    ['Nouveau fichier : ',
 	     $('<input>',{ 'type':"text",
+			   "id":"new_name",
 			  'class':"form-control filename"
 			})]
 	)
@@ -257,6 +259,8 @@ var kolekti_browser = function(args) {
 	modal = false;
     if (args && args.editable_path && args.editable_path=='yes')
 	editable_path = true;
+    if (args && args.update_url && args.update_url=='no')
+	update_url = false;
 	
     if (args && args.os_actions && args.os_actions=='yes') {
 	os_action_delete = true;
@@ -313,7 +317,7 @@ var kolekti_browser = function(args) {
 	    if (!create_actions) {
 		$(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('.newfile_collapse div'), path)
+		create_builder($(parent).find('.newfile_collapse form'), path)
 	    }
 
 	    if (!os_actions) 
@@ -603,7 +607,7 @@ var kolekti_browser = function(args) {
 	    if (modal)
 		$('.modal').modal();
 	});
-
+	$(window).trigger('kolektibrowserchange');
     } // end update function
 
     var browser_move_dialog = function(filename, newpath, newfilename) {
@@ -733,7 +737,8 @@ var kolekti_browser = function(args) {
 	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
 	    path = path +'/'+ $(this).html();
-	    window.history.pushState({path:path},document.title,'?path='+path)
+	    if (update_url)
+		window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	} else {
 	    set_browser_value(path + '/' + $(this).html())
@@ -748,7 +753,8 @@ var kolekti_browser = function(args) {
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
 	    path = newpath;
-	    window.history.pushState({path:path},document.title,'?path='+path)
+	    if (update_url)
+		window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	}
     })
@@ -779,7 +785,8 @@ var kolekti_browser = function(args) {
 	folderpath = path + "/" + $(parent).find(".foldername").val();
 	$.post("/browse/mkdir",{path : folderpath}, function(data) {
 	    path = folderpath
-	    window.history.pushState({path:path},document.title,'?path='+path)
+	    if (update_url)
+		window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	})
     })
@@ -951,21 +958,23 @@ var kolekti_browser = function(args) {
     })
     
     // pop curent directory from history
-    var currentState = window.history.state;
-    if(currentState && currentState.path) {
-	path = currentState.path
-    }
-    
-    window.onpopstate = function(event) {
-	if(event.state && event.state.path) {
-	    path = event.state.path;
-	    update();
-	} else {
-	    path = root;
-	    update()
+    if (update_url) {
+	var currentState = window.history.state;
+	if(currentState && currentState.path) {
+	    path = currentState.path
 	}
+    
+	window.onpopstate = function(event) {
+	    if(event.state && event.state.path) {
+		path = event.state.path;
+		update();
+	    } else {
+		path = root;
+		update()
+	    }
 	
-    };
+	};
+    }
     
     // fetch directory
     

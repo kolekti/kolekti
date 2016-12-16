@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block current_tools %}menu-current{% endblock %}
+{% block help-topic %}variable{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-variables.css"/>
+{% endblock %}
+
+{% block extrascripts %}
+
+{# <script src="/static/js/kolekti-variables.js"></script> #}
+<script>
+  var kolekti_variable_data = {{ vardata|safe }};;
+  var kolekti_variable_current = {{current}};
+  var kolekti_variable_path = "{{ path }}";
+</script>
+
+<script src="/static/js/kolekti-variables-edit-{{method}}.js"></script>
+{% endblock %}
+
+{% block title %}Variables : <a href="{% url 'variabledetails' %}?path={{ path }}">{{ name }}</a>{% endblock %}
+
+{% block content %}
+<div id="main">
+  <div class="row">
+      
+    <div class="col-sm-8 col-sm-offset-4">
+      <span class="variable-previous">
+	<button clas="btn btn-xs btn-standard">
+	  <i class="fa fa-arrow-left"></i>
+	  <span class="label-previous"></span>
+	</button>
+      </span>
+      
+      <span class="pull-right">
+	<span class="variable-next">
+	  <button clas="btn btn-xs btn-standard">
+	    <span class="label-next"></span>
+	      <i class="fa fa-arrow-right"></i>
+	  </button>
+	</span>
+      </span>
+    </div>
+    <div class="col-sm-11 col-sm-offset-1">
+      <div class="col-sm-offset-4 col-sm-8">
+	<h3>
+	  <span class="label-current"><span>
+	</h3>
+      </div>
+      <!-- Variable panes -->
+      <div class="tab-content varedit form form-horizontal">
+
+	{% if method = "line" %}
+	
+	{% for condition in conditions %}
+	<div class="form-group">
+	  <label for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{ condition.label }}</label>
+	  <div class="col-sm-8">
+	    <input type="text" id="id_{{forloop.counter}}"
+		   class="varinput form-control" value=""/>
+	  </div>
+	</div>		     
+	{% endfor %}
+
+	{% else %}
+		
+	{% for variable in variables %}
+	<div class="form-group">
+	  <label for="id_{{forloop.counter}}" class="col-sm-4 control-label">{{ variable }}</label>
+	  <div class="col-sm-8">
+	    <input type="text" id="id_{{forloop.counter}}"
+		   class="varinput form-control" value=""/>
+	  </div>
+	</div>
+	{% endfor %}
+	{% endif %}	
+	</div>
+    </div>
+  </div>
+</div>
+    
+{% endblock %}
+{% block menu %}
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	<button type="button" class="btn btn-block btn-default disabled" id="btn_save"
+		data-path = "{{ path }}">
+	  Enregistrer
+	</button>
+      </div>
+    </div>
+{% endblock %}

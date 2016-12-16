@@ -312,7 +312,8 @@ $(document).ready( function () {
 	    'root':'/sources/'+kolekti.lang+'/tocs',
 	    'title':"Enregistrer sous...",
 	    'mode':"create",
-	    'editable_path':false
+	    'editable_path':false,
+	    'update_url':false
 	}).select(function(path) {
 	    console.log(path);
 	    $('#toc_root').attr('data-kolekti-path', path);
@@ -394,7 +395,7 @@ $(document).ready( function () {
 	    $('#modalform').submit( function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		params['pubdir'] = $('#release_name').val()
+		params['pubdir'] = $('#release_name').val().replace('/','_')
 		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
 		$.get(assembly)
 		    .success(function() {
@@ -544,6 +545,8 @@ $(document).ready( function () {
 	enable_save()
     })
 
+    // job selection menu items
+    
     $('body').on('click','.entry_tocjob', function(e) {
 	var name = $.trim($(this).text())
 	var path = $(this).data('kolekti-jobpath');
@@ -568,6 +571,7 @@ $(document).ready( function () {
 	enable_save()
     });
 
+    
     // contextual menus
 
     // modify topic / section
@@ -947,7 +951,8 @@ $(document).ready( function () {
 		 'parent':".insert-main",
 		 'titleparent':".new-module-title",
 		 'create_actions':'yes',
-		 'create_builder':create_builder
+		 'create_builder':create_builder,
+		 'update_url':'no'
 		})
 		.select(insert_topic)
 		.create(function(browser, folder, update_function) {
@@ -961,7 +966,6 @@ $(document).ready( function () {
 			   }).fail(function() {
 			       console.log("error")
 			   }).always(function() {
-			       console.log("fter")
 			   });
 		})
 

@@ -4,7 +4,7 @@
 #define BuildDir "F:\Bureau\kolekti\sources\0.7\kolekti\src"
 
 #define MyAppName "Kolekti"
-#define MyAppVersion "0.7.3"
+#define MyAppVersion "0.7.4"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
 #define MyAppExeName "kolekti_server.exe"
@@ -38,8 +38,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#BuildDir}\dist\kolekti_server\*"; DestDir: "{app}";  Excludes: "db.sqlite3*"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-Source: "{#BuildDir}\dist\kolekti_server\db.sqlite3"; DestDir: "{userappdata}\kolekti"; Flags: ignoreversion; Permissions: users-modify
-
 Source: "{#BuildDir}\dist\Exemple_PDF\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_PDF"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
 Source: "{#BuildDir}\dist\Exemple_Webhelp\*"; DestDir: "{%HOMEPATH}\kolekti-projects\Exemple_Webhelp"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Permissions: users-modify
 Source: "{#BuildDir}\dist\Project_template\*"; DestDir: "{app}\kolekti\project_template"; Flags: ignoreversion recursesubdirs createallsubdirs;
@@ -54,6 +52,7 @@ Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "installdir"; St
 Filename: "{app}\kolekti.ini"; Section: "InstallSettings"; Key: "kolektiversion"; String: "{#MyAppVersion}"
 
 [Run]
+Filename: "{app}\{#MyAppExeName}"; Parameters: "bootstrap"
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 

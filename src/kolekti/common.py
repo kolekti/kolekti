@@ -58,14 +58,23 @@ objpathes = {
 
  
 class kolektiBase(object):
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path=None, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
+        self._xmlparser = ET.XMLParser(load_dtd = True)
+        self._xmlparser.resolvers.add(PrefixResolver())
+        self._htmlparser = ET.HTMLParser(encoding='utf-8')
+
         try:
-            Config = settings()
+            self._app_config = settings()
             self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
-        except : 
+        except :
+            self._app_config = {'InstallSettings':{'installdir':os.path.realpath( __file__), 'kolektiversion':"0.7"}}
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
+        if path is not None:
+            self.set_project(path)
+                
+    def set_project(self, path):
             
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
@@ -76,9 +85,6 @@ class kolektiBase(object):
             self._path = path
         else:
             self._path = path + os.path.sep
-        self._xmlparser = ET.XMLParser(load_dtd = True)
-        self._xmlparser.resolvers.add(PrefixResolver())
-        self._htmlparser = ET.HTMLParser(encoding='utf-8')
 
         projectdir = os.path.basename(self._path[:-1])
         projectspath = os.path.dirname(self._path[:-1])
@@ -107,7 +113,7 @@ class kolektiBase(object):
             import traceback
             logger.debug(traceback.format_exc() )
         self._version = self._config['version']
-        self._kolektiversion = Config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
+        self._kolektiversion = self._app_config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
@@ -117,9 +123,7 @@ class kolektiBase(object):
         try:
             self.indexMgr = IndexManager(projectspath, projectdir)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.debug('Search index could not be loaded')
+            logger.exception('Search index could not be loaded')
 
 
     @property
@@ -127,6 +131,7 @@ class kolektiBase(object):
         try:
             return self.syncMgr.rev_number()
         except:
+            logger.exception('error getting sync number')
             return "?"
             
     @property
@@ -137,9 +142,6 @@ class kolektiBase(object):
             return "?"
             
     def __getattribute__(self, name):
-        # logger.debug('get attribute: ' +name)
-        # import traceback
-        # logger.debug(traceback.print_stack())
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
@@ -422,13 +424,9 @@ class kolektiBase(object):
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
-#        print extclass
         extf_obj = extclass(self._path, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
-#        for k,e in extensions.iteritems():
-#            if k[1] == "gettopic":
-#                print k,e
         return extensions
         
 
@@ -452,11 +450,6 @@ class kolektiBase(object):
     def log_xsl(self, error_log):
         for entry in error_log:
             logger.debug('[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message))
-            print '[XSL] message from line %s, col %s: %s' % (entry.line, entry.column, entry.message)
-            #logger.debug('[XSL] domain: %s (%d)' % (entry.domain_name, entry.domain))
-            #logger.debug('[XSL] type: %s (%d)' % (entry.type_name, entry.type))
-            #logger.debug('[XSL] level: %s (%d)' % (entry.level_name, entry.level))
-            #logger.debug('[XSL] filename: %s' % entry.filename)
 
     def parse_string(self, src):
         return ET.XML(src,self._xmlparser)
@@ -477,18 +470,20 @@ class kolektiBase(object):
         with open(ospath, "r") as f:
             return f.read()
 
-    def write(self, content, filename, mode="w"):
+    def write(self, content, filename, mode="w", sync = True):
         ospath = self.__makepath(filename)
         with open(ospath, mode) as f:
             f.write(content)
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
         
-    def write_chunks(self, chunks, filename, mode="w"):
+    def write_chunks(self, chunks, filename, mode="w", sync = True):
         ospath = self.__makepath(filename)
         with open(ospath, mode) as f:
             for chunk in chunks():
                 f.write(chunk)
-        self.post_save(filename)
+        if sync:
+            self.post_save(filename)
         
     def xwrite(self, xml, filename, encoding = "utf-8", pretty_print=True, xml_declaration=True, sync = True):
 
@@ -507,6 +502,7 @@ class kolektiBase(object):
         ospath = self.__makepath(path)
         with open(ospath, "w") as f:
             f.write(ET.tostring(mod, encoding = "utf-8", pretty_print = True))
+            
         # index / svn propagation
         self.post_save(path)
 
@@ -521,26 +517,24 @@ class kolektiBase(object):
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.info('Synchro unavailable')
+            logger.debug('Synchro unavailable')
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
 
     def delete_resource(self, path):
         try:
             self.syncMgr.delete_resource(path)
         except:
-            logger.info('Synchro unavailable')
+            logger.exception('Synchro unavailable')
             if os.path.isdir(self.__makepath(path)):
                 shutil.rmtree(self.__makepath(path))
             else:
@@ -558,9 +552,7 @@ class kolektiBase(object):
         try:
             self.indexMgr.post_save(path)
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.debug('Search index unavailable')
+            logger.exception('Search index unavailable')
 
     def makedirs(self, path, sync=False):
         ospath = self.__makepath(path)
@@ -596,8 +588,8 @@ class kolektiBase(object):
 
         try:
             shutil.rmtree(ospath)
-        except:            
-            pass
+        except:
+            logger.exception('could not remove directory')           
         return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
 
 
@@ -770,7 +762,6 @@ class kolektiBase(object):
         
     @property
     def iterreleasejobs(self):
-#        print 'iter',os.path.join(self._path, 'releases')
         for root, dirs, files in os.walk(os.path.join(self._path, 'releases'), topdown=False):
             rootparts = root.split(os.path.sep)
             if rootparts[-1] == 'publication-parameters':
@@ -786,14 +777,12 @@ class kolektiBase(object):
             rootparts = root.split(os.path.sep)
             for mfile in files:
                 if mfile  == 'manifest.json':
-                    print mfile
                     with open(os.path.join(root,mfile)) as f:
                     
                         try:
                             yield json.loads('['+f.read()+']')
                         except:
-                            import traceback
-                            print traceback.format_exc()
+                            logger.exception('cannot read manifest file')
                             yield [{'event':'error',
                                    'file':os.path.join(root,mfile),
                                    'msg':'cannot read manifest file',
@@ -809,8 +798,7 @@ class kolektiBase(object):
                         try:
                             yield json.loads('['+f.read()+']')
                         except:
-                            import traceback
-                            print traceback.format_exc()
+                            logger.exception('cannot read manifest file')
                             yield [{'event':'error',
                                    'file':os.path.join(root,file),
                                    'msg':'cannot read manifest file',
@@ -820,11 +808,9 @@ class kolektiBase(object):
         res=[]
         root = self.__makepath(path)
         for j in os.listdir(root+'/kolekti/publication-parameters'):
-            # print j[-16:]
             if j[-16:]=='_parameters.json':
                 release_params = json.loads(self.read(path+'/kolekti/publication-parameters/'+j))
                 resrelease = []
-                # print release_params
                 
                 for job_params in release_params:
                     publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))

@@ -22,7 +22,7 @@ $(document).ready(function() {
 		  
     $('body').on('change','select',function(e) {
 	var val = $(this).val();
-	if (val == "local" || val == "merge") {
+	if (val == "local" || val == "merge" || val == "commit") {
 	    $("#commitmsg").show();
 	} else {
 	    $("#commitmsg").hide();

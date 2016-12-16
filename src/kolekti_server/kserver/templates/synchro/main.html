@@ -221,6 +221,16 @@
 	     </div>
 	     <hr/>
 		     
+	     <div class="form-group">
+	       <label class="col-sm-3 control-label">Avec les fichiers sélectionnés : </label>
+	       <div class="col-sm-9">
+		 <select name="resolve" class="form-control select-commit">
+		   <option value="commit">Valider les modifications locales</option>
+		   <option value="revert">Oublier les modifications locales</option>
+		   {# 	 <option>Marquer comme résolu</option> #}
+		 </select>
+	       </div>
+	     </div>
 
 	     <div class="form-group" id="commitmsg">
 	       <label class="col-sm-2 control-label">Description des changements</label>

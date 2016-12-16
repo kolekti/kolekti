@@ -1,537 +1,201 @@
 $(document).ready(function() {
+    var conditions = kolekti_variable_data['conditions'];
+    var criteria = kolekti_variable_data['criteria'];
+    var variables = kolekti_variable_data['variables'];
+    var path = $('#main').data('path');
 
-    var enable_save = function() {
-	$('#btn_save').removeClass('disabled');
-	$('#btn_save').removeClass('btn-default');
-	$('#btn_save').addClass('btn-warning');
-    }
+    // add condition 
     
-    var disable_save = function() {
-	$('#btn_save').addClass('disabled');
-	$('#btn_save').addClass('btn-default');
-	$('#btn_save').removeClass('btn-warning');
+    var exists_condition = function(togglefct) {
+	togglefct(false);
+	var exists = false;
+	$.each(conditions, function(i,v){
+//	    console.log(i,v);
+	    var matched = true;
+	    $(".crit-menu").each( function(ci, cv) {
+//		console.log('crit-menu', $(cv).data('crit'))
+		var crit = $(cv).data('crit')
+//		console.log($(cv).data('value'))
+//		console.log(v['expr'][crit])
+		if (v['expr'][crit] != $(cv).data('val'))
+		    matched = false;
+	    });
+	    matched && togglefct(true);
+	});
     }
 
-    $(window).on('beforeunload', function(e) {
-	if($('#btn_save').hasClass('btn-warning')) {
-            return 'Modifications non enregistrées';
+
+    var toggle_cond = function(status){
+//	console.log('toggle', status)
+	if(status) {
+	    $('#alert_cond_exists').show();
+	    $('#cond_save').addClass('disabled')
+	} else {
+	    $('#alert_cond_exists').hide();
+	    $('#cond_save').removeClass('disabled');
 	}
-    });
-    
-    var path = $('#btn_save').data('path');
-    var nbvar = 0;
-    
-    var serialize = function() {
-<<<<<<< HEAD
-=======
-	buf = "<variables><critlist>";
-	
->>>>>>> dev
-	var conditions = [];
-	$('#main thead tr[data-crit]').first().find('th.critval').each(function(i,cell) {
-	    valconds = "";
-	    $('#main thead tr[data-crit]').each(function(j,row) {
-		var critname = $(row).data('crit')
-		var critval = $($(row).find('th.critval')[i]).find('span').first().html();
-		valconds += '<crit name="'+ critname +'" value="' + critval + '"/>';
-<<<<<<< HEAD
-	    });
-	    conditions.push(valconds)
-	});
-
-	buf = "<variables>";
-=======
-		if(i==0)
-		    buf += '<crit>:'+critname+'</crit>';
-	    });
-	    conditions.push(valconds)
-	});
-	buf += '</critlist>';
-	
->>>>>>> dev
-	$('#main tbody tr').each(function(i, row) {
-	    var varname = $(row).find('th').first().find('span').first().html();
-	    buf +='<variable code="' + varname + '">';
-	    $(row).find('td').each(function(j,cell) {
-		if(j < conditions.length || conditions.length == 0) { 
-		    var varval = $(cell).find('span').first().html();
-		    buf +='<value>'
-		    buf += conditions.length?conditions[j]:''
-		    buf += '<content>' + varval.replace('&nbsp;','&#160;') + '</content>'
-		    buf += '</value>'
-		}
-	    });
-	    buf += "</variable>";
-	});
-	buf += "</variables>"
-	return buf;
     }
-
-
     
-    $('#btn_save').on('click', function(e){
-	$.ajax({
-	    url:'/variables/detail/?path='+path,
-	    type:'POST',
-	    data:serialize(),
-	    contentType:'text/xml'
-	}).success(function(data) {
-	    disable_save()
-	    kolekti_recent(displayname(path),'variables','/variables/detail/?path='+path);
-	});
-    });
-    
-    var criteria;
-
-    $.get('/settings.json').success(
-	function(data) {
-	    var langs = data['srclangs'];
-	    $.get('/criteria.json').success(
-		function(data) {
-		    criteria = data
-		    criteria['LANG']=langs;
-		    $('#list_add_crit').html($.map(Object.keys(criteria), function(c) {
-			return $('<li>', {
-			    'html':$('<a>', {
-				'data-crit':c,
-				'class':'item_add_crit item_add_crit_'+c,
-				'html':c
-			    })
-			})
-		    }));
-		    $.get(path).success(
-			function(data) {
-			    $('#main thead').append($('<tr>',{
-				'class':'colheaders',
-				'id':'colheaders',
-				'html':$('<td>')}));
-			    $(data).find('variable').first().each(function(a,v) {
-				var val=$(v).find('value').first();
-				val.find('crit').each(function(i,e) {
-				    disable_add_crit($(e).attr('name'))
-				    $('#main thead').append($('<tr>',{
-					'id':'crit_'+$(e).attr('name'),
-					'data-crit':$(e).attr('name'),
-					'class':'info',
-					'html':$('<th>',{
-					    'class':'critname',
-					    'html':$('<span>',{
-						'html':$(e).attr('name')
-					    })
-					})
-				    }))
-				});
-				$(v).find('value').each(function(i,value) {
-				    $('#colheaders').append($('<td>',{
-					'class':'colheader',
-					'html':ui_col_header()
-				    }));
-
-				    $(value).find('crit').each(function(j,e){
-					$('#crit_'+$(e).attr('name')).append(
-					    $('<th>',{
-						'class':'critval',
-						'data-crit':$(e).attr('name'),
-						'html':$('<span>',{
-						    'html':$(e).attr('value')})
-					    })
-					)
-				    });
-				});
-			    });
-			    $(data).find('variable').each(function(a,variable) {
-				nbvar++;
-				$('#main tbody').append($('<tr>',{
-				    'id':'var_'+nbvar,
-				    'html':$('<th>',{
-					'class':'varname',
-					'html':$('<span>',{
-					    'class':'var_name',
-					    'html':$(variable).attr('code')})
-				    })
-				}));
-				
-				$(variable).find('value').each(function(i, value){
-				    $('#var_'+nbvar).append($('<td>',{
-					'class':'varval',
-					'html':$('<span>',{
-					    'html':$(value).find('content').html()
-					})
-				    }))
-				});
-			    });
-			    $('.critname').each(function(i,e) {
-				ui_crit_name($(e));
-			    });
-			    $('.critval').each(function(i,e) {
-				ui_crit_val($(e));
-			    });
-			    $('.varname').each(function(i,e) {
-				ui_var_name($(e));
-			    });
-			    check();
-			    disable_save();
-			});
-		})
-	})
-
-    // ajout des actions en-tetes de colonne
-    var ui_col_header = function() {
-	return $('<span>', {
-	    'class':'pull-right btn-group',
-	    'html':[
-		$('<button>',{
-		    'class':'btn btn-default btn-xs var_col_copy',
-		    'type':'button',
-		    'title':'Dupliquer la colonne', 
-		    'html': $('<i>',{
-			'class':"fa fa-copy"
-		    })
-		}),
-		$('<button>',{
-		    'class':'btn btn-default btn-xs var_col_delete',
-		    'type':'button',
-		    'title':'Supprimer la colonne', 
-		    'html': $('<i>',{
-			'class':"fa fa-trash-o"
-		    })
-		})
-	    ]
-	})
-    }
-
-    $('#main').on('click', '.var_col_copy', function(){
-	var colnum = $(this).closest('td').prevAll('td').length;
-	$('#main tr').each(function(i,e) {
-	    var cell = $($(e).children()[colnum])
-	    cell.after(cell.clone())
-	})
-	check();
-    })
-    
-    $('#main').on('click', '.var_col_delete', function(){
-	var colnum = $(this).closest('td').prevAll('td').length;
-	$('#main tr').each(function(i,e) {
-	    $($(e).children()[colnum]).remove()
-	})
-    	check();
+    $('#modal_cond .cond_item').on('click', function() {
+	// condition menu
+	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
+	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
+	exists_condition(toggle_cond)
     })
 
-    // ajout des actions d'une cellule critère name
-    
-    var ui_crit_name = function(cell) {
-	cell.append($('<span>', {
-	    'class':'pull-right',
-	    'html':$('<button>',{
-		'class':'btn btn-default btn-xs btn-remove-critname',
-		'title':'Supprimer le critère',
-		'html': $('<i>',{
-		    'class':"fa fa-trash-o"
-		})
-	    })
-	}))
-    }
-
-    $('#main').on('click', '.btn-remove-critname', function(){
-	enable_add_crit($(this).closest('tr').data('crit'));
-	$(this).closest('tr').remove();
-	check();
+    $('#modal_cond').on('show.bs.modal', function (e) {
+	if($(e.relatedTarget).hasClass('kolekti-action-edit-condition')){
+	    var index = $(e.relatedTarget).data('condindex') - 1;
+	    $('#cond_edit_index').val(index + 1)
+	    $(this).find('.crit-menu').each(function(i,menu) {
+		console.log($(menu).data('crit'))
+		var iv = conditions[index]['expr'][$(menu).data('crit')]
+		console.log(conditions[index]['expr'])
+		$(menu).data('val', iv)
+		$(menu).find('.valuelabel').html(iv)
+		$(menu).find('button').val(iv)
+	    });
+	    $('#alert_cond_exists').hide();
+	    $('#cond_save').addClass('disabled');
+	} else {
+	   
+	    $(this).find('.crit-menu').each(function(i,menu) {
+		var iv = $(menu).find('li a').first().data('valuelabel')
+		$(menu).data('val', iv)
+		$(menu).find('.valuelabel').html(iv)
+		$(menu).find('button').val(iv)
+	    });
+	    exists_condition(toggle_cond)
+	}
     })
     
-    // ajout des actions d'une cellule critère value
 
-    var ui_crit_val = function(cell) {
-	var critname = cell.data('crit');
-	var critval = cell.find('span').first().html();
-	cell.append($('<span>', {
-	    'class':'pull-right btn-group',
-	    'html':[
-		$('<button>',{
-		    'class':'btn btn-default btn-xs dropdown-toggle',
-		    'type':'button',
-		    'data-toggle':'dropdown',
-		    'html': $('<span>',{
-			'class':"caret"
-		    })
-		}),
-		$('<ul>',{
-		    'class':"dropdown-menu",
-		    'role':"menu",		  
-		    'html':$.map(criteria[critname], function(e) {
-			if (e != critval)
-			return $('<li>',{
-			    'html':$('<a>',{
-				'class':'crit_val_change',
-				'html':e
-			    })
-			})
+    $('#modal_cond form').on('submit', function() {
+	// check
+	$(this).find('.crit-menu').each(function(i,menu) {
+	    console.log( $(menu).data('crit'),$(menu).data('val'));
+	    $("<input>")
+		.attr("type", "hidden")
+		.attr("name", $(menu).data('crit'))
+		.attr("value", $(menu).data('val'))
+		.appendTo($('#modal_cond form'))
+	})
+    })
+
+    
+
+    var add_crit_build_val_menu = function() {
+//	console.log('val menu')
+	var crit = $('#crit_cond_menu').data('val')
+//	console.log(crit)
+	$("#crit_val_menu ul").html('')
+//	console.log('iter', criteria[crit])
+	$.each(criteria[crit], function(i,v){
+//	    console.log('menu val',v)
+	    $("#crit_val_menu ul").append(
+		$('<li>',{
+		    'html':$('<a>', {
+			'class':"crit_val_item",
+			'data-valuelabel':v,
+			'href':"#",
+			'html':v
 		    })
 		})
-	    ]
-	}))
-    }
-    
-    $('#main').on('click', '.crit_val_change', function(){
-	var val = $(this).html()
-	var cell = $(this).closest('th') 
-	cell.find('span').first().html(val);
-	cell.find('span.btn-group').first().remove();
-	ui_crit_val(cell);
-	check();
-    });
-
-    // ajout des actions d'une cellule variable name
-    
-    var ui_var_name = function(cell) {
-	cell.append([
-	    $('<span>', {
-		'class':'pull-right btn-group',
-		'html':[
-		    $('<button>',{
-			'class':'btn btn-default btn-xs var_name_copy',
-			'type':'button',
-			'title':'Dupliquer la colonne', 
-			'html': $('<i>',{
-			    'class':"fa fa-copy"
-			})
-		    }),
-
-		    $('<button>',{
-			'class':'btn btn-default btn-xs var_name_edit',
-			'type':'button',
-			'title':'Modifier les valeurs', 
-			'html': $('<i>',{
-			    'class':"fa fa-pencil-square-o"
-			})
-		    }),
-		    $('<button>',{
-			'class':'btn btn-default btn-xs var_name_delete',
-			'type':'button',
-			'title':'Supprimer la variable', 
-			'html': $('<i>',{
-			    'class':"fa fa-trash-o"
-			})
-		    })
-		]
-	    })
-	])	    
-    };
-    
-    $('#main').on('click', '.var_name_copy', function(){
-	var row = $(this).closest('tr').html();
-	nbvar++;
-	$(this).closest('tr').after($('<tr>',{
-	    'id':'var_'+nbvar,
-	    'html':$(row)
-	}));
-	check();
-    });
-
-    $('#main').on('click', '.var_name_delete', function(){
-	$(this).closest('tr').remove(); 
-	check();
-    });
-
-    var var_edit =  function(){
-	$(this).closest('tr').find('th').each(function(i,e) {
-	    $(e).children('span').hide()
-	    var value = $(e).children('span').first().html();
-	    $(e).append($('<input>', {
-		'type':"text",
-		'value':value
-	    }));
-	    $(e).append($('<span>', {
-		'class':'pull-right var_edit_confirm_span',
-		'html':$('<button>', {
-		    'type':"button",
-		    'title':'Valider', 
-		    'class':"btn btn-xs btn-primary var_edit_confirm",
-		    'html':$('<i>',{'class':"fa fa-check"})
-		})
-	    }));
-	    
-	});
-	$(this).closest('tr').find('td').each(function(i,e) {
-	    $(e).children('span').hide()
-	    var value = $(e).children('span').first().html();
-	    $(e).append($('<input>', {
-		'type':"text",
-		'value':value
-	    }));
-	});
-	disable_commands();
-    };
-    
-
-    $('#main').on('mouseenter', '.varname', function() {
-	$(this).next().show()
-    });
-    
-    $('#main').on('click', '.var_name_edit', var_edit);
-
-    $('#main').on('click', '.var_edit_confirm', function(){
-	var tr = $(this).closest('tr');
-	tr.find('th').each(function(i,e) {
-	    var value = $(e).children('input').get()[0].value
-	    $(e).children('span').last().remove();
-	    $(e).children('input').remove();
-	    $(e).children('span').first().html(value);
-	    $(e).children('span').show()
-	    
-	});
-	tr.find('td').each(function(i,e) {
-	    var value = $(e).children('input').get()[0].value
-	    $(e).children('input').remove();
-	    $(e).children('span').first().html(value);
-	    $(e).children('span').show()
-	});
-	enable_commands();
-	check();
-    });
-
-    
-    
-    // actions des boutons latéraux
-    
-    var add_variable = function() {
-	nbvar++;
-    	$('#main tbody').prepend($('<tr>',{
-	    'id':'var_'+nbvar,
-	    'html':$('<th>',{
-		'class':'varname',
-		'html':$('<span>',{
-		    'class':'var_name',
-		    'html':""})
-	    })
-	}));
-    
-	$('#main thead').find('tr.info').first().find('th').each(function(i, r){
-	    if(i > 0) {
-		$('#var_'+nbvar).append($('<td>',{
-		    'class':'varval',
-		    'html':$('<span>',{
-			'html':""
-		    })
-		}))
+	    )
+	    if (i==0) {
+		$('#crit_val_menu').find('.valuelabel').html(v)
+		$('#crit_val_menu').data('val', v)
+		$('#crit_val_menu').find('button').val(v)
 	    }
 	});
-	var cell = $('#var_'+nbvar+" th").first()
-	ui_var_name(cell);
-	cell.each(var_edit);
-	
-    }
-							   
 
-    $('#btn_add_var').click(add_variable);
+    }
+
+    $('#modal_add_crit .crit_cond_item').on('click', function() {
+	// condition menu
+	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
+	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
+	add_crit_build_val_menu()
+    })
+
+    $('#modal_add_crit').on('click', '.crit_val_item', function() {
+	// value  menu
+	$(this).closest('.btn-group').find('.valuelabel').html($(this).data('valuelabel'))
+	$(this).closest('.btn-group').data('val', $(this).data('valuelabel'))
+	$(this).closest('.btn-group').find('button').val($(this).data('valuelabel'))
+    })
+
     
-    $('#btn_add_col').click(function() {
-	$('#main thead').find('tr.colheaders').first().append(
-	    $('<td>', {
-		'class':'colheader',
-		'html':ui_col_header()
-	    })
-	);
-	$('#main thead').find('tr.info').each(function() {
-	    var critname = $(this).find('th').first().find("span").first().html(); 
-	    var cell=$('<th>',{
-		'class':'critval',
-		'data-crit':critname,
-		'html':$('<span>',{
-		    'html':"--"})
-	    });
-	    $(this).append(cell);
-	    ui_crit_val(cell);
+    $('#modal_add_crit').on('show.bs.modal', function (e) {
+	$(this).find('#crit_cond_menu').each(function(i,menu) {
+	    var iv = $(menu).find('li a').first().data('valuelabel')
+	    $(menu).data('val', iv)
+	    $(menu).find('.valuelabel').html(iv)
+	    $(menu).find('button').val(iv)
+	});
+	add_crit_build_val_menu();
+    })
+    
+    
+    $('#modal_add_crit form').on('submit', function() {
+	$(this).find('.btn-group-add-crit').each(function(i,menu) {
+	    $("<input>")
+		.attr("type", "hidden")
+		.attr("name", $(menu).data('crit'))
+		.attr("value", $(menu).data('val'))
+		.appendTo($('#modal_add_crit form'))
 	})
-	$('#main tbody').find('tr').each(function() {
-	    var cell=$('<td>',{
-		'class':'varval',
-		'html':$('<span>',{
-		    'html':"--"
-		})
+    })
+    
+    $('.kolekti-action-remove-variable').on('click', function() {
+	var varindex = $(this).data('varindex')
+	var varname = $(this).data('varname')
+	if (confirm('Voulez vous réélement supprimer la variable '+varname)) {
+	    $.ajax({
+		url:'/variables/detail/',
+		type:'POST',
+		data:{"action":"delvar",
+		      "path":path,
+		      "index":varindex}
+	    }).success(function(data) {
+		window.location.href='/variables/detail/?path='+path
 	    });
-	    $(this).append(cell);
-	})
-	check();
-    });
-
-    $('body').on('click', '.item_add_crit', function() {
-	var critname = $(this).data('crit');
-	var cell = $('<th>',{
-	    'class':'critname',
-	    'html':$('<span>',{
-		'html':critname
-	    })
-	});
+	}
 	
-	$('#main thead').append($('<tr>',{
-	    'id':'crit_'+critname,
-	    'data-crit':critname,
-	    'class':'info',
-	    'html':cell
-	}));
-	ui_crit_name(cell);
+    })
+
+    $('#modal_new_variable').on('show.bs.modal', function (e) {
+	$('#var_newvar').focus()
+    })
+
+    $('#modal_rename_variable').on('show.bs.modal', function (e) {
+	var index = $(e.relatedTarget).data('varindex');
+	$('#var_rename_index').val(index)
+	$('#input_rename').val(variables[index - 1])
+	$('#input_rename').focus()
+    })
+
+    
+    
+    $('.kolekti-action-remove-condition').on('click', function() {
+	var condindex = $(this).data('condindex')
+	var condname = $(this).data('condname')
+	if (confirm('Voulez vous réélement supprimer toutes les valeurs pour la condition  '+condname)) {
+	    $.ajax({
+		url:'/variables/detail/',
+		type:'POST',
+		data:{"action":"delcond",
+		      "path":path,
+		      "index":condindex}
+	    }).success(function(data) {
+		window.location.href='/variables/detail/?path='+path
+	    });
+	}
 	
-	$('#main tbody tr').first().find('td').each(function() {
-	    cell = $('<th>',{
-		'class':'critval',
-		'data-crit':critname,
-		'html':$('<span>',{
-		    'html':'--'
-		})
-	    })
-	    $('#main thead tr').last().append(cell);
-	    ui_crit_val(cell);
-	});
-	disable_add_crit(critname);
-	check();
-    });
+    })
+    
+    
 
-    var disable_add_crit = function(critname) {
-	$('.item_add_crit_'+critname).parent().addClass('disabled')
-    }
-    
-    var enable_add_crit = function(critname) {
-	$('.item_add_crit_'+critname).parent().removeClass('disabled')
-    }
-    
-    var disable_commands = function() {
-	$('.btn-remove-critname').addClass('disabled')
-	$('.var_name_delete').addClass('disabled')
-	$('.var_name_edit').addClass('disabled')
-	$('.critval button').addClass('disabled')
-	$('.sidebtns button').addClass('disabled')
-    }
-    
-    var enable_commands = function() {
-	$('.btn-remove-critname').removeClass('disabled')
-	$('.var_name_delete').removeClass('disabled')
-	$('.var_name_edit').removeClass('disabled')
-	$('.critval button').removeClass('disabled')
-	$('.sidebtns button').removeClass('disabled')
-    }
-    
-    // check variable coherence
-    var check = function() {
-	var res = true;
-	var critvals = $('#main th.critval')
-	critvals.each(function(i,cell) {
-	    var critname = $(cell).data('crit');
-	    var critval = $(cell).find('span').first().html();
-
-	    if ($.inArray(critval,criteria[critname]) == -1) {
-		$(cell).addClass('danger')
-		$(cell).attr('title','La valeur n\'est pas valide pour ce critère');
-		res = false
-	    } else {
-		$(cell).removeClass('danger')
-		$(cell).removeAttr('title');
-	    }
-	});
-	if (res)
-	    enable_save()
-	else
-	    disable_save()
-	return res
-    }
-})
-
+});
