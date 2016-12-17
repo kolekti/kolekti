@@ -26,15 +26,9 @@
 
 
   <xsl:variable name="translationfile">
-    <xsl:choose>
-      <xsl:when test="document($template)//html:span[@id='labels']">
-        <xsl:value-of select="document($template)//html:span[@id='labels']" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$helpname" />
-        <xsl:text>_labels</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:text>/kolekti/publication-templates/</xsl:text>
+    <xsl:value-of select="$helpname" />
+    <xsl:text>/variables/labels</xsl:text>
   </xsl:variable>
 
   <xsl:variable name="helptitle">

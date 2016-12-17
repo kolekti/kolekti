@@ -38,6 +38,8 @@
   <!-- parametres d'entrée : langue et basepath -->
   <xsl:param name="lang"/>
 
+  <xsl:variable name="kolektitext">/kolekti/publication-templates/share/labels</xsl:variable>
+  
   <xsl:template match="/">
     <xsl:apply-templates mode="aggreg"/>
   </xsl:template>
@@ -96,7 +98,7 @@
 
     <div class='TOC {@class}'>
       <p class="TOC_title">
-        <var class="kolektitext:TOC"/>
+        <var class="{$kolektitext}:TOC"/>
       </p>
     </div>
   </xsl:template>
@@ -122,7 +124,7 @@
         <xsl:if test="@class"> <xsl:value-of select="@class"/></xsl:if>
       </xsl:attribute>
       <h1 class="INDEX_titre">
-        <var class="kolektitext:INDEX"/>
+        <var class="{$kolektitext}:INDEX"/>
       </h1>
     </div>
   </xsl:template>
@@ -145,7 +147,7 @@
     <div class='REVNOTES {@class}'>
       <xsl:element name="{$hx}">
         <xsl:attribute name="class">REVNOTES_titre</xsl:attribute>
-        <var class="kolektitext:REVNOTES"/>
+        <var class="{$kolektitext}:REVNOTES"/>
       </xsl:element>
     </div>
   </xsl:template>

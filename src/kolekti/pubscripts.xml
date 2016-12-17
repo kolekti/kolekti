@@ -137,8 +137,8 @@
 
       <parameter name="labels" 
          type="resource" 
-         dir="sources/{LANG}/variables"
-         file="WebHelp5_labels"
+         dir="kolekti/publication-templates/WebHelp5/variables"
+         file="labels"
 	 ext="xml"
          />
       <parameter name="generate" 
