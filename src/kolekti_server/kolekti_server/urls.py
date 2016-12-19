@@ -98,6 +98,7 @@ urls.extend([
     url(r'^criteria.css$', CriteriaCssView.as_view(), name='criteriacss'),
     url(r'^criteria.json$', CriteriaJsonView.as_view(), name='criteriacss'),
 
+    url(r'^publication-templates/$', PublicationTemplatesView.as_view(), name='publication_templates'),
 # url(r'^blog/', include('blog.urls')),
 
     url(r'^browse/exists$', BrowserExistsView.as_view(),name="kolekti_browser_exists"),
@@ -119,7 +120,9 @@ urls.extend([
     url(r'^topics/templates/', TopicTemplatesView.as_view(),name="topic_templates"),
     url(r'^topics/edit/', TopicEditorView.as_view(),name="topic_editor"),
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
-
+    
+    url(r'^templates/$', TopicTemplateListView.as_view(),name="templatelist"),
+    
     url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
     url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),

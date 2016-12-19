@@ -723,7 +723,8 @@ var kolekti_browser = function(args) {
 
     // calls register callback functions
 
-    var closure_select = function() {
+    var closure_select = function(e) {
+	resfuncs['select'].length && e.preventDefault() 
 	resfuncs['select'] && resfuncs['select'](get_browser_value());
     };	
     var closure_create = function() {
@@ -741,16 +742,18 @@ var kolekti_browser = function(args) {
     // click on file
 
     $(parent).on('click', '.filelink', function(e) {
-	e.preventDefault();
 	if ($(this).data('mimetype') == "text/directory") {
+	    e.preventDefault();
 	    path = path +'/'+ $(this).html();
 	    if (update_url)
 		window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	} else {
 	    set_browser_value(path + '/' + $(this).html())
-	    closure_select()
+	    closure_select(e)
 	}
+
+
     })
 
     // navigate into parent folders

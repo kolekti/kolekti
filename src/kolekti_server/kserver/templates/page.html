@@ -44,10 +44,12 @@
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
 	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="/variables/">Variables</a></li>
-		<li><a href="/settings/criteria">Critères</a></li>
+		<li><a href="{% url 'variablelist' %}">Variables</a></li>
+		<li><a href="{% url 'criteriaedit' %}">Critères</a></li>
 		<li><a href="/projects/config">Langues</a></li>
 		<li><a href="/settings/">Paramètres de publication</a></li>
+		<li><a href="{% url 'templatelist'%}">Templates de modules</a></li>
+		<li><a href="{% url 'publication_templates'%}">Templates de publication</a></li>
 		<li role="presentation" class="divider"></li>
 		<li><a href="/import/">Importer un fichier tableur</a></li>
 		<li role="presentation" class="divider"></li>

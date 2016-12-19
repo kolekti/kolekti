@@ -803,6 +803,9 @@ class ReleaseValidateView(kolektiMixin, TemplateView):
 class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"
 
+class TopicTemplateListView(kolektiMixin, TemplateView):
+    template_name = "topics/templates.html"
+
 class ImagesListView(kolektiMixin, TemplateView):
     template_name = "illustrations/list.html"
     def get(self, request):
@@ -1130,6 +1133,15 @@ class SettingsView(kolektiMixin, TemplateView):
         context = self.get_context_data()
         return self.render_to_response(context)
 
+
+
+class PublicationTemplatesView(kolektiMixin, TemplateView):
+    template_name = "publication-templates/list.html"
+
+
+
+
+    
 class JobCreateView(kolektiMixin, View):
     def post(self, request):        
         try:

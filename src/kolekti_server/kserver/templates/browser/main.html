@@ -63,7 +63,7 @@
 	<td class="kolekti-browser-icon"><i class="fa {{ f.icon }}"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td class="kolekti-browser-name"><a
-	       {% if pathsteps.0.label == "sources" %}
+	       {% if pathsteps.0.label == "sources" or pathsteps.0.label == "kolekti" %}
 	       href="{{ path|urlencode }}/{{f.name|urlencode}}"
 	       {% else %}
 	       href="#"
