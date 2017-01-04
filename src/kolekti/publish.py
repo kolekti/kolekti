@@ -160,7 +160,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 events.append(event)
 
             # copy scripts resources
-            for script in xjob.xpath("/job/scripts/script[not(@name='multiscript')][@enabled = 1]|/job/scripts/script[@name='multiscript'][@enabled = 1]/*/script"):
+            for script in xjob.xpath("/job/scripts/script[not(.//script)][@enabled = 1]|/job/scripts/script[.//script][@enabled = 1]/*/script"):
                 scriptlabel = script.xpath('string(label|ancestor::script/label)')
                 try:
                     self.copy_script_params(script, profile, assembly_dir)
@@ -229,7 +229,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     logger.debug(traceback.format_exc())
                     
                 # invoke scripts
-                for output in xjob.xpath("/job/scripts/script[@enabled = 1][@name='multiscript']"):
+                for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
                     indata = pivot
                     listres = []
                     for script in output.xpath('publication/script'):
@@ -257,7 +257,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time()
                     }
                         
-                for script in xjob.xpath("/job/scripts/script[@enabled = 1][not(@name='multiscript')]"):
+                for script in xjob.xpath("/job/scripts/script[@enabled = 1][not(.//script)]"):
                     try:
                         resscript = self.start_script(script, profile, assembly_dir, pivot)
                         yield {
