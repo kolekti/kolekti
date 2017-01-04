@@ -54,8 +54,10 @@
 		<li><a href="/import/">Importer un fichier tableur</a></li>
 		<li role="presentation" class="divider"></li>
 		<li><a href="/sync/">Synchronisation</a></li>
+		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>
+		-->
 	      </ul>
 	    <li>
 	  </ul>
@@ -113,6 +115,8 @@
 		    {% for project in projects %}
 		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li>
 		    {% endfor %}
+		    <li role="presentation" class="divider"></li>
+		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
 		  </ul>
 		</div>
 	      </div>
