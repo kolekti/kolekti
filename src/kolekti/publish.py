@@ -405,7 +405,24 @@ class Publisher(PublisherMixin, kolektiBase):
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-
+                
+        # copy generic variable file 
+        srcdir = "kolekti/publication-templates/share/variables"
+        srcfile = srcdir + "/labels.xml"
+        try:
+            self.makedirs(assembly_dir + "/" +srcdir)
+        except OSError:
+            pass
+        try:
+            self.copyFile(srcfile, assembly_dir + '/' + srcfile)
+        except:
+            import traceback
+            yield {
+                'event':'warning',
+                'msg':"fichier introuvable %s"%(srcfile.encode('utf-8'),),
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+                }
             
     # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):

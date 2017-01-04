@@ -38,7 +38,7 @@
   <!-- parametres d'entrée : langue et basepath -->
   <xsl:param name="lang"/>
 
-  <xsl:variable name="kolektitext">/kolekti/publication-templates/share/labels</xsl:variable>
+  <xsl:variable name="kolektitext">/kolekti/publication-templates/share/variables/labels</xsl:variable>
   
   <xsl:template match="/">
     <xsl:apply-templates mode="aggreg"/>
