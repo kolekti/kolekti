@@ -81,9 +81,6 @@
 	    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_cond">
 	      Ajouter une condition...
 	    </button>
-	    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_add_crit">
-	      Ajouter un critère...
-	    </button>	   
 	  </li>
 	</ul>
       </div>
@@ -290,6 +287,27 @@
 	<a href="/variables/ods?path={{ path }}" title="générer fichier ods" class="btn btn-block btn-default"><span class="glyphicon glyphicon-export" aria-hidden="true"></span><span> exporter ods</span></a>
       </div>
     </div>
+    <br>
+    <div class="row">
+      <div class="col-sm-12 col-md-12">
+	
+	<div class="panel panel-default">
+	  <div class="panel-heading"><h4>Critères</h4></div>
+	  <div class="panel-body">
+	    <p>Critères utilisés par ce fichier de variables</p>
+	    <ul class="list-group">
+	      {% for c in crits %}
+	      <li class="list-group-item">{{ c }}</li>
+	      {% endfor %}
+	    </ul>
+	    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal_add_crit">
+	      Ajouter un critère...
+	    </button>
+	  </div>
+	</div>
+      </div>
+    </div>
+    
 {% endblock %}
 
     

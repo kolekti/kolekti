@@ -875,11 +875,12 @@ class VariablesMixin(kolektiMixin, TemplateView):
             'label':", ".join(["=".join((c.get('name'),c.get('value')))  for c in v.findall('crit')]) ,
             'expr':dict([(c.get('name'),c.get('value')) for c in v.findall('crit')])
             } for v in values]
+            
         vardata = {
             "crits" : crits,
             "variables" : variables,
             "conditions" : conditions,
-            "criteria" : self._get_criteria_def_dict(),
+            "criteria" : self._get_criteria_def_dict(include_lang = True),
             }
         if include_values:
             vardata.update({"values": [[self.getval(v) for v in var.xpath('value') ] for var in xmlvar.xpath('/variables/variable')]})
@@ -968,7 +969,10 @@ class VariablesDetailsView(VariablesMixin):
                     xcond.getparent().remove(xcond)
                     
             if action == "newcrit":
-                critlist = xvar.xpath('/variables/critlist')[0]
+                try:
+                    critlist = xvar.xpath('/variables/critlist')[0]
+                except IndexError:
+                    critlist = ET.SubElement(xvar.xpath('/variables')[0],'critlist')
                 critdecl = ET.SubElement(critlist, 'crit')
                 critdecl.text = ":" + request.POST.get("crit")
                 for xcond in xvar.xpath('/variables/variable/value'):

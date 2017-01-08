@@ -67,7 +67,7 @@ class kolektiBase(object):
 
         try:
             self._app_config = settings()
-            self._appdir = os.path.join(Config['InstallSettings']['installdir'],"kolekti")
+            self._appdir = os.path.join(self._app_config['InstallSettings']['installdir'],"kolekti")
         except :
             self._app_config = {'InstallSettings':{'installdir':os.path.realpath( __file__), 'kolektiversion':"0.7"}}
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
@@ -642,11 +642,13 @@ class kolektiBase(object):
             criteria_dict.update({c.get('code'):c.get('value',None)})
         return criteria_dict
 
-    def _get_criteria_def_dict(self):
+    def _get_criteria_def_dict(self, include_lang = False):
         criteria = self._project_settings.xpath("/settings/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):[v.text for v in c]})
+        if include_lang:
+            criteria_dict.update({'LANG':[l.text for l in self._project_settings.xpath('/settings/releases/lang')]})
         return criteria_dict
 
 
