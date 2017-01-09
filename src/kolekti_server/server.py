@@ -111,6 +111,7 @@ class KolektiTray(wx.App):
 
 
 def bootstrap():
+    
     # registers kolekti projects in windows libraries
     os.environ['DJANGO_SETTINGS_MODULE']='kolekti_server.settings'
     
@@ -118,11 +119,15 @@ def bootstrap():
     from lxml import etree as ET
     import django
     from django.conf import settings
+
+    if not os.path.exists(os.path.join(settings.KOLEKTI_BASE, '.logs')):
+        os.makedirs(os.path.join(settings.KOLEKTI_BASE, '.logs'))
+    
     django.setup()
     from django.contrib.auth.models import User
     from kserver_saas.models import Project, UserProfile, UserProject
     from django.core import management
-
+    from django.core.exceptions import ObjectDoesNotExist
 
     
     if os.path.exists(settings.DB_NAME):
@@ -139,25 +144,32 @@ def bootstrap():
             if project_settings.xpath('string(/settings/@version)') != '0.7':
                 continue
             lang = project_settings.xpath('string(/settings/@sourcelang)')
+            try:
+                project = Project.objects.get(directory = project_dir)
+            except ObjectDoesNotExist:
+                project = Project(
+                    name = project_dir,
+                    directory = project_dir,
+                    description = project_dir,
+                    owner = user,
+                    )
+                project.save()
+            try:
+                userproject = UserProject.objects.get(
+                    project = project,
+                    user = user
+                    )
+            except ObjectDoesNotExist:
+                userproject = UserProject(
+                    project = project,
+                    user = user,
+                    is_saas = False,
+                    is_admin = True,
+                    srclang = lang,
+                    publang = lang
+                    )
+                userproject.save()
             
-            project = Project(
-                name = project_dir,
-                directory = project_dir,
-                description = project_dir,
-                owner = user,
-                )
-            project.save()
-            
-            userproject = UserProject(
-                project = project,
-                user = user,
-                is_saas = False,
-                is_admin = True,
-                srclang = lang,
-                publang = lang
-                )
-            userproject.save()
-
             userprofile = UserProfile.objects.get()
             userprofile.activeprojects = userproject
             userprofile.save()
@@ -171,8 +183,9 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         systray = KolektiTray()
         systray.MainLoop()
-        sys.exit(0)
     else:
         if sys.argv[1] == "bootstrap":
             bootstrap()
-
+        else:
+            sys.exit(1)
+    sys.exit(0)

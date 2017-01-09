@@ -4,7 +4,7 @@
 #define BuildDir "F:\Bureau\kolekti\sources\0.7\kolekti\src"
 
 #define MyAppName "Kolekti"
-#define MyAppVersion "0.7.5-pre2"
+#define MyAppVersion "0.7.5-pre3"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
 #define MyAppExeName "kolekti_server.exe"
@@ -52,7 +52,7 @@ Filename: "{userappdata}\kolekti\kolekti.ini"; Section: "InstallSettings"; Key: 
 Filename: "{userappdata}\kolekti\kolekti.ini"; Section: "InstallSettings"; Key: "kolektiversion"; String: "{#MyAppVersion}"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "syncdb"
+Filename: "{app}\{#MyAppExeName}"; Parameters: "bootstrap"
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 

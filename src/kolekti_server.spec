@@ -3,7 +3,7 @@ from glob import glob
 import os
 cwd = os.getcwd()
 
-# a = Analysis(['kolekti_server\\server.py', 'kolekti_server\\manage.py'],
+#a = Analysis(['kolekti_server\\server.py', 'kolekti_server\\manage.py'],
 a = Analysis(['kolekti_server\\server.py'],
              pathex=[cwd],
 #              hiddenimports=[
