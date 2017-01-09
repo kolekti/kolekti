@@ -79,7 +79,7 @@ procedure installGs();
 var
 ErrCode: integer;
 begin
-  if (msgbox('In order to enable Converseen to manage PDF files you have to download and install Ghostscript. Do you want to download it now?', mbConfirmation, MB_YESNO) = IDYES) then
+  if (msgbox('For optimisation of PDF files you have to download and install Ghostscript. Do you want to download it now?', mbConfirmation, MB_YESNO) = IDYES) then
   begin
 	ShellExec('open', 'http://www.ghostscript.com/download/gsdnld.html', '', '', SW_SHOW, ewNoWait, ErrCode);
   end
