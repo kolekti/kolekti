@@ -937,7 +937,9 @@ class VariablesDetailsView(VariablesMixin):
                                     "name":crit.get("name"),                            
                                     "value":crit.get("value")
                                     })
-                                
+                    else:
+                        newval = ET.SubElement(newvar, 'value')
+                        
                     xcontent = ET.SubElement(newval,'content')
                     xcontent.text = request.POST.get('varvalue','')
                 except:
@@ -957,16 +959,24 @@ class VariablesDetailsView(VariablesMixin):
             if action == "newcond":
                 crits = [c.text[1:] for c in xvar.xpath('/variables/critlist/crit')]
                 for var in xvar.xpath('/variables/variable'):
-                    xvalue = ET.SubElement(var,'value')
+                    if len(var.xpath('value/crit')):
+                        xvalue = ET.SubElement(var,'value')
+                        xcontent = ET.SubElement(xvalue,'content')
+                        xcontent.text = request.POST.get('varvalue','')
+                    else:
+                        xvalue = var.find('value')
                     for entry in crits:
                         ET.SubElement(xvalue,'crit',{'name':entry, 'value':request.POST.get(entry)})
-                    xcontent = ET.SubElement(xvalue,'content')
-                    xcontent.text = request.POST.get('varvalue','')
+
                     
             if action == "delcond":
                 index = int(request.POST.get('index'))
-                for xcond in xvar.xpath('/variables/variable/value[%d]'%index):
-                    xcond.getparent().remove(xcond)
+                if len(xvar.xpath('/variables/variable[1]/value') == 1):
+                    for xcond in xvar.xpath('/variables/variable/value/crit'%index):
+                        xcond.getparent().remove(xcond)
+                else:
+                    for xcond in xvar.xpath('/variables/variable/value[%d]'%index):
+                        xcond.getparent().remove(xcond)
                     
             if action == "newcrit":
                 try:
@@ -1035,7 +1045,7 @@ class VariablesCreateView(kolektiMixin, TemplateView):
         try:
             path = request.POST.get('path')
             path = self.set_extension(path, ".xml")
-            varx = self.parse_string('<variables><critlist>:LANG</critlist></variables>')
+            varx = self.parse_string('<variables><critlist></critlist></variables>')
             self.xwrite(varx, path)
             return HttpResponse(json.dumps(self.path_exists(path)),content_type="application/json")
         except:
