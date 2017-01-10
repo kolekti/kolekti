@@ -937,11 +937,14 @@ class VariablesDetailsView(VariablesMixin):
                                     "name":crit.get("name"),                            
                                     "value":crit.get("value")
                                     })
+                            xcontent = ET.SubElement(newval,'content')
+                            xcontent.text = request.POST.get('varvalue','')
+
                     else:
                         newval = ET.SubElement(newvar, 'value')
                         
-                    xcontent = ET.SubElement(newval,'content')
-                    xcontent.text = request.POST.get('varvalue','')
+                        xcontent = ET.SubElement(newval,'content')
+                        xcontent.text = request.POST.get('varvalue','')
                 except:
                     logger.exception('could not add variable')
                     
@@ -971,7 +974,7 @@ class VariablesDetailsView(VariablesMixin):
                     
             if action == "delcond":
                 index = int(request.POST.get('index'))
-                if len(xvar.xpath('/variables/variable[1]/value') == 1):
+                if len(xvar.xpath('/variables/variable[1]/value')) == 1:
                     for xcond in xvar.xpath('/variables/variable/value/crit'%index):
                         xcond.getparent().remove(xcond)
                 else:
