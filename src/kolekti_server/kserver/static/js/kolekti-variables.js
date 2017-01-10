@@ -47,7 +47,8 @@ $(document).ready(function() {
     $('#modal_cond').on('show.bs.modal', function (e) {
 	if($(e.relatedTarget).hasClass('kolekti-action-edit-condition')){
 	    var index = $(e.relatedTarget).data('condindex') - 1;
-	    $('#cond_edit_index').val(index + 1)
+	    $('#cond_index').val(index + 1)
+	    $('#cond_action').val('editcond')
 	    $(this).find('.crit-menu').each(function(i,menu) {
 		console.log($(menu).data('crit'))
 		var iv = conditions[index]['expr'][$(menu).data('crit')]
@@ -59,7 +60,7 @@ $(document).ready(function() {
 	    $('#alert_cond_exists').hide();
 	    $('#cond_save').addClass('disabled');
 	} else {
-	   
+	    $('#cond_action').val('newcond')
 	    $(this).find('.crit-menu').each(function(i,menu) {
 		var iv = $(menu).find('li a').first().data('valuelabel')
 		$(menu).data('val', iv)

@@ -971,11 +971,17 @@ class VariablesDetailsView(VariablesMixin):
                     for entry in crits:
                         ET.SubElement(xvalue,'crit',{'name':entry, 'value':request.POST.get(entry)})
 
+            if action == "editcond":
+                index = int(request.POST.get('condindex'))
+                for var in xvar.xpath('/variables/variable'):
+                    for crit in var.xpath('value[%d]/crit'%index):
+                        critcode = crit.get('name')
+                        crit.set('value',request.POST.get(critcode))
                     
             if action == "delcond":
                 index = int(request.POST.get('index'))
                 if len(xvar.xpath('/variables/variable[1]/value')) == 1:
-                    for xcond in xvar.xpath('/variables/variable/value/crit'%index):
+                    for xcond in xvar.xpath('/variables/variable/value/crit'):
                         xcond.getparent().remove(xcond)
                 else:
                     for xcond in xvar.xpath('/variables/variable/value[%d]'%index):
@@ -999,7 +1005,8 @@ class VariablesDetailsView(VariablesMixin):
             logger.exception('var action failed')
             
         self.xwrite(xvar, path)
-        return self.render_to_response(self.variable_details(path))
+        return HttpResponseRedirect('?path='+path)
+#        return self.render_to_response(self.variable_details(path))
         
 class VariablesEditvarView(VariablesMixin):
     template_name = "variables/editvar.html"

@@ -105,9 +105,9 @@
 	      <h4 class="modal-title" id="label_cond">Condition</h4>
 	    </div>
 	    <form class="form form-horizontal" method="POST">
-	      <input type="hidden" name="action" value="newcond"/>
+	      <input type="hidden" id="cond_action" name="action" value="newcond"/>
 	      <input type="hidden" name="path" value="{{path}}"/>
-	      <input type="hidden" name="condindex" value=""/>
+	      <input type="hidden" id="cond_index" name="condindex" value=""/>
 	      
 	      <div class="modal-body">
 		{% for crit in crits %}
@@ -127,7 +127,7 @@
 		      </button>
 
 		      <ul class="dropdown-menu">
-			<li><a class="cond_item" data-valuelabel="*" href="#">*</a></li>
+<!-- 			<li><a class="cond_item" data-valuelabel="*" href="#">*</a></li>-->
 			{% for name,values in criteria.items %}
 			
 			{% if name == crit %}
