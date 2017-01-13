@@ -4,7 +4,7 @@
 #define BuildDir "F:\Bureau\kolekti\sources\0.7\kolekti\src"
 
 #define MyAppName "Kolekti"
-#define MyAppVersion "0.7.5-pre3"
+#define MyAppVersion "0.7.5"
 #define MyAppPublisher "Exselt Services"
 #define MyAppURL "http://www.kolekti.org/"
 #define MyAppExeName "kolekti_server.exe"
