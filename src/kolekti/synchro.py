@@ -152,18 +152,18 @@ class SynchroManager(SvnClient):
     def revision_info(self, revision):
         rev = int(revision)
         rev_summ = self._client.diff_summarize(self._base,
-                    pysvn.Revision(pysvn.opt_revision_kind.number,rev),
-                    self._base,
                     pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                    self._base,
+                    pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                     )
 
         tmpdir = tempfile.mkdtemp()
         try:
             diff_text = self._client.diff(tmpdir,
                                 self._base,
-                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
-                                self._base,
                                 pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
+                                self._base,
+                                pysvn.Revision(pysvn.opt_revision_kind.number,rev),
                                 header_encoding="UTF-8")
         except:
             logger.exception('could not calculate diff')
