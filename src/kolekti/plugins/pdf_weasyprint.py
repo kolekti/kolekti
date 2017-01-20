@@ -40,6 +40,23 @@ class plugin(pluginBase.plugin):
         body = pivot.xpath('/*/*[local-name() = "body"]')[0]
         head = pivot.xpath('/*/*[local-name() = "head"]')[0]
 
+        # add css
+        css = self.scriptdef.xpath('string(parameters/parameter[@name="CSS"]/@value)')
+        logger.debug(css)
+        baseurl = "file://%s"%(self.getOsPath("/"))
+        csslink = "%s/kolekti/publication-templates/weasyprint/css/%s.css"%(baseurl,css)
+ 
+        logger.debug(csslink)
+        ET.SubElement(head,'link',attrib = {
+            "rel":"stylesheet",
+            "type":"text/css",
+            "href": csslink
+            })
+        ET.SubElement(head,'base',attrib = {
+            "href": baseurl
+            })
+        
+       
         # make image urls relative in pivot
         for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
             src = media.get('src')
