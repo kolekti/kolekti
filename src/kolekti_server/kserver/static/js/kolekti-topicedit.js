@@ -106,7 +106,7 @@ $(document).ready( function () {
 	}
     });
 
-    $.getJSON("/kolekti/edition-templates/templates.json")
+    $.getJSON("/kolekti/edition-stylesheets/templates.json")
 	.done(function(data) {
 	    var buttons = $.map(data, function(item) { return item.name })
 	    make_editor(data, buttons)
