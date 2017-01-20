@@ -8,6 +8,7 @@ import WebHelp5
 import filterpivot
 import serializepdf
 import princexml_nbpage
+import pdf_weasyprint
 
 import ExportPublicationToFolder
 

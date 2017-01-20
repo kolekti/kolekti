@@ -32,6 +32,16 @@
     </parameters>
   </pubscript>
 
+  <pubscript id="weasyprint" type="plugin">
+    <name>Générer pdf avec weasyprint</name>
+    <plugin>pdf_weasyprint</plugin>
+    <link name="_PUBNAME_.pdf" type="pdf" ref="_PUBURI_/_PUBNAME_.pdf"/>
+    <parameters>
+      <parameter name="CSS" label="Feuille de style" 
+		 type="filelist" dir="kolekti/publication-templates/weasyprint/css" ext="css"/>
+    </parameters>
+  </pubscript>
+
   
   <pubscript id="ExportPublicationToFolder" multi="yes" type="plugin">
     <name>Copier la publication vers un dossier</name>
