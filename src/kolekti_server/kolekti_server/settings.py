@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'registration',
     'kserver',
     'kserver_saas',
+    'translators',
     'django.contrib.admin',
 )
 
