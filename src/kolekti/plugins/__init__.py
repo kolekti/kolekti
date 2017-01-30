@@ -8,8 +8,10 @@ import WebHelp5
 import filterpivot
 import serializepdf
 import princexml_nbpage
-import pdf_weasyprint
-
+try:
+    import pdf_weasyprint
+except:
+    pass
 import ExportPublicationToFolder
 
 #def getPlugin(plugin, path):
