@@ -722,9 +722,20 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         assembly_name = self.basename(release_path)
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
         srclang = self.syncMgr.propget('release_srclang', assembly_path)
-        #print self.get_assembly_edit(assembly_path)
+        parameters = self.parse('/'.join([release_path,"kolekti","publication-parameters",assembly_name+"_asm.xml"]))
+        profiles = []
+        for profile in parameters.xpath('/job/profiles/profile[@enabled="1"]'):
+            profiles.append({
+                'label':profile.find('label').text,
+                'criteria':self._get_criteria_dict(profile)
+                })
+        scripts = []
+        for script in parameters.xpath('/job/scripts/script[@enabled="1"]'):
+            scripts.append(script.find('label').text)
+            #print self.get_assembly_edit(assembly_path)
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
+            'releaseparams':{'profiles':profiles, 'scripts':scripts},
             'success':True,
             'release_path':release_path,
             'assembly_name':assembly_name,

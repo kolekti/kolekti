@@ -110,6 +110,48 @@
     </div>
     {% endif %}
 
+
+    <div class="panel panel-default" id="release_details">
+      <div class="panel-heading">
+	<h4 class="panel-title">
+	  <a data-toggle="collapse" href="#collapseRD" class="collapsed">
+	    <small>
+	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	    </small>
+	    Configuration
+	  </a>
+	</h4>
+      </div>
+      
+      <div id="collapseRD" class="panel-collapse collapse  ">
+	<div class="panel-body">
+	  <div class="row">
+	    <div class="col-sm-12 col-md-12">
+	      <h5>Profils</h5>
+	      {% for profile in releaseparams.profiles %}
+	      <strong>{{ profile.label }}</strong>
+	      <ul>
+		{% for criterion,value in profile.criteria.items %}
+		<li>{{criterion}}:{{value}}</li>
+		{% endfor %}
+	      </ul>
+	      {% endfor %}
+	    </div>
+	    <div class="col-sm-12 col-md-12">
+	      <h5>Sorties</h5>
+	      <ul>
+	      {% for script in releaseparams.scripts %}
+	      <li>{{ script }}</li>
+	      {% endfor %}
+	      </ul>
+	    </div>
+
+	  </div>
+	</div>
+      </div>
+    </div>
+    
     <div id="release_publications">
     </div>
     
