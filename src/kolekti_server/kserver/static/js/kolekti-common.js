@@ -7,13 +7,7 @@ $(function() {
 	window.location.href = url;
     })
 
-    var updatestatus = function(e) {
-	$('#btn_rev>span span.circle').hide()
-	$('#btn_rev>span span.spinner').show()
-	$('#btn_rev>span').removeClass('strong')
-	$('#btn_rev').removeClass('btn-success btn-warning btn-danger btn-info')
-	$('#btn_rev').addClass('btn-default')
-	$.get('/sync/status').done(function(data){
+    var setstatus = function(data) {
 	    var color="default";
 	    // console.log(data.revision.status);
 	    switch(data.revision.status) {
@@ -49,16 +43,66 @@ $(function() {
 		$('#btn_rev>span').addClass('strong')
 		$('#btn_rev>span span.circle').show()
 	    }
+    }
+
+    var pendingstatusrequest = false;
+    
+    var updatestatus = function(e) {
+	if (pendingstatusrequest)
+	    return
+	
+	var cached_status = sessionStorage.getItem('kolektistatus');
+	var now = new Date()
+	if(cached_status != null) {
+	    cached_status = JSON.parse(cached_status);
+	    if (cached_status['project'] == kolekti.project) {
+		if(cached_status['time'] > (now.getTime() - 60000)){
+		    $('#revnum').html(cached_status['revnum'])
+		    setstatus(cached_status['status'])
+		    return;
+		}
+	    }
+	}
+	$('#btn_rev>span span.circle').hide()
+	$('#btn_rev>span span.spinner').show()
+	$('#btn_rev>span').removeClass('strong')
+	$('#btn_rev').removeClass('btn-success btn-warning btn-danger btn-info')
+	$('#btn_rev').addClass('btn-default')
+	
+	pendingstatusrequest = true;
+	$.get('/sync/status').done(function(data){
+	    var now = new Date()
+	    cached_status = {
+		'project':kolekti.project,
+		'time':now.getTime()
+	    }
+	    cached_status['status'] = data;
+	    setstatus(data)
+	    sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
+	}).always(function() {
+	    pendingstatusrequest = false;
 	})
+    }
+    
+    var pendingrevnumrequest = false;
+    var updaterevnum = function(e) {
+	if(pendingrevnumrequest)
+	    return
 	$.get('/sync/remotestatus').done(function(data){
 	    $('#revnum').html(data.revision.number);
 	})
     }
     
-    $(window).focus(updatestatus);
-    $(window).on('kolektibrowserchange',updatestatus);
+    $(window).focus(function(){
+	updatestatus();
+	updaterevnum();
+    });
+    $(window).on('kolektibrowserchange',function(){
+	updatestatus();
+	updaterevnum();
+    });
     updatestatus();
-
+    updaterevnum();
 
     // history
 
