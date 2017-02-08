@@ -1,0 +1,35 @@
+/* releases browser */
+
+.release-index .kolekti-browser-icon {
+    text-align:right;
+}
+
+.release-index .kolekti-browser-name {
+    padding-left:30px;
+}
+
+.kolekti-browser-release-state .langstate {
+    margin-right:5px;
+    border-radius:2px;
+    height: 12px;
+    width: 10px;
+    padding: 0 2px;
+    border-bottom:3px solid #C0C0C0;
+}
+
+
+ .kolekti-browser-release-state .langstate.edition {
+    border-bottom-color: #d9edf7;
+}
+
+.kolekti-browser-release-state .langstate.translation,
+.kolekti-browser-release-state .langstate.validation {
+    background-color: #d9edf7;
+    border-bottom-color: #d9edf7;
+}
+
+.kolekti-browser-release-state .langstate.sourcelang,
+.kolekti-browser-release-state .langstate.publication {
+    background-color: #dff0d8;
+    border-bottom-color: #dff0d8;
+}

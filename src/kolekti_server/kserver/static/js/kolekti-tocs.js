@@ -365,7 +365,6 @@ $(document).ready( function () {
 	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
 	var cssclass = $('#toc_root').data('kolekti-meta-kolekti_jobclass');
 	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
-
 	params = get_publish_params(cssclass)
 	params['toc']=toc;
 	params['job']=jobpath;
@@ -374,7 +373,7 @@ $(document).ready( function () {
 	$('.modal-title').html('Publication');
 
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
-		$('#pub_progress').remove();
+	    $('#pub_progress').remove();
 	    $('#pubresult').html('<div class="alert alert-danger" role="alert"><p>Sélectionnez au moins un profile et un script</p></div>');
 	    $('.modal').modal();
 	    return;
@@ -382,21 +381,35 @@ $(document).ready( function () {
 	
 	
 	var check_release = function(action) {
+	    var fmtdate = function(d) {
+		var mm = d.getMonth() + 1; // getMonth() is zero-based
+		var dd = d.getDate();
+		
+		return [d.getFullYear(),
+			(mm>9 ? '' : '0') + mm,
+			(dd>9 ? '' : '0') + dd
+		       ].join('');
+	    };
+
 	    var toc = $('#toc_root').data('kolekti-path');
 	    $('.modal-footer button').html('fermer');
 	    $('.modal-title').html('Création de version');
-	    $('#releasename').html('<div class="panel panel-default"><div class="panel-body"><div class="form"><div class="form-group"><label for="release_name">Nom de la version</label><input type="text" class="form-control" id="release_name"/></div><div class="form-group"><button class="btn btn-default" id="confirm_version">Créer la version</button></div></div></div></div>');
+	    $('#releasename').html('<div class="panel panel-default"><div class="panel-body"><div class="form"><div class="form-group"><label for="release_name">Nom de la version</label><input type="text" class="form-control" id="release_name"/></div><div class="form-group"><label for="release_indice">Indice de la version</label><input type="text" class="form-control" id="release_index"/></div><div class="form-group"><button class="btn btn-default" id="confirm_version">Créer la version</button></div></div></div></div>');
 	    $('.modal').modal('show');
 	    $('.modal').on('shown.bs.modal', function() {
-		$("#release_name").val($('#toc_root').data('kolekti-tocname')+'_');
+		$("#release_name").val($('#toc_root').data('kolekti-tocname'));
+		$("#release_index").val(fmtdate(new Date()));
 		$("#release_name").focus();
 	    })
 
 	    $('#modalform').submit( function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		params['pubdir'] = $('#release_name').val().replace('/','_')
-		var assembly = "/releases/"+params['pubdir']+"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
+		
+		params['release_name'] = $('#release_name').val().replace('/','_')
+		params['release_index'] = $('#release_index').val().replace('/','_')
+		params['pubdir'] = params['release_name'] + '_' +params['release_index'];
+		var assembly = "/releases/"+ params['pubdir'] +"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
 		$.get(assembly)
 		    .success(function() {
 			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))

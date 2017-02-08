@@ -420,8 +420,8 @@ var kolekti_browser = function(args) {
 		$(parent).find('.dirlist tr.file').each(function(i,e){
 		    promise_setup_file(e)
 		});
-
-	    }
+	    } // os actions 
+	    
 	    set_browser_value(path + '/');
 
 	    $.get('/sync/resstatus',{'path':path})
@@ -607,10 +607,12 @@ var kolekti_browser = function(args) {
 	    });
 	    bsort(sort, order == "asc")
 	    
-
+	    promise_setup();
+	    
 	    if (modal)
 		$('.modal').modal();
 	});
+
 	$(window).trigger('kolektibrowserchange');
     } // end update function
 
@@ -719,11 +721,17 @@ var kolekti_browser = function(args) {
 	    resfuncs['setup_file']=f;
 	    return return_functions;
 	},
+	'setup':function(f) {
+	    console.log("register setup")
+	    resfuncs['setup']=f;
+	    return return_functions;
+	},
     };
 
     // calls register callback functions
 
     var closure_select = function(e) {
+	console.log(get_browser_value())
 	resfuncs['select'].length && e.preventDefault() 
 	resfuncs['select'] && resfuncs['select'](get_browser_value());
     };	
@@ -737,6 +745,11 @@ var kolekti_browser = function(args) {
 	var f = $(e).data('name'); 
 	resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, path, f);
     };
+    var promise_setup = function() {
+	console.log(resfuncs.setup)
+	console.log(resfuncs['setup'])
+	resfuncs['setup'] && resfuncs['setup']($(parent), path);
+    };
 
 
     // click on file
@@ -749,7 +762,11 @@ var kolekti_browser = function(args) {
 		window.history.pushState({path:path},document.title,'?path='+path)
 	    update();
 	} else {
-	    set_browser_value(path + '/' + $(this).html())
+	    if ($(this).attr('href') != "#") {
+		set_browser_value($(this).attr('href'))
+	    } else {
+		set_browser_value(path + '/' + $(this).html())
+	    }
 	    closure_select(e)
 	}
 

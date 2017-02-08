@@ -2,6 +2,12 @@
 
 {% block title %}Versions{% endblock %}
 {% block current_releases %}class="menu-current"{% endblock %}
+
+{% block extracss %}
+<link href="/static/css/kolekti-releases-browser.css" rel="stylesheet">
+{% endblock %}
+
+
 {% block extrascripts %}
     <script src="/static/js/kolekti-releaselist.js"></script>
 {% endblock %}

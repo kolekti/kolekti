@@ -510,6 +510,12 @@ Defines events for languages and release state in toolbar
 	    
 	});
     }
+
+    // update release
+
+    $('#btn_update').on('click', function() {
+	
+    })
     
 
 })
