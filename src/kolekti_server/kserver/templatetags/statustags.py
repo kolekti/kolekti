@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 from django import template
 
@@ -7,7 +7,7 @@ register = template.Library()
 @register.filter(is_safe=True)
 def statustext(string):
     res =  "Non initialisé"
-    if len(string):
+    if string is not None and len(string):
         if string == 'edition':
             res =  "Nouveau"
         elif string == 'translation':

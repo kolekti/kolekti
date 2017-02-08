@@ -39,6 +39,7 @@ urls = [
     url(r'^releases/$', ReleaseListView.as_view(), name='releaselist'),
     url(r'^releases/detail/$', ReleaseDetailsView.as_view(), name='releasedetail'),
     url(r'^releases/state/', ReleaseStateView.as_view(), name='releasestate'),
+    url(r'^releases/states/', ReleaseAllStatesView.as_view(), name='releasestates'),
     url(r'^releases/focus/', ReleaseFocusView.as_view(), name='releasefocus'),
     url(r'^releases/copy/', ReleaseCopyView.as_view(), name='releasecopy'),
     url(r'^releases/delete/', ReleaseDeleteView.as_view(), name='releasedelete'),

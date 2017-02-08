@@ -135,6 +135,8 @@ DATABASES = {
     }
 }
 
+ACCOUNT_ACTIVATION_DAYS = 7;
+    
 KOLEKTI_BASE = __get_config('KOLEKTI_BASE','InstallSettings','projectspath')
 KOLEKTI_SVN_ROOT = __get_config('KOLEKTI_SVN_ROOT','InstallSettings','svnroot')
 KOLEKTI_SVN_PASSFILE = __get_config('KOLEKTI_SVN_PASSFILE','InstallSettings','svnpassfile')

@@ -87,11 +87,12 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-        
+        logger.debug(ET.tostring(assembly)[:1000])
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
+
                         
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly, action="'assemble'")
@@ -1026,7 +1027,7 @@ class Releaser(Publisher):
             assembly_dir += "/"
         return assembly_dir
 
-    def make_release(self, toc, job, release_name=None):
+    def make_release(self, toc, job, release_dir=None):
         """ releases a kolekti toc, using the profiles sets present in jobs list"""
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
@@ -1034,36 +1035,53 @@ class Releaser(Publisher):
         logger.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
-            if release_name is None:
+            if release_dir is None:
                 raise Exception('Toc in xml format, with no release name provided')
         else:
             xtoc = self.parse(toc)
-        #        release_name = os.path.splitext(pubdir.rsplit("/", 1)[1])[0]
-
+            for m in xtoc.xpath("/h:html/h:head/h:meta[starts-with(@name,'kolekti.')]",namespaces=self.nsmap):
+                m.getparent().remove(m)
+            ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.toc","content": toc})
+            
         if isinstance(job,ET._ElementTree):
             xjob = job.getroot()
         else:
             xjob = self.parse(job).getroot()
-        release_name = xjob.get('pubdir', release_name)
-        xjob.set('id',release_name + '_asm')
+            ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.job","content": job})
 
-        # xtoc.xpath("/h:html/h:head/h:title",namespaces=self.nsmap)[0].text = release_name
-        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "meta", attrib = {"name":"kolekti:releasename","content": release_name})
-
+        release_dir = xjob.get('pubdir', release_dir)
+        release_name = xjob.get('releasename', release_dir)
+        release_index = xjob.get('releaseindex', "")
+        release_prev_index = xjob.get('releaseprev')
+        xjob.set('id',release_dir + '_asm')
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releasedir","content": release_dir})
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releasename","content": release_name})
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releaseindex","content": release_index})
+        if not(release_prev_index is None):
+            ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releaseprev","content": release_prev_index})
+        # logger.debug(ET.tostring(xtoc)[:1000])
         # assembly
         logger.debug('********************************** CREATE ASSEMBLY')
         assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
-        res.append({"event":"release_creation",
-                    "lang":self._publang,
-                    "assembly_dir":assembly_dir,
-                    "pubname":pubname,
-                    "releasename":release_name,
-                    "datetime":time.time(),
-                    "toc":xtoc.xpath('/html:html/html:head/html:title/text()',namespaces={"html":"http://www.w3.org/1999/xhtml"}),
-                    "content":events,
-                    })
+        create_event = {
+            "lang":self._publang,
+            "assembly_dir":assembly_dir,
+            "pubname":pubname,
+            "releasedir":release_dir,
+            "releasename":release_name,
+            "releaseindex":release_index,
+            "releaseprev":release_prev_index,                    
+            "datetime":time.time(),
+            "toc":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.toc"]/@content)',namespaces=self.nsmap),
+            "job":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.job"]/@content)',namespaces=self.nsmap),
+                    }
+        self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = False)
+        create_event.update({
+            "event":"release_creation",
+            "content":events,
+        })
+        res.append(create_event)
 
-        # self.write('<publication type="release"/>', assembly_dir+"/.manifest")
         self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         #if self.syncMgr is not None :

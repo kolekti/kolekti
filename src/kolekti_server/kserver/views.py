@@ -127,7 +127,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             userprojects = UserProject.objects.filter(user = self.request.user)
         else:
             userprojects = UserProject.objects.all()
-        logger.debug(userprojects)
+
         for up in userprojects:
             project={
                 'userproject':up,
@@ -567,6 +567,16 @@ class TocCreateView(kolektiMixin, View):
 class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
+class ReleaseAllStatesView(kolektiMixin, TemplateView):
+    def get(self, request):
+        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        languages, release_languages, default_srclang = self.project_langs()
+        states = {}
+        for lang in release_languages:
+            states.update({lang:self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))})
+        return HttpResponse(json.dumps(states),content_type="application/json")
+
+    
 class ReleaseStateView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
@@ -721,6 +731,11 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
         assembly_name = self.basename(release_path)
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
+        xassembly = self.parse(assembly_path)
+        assembly_meta = {}
+        for meta in xassembly.xpath("/h:html/h:head/h:meta",namespaces = {"h":"http://www.w3.org/1999/xhtml"}):
+            if meta.get('name') is not None:
+                assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
         srclang = self.syncMgr.propget('release_srclang', assembly_path)
         parameters = self.parse('/'.join([release_path,"kolekti","publication-parameters",assembly_name+"_asm.xml"]))
         profiles = []
@@ -739,6 +754,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'success':True,
             'release_path':release_path,
             'assembly_name':assembly_name,
+            'assembly_meta':assembly_meta,
             'lang':lang,
             'srclang':srclang,
             'validactions':self.__has_valid_actions(release_path)
@@ -753,7 +769,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         assembly_path = '/'.join([release_path,'sources',lang,'assembly',assembly_name+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
         xassembly = self.parse_string(payload)
-
+        
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.update_assembly_lang(xassembly, lang)
@@ -1146,18 +1162,40 @@ class ImportTemplateView(kolektiMixin, TemplateView):
     
 class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
+        project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username,request.kolekti_userproject.project.directory)
+        from kolekti.synchro import SynchroManager
+        synchro = SynchroManager(project_path)
+        project_svn_url = synchro.geturl()
+
         settings_js="""
         var kolekti = {
         "lang":"%s",
-        "project":"%s"
+        "project":"%s",
+        "project_svn_url":"%s"
         }
-        """%(self.request.kolekti_userproject.srclang, self.request.kolekti_userproject.project.name)
+        """%(
+            self.request.kolekti_userproject.srclang,
+            self.request.kolekti_userproject.project.name,
+            self.process_svn_url(project_svn_url))
         return HttpResponse(settings_js,content_type="text/javascript")
     
 class SettingsJsonView(kolektiMixin, TemplateView):
     template_name = "settings/list.html"
     def get(self, request):
-        context = self.get_context_data()
+        context = {
+            'kolekti':self._config,
+            'kolektiversion' : self._kolektiversion
+            }
+        if request.kolekti_userproject is not None:
+            languages, release_languages, default_srclang = self.project_langs()
+            context.update({
+                'srclangs' : languages,
+                'releaselangs' : release_languages,
+                'default_srclang':default_srclang,
+                'active_project_name' : self.request.kolekti_userproject.project.name,
+                'active_srclang' : self.request.kolekti_userproject.srclang,
+            })
+
         return HttpResponse(json.dumps(context),content_type="application/json")
         
 
@@ -1354,17 +1392,41 @@ class BrowserView(kolektiMixin, View):
             print traceback.format_exc()
 
 class BrowserReleasesView(BrowserView):
+    template_name = "browser/releases.html"
     def get_directory(self, path):
 
         try:
+            releases = {}
             res = []
             for assembly, date in self.get_release_assemblies(path):
-                res.append({'name':assembly,
-                            'type':"text/xml",
-                            'date':date})
-
-            return res
+                item = {'name':assembly,
+                        'type':"text/xml",
+                        'date':date}
+                res.append(item)
+                try:
+                    found = False
+                    mf = json.loads(self.read('/'.join([path, assembly, 'release_info.json'])))
+                    releasename = mf.get('releasename')
+                    releaseindex = mf.get('releaseindex')
+                    
+                    r = {'name':releaseindex, 'type':"text/xml", 'date':date}
+                    try:
+                        releases[releasename]['indexes'].append(r)
+                    except KeyError:
+                        releases[releasename] = {
+                            'name':releasename,
+                            'type':"text/xml",                                   
+                            'date':None,
+                            'indexes':[r]}
+                        found = True
+                except:
+                    releases[assembly]=item
+                    logger.error('release list error')
+            # logger.debug(releases)
+            return releases.values()
+#            return res
         except:
+            logger.exception('release list error')
             import traceback
             print traceback.format_exc()
             return super(BrowserReleasesView, self).get_directory(path)
@@ -1487,12 +1549,16 @@ class ReleaseView(PublicationView):
     def post(self,request):
         tocpath = request.POST.get('toc')
         jobpath = request.POST.get('job')
-        pubdir  = request.POST.get('pubdir')
+        release_name  = request.POST.get('release_name')
+        release_index  = request.POST.get('release_index')
+        release_prev_index  = request.POST.get('release_prev_index')
+        pubdir  = "%s_%s"%(release_name, release_index)
+                
 #        pubtitle= request.POST.get('pubtitle')
 
         
         profiles = request.POST.getlist('profiles[]',[])
-        print profiles
+
         # print profiles
         scripts = request.POST.getlist('scripts[]',[])
         context={}
@@ -1513,7 +1579,11 @@ class ReleaseView(PublicationView):
                     jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
-            
+            xjob.getroot().set('releasename',release_name)
+            xjob.getroot().set('releaseindex',release_index)
+            if not (release_prev_index is None):
+                xjob.getroot().set('releaseprevindex',release_prev_index)
+                        
             return StreamingHttpResponse(self.format_iterator(self.release_iter(self.request.kolekti_projectpath, tocpath, xjob)))
 #            r = publish.Releaser(projectpath, lang=self.request.kolekti_userproject.srclang)
 #            pp = r.make_release(tocpath, xjob)
@@ -1542,17 +1612,17 @@ class ReleaseView(PublicationView):
         yield {
             'event':'release',
             'ref':release_dir,
-            'releasename':pp[0]['releasename'],
+            'releasedir':pp[0]['releasedir'],
             'time':pp[0]['datetime'],
             'lang':lang,
         }
+        
         if self.syncMgr is not None :
-            
-            self.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasename']+'_asm.html']))
+            self.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
         p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
-            
+        
             
 class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit-ckeditor.html"

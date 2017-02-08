@@ -54,6 +54,18 @@
       </div>
     </div>
 
+    {% if assembly_meta.kolekti_releasename and assembly_meta.kolekti_releaseindex %}
+    <div class="row top-margin">
+      <div class="col-sm-12 col-md-12">
+	<div class="btn-group btn-group-justified" role="group">
+	  <div class="btn-group" role="group">
+	    <button type="button" class="btn btn-default btn-update" id="btn_update">Actualiser</button>
+	  </div>
+	</div>
+      </div>
+    </div>
+    {% endif %}
+
 
     <br/>
 
