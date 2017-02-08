@@ -28,8 +28,13 @@
     border-bottom-color: #d9edf7;
 }
 
-.kolekti-browser-release-state .langstate.sourcelang,
+
 .kolekti-browser-release-state .langstate.publication {
     background-color: #dff0d8;
     border-bottom-color: #dff0d8;
+}
+
+.kolekti-browser-release-state .langstate.sourcelang {
+    background-color: #bff0aa;
+    border-bottom-color: #bff0aa;
 }

@@ -31,7 +31,9 @@ $(document).ready(function() {
 		console.log(releasepath)
 		$.getJSON('/releases/states/?release=/release/'+releasepath)
 		    .success(function(data) {
-			$.each(data, function(i,v) {
+			$.each(data, function(index,item) {
+			    var i = item[0]
+			    var v = item[1]
 			    console.log(i,v,this)
 			    if (v)
 				statecell.append($('<span>',{
