@@ -571,9 +571,13 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         languages, release_languages, default_srclang = self.project_langs()
-        states = {}
+        states = []
         for lang in release_languages:
-            states.update({lang:self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))})
+            state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            if state == "source_lang":
+                states.insert(0,(lang, state))
+            else:
+                states.append((lang, state))
         return HttpResponse(json.dumps(states),content_type="application/json")
 
     
