@@ -2,7 +2,8 @@ from django.conf.urls import patterns, include, url
 
 from kserver.views import *
 from kserver_saas.views import *
-from translators.urls import *
+from translators.views import *
+# from translators.urls import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -10,7 +11,6 @@ from django.conf.urls.static import static
 from django.views.static import serve as staticView
 
 from django.contrib import admin
-admin.autodiscover()
 
 urls = [
     url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
@@ -147,3 +147,4 @@ urls.extend([
 urlpatterns = patterns('', *urls)
 
 
+admin.autodiscover()
