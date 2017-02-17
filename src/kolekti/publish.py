@@ -13,6 +13,8 @@ import logging
 import json
 from lxml import etree as ET
 
+from django.utils.text import get_valid_filename
+
 from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
 from kolekti import plugins
@@ -230,6 +232,9 @@ class Publisher(PublisherMixin, kolektiBase):
                     logger.debug(traceback.format_exc())
                     
                 # invoke scripts
+                logger.debug(profilename, "starting scripts")
+#                logger.debug(ET.tostring(xjob))
+                    
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
                     indata = pivot
                     listres = []
@@ -781,6 +786,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
 
+
     def script_lesscompile(self, lessfile, srcdir, pubdir, dstdir):
         srcpath = u'@design/publication/%s' %srcdir
         destcd = unicode(self.__pubdir+'/'+dstdir+'/'+lessfile+'.parts')
@@ -1113,9 +1119,24 @@ class Releaser(Publisher):
         self.xwrite(xjob, assembly_dir + "/kolekti/publication-parameters/" + pubname + ".xml")
 
 
+class ReleaseTranslation(Publisher):
+    def __init__(self, release_dir, *args, **kwargs):
+        self._publangs = None
+        if kwargs.has_key('lang'):
+            self._publang = kwargs.get('lang')
+            kwargs.pop('lang')
+        self._release_dir = release_dir
+        super(ReleasePublisher, self).__init__(*args, **kwargs)
+        if self._publangs is None:
+            self._publangs = self._project_settings.xpath("/settings/releases/lang/text()")
+        self._cleanup = False
+        
+    def getPublisherExtensions(self):        
+        return ReleasePublisherExtensions
 
-
-
+    def check_assembly(self, assembly):
+        pass
+    
 class ReleasePublisher(Publisher):
     def __init__(self, release_dir, *args, **kwargs):
         self._publangs = None
@@ -1147,14 +1168,96 @@ class ReleasePublisher(Publisher):
 
     def process_path(self, path):
         return self.assembly_dir() + "/" + super(ReleasePublisher,self).process_path(path)
-    
+
     def publish_assembly(self, assembly):
+        try :
+            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        except:
+            import traceback
+            errev = {
+                'event':'error',
+                'msg':"parametres de publication invalides",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            yield errev
+
+        for ev in publish_release(assembly, xjob):
+            yield ev
+        return
+    
+    def directories_simple_pdf(self, assembly):
+        try :
+            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        except:
+            import traceback
+            errev = {
+                'event':'error',
+                'msg':"parametres de publication invalides",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            yield errev
+            return
+
+        assembly_dir = self.assembly_dir(xjob)
+
+        for jobscript in xjob.xpath('/job/scripts/script'):
+            jobscript.set("enabled","0")
+        for jobprofile in xjob.xpath('/job/profiles/profile'):
+            jobprofile.find('dir').set('value',get_valid_filename(jobprofile.find('label').text))
+            logger.debug(jobprofile.find('dir').get('value'))
+            for lang in self._publangs:
+                self._publang = lang
+                ref = "%s/draft_%s"%(self.pubdir(assembly_dir, jobprofile), lang)
+                logger.debug(ref+".pdf")
+                yield (jobprofile.find('label').text, ref, self.exists(ref+".pdf"))
+
+        return
+                
+    def publish_simple_pdf(self, assembly):
+        try :
+            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        except:
+            import traceback
+            errev = {
+                'event':'error',
+                'msg':"parametres de publication invalides",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            pubevents.append(errev)
+            yield errev
+
+        for jobscript in xjob.xpath('/job/scripts/script'):
+            jobscript.set("enabled","0")
+        for jobprofile in xjob.xpath('/job/profiles/profile'):
+            jobprofile.find('dir').set('value',get_valid_filename(jobprofile.find('label').text))
+            
+        script = ET.XML("""
+        <script name="weasyprint" enabled="1">
+        <label>WPpdf</label>
+        <filename>draft_{LANG}</filename>
+        <parameters>
+        <parameter name="CSS" value="revue_pdfA4"/>
+        <parameter name="two_passes" value="no"/>
+        </parameters>
+        </script>""")
+        xjob.xpath('/job/scripts')[0].append(script)
+
+#        logger.debug(ET.tostring(xjob))
+        
+        for ev in self.publish_release(assembly, xjob):
+            yield ev
+
+        return
+    
+    def publish_release(self, assembly, xjob):
         """ publish an assembly"""
         pubevents = []
         try :
             for lang in self._publangs:
                 langpubevt = []
-                
                 
                 self._publang = lang
                 try:
@@ -1173,7 +1276,6 @@ class ReleasePublisher(Publisher):
                     yield errevt
                     return
 
-                xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
 
                 for pubres in self.publish_job(xassembly, xjob.getroot()):
                     langpubevt.append(pubres)
