@@ -1,29 +1,104 @@
 {% extends 'translators_base.html' %}
 
-{% block extra-scripts %}
-<script type="text/javascript" href="/static/js/translators.js"/>
+{% block extracss %}
+    <link href="/static/css/translation-langlist.css" type="text/css" rel="stylesheet"/>
+{% endblock %}
+
+{% block extrascripts %}
+    <script type="text/javascript" src="/static/js/translators.js"></script>
+    <script type="text/javascript" src="/static/js/translators-upload.js"></script>
 {% endblock %}
 
 {% block page-content %}
 <div class="row">
-  <div class="offset-sm-1 col-sm-10">
+  <div class="col-md-offset-1 col-md-10">
 
     {% for release in releases %}
-<div class="panel panel-default">
+<div class="panel panel-default release" data-project="{{ release.self.project.directory }}" data-release="{{ release.self.release_name }}">
   <div class="panel-heading">
     <h3 class="panel-title">
-      <span class="project_name">{{ release.project.name }}</span>
-      <span class="release_name">{{ release.release_name }}</span>
+      <span class="project_name">{{ release.self.project.name }}</span>
+      <span class="release_name">{{ release.self.release_name }}</span>
     </h3>
   </div>
   <div class="panel-body">
-    <div class="kolekti-release-langs" data-project="{{ release.project.directory }}" data-release="{{ release.release_name }}">
+    <div class="row">
+      <div class="col-md-6">
+
+	<div class="kolekti-release-langs" >
+      <!-- foo -->
+      
+	</div>
+	<div class="kolekti-release-documents">
+	  {{ manifest }}
+	</div>
+      </div>
+      
+      <div class="col-md-6">
+	<div class="panel panel-default">
+	  <div class="panel-heading"><i class="fa fa-download"></i> Download</div>
+	  <div class="panel-body">
+	    <ul>
+	      <li>
+		<a class="link-source" href="{% url 'translators_src_zip' project=release.self.project.name %}?release={{ release.self.release_name }}">Sources (zip)</a> <span class="lang-source"></span>
+	      </li>
+	      <li>
+		<a class="link-source" href="{% url 'translators_src_assembly' project=release.self.project.name %}?release={{ release.self.release_name }}">Assembly</a> <span class="lang-source"></span>
+	      </li>
+	    </ul>
+	  </div>
+	</div>
+
+	<div class="panel panel-default">
+	  <div class="panel-heading"><i class="fa fa-upload"></i> Upload updates</div>
+	  <div class="panel-body">
+	    <form class="form-horizontal form-upload-translation"
+		  action="{% url 'translators_upload' project=release.self.project.name release=release.self.release_name %}"
+		  method="POST"
+		  enctype="multipart/form-data">
+	      <input type="hidden" name="release" value="{{ release.self.release_name }}"/>
+	      <input type="hidden" name="project" value="{{ release.self.project.directory }}"/>
+	      <div class="form-group">
+		<label for="languagefield" class="col-sm-2 control-label">Language</label>
+		<div class="col-sm-10">
+		  <select class="form-control" id="languagefield" name="lang">
+		    {% for lang in release.langs.1 %}
+		    <option>{{lang}}</option>
+		    {% endfor %}
+		  </select>
+		</div>
+	      </div>
+	      <div class="form-group">
+		<label for="filefield" class="col-sm-2 control-label">Upload file</label>
+		<div class="col-sm-10">
+		  <input class="form-control- upload" id="upload_field" name="upload_file" type="file" />
+		</div>
+	      </div>
+	      <div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+		  <button type="submit" class="btn btn-default">Upload</button>
+		</div>
+	      </div>
+	    </form>
+
+	    <div class="upload-success hidden alert alert-success" role="alert">
+	      <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	      <div class="alert-content"></div>
+	    </div>
+	    <div class="upload-error hidden alert alert-warning" role="alert">
+	      <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>	      
+	      <div class="alert-content"></div>
+	    </div>
+	    <div class="upload-progress hidden alert alert-warning">
+	      <i class='fa fa-refresh fa-spin'></i> Upload in progress...
+	    </div>
+	  </div>
+	</div>
+      </div>
       
     </div>
-    <a href="#">Download sources (zip)</a>
-    <a href="#">Download assembly</a>    
   </div>
-</div>
+</div>  
 
 {% endfor %}
   </div>
