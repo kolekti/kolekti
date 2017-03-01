@@ -13,9 +13,10 @@ from django.views.static import serve as staticView
 from django.contrib import admin
 
 urls = [
-    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
+#    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
-    url(r'^accounts/', include('registration.backends.default.urls')),
+#    url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^accounts/', include('allauth.urls')),
     url(r'^auth/', include('django.contrib.auth.urls')),
 
     url(r'^translator/', include('translators.urls')),

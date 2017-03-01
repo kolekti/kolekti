@@ -2,7 +2,7 @@
 {% load bootstrap %}
 {% block menu %}
 <div data-spy="affix" data-offset-top="0" id="sideaffix">
-  <div class="panel panel-default">
+<div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
 	Connexion
@@ -10,7 +10,7 @@
     </div>
     <div class="panel-body">
       <p>Vous êtes déconnecté</p>
-      <a href="{% url 'django.contrib.auth.views.login' %}">Se reconnecter</a>
+      <a href="{% url 'account_login' %}">Se reconnecter</a>
     </div>
   </div>
 </div>

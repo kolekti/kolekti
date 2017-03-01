@@ -28,6 +28,15 @@ DEBUG = True
 HOSTNAME=os.getenv('VIRTUAL_HOST','0.0.0.0')
 ALLOWED_HOSTS = [HOSTNAME,'127.0.0.1', 'localhost']
 
+SITE_ID = 1 
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+    )
 
 # Application definition
 
@@ -37,11 +46,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'bootstrapform',
-    'registration',
+#    'registration',
     'kserver',
     'kserver_saas',
     'translators',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'django.contrib.admin',
 )
 
@@ -82,7 +95,7 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-FR'
 
 TIME_ZONE = 'UTC'
 
