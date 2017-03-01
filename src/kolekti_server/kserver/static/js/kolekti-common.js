@@ -118,7 +118,11 @@ $(function() {
     
     $('body').on('keyup',".input-filter-menu", function(e) {
 	var filter = this.value.toLowerCase();
-	$(this).closest('ul').find('li.filterable')
+	var filterable = $($(this).data('filter-list'))
+	if (filterable.length == 0)
+	    filterable = $(this).closest('ul')
+	
+	filterable.find('.filterable')
 	    .each(function() {
 		$(this).show();
 		var itemval = $(this).attr('data-filter-value').toLowerCase();
@@ -130,7 +134,7 @@ $(function() {
     $(document).on('shown.bs.dropdown','.filterable-menu', function () {
 	$(this).find('.input-filter-menu').val('');
 	$(this).find('.input-filter-menu').focus();
-	$(this).find('li.filterable')
+	$(this).find('.filterable')
 	    .each(function() {
 		$(this).show()
 	    });

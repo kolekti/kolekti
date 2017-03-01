@@ -14,8 +14,11 @@ urls = [
         url('publish/$', TranslatorsPublishView.as_view(), name='translators_publish'),
         url('source/zip/$', TranslatorsSourceZipView.as_view(), name='translators_src_zip'),
         url('source/assembly/$', TranslatorsSourceAssemblyView.as_view(), name='translators_src_assembly'),
+        url(r'^admin/$', TranslatorsAdminView.as_view(), name='translators_admin'),
         url(r'^(?P<release>[0-9_. \w-]+)/', include([
             url(r'^$', TranslatorsHomeView.as_view(), name='translators_release'),
+            url(r'^admin/add$', TranslatorsAdminAddView.as_view(), name='translators_admin_add'),
+            url(r'^admin/remove$', TranslatorsAdminRemoveView.as_view(), name='translators_admin_remove'),            
             url('upload/$', TranslatorsUploadView.as_view(), name='translators_upload'),
             url(r'^(?P<lang>[_.\w-]+)/', include([
                 url('commit/$', TranslatorsCommitLangView.as_view(), name='translators_commit_lang'),

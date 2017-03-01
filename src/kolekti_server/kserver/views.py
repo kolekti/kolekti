@@ -341,14 +341,16 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
     
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
+
     def get(self, request):
-        try:
-            request.user.groups.get(name=u'translator')
-            return HttpResponseRedirect(reverse('translators_home')) 
-        except ObjectDoesNotExist:
-            context = self.get_context_data()
-            if context.get('active_project') is None:
+        context = self.get_context_data()
+        if context.get('active_project') is None:
+            try:
+                request.user.groups.get(name=u'translator')
+                return HttpResponseRedirect(reverse('translators_home')) 
+            except ObjectDoesNotExist:
                 return HttpResponseRedirect(reverse('projects')) 
+        else:
             return self.render_to_response(context)
 
 

@@ -5,18 +5,19 @@ from lxml import etree as ET
 
 from django.views.static import serve
 from django.shortcuts import render
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.views.generic import View,TemplateView, ListView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-
+from django.contrib.auth.models import User
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
 
 # kolekti imports
 
-from kserver_saas.models import UserProject
+from kserver_saas.models import Project, UserProject
 from kserver.views import LoginRequiredMixin, ReleaseAllStatesView
 
 from models import TranslatorRelease
@@ -107,15 +108,67 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             if release is not None:
                 releases = releases.filter(release_name = release)
         context = {'releases':[]}
-        for release in releases:    
+        for release in releases:
             context['releases'].append({
                 'self' : release,
                 'langs': self.project_languages(release.project.directory)
                 })
             
         return self.render_to_response(context)
-    
 
+class TranslatorsAdminView(TranslatorsMixin, TemplateView):
+    template_name = "translators_admin.html"
+    def get(self, request, project):
+        try:
+            uesrproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
+        except  UserProject.DoesNotExist:
+            return HttpResponse(status=401)
+        releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
+        releases = []
+        for release in os.listdir(releasepath):
+            releaseinfo = {'langs':[], 'name':release}
+            for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
+                    assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')
+                    if os.path.exists(assemblypath):
+                        releaseinfo['langs'].append({'lang': lang})
+                    
+            releaseinfo.update({
+                'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
+                })
+            releases.append(releaseinfo) 
+        context = {
+            'translators': User.objects.filter(groups__name='translator'),
+            'releases':releases,
+            'languages':self.project_languages(project),
+            'project': Project.objects.get(directory = project)
+            }            
+        return self.render_to_response(context)
+
+class TranslatorsAdminAddView(LoginRequiredMixin, TranslatorsMixin, TemplateView):
+    def post(self, request, project, release):
+        username = request.POST.get('translator')
+        user = User.objects.get(username = username)
+        _project = Project.objects.get(directory = project) 
+        try:
+            tr = TranslatorRelease.objects.get(release_name = release, user = user, project = _project)
+        except TranslatorRelease.DoesNotExist:
+            tr = TranslatorRelease(project = _project, release_name = release, user = user)
+            tr.save()
+        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+
+class TranslatorsAdminRemoveView(LoginRequiredMixin, TranslatorsMixin, TemplateView):
+    def post(self, request, project, release):
+        username = request.POST.get('translator')
+        user = User.objects.get(username = username)
+        try:
+            tr = TranslatorRelease.objects.get(release_name = release, project__directory = project, user = user)
+            logger.debug(tr)
+            tr.delete()
+            
+        except TranslatorRelease.DoesNotExist:
+            logger.debug('not found')
+        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+    
 class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseAllStatesView):
     def get(self, request, project):
         self.project(project)        
