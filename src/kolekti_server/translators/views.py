@@ -32,14 +32,8 @@ def in_translator_group(user):
         return user.groups.filter(name='translator').count() == 1
     return False
 
-
-        
-class TranslatorsMixin(kolektiBase):
-    @method_decorator(user_passes_test(in_translator_group, login_url='/'))
-    def dispatch(self, *args, **kwargs):
-        return super(TranslatorsMixin,  self).dispatch(*args, **kwargs)
-
-
+class TranslatorsSharedMixin(kolektiBase):
+   
     def project(self, project):
         projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
         # up = UserProject.objects.get(user = self.request.user, project__directory = project)
@@ -57,6 +51,23 @@ class TranslatorsMixin(kolektiBase):
         except AttributeError:
             return ['en'],['en','fr','de'],'en'
 
+
+        
+class TranslatorsAdminMixin(TranslatorsSharedMixin):
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(TranslatorsAdminMixin, cls).as_view(**initkwargs)
+        if settings.KOLEKTI_MULTIUSER:
+            return login_required(view)
+        else:
+            return view
+
+
+    
+class TranslatorsMixin(TranslatorsSharedMixin):
+    @method_decorator(user_passes_test(in_translator_group, login_url='/'))
+    def dispatch(self, *args, **kwargs):
+        return super(TranslatorsMixin,  self).dispatch(*args, **kwargs)
 
     def send_mail_translation_added(self, project, release, lang, user):
         dst = [up.user.email for up in UserProject.objects.filter(project__directory = project, is_admin = True)]
@@ -116,7 +127,7 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             
         return self.render_to_response(context)
 
-class TranslatorsAdminView(TranslatorsMixin, TemplateView):
+class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
     template_name = "translators_admin.html"
     def get(self, request, project):
         try:
@@ -144,19 +155,21 @@ class TranslatorsAdminView(TranslatorsMixin, TemplateView):
             }            
         return self.render_to_response(context)
 
-class TranslatorsAdminAddView(LoginRequiredMixin, TranslatorsMixin, TemplateView):
+class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):
     def post(self, request, project, release):
         username = request.POST.get('translator')
         user = User.objects.get(username = username)
-        _project = Project.objects.get(directory = project) 
+        _project = Project.objects.get(directory = project)
         try:
             tr = TranslatorRelease.objects.get(release_name = release, user = user, project = _project)
         except TranslatorRelease.DoesNotExist:
+            # checkout 
+                    
             tr = TranslatorRelease(project = _project, release_name = release, user = user)
             tr.save()
         return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
 
-class TranslatorsAdminRemoveView(LoginRequiredMixin, TranslatorsMixin, TemplateView):
+class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
     def post(self, request, project, release):
         username = request.POST.get('translator')
         user = User.objects.get(username = username)

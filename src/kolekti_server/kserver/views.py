@@ -180,6 +180,8 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                 'releaselangs' : release_languages,
                 'default_srclang':default_srclang,
                 'active_project_name' : self.request.kolekti_userproject.project.name,
+                'active_project_directory' : self.request.kolekti_userproject.project.directory,                                      
+                'active_project_admin' : self.request.kolekti_userproject.is_admin,                           
                 'active_srclang' : self.request.kolekti_userproject.srclang,
 #                'syncnum' : self._syncnumber,
                 'kolektiversion' : self._kolektiversion,

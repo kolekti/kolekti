@@ -38,6 +38,13 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
     )
 
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_EMAIL_VERIFICATION="mandatory"
+ACCOUNT_ADAPTER = 'invitations.models.InvitationsAdapter'
+INVITATIONS_ALLOW_JSON_INVITES = True
+INVITATIONS_ACCEPT_INVITE_AFTER_SIGNUP = True
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -55,6 +62,7 @@ INSTALLED_APPS = (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'invitations',
     'django.contrib.admin',
 )
 

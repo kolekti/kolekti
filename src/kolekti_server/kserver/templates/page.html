@@ -54,6 +54,9 @@
 		<li><a href="/import/">Importer un fichier tableur</a></li>
 		<li role="presentation" class="divider"></li>
 		<li><a href="/sync/">Synchronisation</a></li>
+		{% if active_project_admin %}
+		<li><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
+		{% endif %}
 		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>
