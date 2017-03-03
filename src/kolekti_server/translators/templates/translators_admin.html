@@ -4,23 +4,35 @@
     <link href="/static/css/translation-langlist.css" type="text/css" rel="stylesheet"/>
 {% endblock %}
 
-{% comment %}
     {% block extrascripts %}
-    <script type="text/javascript" src="/static/js/translators.js"></script>
     <script type="text/javascript" src="/static/js/translators-admin.js"></script>
     {% endblock %}
-{% endcomment %}
+
     
 {% block page-content %}
 <div class="row">
   <div class="col-md-offset-1 col-md-10">
-    
-    <div class="form form-horizontal">
-      <div class="form-group">
-	<label for="translatorfield" class="control-label">Filter</label>
-	<input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
+
+    <div class="row">
+      <div class="col-md-6">
+	<div class="form form-horizontal">
+	  <div class="form-group">
+	    <label for="translatorfield" class="control-label">Filter</label>
+	    <input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
+	  </div>
+	</div>
+      </div>
+      <div class="col-md-6">	
+	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  <div id="invitation">
+	    Invite translator: <input type="text" placeholder="email" id="invite_email"/> <button class="btn btn-sm btn-default" id="invite_email_btn">Send</button>
+	  </div>
+	</div>
       </div>
     </div>
+    
+    
     <div class="row" id="release_list">
       {% for release in releases %}
       <div class="col-md-12">	

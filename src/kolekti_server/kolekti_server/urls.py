@@ -17,6 +17,7 @@ urls = [
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
 #    url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^accounts/', include('allauth.urls')),
+    url(r'^invitations/', include('invitations.urls', namespace='invitations')),
     url(r'^auth/', include('django.contrib.auth.urls')),
 
     url(r'^translator/', include('translators.urls')),
