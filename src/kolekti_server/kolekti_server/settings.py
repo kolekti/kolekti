@@ -23,10 +23,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9ewjmy&i^@0kgd6(bapt%@azcl2wka6ml^tcs9v*9@-2%705#y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-HOSTNAME=os.getenv('VIRTUAL_HOST','0.0.0.0')
-ALLOWED_HOSTS = [HOSTNAME,'127.0.0.1', 'localhost']
+DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
+if DEBUG:
+    HOSTNAME='0.0.0.0'
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
+    ALLOWED_HOSTS='*'
 
 SITE_ID = 1 
 
