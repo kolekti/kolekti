@@ -32,6 +32,7 @@ else:
     HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
     ALLOWED_HOSTS='*'
 
+
 SITE_ID = 1 
 
 AUTHENTICATION_BACKENDS = (
