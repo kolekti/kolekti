@@ -1,0 +1,39 @@
+
+.langstate {
+    margin-right:5px;
+    border-radius:2px;
+    height: 12px;
+    width: 10px;
+    padding: 0 2px;
+    border: 1px solid rgb(221, 221, 221);
+    border-bottom:3px solid #C0C0C0;
+    opacity:0.7;
+}
+
+
+.langstate.edition {
+    border-bottom-color: #d9edf7;
+}
+
+.langstate.translation,
+.langstate.validation {
+    background-color: #d9edf7;
+    border-bottom-color: #d9edf7;
+}
+
+
+.langstate.publication {
+    background-color: #dff0d8;
+    border-bottom-color: #dff0d8;
+}
+
+.langstate.sourcelang {
+    background-color: #bff0aa;
+    border-bottom-color: #bff0aa;
+}
+
+.langstate.active {
+    border-color: rgb(128, 128, 128);
+    border-bottom:3px solid #C0C0C0;
+    opacity:1;
+}
