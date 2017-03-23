@@ -387,7 +387,7 @@
     </li>
   </xsl:template>
 
-  <xsl:template match="html:img" mode="modcontent">
+  <xsl:template match="html:img[@class='copiedecran']" mode="modcontent">
     <xsl:copy>
       <xsl:copy-of select="@*"/>
       <xsl:attribute name="class">
@@ -396,7 +396,6 @@
       </xsl:attribute>
     </xsl:copy>
   </xsl:template>
-
 
   <xsl:template match="node()|@*" mode="modcontent">
     <xsl:copy>
