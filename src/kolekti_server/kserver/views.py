@@ -90,37 +90,47 @@ class LoginRequiredMixin(object):
         else:
             return view
 
-class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
-#    def __init__(self, *args, **kwargs):
-#        self.user_settings = Settings.objects.get()
-#        projectpath = os.path.join(settings.KOLEKTI_BASE, self.user_settings.active_project)
-#        super(kolektiMixin, self).__init__(projectpath,*args,**kwargs)
+class kolektiMixin(LoginRequiredMixin):
 
+    def get_kolekti(self, project):
+
+    
+    def get_context_data(self, data={}, **kwargs):
+        if settings.KOLEKTI_MULTIUSER:
+            user_projects =
+        else:
+            project_path = os.path.join(settings.KOLEKTI_BASE, project)
+        return kolektiBase(project_path)
+        context= {
+            'active_project':self.request.kolekti_userproject,
+            'projects':self.projects(),
+        }
+        
+        if 'project' in data.keys():
+            languages, release_languages, default_srclang = self.project_langs(data['project'])
+            context.update({
+                'kolekti':self._config,
+                'srclangs' : languages,
+                'releaselangs' : release_languages,
+                'default_srclang':default_srclang,
+                'active_project_name' : self.request.kolekti_userproject.project.name,
+                'active_srclang' : self.request.kolekti_userproject.srclang,
+#                'syncnum' : self._syncnumber,
+            })
+        context.update(data)
+        return context
+
+    
     def config(self):
         return self._config
-
-    def dispatch(self, *args, **kwargs):
-        if self.request.kolekti_userproject is not None:
-            self.set_project(self.request.kolekti_projectpath)
-        # try:
-        #     self.kolekti_userproject = self.request.user.userprofile.activeproject
-        #     if self.kolekti_userproject is not None:
-        #         self.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, self.kolekti_userproject.project.directory)
-        
-        #         self.set_project(self.kolekti_projectpath)
-        # except:
-        #     self.kolekti_userproject = None
-        #     logger.warning('user %s has no user profile', str(self.request.user))
-            
-        return super(kolektiMixin, self).dispatch(*args, **kwargs)
 
     def process_svn_url(self, url):
         localpath = "file://%s/"%(settings.KOLEKTI_SVN_ROOT,)
         remotepath = "http://%s/svn/"%(settings.HOSTNAME,)
-#        return localpath
         return url.replace(localpath, remotepath)
     
     def projects(self):
+        """List projects available for user"""
         projects = []
         logger.debug(self.request.user.username)
         if settings.KOLEKTI_MULTIUSER:
@@ -156,7 +166,9 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         return sorted(projects, key=lambda p: p.get('name').lower())
 
 
-    def project_langs(self):
+    # TODO
+    def project_langs(self, project):
+        kolekti = self.get_kolekti(project)
         try:
             return ([l.text for l in self._project_settings.xpath('/settings/languages/lang')],
                     [l.text for l in self._project_settings.xpath('/settings/releases/lang')],
@@ -165,27 +177,6 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             return ['en'],['en','fr','de'],'en'
         except AttributeError:
             return ['en'],['en','fr','de'],'en'
-    
-    def get_context_data(self, data={}, **kwargs):
-        context= {
-            'active_project':self.request.kolekti_userproject,
-            'projects':self.projects(),
-        }
-        
-        if self.request.kolekti_userproject is not None:
-            languages, release_languages, default_srclang = self.project_langs()
-            context.update({
-                'kolekti':self._config,
-                'srclangs' : languages,
-                'releaselangs' : release_languages,
-                'default_srclang':default_srclang,
-                'active_project_name' : self.request.kolekti_userproject.project.name,
-                'active_srclang' : self.request.kolekti_userproject.srclang,
-#                'syncnum' : self._syncnumber,
-                'kolektiversion' : self._kolektiversion,
-            })
-        context.update(data)
-        return context
 
     def get_toc_edit(self, path):
         xtoc = self.parse(path)
@@ -291,7 +282,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             raise Exception, xsl.error_log
         return str(ejob)
 
-    def get(self, request):
+    def get(self, request, **kwargs):
         context = self.get_context_data()
         return self.render_to_response(context)
 
@@ -339,13 +330,16 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             path = path + default
         return path
     
-class HomeView(kolektiMixin, View):
+class HomeView(kolektiMixin, TemplateView):
     template_name = "home.html"
     def get(self, request):
-
         context = self.get_context_data()
-        if context.get('active_project') is None:
-            return HttpResponseRedirect(reverse('projects')) 
+        return self.render_to_response(context)
+
+class ProjectHomeView(kolektiMixin, View):
+    template_name = "project_home.html"
+    def get(self, request, project):
+        context = self.get_context_data({'project':project})
         return self.render_to_response(context)
 
 
@@ -413,7 +407,7 @@ class ProjectsView(kolektiMixin, View):
             
 class ProjectsConfigView(kolektiMixin, View):
     template_name = "projects-config.html"
-    def get(self, request):
+    def get(self, request, project):
         settings = self.parse('/kolekti/settings.xml')
         
         context = self.get_context_data({
@@ -458,7 +452,9 @@ class ProjectsConfigView(kolektiMixin, View):
             import traceback
             print traceback.format_exc()
             return HttpResponse(status=404)
-                    
+
+
+        
 class ProjectsActivateView(ProjectsView):
     def get(self, request):
         project = request.GET.get('project')
@@ -510,7 +506,7 @@ class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
     
 
-class TocView(kolektiMixin, View):
+class TocEditView(kolektiMixin, View):
     template_name = "tocs/detail.html"
 
     def get(self, request):
@@ -840,7 +836,7 @@ class TopicsListView(kolektiMixin, TemplateView):
 class TopicTemplateListView(kolektiMixin, TemplateView):
     template_name = "topics/templates.html"
 
-class ImagesListView(kolektiMixin, TemplateView):
+class PicturesListView(kolektiMixin, TemplateView):
     template_name = "illustrations/list.html"
     def get(self, request):
         context = self.get_context_data({
@@ -849,7 +845,7 @@ class ImagesListView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class ImagesUploadView(kolektiMixin, TemplateView):
+class PictureUploadView(kolektiMixin, TemplateView):
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -860,7 +856,7 @@ class ImagesUploadView(kolektiMixin, TemplateView):
         else:
             return HttpResponse(status=500)
 
-class ImagesDetailsView(kolektiMixin, TemplateView):
+class PictureDetailsView(kolektiMixin, TemplateView):
     template_name = "illustrations/details.html"
     def get(self, request):
         path = request.GET.get('path')
@@ -1216,6 +1212,9 @@ class SettingsView(kolektiMixin, TemplateView):
 
 
 class PublicationTemplatesView(kolektiMixin, TemplateView):
+    template_name = "publication-templates/list.html"
+
+class JobListView(kolektiMixin, TemplateView):
     template_name = "publication-templates/list.html"
 
 
@@ -1630,7 +1629,6 @@ class ReleaseView(PublicationView):
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
         
-            
 class TopicEditorView(kolektiMixin, View):
     template_name = "topics/edit-ckeditor.html"
     def get(self, request):
@@ -1686,6 +1684,14 @@ class TopicTemplatesView(kolektiMixin, View):
         tnames = [t['name'] for t in tpls]
         return HttpResponse(json.dumps(tnames),content_type="application/json")
 
+class TemplateEditorView(TopicEditorView):
+    pass
+
+class TemplateCreateView(TopicCreateView):
+    pass
+
+
+    
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
         pathes = request.GET.getlist('pathes[]',[])
@@ -1873,23 +1879,23 @@ class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
         return serve(request, path, self.request.kolekti_projectpath)
 
+
 class ProjectHistoryView(kolektiMixin, View):
     def get(self, request):
         try:
             from kolekti.synchro import SynchroManager
             sync = SynchroManager(self.request.kolekti_projectpath)
             hist = sync.history()
-            hisrecords = [{"timestamp":r.date,"date":r.date,"user":r.author,"message":r.message,"rev":r.revision.number} for r in hist] 
+            hisrecords = [{"timestamp":r.date,"date":r.date,"user":r.author,"message":r.message,"rev":r.revision.number} for r in hist]
             return HttpResponse(json.dumps(hisrecords),content_type="application/json")
         except:
             logger.exception("Unable to get project history")
-
 
     
 class WidgetView(kolektiMixin, View):
     def get(self, request):
         context = self.get_context_data()
-        return self.render_to_response(context)    
+        return self.render_to_response(context)
 
 
 class WidgetProjectHistoryView(WidgetView):
@@ -1899,19 +1905,19 @@ class WidgetProjectHistoryView(WidgetView):
             from kolekti.synchro import SynchroManager
             sync = SynchroManager(self.request.kolekti_projectpath)
             return super(WidgetProjectHistoryView, self).get_context_data({
-                'history':sync.history()
-                })
+                    'history':sync.history()
+                    })
         except:
             logger.exception("Unable to get project history")
 
 
 class WidgetPublicationsListView(kolektiMixin, View):
     template_name = "widgets/publications.html"
-    
+
     def get(self, request):
         context = {
-            "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
-        }
+                "publications": [p for p in sorted(self.get_publications(), key = lambda a: a['time'], reverse = True) ]
+            }
         return self.render_to_response(context)
 
 class WidgetReleasePublicationsListView(kolektiMixin, View):
@@ -1919,9 +1925,7 @@ class WidgetReleasePublicationsListView(kolektiMixin, View):
 
     def get(self, request):
         context = {
-            "publications": [p for p in sorted(self.get_releases_publications(), key = lambda a: a['time'], reverse = True) ]
-        }
+                "publications": [p for p in sorted(self.get_releases_publications(), key = lambda a: a['time'], reverse = True) ]
+            }
         return HttpResponse(json.dumps(context),content_type="application/json")
         return self.render_to_response(context)
-
-          
