@@ -46,10 +46,10 @@
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
 	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="{% url 'variablelist' %}">Variables</a></li>
-		<li><a href="{% url 'criteriaedit' %}">Critères</a></li>
-		<li><a href="/projects/config">Langues</a></li>
-		<li><a href="/settings/">Paramètres de publication</a></li>
+		<li><a href="{% url 'kolekti_variables' project=project %}">Variables</a></li>
+		<li><a href="{% url 'kolekti_criteria_edit' %}">Critères</a></li>
+		<li><a href="{% url 'kolekti_languages_edit %}">Langues</a></li>
+		<li><a href="{% url 'kolekti_jobs'">Paramètres de publication</a></li>
 		<li><a href="{% url 'templatelist'%}">Modèles de modules</a></li>
 		<li><a href="{% url 'publication_templates'%}">Modèles de sorties</a></li>
 		<li role="presentation" class="divider"></li>

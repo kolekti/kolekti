@@ -1,45 +1,111 @@
-{% extends "base-wide.html" %}
+{% extends "base.html" %}
+{% load ostags %}
 
-{% block title %}{{ kolekti.project }}{% endblock %}
-{% block current_home %}class="menu-current"{% endblock %}
-{% block help-topic %}home{% endblock %}
+{% block current_tools %}menu-current{% endblock %}
 
-
-{% block extracss %}
-<link href="/static/css/kolekti-home.css" rel="stylesheet">
-{% endblock %}
-
-{% block content %}
-
-<div id="widgets_main">
-<!--
-  <div id="col_1" class="wcol col-lg-4">
-  </div>    
-  <div id="col_2" class="wcol col-lg-4">
-  </div>    
-  <div id="col_3" class="wcol col-lg-4">
-  </div>    
--->
-  <!--
-  <p>Projet : {{ kolekti.project }}
-    <a id="editprojects" href="/projects/" title="Gestionnaire de projets"><span class="glyphicon glyphicon-cog"> </span></a>
-
-  </p>
--->
-</div>
-{% endblock %}
+{% block title %}Gestion des projets{% endblock %}
+{% block help-topic %}projects{% endblock %}
 
 
-{% block footer %}
-<footer class="footer navbar-fixed-bottom navbar-inverse">
-  <div class="container-fluid">
-    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+{% block content %}    
+{% if projects|length %}
+<div id="menu">
+  <div class="panel panel-default list-group">
+    <!--
+	<div class="panel-heading">
+	  <h4>Projets disponibles</h4>
+	</div>
+	-->
+    {% for project in projects %}
+
+    <div class="panel-heading">
+      <a data-toggle="collapse" {% if project.name != active_project_name %}class="collapsed"{% endif %} href="#collapse_{{ project.id }}">
+	<small>
+	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"> </span>
+		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"> </span>
+	</small>
+      </a>
+
+      <strong>{{ project.name }}</strong> 
+      <span class="label label-info pull-right">
+	{% ifequal project.status  "svn" %}
+	partagé
+	{% else %}
+	local
+	{% endifequal %}
+      </span>
+		
+      {% if project.name == active_project_name %}
+      <span class="label label-warning pull-right">Actif</span>
+      <span>  </span>
+      {% endif %}
+    </div>
+  
+    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project_name %}in{% endif %}">
+      <div class="panel-body">
+	{% if project.name == active_project_name %}
+	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
+	  {% for lang in project.languages %}
+	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
+	  {% endfor %}
+	  </div>
+	  <a class="btn btn-xs btn-default" href="/projects/config">Configurer les langues</a>
+
+	<hr/>
+	{% endif %}
+	{% ifequal project.status "svn" %}
+	<p>url du dépot SVN : {{ project.url }}</p>
+	<hr/>
+	{% endifequal  %}
+
+	{% if project.name != active_project_name %}
+	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
+	{% endif %}
+      </div>      
+    </div>
+    {% endfor %}
   </div>
-</footer>
+</div>
+{% endif %}
 {% endblock %}
 
+{% block menu %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4>Nouveau projet</h4>
+  </div>
+  <div class="panel-body">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% endif %}
+    <form method="POST" action="/projects/">
+      <div class="form-group">
+	<label for="project">Dossier projet</label>
+	<input type="text" class="form-control" id="project" name="projectfolder" placeholder="Entrez le nom du dossier projet" value="{{ projectfolder }}">
+      </div>
+      <div class="form-group">
+	<label for="project">URL du dépot svn <br/>(laisser vide pour un projet local)</label>
+	<input type="url" class="form-control" id="svn" name="projecturl" placeholder="Entrez une URL" value="{{ projecturl }}">
+      </div>
+      {% if require_svn_auth %}
+      <div class="form-group">
+	<label for="project">Utlisateur</label>
+	<input type="text" class="form-control" id="username" name="username" placeholder="Utilisateur">
+      </div>
+      <div class="form-group">
+	<label for="project">Mot de passe</label>
+	<input type="password" class="form-control" id="password" name="password">
+      </div>
+      {% endif %}
+      <div class="form-group">
+	<div class="col-sm-offset-2 col-sm-10">
+	  <button type="submit" class="btn btn-default">Créer</button>
+	</div>
+      </div>		
+    </form>
+    
+    
+  </div>
+</div>
 
-{% block extrascripts %}
-<script src="/static/js/kolekti-home.js"></script>
-<script src="/static/d3.min.js"></script>
 {% endblock %}

@@ -93,29 +93,30 @@ class LoginRequiredMixin(object):
 class kolektiMixin(LoginRequiredMixin):
 
     def get_kolekti(self, project):
-
+        pass
     
     def get_context_data(self, data={}, **kwargs):
-        if settings.KOLEKTI_MULTIUSER:
-            user_projects =
-        else:
-            project_path = os.path.join(settings.KOLEKTI_BASE, project)
-        return kolektiBase(project_path)
         context= {
-            'active_project':self.request.kolekti_userproject,
             'projects':self.projects(),
         }
         
         if 'project' in data.keys():
-            languages, release_languages, default_srclang = self.project_langs(data['project'])
+            project = data['project']
+            try:
+                if settings.KOLEKTI_MULTIUSER:
+                    userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
+                    project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
+                else:
+                    userproject = UserProject.objects.get(project__directory = project)
+                    project_path = os.path.join(settings.KOLEKTI_BASE, project)
+            except UserProject.DoesNotExist:
+                raise Http404
+                
+#            languages, release_languages, default_srclang = self.project_langs(data['project'])
             context.update({
-                'kolekti':self._config,
-                'srclangs' : languages,
-                'releaselangs' : release_languages,
-                'default_srclang':default_srclang,
-                'active_project_name' : self.request.kolekti_userproject.project.name,
-                'active_srclang' : self.request.kolekti_userproject.srclang,
-#                'syncnum' : self._syncnumber,
+                'kolekti': kolektiBase(project_path),
+                'lang':userproject.srclang,
+                'project_label' : userproject.project.name,
             })
         context.update(data)
         return context
@@ -167,12 +168,11 @@ class kolektiMixin(LoginRequiredMixin):
 
 
     # TODO
-    def project_langs(self, project):
-        kolekti = self.get_kolekti(project)
+    def project_langs(self, kolekti):
         try:
-            return ([l.text for l in self._project_settings.xpath('/settings/languages/lang')],
-                    [l.text for l in self._project_settings.xpath('/settings/releases/lang')],
-                    self._project_settings.xpath('string(/settings/@sourcelang)'))
+            return ([l.text for l in kolekti.project_settings.xpath('/settings/languages/lang')],
+                    [l.text for l in kolekti.project_settings.xpath('/settings/releases/lang')],
+                    kolekti.project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
         except AttributeError:
@@ -336,7 +336,7 @@ class HomeView(kolektiMixin, TemplateView):
         context = self.get_context_data()
         return self.render_to_response(context)
 
-class ProjectHomeView(kolektiMixin, View):
+class ProjectHomeView(kolektiMixin, TemplateView):
     template_name = "project_home.html"
     def get(self, request, project):
         context = self.get_context_data({'project':project})

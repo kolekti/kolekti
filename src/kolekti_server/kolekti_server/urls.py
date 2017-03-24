@@ -37,9 +37,10 @@ urls = [
             url(r'^settings/$', SettingsView.as_view(), name='kolekti_settings'),
             url(r'^settings.json$', SettingsJsonView.as_view(), name='kolekti_settings_json'),
             url(r'^settings.js$', SettingsJsView.as_view(), name='kolekti_settings_js'),
+            url(r'^languages/$', LanguagesView.as_view(), name='kolekti_languages_edit'),
             url(r'^criteria/$', CriteriaEditView.as_view(), name='kolekti_criteria_edit'),
-            url(r'^criteria.css$', CriteriaCssView.as_view(), name='kolekti_criteriacss'),
-            url(r'^criteria.json$', CriteriaJsonView.as_view(), name='kolekti_criteriacss'),
+            url(r'^criteria.css$', CriteriaCssView.as_view(), name='kolekti_criteria_css'),
+            url(r'^criteria.json$', CriteriaJsonView.as_view(), name='kolekti_criteria_json'),
             url(r'^publication-templates/$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
             url(r'^publication-parameters/', include([
                 url(r'^/$', JobListView.as_view(), name='kolekti_job_list'),
@@ -98,7 +99,7 @@ urls = [
         url(r'^import/$', ImportView.as_view(), name='kolekti_import'),
         url(r'^import/template/$', ImportTemplateView.as_view(), name='kolekti_import_template'),
         
-        url(r'^releases/$', ReleaseListView.as_view(), name='kolekti_release_list'),
+        url(r'^releases/$', ReleaseListView.as_view(), name='kolekti_releases'),
         url(r'^releases/(?P<release>[^/\?]+)/', include([
             url(r'^detail/$', ReleaseDetailsView.as_view(), name='kolekti_release_detail'),
             url(r'^state/$', ReleaseStateView.as_view(), name='kolekti_release_state'),
