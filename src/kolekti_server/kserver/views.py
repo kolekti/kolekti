@@ -573,7 +573,10 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
         languages, release_languages, default_srclang = self.project_langs()
         states = []
         for lang in release_languages:
-            state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            if self.syncMgr is None:
+                state = "unknown"
+            else:
+                state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
             if state == "source_lang":
                 states.insert(0,(lang, state))
             else:
@@ -585,7 +588,10 @@ class ReleaseStateView(kolektiMixin, TemplateView):
     def get(self, request):
         path, assembly_name = request.GET.get('release').rsplit('/',1)
         lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
-        state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+        if self.syncMgr is None:
+            state = "unknown"
+        else:
+            state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
         return HttpResponse(state)
 
     def post(self,request):
