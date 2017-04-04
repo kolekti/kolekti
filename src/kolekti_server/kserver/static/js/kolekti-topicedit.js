@@ -14,9 +14,9 @@ $(document).ready( function () {
 	    //	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	    entities : false,
 	    fillEmptyBlocks: false,
-	    filebrowserBrowseUrl: '/browse/ckbrowser',
-	    filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
-	    filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
+	    filebrowserBrowseUrl:      Urls.kolekti_ckbrowser(kolekti.project)
+	    filebrowserImageBrowseUrl: Urls.kolekti_ckbrowser(kolekti.project)+'?path=/sources/'+kolekti.lang+'/pictures/',
+	    filebrowserLinkBrowseUrl:  Urls.kolekti_ckbrowser(kolekti.project)+'?path=/sources/'+kolekti.lang+'/topics/',
 	    
 	    //	filebrowserUploadUrl: '/browse/ckupload',
 	    //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
@@ -36,7 +36,7 @@ $(document).ready( function () {
 		{ name: 'templates', items: buttons }		
 		],
 	    toolbar:"Full",
-	    contentCss:'http://localhost:8080/kolekti/edition-templates/styles.css',
+	    contentCss:Urls.kolekti_project_static(kolekti.project,'kolekti/edition-templates/styles.css'),
 	    stylesSet:[],
 	    htmlbuttons : templates
 	});

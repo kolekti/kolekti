@@ -1,4 +1,6 @@
 $(document).ready( function () {
+
+    
     // highlight and enable save button
     // should be called after sucessfully performing any mofication on toc
     var enable_save = function() {
@@ -234,13 +236,18 @@ $(document).ready( function () {
 	};
 */
 	var topicref = $(topic).data('kolekti-topic-href');
-	var tocref=$('#toc_root').data('kolekti-path');
-	$.get('/tocs/usecases/',{"pathes":[topicref]}).
-	    success(function(data){ 
+	var tocref = $('#toc_root').data('kolekti-path');
+        var tocpath = '/sources/'+kolekti.lang+'/tocs/'+ $('#toc_root').data('kolekti-path');
+        var url = Urls.kolekti_toc_usecases(kolekti.project, kolekti.lang, tocref)
+	$.get(url, {"pathes":[topicref]}).
+	    success(function(data){
+                console.log(data)
+                console.log(topicref)
+                console.log(tocref)
 		$(topic).find('.kolekti-shared-topic').remove();
 		var v;
 		if (topicref in data)
-		    v = data[topicref].removevalue(tocref)
+		    v = data[topicref].removevalue(tocpath)
 		else
 		    v = []
 		if(v.length)
@@ -296,14 +303,13 @@ $(document).ready( function () {
     $('#btn_save').on('click', function() {
 	var path = $('#toc_root').data('kolekti-path');
 	$.ajax({
-	    url:'/tocs/edit/',
+	    url:Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path),
 	    type:'POST',
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
 	    disable_save();
-	    kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
-	    
+	    kolekti_recent(displayname(path),'trame', url)
 	});
     })
 
@@ -315,10 +321,11 @@ $(document).ready( function () {
 	    'editable_path':false,
 	    'update_url':false
 	}).select(function(path) {
+            var url = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path);
 	    console.log(path);
 	    $('#toc_root').attr('data-kolekti-path', path);
 	    $.ajax({
-		url:'/tocs/edit/',
+		url:url,
 		type:'POST',
 		data:process_toc($('#toc_root')),
 		contentType:'text/plain'
@@ -326,8 +333,8 @@ $(document).ready( function () {
 		$('#btn_save').addClass('disabled');
 		$('#btn_save').addClass('btn-default');
 		$('#btn_save').removeClass('btn-warning');
-		kolekti_recent(displayname(path),'trame','/tocs/edit/?toc='+path)
-		document.location.href = '/tocs/edit/?toc='+path
+		kolekti_recent(displayname(path),'trame',url)
+		document.location.href = url
 	    });
 	}).always(function(data) {
 	    $('.modal').modal('hide');
@@ -359,12 +366,14 @@ $(document).ready( function () {
 
     
     $('.btn_publish').on('click', function() {
-	var url='/publish/'
 
 	var toc = $('#toc_root').data('kolekti-path');
 	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
 	var cssclass = $('#toc_root').data('kolekti-meta-kolekti_jobclass');
 	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
+
+	var url = Urls.kolekti_toc_publish(kolekti.project, kolekti.lang, toc)
+
 	params = get_publish_params(cssclass)
 	params['toc']=toc;
 	params['job']=jobpath;
@@ -937,26 +946,27 @@ $(document).ready( function () {
 	    $('.modal-footer').off('click', '.browservalidate');
 
 	    var insert_topic = function(path) {
-		    $.get(path).success(
-			function(data){
-			    var topic = $.parseXML( data ),
+                var url = Urls.kolekti_project_static(kolekti.project, path)
+		$.get(url).success(
+		    function(data){
+			var topic = $.parseXML( data ),
 			    id = Math.round(new Date().getTime() + (Math.random() * 100)),
 			    topic_obj = create_topic_obj(path, id, topic);
-			    if (isafter) { 
-				refcomp.after(topic_obj);
+			if (isafter) { 
+			    refcomp.after(topic_obj);
+			} else {
+			    if (isinside) {
+				refcomp.find('.panel-body').prepend(topic_obj);
+				show_section(refcomp);
 			    } else {
-				if (isinside) {
-				    refcomp.find('.panel-body').prepend(topic_obj);
-				    show_section(refcomp);
-			        } else {
-				    refcomp.before(topic_obj);
-				}
+				refcomp.before(topic_obj);
 			    }
-			    $("#toc_root>button").remove();
-			    usecases(topic_obj);
-			    enable_save();
-			    $('.modal').modal('hide');
-			})
+			}
+			$("#toc_root>button").remove();
+			usecases(topic_obj);
+			enable_save();
+			$('.modal').modal('hide');
+		    })
 	    };
 	    
 	    kolekti_browser(
@@ -970,10 +980,10 @@ $(document).ready( function () {
 		.select(insert_topic)
 		.create(function(browser, folder, update_function) {
 		    var filename = $(browser).find('#new_name').val();
+                    var url = Urls.kolekti_topic.create(kolekti.project, kolekti.lang, folder + "/" + filename)
 		    $.post('/topics/create/',
 			   {
 			       'model': $('.label-tpl').data('tpl'),
-			       'topicpath': folder + "/" + filename
 			   }).done(function(data) {
 			       insert_topic(data);
 			   }).fail(function() {
@@ -1160,7 +1170,8 @@ $(document).ready( function () {
 	    var path = $(this).data('kolekti-topic-url');
 	    var idtopic = $(this).data('kolekti-topic-id');
 	    var topic;
-	    $.get(path)
+            url = Urls.kolekti_project_static(kolekti.project, path)
+	    $.get(url)
 		.done(
 		    function(data){
 			try {

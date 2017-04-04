@@ -3,7 +3,7 @@ $(function() {
     // sets revision number
     
     $('#btn_rev').click(function(e) {
-	var url = '/sync/';
+	var url = Urls.kolekti_sync(kolekti.project);
 	window.location.href = url;
     })
 
@@ -13,27 +13,27 @@ $(function() {
 	    switch(data.revision.status) {
 	    case '*':
 		color="warning"
-		$('#btn_rev').attr('title', 'vos modifications locales n\'ont pas été synchronisées')
+		$('#btn_rev').attr('title', gettext('vos modifications locales n\'ont pas été synchronisées'))
 		break;
 	    case 'N':
 		color="default"
-		$('#btn_rev').attr('title', 'le projet est synchronisé')
+		$('#btn_rev').attr('title', gettext('le projet est synchronisé'))
 		break;
 	    case 'E':
 		color="danger"
-		$('#btn_rev').attr('title', 'une erreur est survenue')
+		$('#btn_rev').attr('title', gettext('une erreur est survenue'))
 		break;
 	    case 'C':
 		color="danger"
-		$('#btn_rev').attr('title', 'le projet est en conflit')
+		$('#btn_rev').attr('title', gettext('le projet est en conflit'))
 		break;
 	    case 'M':
 		color="warning"
-		$('#btn_rev').attr('title', 'des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles')
+		$('#btn_rev').attr('title', gettext('des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles'))
 		break;
 	    case 'U':
 		color="warning"
-		$('#btn_rev').attr('title', 'mise a jour disponible')
+		$('#btn_rev').attr('title', gettext('mise a jour disponible'))
 		break;
 	    }
 	    $('#btn_rev>span span.spinner').hide()
@@ -48,6 +48,7 @@ $(function() {
     var pendingstatusrequest = false;
     
     var updatestatus = function(e) {
+        return
 	if (pendingstatusrequest)
 	    return
 	
@@ -70,7 +71,8 @@ $(function() {
 	$('#btn_rev').addClass('btn-default')
 	
 	pendingstatusrequest = true;
-	$.get('/sync/status').done(function(data){
+        var url = Urls.kolekti_sync_status(kolekti.project)
+	$.get(url).done(function(data){
 	    var now = new Date()
 	    cached_status = {
 		'project':kolekti.project,
@@ -86,9 +88,11 @@ $(function() {
     
     var pendingrevnumrequest = false;
     var updaterevnum = function(e) {
+        return
 	if(pendingrevnumrequest)
 	    return
-	$.get('/sync/remotestatus').done(function(data){
+        var url = Urls.kolekti_sync_remote_status(kolekti.project)
+	$.get(url).done(function(data){
 	    $('#revnum').html(data.revision.number);
 	})
     }
@@ -115,6 +119,8 @@ $(function() {
     $('body').on('click',".input-filter-menu", function(e) {
 	e.stopPropagation()
     });
+
+    // filterable menus
     
     $('body').on('keyup',".input-filter-menu", function(e) {
 	var filter = this.value.toLowerCase();

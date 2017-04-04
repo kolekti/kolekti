@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'bootstrapform',
     'registration',
+    'django_js_reverse',
     'kserver',
     'kserver_saas',
     'django.contrib.admin',

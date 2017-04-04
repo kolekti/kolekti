@@ -1,11 +1,12 @@
+{% load "static" %} 
 {% extends "window.html" %}
 
 
-
+{% comment %}
 {% block extrascripts %}
-    <script src="/static/js/kolekti-browser.js"></script>
+    <script src="{% static 'js/kolekti-browser.js' %}"></script>
 {% endblock %}
-
+{% endcomment %}
 
 {% block page-content %}
     <div class="container-fluid">

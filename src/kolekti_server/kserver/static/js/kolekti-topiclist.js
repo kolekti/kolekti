@@ -1,6 +1,8 @@
 $(document).ready(function() {
+    var path = $('.browserparent').data('browserpath')
     
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
+                     'path': path,
 		     'parent':".browserparent",
 		     'buttonsparent':".buttons",
 		     'mode':"create",
@@ -11,7 +13,9 @@ $(document).ready(function() {
 		    })
 		  .select(
 		      function(path) {
-			  window.open('/topics/edit/?topic='+encodeURI(path));
+                          var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/topics/','')
+		          var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, tocpath)
+			  window.open(url)
 		      }
 		  )
 		  .create(create_topic);

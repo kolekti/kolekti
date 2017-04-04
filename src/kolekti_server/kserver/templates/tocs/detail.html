@@ -1,28 +1,29 @@
 {% extends "base.html" %}
 {% load ostags %}
 {% load csssafe %}
+{% load static %}
 
 {% block current_trames %}class="menu-current"{% endblock %}
 {% block help-topic %}toc{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css" />
-    <link rel="stylesheet" type="text/css"  href="/criteria.css" />
-    <link rel="stylesheet" type="text/css"  href="/kolekti/ui-stylesheets/toc.css" />
+    <link rel="stylesheet" type="text/css"  href="{% static 'css/kolekti-tocs.css' %}" />
+    <link rel="stylesheet" type="text/css"  href="{% url 'kolekti_criteria_css' project=project %}" />
+    <link rel="stylesheet" type="text/css"  href="{% url 'kolekti_project_static' project=project path='/kolekti/ui-stylesheets/toc.css' %}" />
 {% endblock %}
 
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-topics-common.js"></script>
-    <script src="/static/js/kolekti-tocs.js"></script>
-    <script src="/static/js/kolekti-tocs-filter.js"></script>
+    <script src="{% static 'js/kolekti-topics-common.js' %}"></script>
+    <script src="{% static 'js/kolekti-tocs.js' %}"></script>
+    <script src="{% static 'js/kolekti-tocs-filter.js' %}"></script>
 {% endblock %}
 
 {% block title %}
 <!--
         <small><a data-toggle="mycollapse" href="#" id="btn_toggle_all" class="collapsed"></span><span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span></a></small>
 -->
-	{{ tocdisplay }}
+	{{ toc_display }}
 {% endblock %}
 
 
@@ -72,16 +73,16 @@
 	  <input type='text'
 		 class='form-control'
 		 id='input_toc_pubdir'
-		 value="{{ tocmeta.kolekti_pubdir }}"/>
+		 value="{{ toc_meta.kolekti_pubdir }}"/>
 	  
 	  <h5>
 	  Fichier de paramètres
 	  </h5>
 	  <span class="btn-group filterable-menu">
-	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ tocmeta.kolekti_jobpath }}">		  
+	    <button type="button" class="btn btn-sm btn-default btn-block" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false" data-kolekti-jobpath="{{ toc_meta.kolekti_jobpath }}">		  
 	      <span class="label_job">
-		{% if tocmeta.kolekti_job %}
-		{{ tocmeta.kolekti_job|urlbasename }}
+		{% if toc_meta.kolekti_job %}
+		{{ toc_meta.kolekti_job|urlbasename }}
 		{% else %}
 		<em>Selectionnez...</em>
 		{% endif %}
@@ -104,11 +105,11 @@
 	    </ul>
 	  </span>
 	  
-	  <a id="editjoblink" href="/settings/job?path={{ tocmeta.kolekti_jobpath }}" title="Éditer le fichier"
-	     {% if not tocmeta.kolekti_job %}class="hidden"{% endif %}>
+	  <a id="editjoblink" href="/settings/job?path={{ toc_meta.kolekti_jobpath }}" title="Éditer le fichier"
+	     {% if not toc_meta.kolekti_job %}class="hidden"{% endif %}>
 	    <span class="glyphicon glyphicon-cog"> </span></a>
 
-	  <div id="quickselect"{% if not tocmeta.kolekti_job %} class="hidden"{% endif %}>
+	  <div id="quickselect"{% if not toc_meta.kolekti_job %} class="hidden"{% endif %}>
 <!--
 	    <h5>
 	      Sélection rapide
@@ -117,7 +118,7 @@
 	    {% for job in jobs %}
 
 
-	    <div class="row {% if job.path != tocmeta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name|csssafe }}"
+	    <div class="row {% if job.path != toc_meta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name|csssafe }}"
 		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	      <div class="col-sm-12 col-md-12">
 		
@@ -233,29 +234,29 @@
       <div class="form-group">
 	<label for="title" class="col-sm-2 control-label">Titre</label>
 	 <div class="col-sm-10">
-	   <input class="form-control" type="text" name="title" id="input_toc_title" value="{{ tocmeta.DC_title }}"/>
+	   <input class="form-control" type="text" name="title" id="input_toc_title" value="{{ toc_meta.DC_title }}"/>
 	 </div>
       </div>
       <div class="form-group">
 	<label for="author" class="col-sm-2 control-label">Auteur</label>
 	<div class="col-sm-10">
-	  <input class="form-control" type="text" name="author" id="input_toc_author" value="{{ tocmeta.DC_creator }}"/>
+	  <input class="form-control" type="text" name="author" id="input_toc_author" value="{{ toc_meta.DC_creator }}"/>
 	</div>
       </div>
     <hr>
     </div>
 
-    <div id="toc_root" data-kolekti-title="{{ toctitle }}" data-kolekti-path="{{ tocpath }}"
-	 data-kolekti-tocname="{{ tocdisplay }}"
-	 {% for namemeta, valuemeta  in tocmeta.items %}
+    <div id="toc_root" data-kolekti-title="{{ toc_title }}" data-kolekti-path="{{ toc_path }}"
+	 data-kolekti-tocname="{{ toc_display }}"
+	 {% for namemeta, valuemeta  in toc_meta.items %}
 	 data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
 	 {% endfor %}
-	 {% if not "kolekti_jobclass" in tocmeta %}
-	 data-kolekti-meta-kolekti_jobclass="{{ tocmeta.kolekti_job | csssafe }}"
+	 {% if not "kolekti_jobclass" in toc_meta %}
+	 data-kolekti-meta-kolekti_jobclass="{{ toc_meta.kolekti_job | csssafe }}"
 	 {% endif %}
       >
       
-  {{ toccontent|safe}}
+  {{ toc_content|safe}}
    </div>
 {% endblock %}
 

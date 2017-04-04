@@ -635,14 +635,14 @@ class kolektiBase(object):
             aurl = urlparse.urljoin(base,r)
             return aurl
 
-    def _get_criteria_dict(self, profile):
+    def get_criteria_dict(self, profile):
         criteria = profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):c.get('value',None)})
         return criteria_dict
 
-    def _get_criteria_def_dict(self, include_lang = False):
+    def get_criteria_def_dict(self, include_lang = False):
         criteria = self._project_settings.xpath("/settings/criteria/criterion")
         criteria_dict={}
         for c in criteria:

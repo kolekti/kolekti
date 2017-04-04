@@ -14,8 +14,11 @@ $(document).ready(function() {
 	window.history.pushState({'path':'/sources/share/pictures'},document.title,'?path='+path)
     });			       
 
+    var path = $('.browser').data('browserpath')
+    console.log(path)
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/pictures',
-		     'parent':".browser_lang",
+                     'path':path,
+		     'parent':".browser",
 		     'title':" ",
 		     'titleparent':".title",
 		     'mode':"selectonly",
@@ -27,14 +30,11 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		$.get('/images/details?path='+path)
+                var picturepath = path.replace('/' + kolekti.project + '/sources/'+ kolekti.lang + '/pictures/','')
+                var url = Urls.kolekti_picture_details(kolekti.project, kolekti.lang, picturepath)
+		$.get(url)
 		    .done(
 			function(data) {
-/*
-			    $('.modal-title').html(displayname(path));
-			    $('.modal-body').html(data);
-			    $('.modal').modal();
-*/
 			    $('#preview').html([
 				$('<h4>',{'html':displayname(path)}),
 				data
@@ -49,7 +49,7 @@ $(document).ready(function() {
 	    $('#preview').html('')
 	})
     
-
+/*
 			
     kolekti_browser({'root':'/sources/share/pictures',
 		     'parent':".browser_share",
@@ -67,11 +67,6 @@ $(document).ready(function() {
 		$.get('/images/details?path='+path)
 		    .done(
 			function(data) {
-/*
-			    $('.modal-title').html(displayname(path));
-			    $('.modal-body').html(data);
-			    $('.modal').modal();
-*/
 			    $('#preview').html([
 				$('<h4>',{'html':displayname(path)}),
 				data
@@ -84,7 +79,7 @@ $(document).ready(function() {
     	.remove(function(e, path) {
 	    $('#preview').html('')
 	});
-			      		       
+*/			      		       
     var selBrowser = function(path) {
 	if (path.substring(0, 14) == '/sources/share') {
 	    $('#browser_lang').collapse('hide');

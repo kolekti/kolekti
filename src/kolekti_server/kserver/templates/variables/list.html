@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base-wide.html" %}
 
 {% block title %}Variables{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
@@ -37,12 +37,9 @@
 <div class="main">
   <div class="title">
   </div>
-  <div id="browsers">
-    <div class="browser_lang collapse in" id="browser_lang">
-    </div>
-    <div class="browser_share collapse" id="browser_share">
-    </div>
+  <div class="browser collapse in" id="browser_lang" data-browserpath="/sources/{{ lang }}/variables/{% if variable_path %}{{ variable_path }}{% endif %}">
   </div>
+
   <div id="uploadmodal" class="modal fade">
     <div class="modal-dialog">
       <div class="modal-content">

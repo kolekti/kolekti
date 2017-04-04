@@ -14,43 +14,25 @@ $(document).ready(function() {
 	$('#browser_share').collapse('show');
     });
 
-
+    var path = $('.browser').data('browserpath')
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/variables',
-		     'parent':".browser_lang",
+                     'path':path,
+		     'parent':".browser",
 		     'title':" ",
 		     'titleparent':".title",
 		     'mode':"selectonly",
 		     'modal':"no",
 		     'os_actions':'yes',
 		     'create_actions':'yes'
-//		     'create_builder':upload_variable_builder_builder()
 		    })
 	.select(
 	    function(path) {
-		window.location.href = "/variables/detail/?path="+path;
+                var variable_path = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/variables/','')
+		document.location.href = Urls.kolekti_variable_details(kolekti.project, kolekti.lang, variable_path)
 	    })
-    	.create(create_varfile) //upload_varfile)
-//	.create(upload_varfile)
+    	.create(create_varfile) 
 	.setup_file(setup_varfile);
 
-			
-    kolekti_browser({'root':'/sources/share/variables',
-		     'parent':".browser_share",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'create_actions':'yes'//,
-		     //'create_builder':upload_variable_builder_builder()
-		    })
-	.select(
-	    function(path) {
-		window.location.href = "/variables/detail/?path="+path;
-	    }
-	)
-	.create(create_varfile) //upload_varfile)
-	.setup_file(setup_varfile);
 
     $('.browser_share').on('click',".upload-varfile", upload_varfile_form)
     $('.browser_lang' ).on('click',".upload-varfile", upload_varfile_form)

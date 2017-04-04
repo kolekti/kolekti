@@ -1,32 +1,26 @@
 {% extends "base.html" %}
 {% load ostags %}
 
-{% block current_tools %}menu-current{% endblock %}
+{% block current_home %}class="menu-current"{% endblock %}
 
 {% block title %}Gestion des projets{% endblock %}
 {% block help-topic %}projects{% endblock %}
 
 
 {% block content %}    
-{% if projects|length %}
+{% if user_projects|length %}
 <div id="menu">
-  <div class="panel panel-default list-group">
     <!--
 	<div class="panel-heading">
 	  <h4>Projets disponibles</h4>
 	</div>
 	-->
-    {% for project in projects %}
-
+    {% for user_project in user_projects %}
+  <div class="panel panel-default list-group">
+    
     <div class="panel-heading">
-      <a data-toggle="collapse" {% if project.name != active_project_name %}class="collapsed"{% endif %} href="#collapse_{{ project.id }}">
-	<small>
-	  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"> </span>
-		  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"> </span>
-	</small>
-      </a>
 
-      <strong>{{ project.name }}</strong> 
+      <strong>{{ user_project.project.name }}</strong> 
       <span class="label label-info pull-right">
 	{% ifequal project.status  "svn" %}
 	partagé
@@ -34,37 +28,19 @@
 	local
 	{% endifequal %}
       </span>
-		
-      {% if project.name == active_project_name %}
-      <span class="label label-warning pull-right">Actif</span>
-      <span>  </span>
-      {% endif %}
     </div>
   
     <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project_name %}in{% endif %}">
       <div class="panel-body">
-	{% if project.name == active_project_name %}
-	Langue édition: <div class="btn-group btn-group-xs" role="group" aria-label="Langue">
-	  {% for lang in project.languages %}
-	  <a href="/projects/language?lang={{ lang }}" class="btn btn-default btn-lang {% if lang == active_srclang %} active {% endif %}">{{ lang }}</a>
-	  {% endfor %}
-	  </div>
-	  <a class="btn btn-xs btn-default" href="/projects/config">Configurer les langues</a>
+	<p>url du dépot SVN : {{ user_project.project.url }}</p>
+
+	<a href="{% url 'kolekti_project_home' project=user_project.project.directory %}">Page d'accueil du projet</a>
 
 	<hr/>
-	{% endif %}
-	{% ifequal project.status "svn" %}
-	<p>url du dépot SVN : {{ project.url }}</p>
-	<hr/>
-	{% endifequal  %}
-
-	{% if project.name != active_project_name %}
-	<a href="/projects/activate?project={{project.name}}" class="btn btn-default">Activer ce projet</a>
-	{% endif %}
       </div>      
     </div>
-    {% endfor %}
   </div>
+    {% endfor %}
 </div>
 {% endif %}
 {% endblock %}

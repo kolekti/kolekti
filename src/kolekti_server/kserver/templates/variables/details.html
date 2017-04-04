@@ -27,7 +27,7 @@
 	<ul class="list-group">
 	  {% for variable in variables %}
 	  <li class="list-group-item">
-	    <a href="{% url 'variableeditval' %}?path={{ path }}&index={{ forloop.counter }}">{{variable}}</a>
+	    <a href="{% url 'kolekti_variable_editval' project=project lang=lang variable_path=variable_path %}?index={{ forloop.counter }}">{{variable}}</a>
 	    <span class="pull-right">
 	      <button data-varindex="{{forloop.counter}}"
 		      class="btn btn-xs btn-default kolekti-action-rename-variable"
@@ -60,7 +60,7 @@
 	  {% for condition in conditions %}
 	  {% if condition.expr %}
 	  <li class="list-group-item">
-	    <a href="{% url 'variableeditcol' %}?path={{ path }}&index={{ forloop.counter }}">{{ condition.label }}</a>
+	    <a href="{% url 'kolekti_variable_editcol' project=project lang=lang variable_path=variable_path %}?index={{ forloop.counter }}">{{ condition.label }}</a>
 	    <span class="pull-right">
 	      <button data-condname="{{condition.label}}"
 		      data-condindex="{{forloop.counter}}"

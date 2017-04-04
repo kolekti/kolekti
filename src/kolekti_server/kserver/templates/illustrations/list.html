@@ -16,9 +16,10 @@
 
 {% block title %}Images{% endblock %}
 
-
 {% block menu %}
 
+
+{% comment %}
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group" data-toggle="buttons">
@@ -31,21 +32,31 @@
 	</div>
       </div>
     </div>
+    {% endcomment %}
 
-    <div class="row top-margin" id="preview">
+    <div class="row top-margin">
+      <div class="col-sm-12 col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">Preview</div>
+          <div class="panel-body" id="preview">
+          </div>
+        </div>
+      </div>
     </div>
 
-    {% endblock %}
-
+{% endblock %}
+    
 {% block content %}
 <div class="main">
   <div class="title">
   </div>
   <div id="browsers">
-    <div class="browser_lang collapse in" id="browser_lang">
+    <div class="browser" id="browser_lang" data-browserpath="/sources/{{lang}}/pictures/{% if picture_path%}{{picture_path}}/{% endif %}"> 
     </div>
+<!--
     <div class="browser_share collapse" id="browser_share">
     </div>
+-->
   </div>
 </div>
 {% endblock %}

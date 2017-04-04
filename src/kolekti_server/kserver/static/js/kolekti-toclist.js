@@ -1,10 +1,7 @@
 $(document).ready(function() {
     var create_toc = function(browser, folder, update_function) {
 	var filename = $('#new_name').val();
-	$.post('/tocs/create/',
-	       {
-		   'tocpath': folder + "/" + filename
-	       })
+	$.post(Urls.kolekti_toc_create(folder + "/" + filename))
 	    .success(
 		update_function()
 	    )
@@ -12,7 +9,7 @@ $(document).ready(function() {
 
     var create_builder = function(e, path) {
 	e.prepend(   
-	    ['Nouvelle trame : ',
+	    [gettext('Nouvelle trame : '),
 	     $('<input>',{ 'type':"text",
 			   'id':'new_name',
 			   'class':"form-control filename"
@@ -21,7 +18,10 @@ $(document).ready(function() {
 	    ]);	
     };
 
-    kolekti_browser({'root':'/sources/'+kolekti.lang+'/tocs',
+    var path = $('.browser').data('browserpath')
+    kolekti_browser({'root': "/sources/" + kolekti.lang + '/tocs',
+                     'path': path,
+                     'urlname': 'kolekti_tocs_browse',
 		     'parent':".browser",
 		     'title':" ",
 		     'titleparent':".title",
@@ -33,7 +33,9 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-		document.location.href = '/tocs/edit/?toc='+path
+                console.log(path)
+                var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/tocs/','')
+		document.location.href = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath)
 	    })
 	.create(create_toc)
 });

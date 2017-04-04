@@ -198,7 +198,8 @@ var streamedTransport = function(streamCallback) {
 
 
 var kolekti_browser = function(args) {
-    var url = "/browse/";
+    var url = Urls.kolekti_browser(kolekti.project);
+    var urlname = 'kolekti_browser';
     var params = {};
     var path="";
     var root ='/';
@@ -220,7 +221,7 @@ var kolekti_browser = function(args) {
     var create_actions = false
     var create_builder = function(e, path){
 	e.prepend(
-	    ['Nouveau fichier : ',
+	    [gettext('Nouveau fichier : '),
 	     $('<input>',{ 'type':"text",
 			   "id":"new_name",
 			  'class':"form-control filename"
@@ -239,6 +240,9 @@ var kolekti_browser = function(args) {
     }
     if (args && args.path) {
 	path = args.path;
+    }
+    if (args && args.urlname) {
+	urlname = args.urlname;
     }
     if (args && args.url) {
 	url = args.url;
@@ -305,12 +309,12 @@ var kolekti_browser = function(args) {
     }
 
     var update = function() {
-	params['path']=path
+        console.log( 'update',path)
+	params['path'] = path
 	$(parent).data('path',path)
 	$.get(url, params, function(data) {
 	    $(parent).html([
 		data,
-//		$('<div class="row' + ((mode == 'selectonly')?' hidden':'')+'"><div class="col-sm-2">'+(editable_path?'Chemin':'Nom')+' :</div><div class="col-sm-10"><input type="text" class="form-control browserfile " id="browserval"/></div></div>')]
 		$('<div class="row hidden"><div class="col-sm-12"><input type="text" class="form-control browserfile" id="browserval"/></div></div>')]
 			  )
 	}).done(function(){
@@ -326,8 +330,9 @@ var kolekti_browser = function(args) {
 		if(os_action_delete)
 		    $(parent).find('.kolekti-action-remove').click(function(e){
 			var item = $(this).closest('tr').data('name');
-			if (window.confirm("Voulez vous vraiment supprimer " + item +" ?")) {
-			    $.post('/browse/delete',{"path": path + "/" + item})
+			if (window.confirm(interpolate(gettext("Voulez vous vraiment supprimer %s ?"), [item]))) {
+			    $.post(Urls.kolekti_browser_delete(kolekti.project),
+                                   {'path': path + "/" + item})
 				.done(function(data) {
 				    closure_remove(item);
 				    update();
@@ -340,7 +345,7 @@ var kolekti_browser = function(args) {
 		if(os_action_copy)
 		    $(parent).find('.kolekti-action-copy').click(function(e){
 			var picto = $(this).closest('tr').find('td').first().clone(),
-			    name = 'Copie de '+$(this).closest('tr').data('name'),
+			    name = interpolate(gettext('Copie de %s'),[$(this).closest('tr').data('name')]),
 			    srcname = $(this).closest('tr').data('name');
 			$(this).closest('tr').after(
 			    $('<tr>', {
@@ -351,9 +356,10 @@ var kolekti_browser = function(args) {
 						'class':"copynameinput",
 						"value":name
 					    }).on('focusout',function(e){
-						$.post('/browse/copy',
-						       {'from':path + "/" + srcname,
-							'to': path + "/" + $(this).val()
+						$.post(Urls.kolekti_browser_copy(kolekti.project), 
+						       {
+                                                           'path': path + "/" + srcname,
+						           'to': path + "/" + $(this).val()
 						       })
 						    .done(function(data) {
 							// console.log(data)
@@ -404,9 +410,10 @@ var kolekti_browser = function(args) {
 		
 		if(os_action_move)		
 		    $(parent).find('.kolekti-action-move').click(function(e){
-			$.post('/browse/move',
-			       {'from':path + "/" + $(this).closest('tr').data('name'),
-				'to': path + "/" + $(this).data('dir')
+			$.post(Urls.kolekti_browser_move(kolekti.project),
+			       {
+                                   'path': path + "/" + $(this).closest('tr').data('name'),
+				   'to': path + "/" + $(this).data('dir')
 			       })
 			    .done(function(data) {
 				// console.log(data)
@@ -423,11 +430,11 @@ var kolekti_browser = function(args) {
 	    } // os actions 
 	    
 	    set_browser_value(path + '/');
-
-	    $.get('/sync/resstatus',{'path':path})
+	    $.get(Urls.kolekti_sync_res_status(kolekti.project),
+                      {'path':path})
 		.done(function(data) {
 		    var rows =  $(parent).find('tr[data-name]') 
-		    $.each(data,function(status,listentry) {
+		    $.each(data, function(status,listentry) {
 			$.each(listentry, function(i,entry) {
 			    if (entry.kind != 'dir')				
 			    $.each(rows, function(ri,row) {
@@ -485,64 +492,73 @@ var kolekti_browser = function(args) {
 				linkadd = true;
 				break;
 			    case 'ok':
-				msg =  "À jour avec le référentiel";
+				msg =  gettext("À jour avec le référentiel");
 				break;
 			    case 'commit':
-				if ($(this).data('wstatus') == 'added')
-				    msg += "<div><a href='#' class='kolekti-browser-sync-remove'>Enlever de la synchro</a></div>"
+				if ($(this).data('wstatus') == 'added') {
+				    msg += "<div><a href='#' class='kolekti-browser-sync-remove'>";
+                                    msg += gettext("Enlever de la synchro");
+                                    msg += "</a></div>";
+                                }
 				linksync = true;
 				break;
 			    case 'merge':
-				msg = "Modifications locales et distantes, la fusion est possible"
+				msg = gettext("Modifications locales et distantes, la fusion est possible");
 				linksync = true;
 				break;
 			    case 'update':
-				msg = "Mise à jour disponible";
+				msg = gettext("Mise à jour disponible");
 				linksync = true;
 				break;
 			    case 'conflict':
 			    case 'error':
-				msg = "Modifications locales et distantes concurrentes"
+				msg = gettext("Modifications locales et distantes concurrentes");
 				linksync = true;
 				break;
 			    }
 			    if(msg.length)
 				msg = "<div>"+msg+"</div>";
-			    if(linksync)
-				msg += "<div><a href='/sync/'>Synchroniser le projet</a></div>"
-			    if(linkadd)
-				msg += "<div><a href='#' class='kolekti-browser-sync-add'>Ajouter à la synchro</a></div>"
+			    if(linksync) {
+				msg += "<div><a href='/sync/'>";
+                                msg += gettext("Synchroniser le projet");
+                                msg += "</a></div>";
+                            }
+			    if(linkadd) {
+				msg += "<div><a href='#' class='kolekti-browser-sync-add'>";
+                                msg += gettext("Ajouter à la synchro");
+                                msg += "</a></div>";
+                            }
 			    return msg
 			},
 			'title':function(){
 			    var msg = "";
 			    switch($(this).data('status')) {
 			    case 'unversioned':
-				msg =  "Non synchronisé";
+				msg =  gettext("Non synchronisé");
 				break;
 			    case 'ok':
-				msg = "Synchronisé"
+				msg = gettext("Synchronisé")
 				break;
 			    case 'commit':
 				switch($(this).data('wstatus')) {
 				case 'added':
-				    msg = "Ajouté"
+				    msg = gettext("Ajouté")
 				    break;
 				default:
-				    msg = "Modifié"
+				    msg = gettext("Modifié")
 				}
 				break;
 			    case 'merge':
-				msg = "Modifié"
+				msg = gettext("Modifié")
 				break;
 			    case 'update':
-				msg = "Obsolète"
+				msg = gettext("Obsolète")
 				break;
 			    case 'conflict':
-				msg = 'Conflit'
+				msg = gettext('Conflit')
 				break;
 			    case 'error':
-				msg = 'Conflit'
+				msg = gettext('Conflit')
 				break;
 			    }
 			    return "<span class='text-"+kolekti_bootstrap_status[$(this).data('status')]+"'><strong>"+msg+"</strong></span>";
@@ -635,17 +651,21 @@ var kolekti_browser = function(args) {
 			    'aria-hidden':"true",
 			    'html':[
 				'&times;',
-				$('<span>',{'class':"sr-only",'html':'Fermer'})
+				$('<span>',{'class':"sr-only",'html':gettext('Fermer')})
 			    ]
 			})
 		    }),
 		    $("<span>", {
 			'class':"alert-body",
-			'html':["Déplacer / renommer",
-				$('<p><strong>Attention</strong> si vous déplacez ou renommez cette ressource, les liens et références seront cassés !</p>'),
+			'html':[gettext("Déplacer / renommer"),
+				$('<p><strong>' +
+                                  gettext("Attention") +
+                                  '</strong>' +
+                                  gettext("Si vous déplacez ou renommez cette ressource, les liens et références seront cassés !") +
+                                  "</p>"),
 				$('<button>', {
 				    'class':"btn btn-xs btn-default",
-				    'html':'Annuler'
+				    'html':gettext('Annuler')
 				    //				}).on('click', function(){$(this).closest('.alert').remove()}),
 				}).on('click', function(){update()}),
 				" ",
@@ -654,16 +674,20 @@ var kolekti_browser = function(args) {
 				    'html':'Confirmer'
 				}).on('click', function(){
 				    $(this).closest('.alert-body').html()
-				    $.post('/browse/move',{
-					'from':path+"/"+filename,
-					'to':newpath + "/" + newfilename})
+				    $.post(Urls.kolekti_browser_move(kolekti.project), 
+                                           {
+                                               'path':path + "/" + filename,
+					       'to':newpath + "/" + newfilename
+                                           })
 					.done(update)
 					.fail(
 					    $(this).closest('.alert-body').html([
-						'<p>erreur au déplacement de la ressource</p>',
+						$("<p>",{
+                                                    html:gettext("Erreur au déplacement de la ressource")
+                                                }),
 						$('<button>', {
 						    'class':"btn btn-xs btn-default",
-						    'html':'Fermer'
+						    'html':gettext('Fermer')
 						}).on('click', function(){$(this).closest('.alert').remove()}),
 					    ]))
 				}),
@@ -752,14 +776,17 @@ var kolekti_browser = function(args) {
     };
 
 
-    // click on file
+    // click on file/directory name
 
     $(parent).on('click', '.filelink', function(e) {
 	if ($(this).data('mimetype') == "text/directory") {
 	    e.preventDefault();
-	    path = path +'/'+ $(this).html();
-	    if (update_url)
-		window.history.pushState({path:path},document.title,'?path='+path)
+            console.log(path)
+	    path = path + $(this).html()+ '/';
+	    if (update_url) {
+                var url = Urls['kolekti_project_static'](kolekti.project,  path.substr(1))
+		window.history.pushState([path], document.title, url)
+            }
 	    update();
 	} else {
 	    if ($(this).attr('href') != "#") {
@@ -779,9 +806,11 @@ var kolekti_browser = function(args) {
 	e.preventDefault();
 	var newpath = $(this).data("path");
 	if (newpath.length >= root.length) {
-	    path = newpath;
-	    if (update_url)
-		window.history.pushState({path:path},document.title,'?path='+path)
+	    path = newpath + '/' ;
+	    if (update_url) {
+                var url = Urls['kolekti_project_static'](kolekti.project, path.substr(1))
+		window.history.pushState([path],document.title, url)
+            }
 	    update();
 	}
     })
@@ -810,13 +839,17 @@ var kolekti_browser = function(args) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
 	folderpath = path + "/" + $(parent).find(".foldername").val();
-	$.post("/browse/mkdir",{path : folderpath}, function(data) {
-	    path = folderpath
-	    if (update_url)
-		window.history.pushState({path:path},document.title,'?path='+path)
-	    update();
-	})
+	$.post(Urls.kolekti_browser_mkdir(kolekti.project),{'path':path})
+            .done(function(data) {
+	        path = folderpath
+	        if (update_url) {
+                    var url = Urls['kolekti_project_static'](kolekti.project + path)
+		    window.history.pushState(path,document.title, url + '/')
+                }
+	        update();
+	    })
     })
+    
     $(parent).on('click', '.create-file', function(e) {
 	e.preventDefault();
 	e.stopImmediatePropagation();
@@ -969,7 +1002,7 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.kolekti-browser-sync-add', function(event) {
 	$.ajax({
 	    type: 'POST',
-	    url: '/sync/add',
+	    url: Urls.kolekti_sync_add(kolekti.project),
 	    data: {"path": path + "/" + $(this).closest('tr').data('name')}
 	}).done(update)
 	    
@@ -978,7 +1011,7 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.kolekti-browser-sync-remove', function(event) {
 	$.ajax({
 	    type: 'POST',
-	    url: '/sync/remove',
+	    url: Urls.kolekti_sync_remove(kolekti.project),
 	    data: {"path": path + "/" + $(this).closest('tr').data('name')}
 	}).done(update)
 	    

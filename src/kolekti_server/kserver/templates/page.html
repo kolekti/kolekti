@@ -1,18 +1,19 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ kolekti.project }}{% block page-title %}{% endblock %}</title>
-    <link rel="icon" href="/static/kolekti.png">
+    <title>{{ project }}{% block page-title %}{% endblock %}</title>
+    <link rel="icon" href="{% static kolekti.png %}">
     <!-- Bootstrap -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     
     <!-- Font Awesome -->
-    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
 
-    <link href="/static/css/kolekti.css" rel="stylesheet">
+    <link href="{% static 'css/kolekti.css' %}" rel="stylesheet">
     {% block extracss %}{% endblock %}
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -38,7 +39,7 @@
 	  <ul class="nav navbar-nav">
             <li {% block current_home %}{% endblock %}><a href="{% url 'kolekti_home' %}"><i class="fa fa-home fa-3"></i></a></li>
             {% if project %}
-            <li {% block current_project_home %}{% endblock %}><a href="{% url 'kolekti_project_home' project=project%}">{{ project_label }}</i></a></li>
+            <li {% block current_project_home %}{% endblock %}><a href="{% url 'kolekti_project_home' project=project%}">{{ user_project.project.name }}</i></a></li>
 	    <li {% block current_trames %}{% endblock %}><a href="{% url 'kolekti_tocs' project=project lang=lang %}">Trames</a></li>
 	    <li {% block current_topics %}{% endblock %}><a href="{% url 'kolekti_topics' project=project lang=lang %}">Modules</a></li>
 	    <li {% block current_images %}{% endblock %}><a href="{% url 'kolekti_pictures' project=project lang=lang %}">Images</a></li>
@@ -46,16 +47,16 @@
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
 	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="{% url 'kolekti_variables' project=project %}">Variables</a></li>
-		<li><a href="{% url 'kolekti_criteria_edit' %}">Critères</a></li>
-		<li><a href="{% url 'kolekti_languages_edit %}">Langues</a></li>
-		<li><a href="{% url 'kolekti_jobs'">Paramètres de publication</a></li>
-		<li><a href="{% url 'templatelist'%}">Modèles de modules</a></li>
-		<li><a href="{% url 'publication_templates'%}">Modèles de sorties</a></li>
+		<li><a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a></li>
+		<li><a href="{% url 'kolekti_criteria_edit' project=project %}">Critères</a></li>
+		<li><a href="{% url 'kolekti_languages_edit' project=project %}">Langues</a></li>
+		<li><a href="{% url 'kolekti_jobs' project=project %}">Paramètres de publication</a></li>
+		<li><a href="{% url 'kolekti_templates' project=project lang=lang %}">Modèles de modules</a></li>
+		<li><a href="{% url 'kolekti_publication_templates' project=project %}">Modèles de sorties</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/import/">Importer un fichier tableur</a></li>
+		<li><a href="{% url 'kolekti_import' project=project lang=lang %}">Importer un fichier tableur</a></li>
 		<li role="presentation" class="divider"></li>
-		<li><a href="/sync/">Synchronisation</a></li>
+		<li><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
 		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>
@@ -98,6 +99,8 @@
 	  <div class="col-sm-12">
 	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
 	      {% include "user_menu.html" %}
+              
+              {% if project %}
 	      <div class="btn-group pull-right" role="group">
 		<button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
 		  <span>
@@ -107,11 +110,15 @@
 		  </span>
 		</button>
 	      </div>
+              {% endif %}
+              
+              {% if project %}              
 	      <div class="btn-group  pull-right" role="group">
 		{% block infobuttons %}
+                {% comment %}
 		<div class="btn-group" role="group">
 		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		    Projet {{ active_project_name }} ({{ active_srclang }})
+		    Projet {{ project.name }} ({{ lang }})
 		    <span class="caret"></span>
 		  </button>
 		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
@@ -122,26 +129,10 @@
 		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
 		  </ul>
 		</div>
-	      </div>
-	      {% block infobuttons_lang %}
-	      {% comment %}
-	      <div class="btn-group" role="group">
-
-		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
-		  {{ active_srclang }}
-		  <span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
-		</ul>
-	      </div>
-	      {% endcomment %}
-	      {% endblock %}
-
-	      {% endblock %}
+                {% endcomment %}
+                {% endblock %}
+              </div>
+            {% endif %}
 	    </div>
 	  </div>
 	</div>
@@ -173,13 +164,17 @@
     {% block footer %}{% endblock %}
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="/static/jquery.js"></script>
-    <script src="/static/jquery-ui.min.js"></script>
+    <script src="{% static 'jquery.js' %}"></script>
+    <script src="{% static 'jquery-ui.min.js' %}"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/settings.js"></script>
-    <script src="/static/js/kolekti-utils.js"></script>
-    <script src="/static/js/kolekti-common.js"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' packages='kserver' %}"></script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+    {% if project %}
+    <script src="{% url 'kolekti_settings_js' project=project %}"></script>
+    {% endif %}
+    <script src="{% static 'js/kolekti-utils.js' %}"></script>
+    <script src="{% static 'js/kolekti-common.js' %}"></script>
     {% block extrascripts %}{% endblock %}
   </body>
 </html>
