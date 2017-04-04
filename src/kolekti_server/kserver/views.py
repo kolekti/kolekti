@@ -591,6 +591,7 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
                 logger.debug(self.exists(asfilename))
                 if self.exists(asfilename):
                     states.append((lang, "local"))
+
             if state == "source_lang":
                 states.insert(0,(lang, state))
             else:
@@ -752,11 +753,14 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
         assembly_name = self.basename(release_path)
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
-        xassembly = self.parse(assembly_path)
         assembly_meta = {}
-        for meta in xassembly.xpath("/h:html/h:head/h:meta",namespaces = {"h":"http://www.w3.org/1999/xhtml"}):
-            if meta.get('name') is not None:
-                assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
+        try:
+            xassembly = self.parse(assembly_path)
+            for meta in xassembly.xpath("/h:html/h:head/h:meta",namespaces = {"h":"http://www.w3.org/1999/xhtml"}):
+                if meta.get('name') is not None:
+                    assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
+        except IOError:
+            pass
         srclang = self.syncMgr.propget('release_srclang', assembly_path)
         parameters = self.parse('/'.join([release_path,"kolekti","publication-parameters",assembly_name+"_asm.xml"]))
         profiles = []
