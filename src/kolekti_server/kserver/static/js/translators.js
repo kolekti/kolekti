@@ -18,16 +18,10 @@ var update_documents = function(project, release, lang, container) {
 					lang,
 					'] ',
 					$('<a>',{
-					    'href':v[1]+'.pdf',
+					    'href':'/translator/' + project +'/'+ v[1],
 					    "target":"_documents",
 					    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
 					}),
-					' ',
-					$('<a>',{
-					    'href':v[1]+'.html',
-					    "target":"_documents",
-					    'html':$('<i>',{'class':'fa fa-html5'})
-					})
 				       ]
 			    })
 			else {

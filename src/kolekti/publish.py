@@ -1168,7 +1168,7 @@ class ReleasePublisher(Publisher):
 
     def process_path(self, path):
         return self.assembly_dir() + "/" + super(ReleasePublisher,self).process_path(path)
-
+        
     def publish_assembly(self, assembly):
         try :
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
@@ -1182,13 +1182,42 @@ class ReleasePublisher(Publisher):
             }
             yield errev
 
-        for ev in publish_release(assembly, xjob):
+        for ev in self.publish_release(assembly, xjob):
             yield ev
         return
-    
-    def directories_simple_pdf(self, assembly):
+
+    def release_script_filename(self, release, lang, profile, script):
+        scriptname = script.get('name')
+        if scriptname == "multiscript":
+            scriptname = script.xpath('string(publication/script[last()]/@name)')
+        try:
+            filename = self.substitute_criteria(script.find('filename').text, profile, extra = {'LANG':lang})
+            filename = self.substitute_variables(filename, profile, extra = {'LANG':lang})
+        except:
+            return None
+        try:
+            profilepath = self.substitute_criteria(profile.find('dir').get('value'), profile, extra = {'LANG':lang})
+            profilepath = self.substitute_criteria(profilepath, profile, extra = {'LANG':lang})
+        except:
+            profilepath
+            
+
+        # get link
+        try:
+            scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%scriptname)[0]
+        except IndexError:
+            logger.error("Script %s not found" %scriptname)
+            raise
+        
+        link = scrdef.find('link').get('ref')
+        link = link.replace('_PUBURI_', '/'.join([profilepath, lang]))
+        link = link.replace('_PUBNAME_', filename)
+        filepath = '/'.join(['/releases', release, link])
+        return filepath
+   
+    def documents_release(self, release):
         try :
-            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ release +'_asm.xml')
         except:
             import traceback
             errev = {
@@ -1199,20 +1228,17 @@ class ReleasePublisher(Publisher):
             }
             yield errev
             return
-
-        assembly_dir = self.assembly_dir(xjob)
-
-        for jobscript in xjob.xpath('/job/scripts/script'):
-            jobscript.set("enabled","0")
-        for jobprofile in xjob.xpath('/job/profiles/profile'):
-            jobprofile.find('dir').set('value',get_valid_filename(jobprofile.find('label').text))
-            logger.debug(jobprofile.find('dir').get('value'))
-            for lang in self._publangs:
-                self._publang = lang
-                ref = "%s/draft_%s"%(self.pubdir(assembly_dir, jobprofile), lang)
-                logger.debug(ref+".pdf")
-                yield (jobprofile.find('label').text, ref, self.exists(ref+".pdf"))
-
+        try:
+            for jobscript in xjob.xpath('/job/scripts/script'):
+                jobscript.set("enabled","0")
+            for jobprofile in xjob.xpath('/job/profiles/profile'):
+                for lang in self._publangs:
+                    self._publang = lang
+                    ref = self.release_script_filename(release, lang, jobprofile, jobscript)
+                
+                    yield (jobprofile.find('label').text, ref, self.exists(ref))
+        except:
+            logger.exception('documents release error')
         return
                 
     def publish_simple_pdf(self, assembly):

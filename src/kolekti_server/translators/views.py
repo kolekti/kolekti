@@ -199,18 +199,23 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
         lang = request.GET.get('lang',"")
         projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
         publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
-        res = list(publisher.directories_simple_pdf(assembly_name + "_asm"))
+        res = [(l, p.replace('/releases/',''), e) for l, p, e in publisher.documents_release(assembly_name)]
         logger.debug(res)
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsPublishView(TranslatorsMixin, View):
     def get(self, request, project):
-        release_path = request.GET.get('release')
-        assembly_name = release_path.rsplit('/',1)[1]
-        lang = request.GET.get('lang',"")
-        projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
-        publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
-        res = list(publisher.publish_simple_pdf(assembly_name + "_asm"))
+        try:
+            release_path = request.GET.get('release')
+            assembly_name = release_path.rsplit('/',1)[1]
+            lang = request.GET.get('lang',"")
+            projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
+            publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
+            res = list(publisher.publish_assembly(assembly_name + "_asm"))
+        except:
+            logger.exception('translators publication error [%s/%s]'%(project,release_path))
+            res = {'status':'error'}
+            
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsSourceZipView(TranslatorsMixin, View):
@@ -284,3 +289,22 @@ class TranslatorsCommitLangView(TranslatorsMixin, View):
         self.send_mail_translation_added(project, release, lang, request.user)
         
         return HttpResponse(json.dumps({"status":"success","message":'Translation completed'}),content_type="text/plain")
+
+
+
+
+class TranslatorsStaticView(TranslatorsMixin, View):
+    def get(self, request, project, release, path):
+        logger.debug('translators static')
+        try:
+            try:
+                TranslatorRelease.objects.get(user = request.user, project__directory = project, release_name = release)
+            except TranslatorRelease.DoesNotExist:
+                return HttpResponse(status=404)            
+            projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
+            path = "/releases/"+release+"/"+path
+            logger.debug("serve %s/%s", path, projectpath)
+            return serve(request, path, projectpath)
+        except:
+            logger.exception('static error')
+            return HttpResponse(status=500)            
