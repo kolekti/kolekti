@@ -2,6 +2,7 @@
 
 
 var update_documents = function(project, release, lang, container) {
+    
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
 		console.log(data)
@@ -34,7 +35,17 @@ var update_documents = function(project, release, lang, container) {
 		    })
 		}))
 
-		// some documents could not be generated or are missing, display Generate documents command
+                container.find('ul').prepend([
+		    $('<li>', {
+			'class':'list-group-item sources',
+			'html':$('<button>', {
+			    'class':'btn btn-small btn-primary sources',
+                            "data-toggle":"modal",
+                            "data-target":"#downloadModal",
+			    'html':[$('<i>',{'class':'fa fa-download'}),' Download sources']})
+		    }),
+                ])
+                    // some documents could not be generated or are missing, display Generate documents command
 		refresh && container.find('ul').append([
 		    $('<li>', {
 			'class':'list-group-item refresh',
@@ -55,12 +66,19 @@ var update_documents = function(project, release, lang, container) {
 
 		refresh || container.find('ul').append([
 		    $('<li>', {
-			'class':'list-group-item refresh',
-			'html':$('<button>', {
-			    'class':'btn btn-small btn-success commit',
-			    'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']})
-		    }),
-		    
+			'class':'list-group-item upload',
+			'html':[
+                            $('<button>', {
+			        'class':'btn btn-small btn-primary upload',
+                                "data-toggle":"modal",
+                                "data-target":"#uploadModal",
+			        'html':[$('<i>',{'class':'fa fa-upload'}),' Upload translation']}),
+                            "&nbsp;",
+                            $('<button>', {
+			        'class':'btn btn-small btn-success commit',
+			        'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']})
+                        ]
+                    }),
 		    $('<li>', {
 			'class':'list-group-item hidden processing-commit',
 			'html':$('<div>', {
@@ -73,7 +91,7 @@ var update_documents = function(project, release, lang, container) {
 
 
 
-var update_releases_langs = function(release, lang) {
+var update_releases_langs = function(release) {
     var sourcelang,
 	releasepath = release.data('release'),
 	project = release.data('project'),
@@ -101,29 +119,29 @@ var update_releases_langs = function(release, lang) {
 			    "html":i
 			})
 		    }))
-		    if (i == lang || (!lang && v == 'sourcelang')) {
+		    if (v == 'sourcelang') {
 			//			    console.log(i)
 			sourcelang = i
-			release.data('lang', i)
+			release.data('sourcelang', i)
+                        release.data('lang', i)
 			release.attr('data-lang', i)
 			update_documents(project, releasepath, i, documentcell)
 		    }
-		    statecell.find('.sourcelang').addClass('active')
-		}
+		} else {
+                    statecell.append($('<span>',{
+			"class":"langstate lg-"+i+" nostate",
+			"html":$('<a>',{
+			    "class":"releaselang",
+			    "href":"#",
+			    "data-lang":i,
+			    "data-project":project,
+			    "data-release":releasepath,
+			    "html":i
+			})
+		    }))
+                }
+                statecell.find('.sourcelang').addClass('active')
 	    });
-	    console.log("setting links to source lang. " + releasepath)
-	    release
-		.find(".link-source")
-		.each(function(){
-		    var href = $(this).attr('href')
-		    $(this).attr('href', href + "&lang=" + sourcelang)
-		});
-	    
-	    release
-		.find(".lang-source")
-		.each(function(){
-		    $(this).html(sourcelang)
-		});
 	})
 };
 
@@ -135,13 +153,14 @@ $(function() {
     });
 
     $('body').on('click','.releaselang', function() {
-	var release = $(this).closest('.release').data('release')
-	var project = $(this).closest('.release').data('project')
+	var releaseo = $(this).closest('.release')
+        var release = $(releaseo).data('release')
+	var project = $(releaseo).data('project')
 	var lang = $(this).data('lang')
-	$(this).closest('.release').data('lang',lang)
+	$(releaseo).data('lang',lang)
 	var statecell = $(this).closest('.kolekti-release-langs')
-	var documentcell = $(this).closest('.release').find('.kolekti-release-documents')
-	update_documents(project, release, lang, documentcell)
+	var documentcell = $(releaseo).find('.kolekti-release-documents')
+        update_documents(project, release, lang, documentcell)
 	statecell.find('span').removeClass('active')
 	statecell.find('.lg-'+lang).addClass('active')
     })
@@ -179,5 +198,23 @@ $(function() {
 		$(this).closest('.release').find('.processing-commit').addClass('hidden')
 	    })		
     })
-				     
+
+    $('#downloadModal,#uploadModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget) // Button that triggered the modal
+        var release = $(button).closest('.release')
+        var source_assembly_url = $(release).data('source-assembly-url')
+        var source_zip_url = $(release).data('source-zip-url')
+        var upload_url = $(release).data('upload-url')
+        var sourcelang = $(release).data('sourcelang')
+        var lang = $(release).data('lang')
+        var modal = $(this)
+        modal.find('.langtext').text(lang)
+        modal.find('.langinput').attr('value',lang)
+        modal.find('.sourcelangtext').text(sourcelang)
+        modal.find('.link-source.source.zip').attr('href', source_zip_url + "?lang=" + sourcelang)
+        modal.find('.link-source.source.assembly').attr('href', source_assembly_url + "?lang=" + sourcelang)
+        modal.find('.link-source.current.zip').attr('href', source_zip_url + "?lang=" + lang)
+        modal.find('.link-source.current.assembly').attr('href', source_assembly_url + "?lang=" + lang)
+        modal.find('form.form-upload-translation').attr('action', upload_url) 
+    })
 })

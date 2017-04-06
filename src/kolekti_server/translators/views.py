@@ -219,8 +219,7 @@ class TranslatorsPublishView(TranslatorsMixin, View):
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsSourceZipView(TranslatorsMixin, View):
-    def get(self, request, project):
-        release = request.GET.get('release')
+    def get(self, request, project, release):
         sourcelang = request.GET.get('lang')
         projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
         self.set_project(projectpath)
@@ -233,8 +232,7 @@ class TranslatorsSourceZipView(TranslatorsMixin, View):
         return response
 
 class TranslatorsSourceAssemblyView(TranslatorsMixin, View):
-    def get(self, request, project):
-        release = request.GET.get('release')
+    def get(self, request, project, release):
         lang = request.GET.get('lang')
         assembly = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases', release,'sources',lang, 'assembly',release+'_asm.html')
         return serve(request, os.path.basename(assembly), os.path.dirname(assembly))

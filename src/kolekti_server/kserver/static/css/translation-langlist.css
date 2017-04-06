@@ -27,9 +27,9 @@
     border-bottom-color: #dff0d8;
 }
 
-.langstate.sourcelang {
-    background-color: #bff0aa;
-    border-bottom-color: #bff0aa;
+.langstate.nostate {
+    background-color: #D0D0D0;
+    border-bottom-color: #d9edf7;
 }
 
 .langstate.active {
