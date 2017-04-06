@@ -5,7 +5,6 @@ var update_documents = function(project, release, lang, container) {
     
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
-		console.log(data)
 		var refresh = false;
 		container.html($('<ul>', {
 		    "class" : "list-group",
@@ -152,7 +151,9 @@ $(function() {
 	update_releases_langs($(this))
     });
 
-    $('body').on('click','.releaselang', function() {
+    $('body').on('click','.releaselang', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
 	var releaseo = $(this).closest('.release')
         var release = $(releaseo).data('release')
 	var project = $(releaseo).data('project')
