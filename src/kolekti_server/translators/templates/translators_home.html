@@ -18,9 +18,9 @@
     <div class="panel panel-default release"
          data-project="{{ release.self.project.directory }}"
          data-release="{{ release.self.release_name }}"
-         data-source-assembly-url="{% url 'translators_src_assembly' project=release.self.project.name release=release.self.release_name %}"
-         data-source-zip-url="{% url 'translators_src_zip' project=release.self.project.name release=release.self.release_name %}"
-         data-upload-url="{% url 'translators_upload' project=release.self.project.name release=release.self.release_name  %}"
+         data-source-assembly-url="{% url 'translators_src_assembly' project=release.self.project.directory release=release.self.release_name %}"
+         data-source-zip-url="{% url 'translators_src_zip' project=release.self.project.directory release=release.self.release_name %}"
+         data-upload-url="{% url 'translators_upload' project=release.self.project.directory release=release.self.release_name  %}"
          >
   <div class="panel-heading">
     <h3 class="panel-title">

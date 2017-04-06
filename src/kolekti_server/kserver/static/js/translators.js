@@ -15,7 +15,6 @@ var update_documents = function(project, release, lang, container) {
                             "class":"table",
                             "html":$('<tbody>', {
                                 "html": $.map(data, function(v) {
-			            console.log(v)
 			            if (v[2]) { 
 			                return [$('<tr>', {
 				            "html":[
@@ -62,52 +61,64 @@ var update_documents = function(project, release, lang, container) {
 		    }),
                 ])
                     // some documents could not be generated or are missing, display Generate documents command
-		refresh && container.find('ul').append([
-		    $('<li>', {
-			'class':'list-group-item refresh',
-			'html':$('<button>', {
-			    'class':'btn btn-small btn-primary republish',
-			    'html':[$('<i>',{'class':'fa fa-refresh'}),' Generate documents']})
-		    }),
+		if(refresh) {
+                    container.find('ul').append([
+		        $('<li>', {
+			    'class':'list-group-item refresh',
+			    'html':$('<button>', {
+			        'class':'btn btn-small btn-primary republish',
+			        'html':[$('<i>',{'class':'fa fa-refresh'}),' Generate documents']})
+		        }),
 		
-		    $('<li>', {
-			'class':'list-group-item hidden processing',
-			'html':$('<div>', {
-			    'class':'alert alert-warning',
-			    'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Creating documents...']})
-		    })
-		])
+		        $('<li>', {
+			    'class':'list-group-item hidden processing',
+			    'html':$('<div>', {
+			        'class':'alert alert-warning',
+			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Creating documents...']})
+		        })
+		    ])
 
 		// if no refresh required, display command to commit this language
 
-		refresh || container.find('ul').append([
-		    $('<li>', {
-			'class':'list-group-item upload',
-			'html':[
-                            $('<button>', {
-			        'class':'btn btn-small btn-primary upload',
-                                "data-toggle":"modal",
-                                "data-target":"#uploadModal",
-			        'html':[$('<i>',{'class':'fa fa-upload'}),' Upload translation']}),
-                            "&nbsp;",
-                            $('<button>', {
-			        'class':'btn btn-small btn-success commit',
-			        'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']})
-                        ]
-                    }),
-		    $('<li>', {
-			'class':'list-group-item hidden processing-commit',
-			'html':$('<div>', {
-			    'class':'alert alert-warning',
-			    'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Processing...']})
-		    })
-		])
+		} else {
+                    container.find('ul').append([
+		        $('<li>', {
+			    'class':'list-group-item upload',
+			    'html':[
+                                $('<button>', {
+			            'class':'btn btn-small btn-primary upload',
+                                    "data-toggle":"modal",
+                                    "data-target":"#uploadModal",
+			            'html':[$('<i>',{'class':'fa fa-upload'}),' Upload translation']}),
+                                "&nbsp;",
+                                data.length?$('<button>', {
+			            'class':'btn btn-small btn-success commit',
+			            'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']}):""
+                            ]
+                        })
+                    ])
+                    container.find('ul').append([
+		        $('<li>', {
+			    'class':'list-group-item hidden processing-commit',
+			    'html':$('<div>', {
+			        'class':'alert alert-warning',
+			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Processing...']})
+		        }),
+		        $('<li>', {
+			    'class':'list-group-item hidden processing-upload',
+			    'html':$('<div>', {
+			        'class':'alert alert-warning',
+			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Uploading...']})
+		        })
+		    ])
+                }
 	    })
 };
 
 
 
-var update_releases_langs = function(release) {
+var update_releases_langs = function(release, lang) {
+    console.log('update_releases_langs', release, lang)
     var sourcelang,
 	releasepath = release.data('release'),
 	project = release.data('project'),
@@ -136,14 +147,15 @@ var update_releases_langs = function(release) {
 			})
 		    }))
 		    if (v == 'sourcelang') {
-			//			    console.log(i)
 			sourcelang = i
 			release.data('sourcelang', i)
+                    }
+                    if ((lang && v == lang) || (v == 'sourcelang')) {
                         release.data('lang', i)
 			release.attr('data-lang', i)
 			update_documents(project, releasepath, i, documentcell)
 		    }
-		} else {
+	        } else {
                     statecell.append($('<span>',{
 			"class":"langstate lg-"+i+" nostate",
 			"html":$('<a>',{
@@ -156,11 +168,34 @@ var update_releases_langs = function(release) {
 			})
 		    }))
                 }
-                statecell.find('.sourcelang').addClass('active')
+                   if (lang)
+                       statecell.find('.lg-'+lang).addClass('active')
+                   else
+                       statecell.find('.sourcelang').addClass('active')
 	    });
 	})
 };
 
+var republish_documents = function(releaseelt, callbacks){
+    var release = releaseelt.data('release')
+    var project = releaseelt.data('project')
+    var documentcell = releaseelt.find('.kolekti-release-documents')
+    var lang = releaseelt.data('lang')
+    releaseelt.find('.processing').removeClass('hidden')
+    releaseelt.find('.refresh').addClass('hidden')
+    $.get('/translator/'+project+'/publish/?release=/releases/'+release  + "&lang=" + lang)
+	.success(function(data) {
+            callbacks.hasOwnProperty('sucess') && callbacks['success']()
+	})
+        .error(function(x,e) {
+            callbacks.hasOwnProperty('error') && callbacks['error']()
+        })
+	.always(function() {
+	    releaseelt.find('.refresh').removeClass('hidden')
+	    releaseelt.find('.processing').addClass('hidden')
+            callbacks.hasOwnProperty('always') && callbacks['always']()
+	})
+}
 
 $(function() {
     
@@ -184,20 +219,11 @@ $(function() {
     })
 	
     $('body').on('click','.republish', function() {
-	var release = $(this).closest('.release').data('release')
-	var project = $(this).closest('.release').data('project')
-	var documentcell = $(this).closest('.release').find('.kolekti-release-documents')
-	var lang = $(this).closest('.release').data('lang')
-	$(this).closest('.release').find('.processing').removeClass('hidden')
-	$(this).closest('.release').find('.refresh').addClass('hidden')
-	$.get('/translator/'+project+'/publish/?release=/releases/'+release  + "&lang=" + lang)
-	    .success(function(data) {
-		update_documents(project, release, lang, documentcell)
-	    })
-	    .always(function() {
-		$(this).closest('.release').find('.refresh').removeClass('hidden')
-		$(this).closest('.release').find('.processing').addClass('hidden')
-	    })		
+        republish_documents($(this).closest('.release'), {
+            'success': function() {
+            	update_documents(project, release, lang, documentcell)
+            }
+        })
     })
 
     $('body').on('click','.commit', function() {
@@ -226,6 +252,8 @@ $(function() {
         var sourcelang = $(release).data('sourcelang')
         var lang = $(release).data('lang')
         var modal = $(this)
+        modal.find('form').data('release',release.data('release'))
+        modal.find('form').data('project',release.data('project'))
         modal.find('.langtext').text(lang)
         modal.find('.langinput').attr('value',lang)
         modal.find('.sourcelangtext').text(sourcelang)

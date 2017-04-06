@@ -64,8 +64,10 @@ $(document).ready(function() {
 	    $(release_elt).find('.form-upload-translation').addClass('hidden')
 	    $(release_elt).find('.upload-success').removeClass('hidden')
 	    $(release_elt).find('.upload-success .alert-content').html(statusdata.message)
-	    $(release_elt).each(function() {
-		update_releases_langs($(this), lang)
+            republish_documents(release_elt, {
+                'always': function(){
+                    update_releases_langs(release_elt, lang)
+                }
 	    })
 	}
 	
@@ -75,10 +77,16 @@ $(document).ready(function() {
     $("form.form-upload-translation").submit(function(e) {
 	console.log('upload')
 	e.preventDefault();
-	var release_elt=$(this).closest('.release');
+        var release=$(this).data('release');
+        var project=$(this).data('project');
+	var release_elt=$('.release').filter(function(i,e) {
+            return $(e).data('project')==project && $(e).data('release')==release
+        }).first();
+        console.log('release elt', release_elt)
 	var formUrl = $(this).attr('action');
 	var formData = new FormData($(this)[0]);
-	$(release_elt).find('.upload-progress').removeClass('hidden')
+        $('#uploadModal').modal('hide')
+	$(release_elt).find('.processing-upload').removeClass('hidden')
 	$.ajax({
 	    url: formUrl,
 	    type: 'POST',
@@ -95,7 +103,7 @@ $(document).ready(function() {
 	    console.log(e)
 	}).always(function(){
 	    console.log('always')	
-	    $(release_elt).find('.upload-progress').addClass('hidden')
+	    $(release_elt).find('.processing-upload').addClass('hidden')
 	});
 	
     })
