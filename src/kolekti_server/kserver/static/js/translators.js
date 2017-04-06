@@ -6,6 +6,12 @@ var update_documents = function(project, release, lang, container) {
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
 		console.log(data)
+                if (data.length > 0) {
+                    container.closest('.release').data('translated', true)
+                } else {
+                    container.closest('.release').data('translated', false)
+                }  
+                
 		var refresh = false;
 		container.html($('<ul>', {
 		    "class" : "list-group",
@@ -81,36 +87,40 @@ var update_documents = function(project, release, lang, container) {
 		// if no refresh required, display command to commit this language
 
 		} else {
-                    container.find('ul').append([
-		        $('<li>', {
-			    'class':'list-group-item upload',
-			    'html':[
-                                $('<button>', {
-			            'class':'btn btn-small btn-primary upload',
-                                    "data-toggle":"modal",
-                                    "data-target":"#uploadModal",
-			            'html':[$('<i>',{'class':'fa fa-upload'}),' Upload translation']}),
+                    var sourcelang = container.closest('.release').data('sourcelang')
+                    console.log(lang, sourcelang)
+                    if (lang != sourcelang) {
+                        container.find('ul').append([
+		            $('<li>', {
+			        'class':'list-group-item upload',
+			        'html':[
+                                    $('<button>', {
+			                'class':'btn btn-small btn-primary upload',
+                                        "data-toggle":"modal",
+                                        "data-target":"#uploadModal",
+			            'html':[$('<i>',{'class':'fa fa-upload'}),' Upload '+ lang +' translation']}),
                                 "&nbsp;",
-                                data.length?$('<button>', {
-			            'class':'btn btn-small btn-success commit',
-			            'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']}):""
-                            ]
-                        })
-                    ])
-                    container.find('ul').append([
-		        $('<li>', {
-			    'class':'list-group-item hidden processing-commit',
-			    'html':$('<div>', {
-			        'class':'alert alert-warning',
-			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Processing...']})
-		        }),
-		        $('<li>', {
-			    'class':'list-group-item hidden processing-upload',
-			    'html':$('<div>', {
-			        'class':'alert alert-warning',
-			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Uploading...']})
-		        })
-		    ])
+                                    data.length?$('<button>', {
+			                'class':'btn btn-small btn-success commit',
+			                'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']}):""
+                                ]
+                            })
+                        ])
+                        container.find('ul').append([
+		            $('<li>', {
+			        'class':'list-group-item hidden processing-commit',
+			        'html':$('<div>', {
+			            'class':'alert alert-warning',
+			            'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Processing...']})
+		            }),
+		            $('<li>', {
+			        'class':'list-group-item hidden processing-upload',
+			        'html':$('<div>', {
+			            'class':'alert alert-warning',
+			            'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Uploading...']})
+		            })
+		        ])
+                    }
                 }
 	    })
 };
@@ -185,7 +195,7 @@ var republish_documents = function(releaseelt, callbacks){
     releaseelt.find('.refresh').addClass('hidden')
     $.get('/translator/'+project+'/publish/?release=/releases/'+release  + "&lang=" + lang)
 	.success(function(data) {
-            callbacks.hasOwnProperty('sucess') && callbacks['success']()
+            callbacks.hasOwnProperty('success') && callbacks['success']()
 	})
         .error(function(x,e) {
             callbacks.hasOwnProperty('error') && callbacks['error']()
@@ -219,7 +229,13 @@ $(function() {
     })
 	
     $('body').on('click','.republish', function() {
-        republish_documents($(this).closest('.release'), {
+        var release_elt = $(this).closest('.release');
+        var project = release_elt.data('project')
+        var release = release_elt.data('release')
+        var lang = release_elt.data('lang')
+        var documentcell = release_elt.find('.kolekti-release-documents')
+        console.log('republish', project, release, lang, documentcell)
+        republish_documents(release_elt, {
             'success': function() {
             	update_documents(project, release, lang, documentcell)
             }
@@ -252,6 +268,11 @@ $(function() {
         var sourcelang = $(release).data('sourcelang')
         var lang = $(release).data('lang')
         var modal = $(this)
+        console.log($(release).data('translated'))
+        if ((lang != $(release).data('sourcelang')) && $(release).data('translated'))
+            modal.find('.translations').show()
+        else
+            modal.find('.translations').hide()
         modal.find('form').data('release',release.data('release'))
         modal.find('form').data('project',release.data('project'))
         modal.find('.langtext').text(lang)
