@@ -5,34 +5,51 @@ var update_documents = function(project, release, lang, container) {
     
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
+		console.log(data)
 		var refresh = false;
 		container.html($('<ul>', {
 		    "class" : "list-group",
-		    "html":$.map(data, function(v) {
-			
-			if (v[2]) 
-			    return $('<li>', {
-				"class":"list-group-item",
-				"html":[v[0],
-					' [',
-					lang,
-					'] ',
-					$('<a>',{
-					    'href':'/translator/' + project +'/'+ v[1],
-					    "target":"_documents",
-					    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
-					}),
-				       ]
+		    "html":$('<li>', {
+			"class":"list-group-item",
+			"html":$('<table>', {
+                            "class":"table",
+                            "html":$('<tbody>', {
+                                "html": $.map(data, function(v) {
+			            console.log(v)
+			            if (v[2]) { 
+			                return [$('<tr>', {
+				            "html":[
+                                                $('<td>',{
+                                                    "html":v[0],
+                                                }),
+                                                $('<td>',{
+                                                    "html":$('<span>',{
+//                                                        "class":"label label-default",
+                                                        "html":$('<a>',{
+					                    'href':'/translator/' + project +'/'+ v[1],
+					                    "target":"_documents",
+					                    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
+					                }),
+                                                    })
+                                                })
+				            ]
+                                        })
+                                               ]
+			            } else {
+			                refresh = true;
+			                return $('<tr>', {
+				            "html":[
+                                                $('<td>',{
+                                                    "html":v[0],
+                                                }),
+                                            ]
+                                        })
+                                    }
+                                })
 			    })
-			else {
-			    refresh = true;
-			    return $('<li>', {
-				"class":"list-group-item",
-				"html":v[0]
-			    })
-			}
+			})
 		    })
-		}))
+		}));
 
                 container.find('ul').prepend([
 		    $('<li>', {
@@ -152,8 +169,8 @@ $(function() {
     });
 
     $('body').on('click','.releaselang', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault()
+        e.stopPropagation()
 	var releaseo = $(this).closest('.release')
         var release = $(releaseo).data('release')
 	var project = $(releaseo).data('project')
