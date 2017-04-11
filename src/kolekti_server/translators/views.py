@@ -280,7 +280,10 @@ class TranslatorsCommitLangView(TranslatorsMixin, View):
         assembly = '/'.join([releasedir, 'assembly',release+'_asm.html'])
         state = ""
         self.project(project)
-        self.syncMgr.add_resource(releasedir)
+        try:
+            self.syncMgr.add_resource(releasedir)
+        except:
+            logger.debug('resource already added')
         self.syncMgr.propset("release_state",state, assembly)
         commitmsg = 'validate translation'
         self.syncMgr.commit(releasedir, commitmsg)
