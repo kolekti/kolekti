@@ -2,6 +2,8 @@ from django.conf.urls import patterns, include, url
 
 from kserver.views import *
 from kserver_saas.views import *
+from translators.views import *
+# from translators.urls import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -9,15 +11,16 @@ from django.conf.urls.static import static
 from django.views.static import serve as staticView
 
 from django.contrib import admin
-admin.autodiscover()
 
 urls = [
-    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
+#    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
-    url(r'^accounts/', include('registration.backends.default.urls')),
+#    url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^accounts/', include('allauth.urls')),
+    url(r'^invitations/', include('invitations.urls', namespace='invitations')),
     url(r'^auth/', include('django.contrib.auth.urls')),
 
-
+    url(r'^translator/', include('translators.urls')),
 
         
 #    url(r'^$', HomeView.as_view(), name='home'),
@@ -146,3 +149,4 @@ urls.extend([
 urlpatterns = patterns('', *urls)
 
 
+admin.autodiscover()

@@ -23,11 +23,32 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9ewjmy&i^@0kgd6(bapt%@azcl2wka6ml^tcs9v*9@-2%705#y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-HOSTNAME=os.getenv('VIRTUAL_HOST','0.0.0.0')
-ALLOWED_HOSTS = [HOSTNAME,'127.0.0.1', 'localhost']
+DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
+if DEBUG:
+    HOSTNAME='0.0.0.0'
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
+    ALLOWED_HOSTS='*'
 
+
+SITE_ID = 1 
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+    )
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_EMAIL_VERIFICATION="mandatory"
+ACCOUNT_ADAPTER = 'invitations.models.InvitationsAdapter'
+INVITATIONS_ALLOW_JSON_INVITES = True
+INVITATIONS_ACCEPT_INVITE_AFTER_SIGNUP = True
 
 # Application definition
 
@@ -37,10 +58,16 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'bootstrapform',
-    'registration',
+#    'registration',
     'kserver',
     'kserver_saas',
+    'translators',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'invitations',
     'django.contrib.admin',
 )
 
@@ -81,7 +108,7 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-FR'
 
 TIME_ZONE = 'UTC'
 

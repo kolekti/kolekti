@@ -13,8 +13,12 @@ from django.conf import settings
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils.text import get_valid_filename
+from django.contrib.auth.models import Group, User
 
-from kserver_saas.models import Project, UserProject
+from allauth.account.signals import user_signed_up
+from invitations.signals import invite_accepted
+
+from kserver_saas.models import Project, UserProject, UserProfile
 
 from kolekti.synchro import SVNProjectManager
 from kserver_saas.svnutils import SVNProjectCreator
@@ -90,3 +94,23 @@ def __generate_hooks(project):
             os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     
+@receiver(user_signed_up)
+def post_sign_up_callback(sender, **kwargs):
+    logger.debug('signup callback')
+    user = kwargs['user']
+    
+    up = UserProfile(user = user)
+    up.save()
+    
+@receiver(invite_accepted)
+def post_invite_callback(sender, **kwargs):
+    logger.debug('invite callback')
+    logger.debug(kwargs)
+    email = kwargs['email']
+    try:
+        user = User.objects.get(email = email)
+        group = Group.objects.get(name='translator')
+        user.groups.add(group)
+        
+    except User.DoesNotExist:
+        logger.debug('user not found')
