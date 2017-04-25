@@ -102,7 +102,9 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+          {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
+          {% endcomment %}
 	  {% endif %}
 	  {% if not f.type == "text/directory" %}
 	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">

@@ -38,6 +38,7 @@
       <div class="col-md-12">	
 	<div class="panel panel-default release filterable" data-filter-value="{{ release.name }}" data-project="{{ project.directory }}" data-release="{{ release.name }}">
 	  <div class="panel-heading">
+            <span class="pull-right"><a href="{% url 'translators_release' project=project.directory release=release.name %}">Acceder à l'interface traducteurs</a></span>
 	    <h3 class="panel-title">
 	      <span class="release_name">{{ release.name }}</span>
 	    </h3>
@@ -92,6 +93,7 @@
 		</li>
 	      </ul>
 	    </div>
+
 	    {% comment %}
 	    <div class="kolekti-release-documents">
 	      {{ manifest }}

@@ -12,6 +12,8 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
+from django.core.mail import EmailMultiAlternatives
+
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
 
@@ -37,7 +39,7 @@ class TranslatorsSharedMixin(kolektiBase):
     def project(self, project):
         projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
         # up = UserProject.objects.get(user = self.request.user, project__directory = project)
-        self.set_project(projectpath)
+        self.set_project(projectpath, self.request.user.username)
         # self.project_activate(up)
         
     def project_languages(self, project):
@@ -72,7 +74,7 @@ class TranslatorsMixin(TranslatorsSharedMixin):
     def send_mail_translation_added(self, project, release, lang, user):
         dst = [up.user.email for up in UserProject.objects.filter(project__directory = project, is_admin = True)]
         mail_params = {
-            'hostname':settings.hostname,
+            'hostname':settings.HOSTNAME,
             'project':project,
             'release':release,
             'lang':lang,
@@ -88,7 +90,7 @@ class TranslatorsMixin(TranslatorsSharedMixin):
 
         https://%(hostname)s/translators/%(project)s/%(release)s/
 
-        You are recevieng this email because you are adminstrator for the project %(project)s on  %(hostname)s. This email has been automatically genrated, plese do not reply.
+        You are recevieng this email because you are adminstrator for the project %(project)s on  %(hostname)s. This email has been automatically generated, please do not reply.
 
         The Kolekti Team.
         """%mail_params
@@ -96,11 +98,11 @@ class TranslatorsMixin(TranslatorsSharedMixin):
         html_content = """
         <p>Dear kolekti user,</p>
         
-        <p><a href="mailto:%s(useremail)">%(user)s</a> added a new translation [%(lang)s] of the release <em>%(release)s</em> in the project <em>%(project)s</em>.
+        <p><a href="mailto:%(useremail)s">%(user)s</a> added a new translation [%(lang)s] of the release <em>%(release)s</em> in the project <em>%(project)s</em>.
 
-        <a href="https://%(hostanme)s/translators/%(project)s/%(release)s/">Open in kolekti</a> or copy the link in your web browser<p>
+        <a href="https://%(hostname)s/translators/%(project)s/%(release)s/">Open in kolekti</a> or copy the link in your web browser<p>
         <pre>https://%(hostname)s/translators/%(project)s/%(release)s/</pre>
-        <p><small>You are recevieng this email because you are adminstrator for the project %s on  %s. This email has been automatically genrated, plese do not reply.</small></p>
+        <p><small>You are recevieng this email because you are adminstrator for the project %(project)s on %(hostname)s. This email has been automatically generated, please do not reply.</small></p>
 
         The Kolekti Team.
         """%mail_params
@@ -278,13 +280,13 @@ class TranslatorsCommitLangView(TranslatorsMixin, View):
     def post(self, request, project, release, lang):
         releasedir = '/'.join(['/releases', release, 'sources', lang])
         assembly = '/'.join([releasedir, 'assembly',release+'_asm.html'])
-        state = ""
+        state = "publication"
         self.project(project)
         try:
             self.syncMgr.add_resource(releasedir)
         except:
             logger.debug('resource already added')
-        self.syncMgr.propset("release_state",state, assembly)
+        self.syncMgr.propset("release_state", state, assembly)
         commitmsg = 'validate translation'
         self.syncMgr.commit(releasedir, commitmsg)
         self.send_mail_translation_added(project, release, lang, request.user)

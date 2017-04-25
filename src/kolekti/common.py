@@ -77,7 +77,7 @@ class kolektiBase(object):
         if path is not None:
             self.set_project(path)
                 
-    def set_project(self, path):
+    def set_project(self, path, username=None):
             
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
@@ -120,7 +120,7 @@ class kolektiBase(object):
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
-            self.syncMgr = SynchroManager(self._path)
+            self.syncMgr = SynchroManager(self._path, username)
         except ExcSyncNoSync:
             self.syncMgr = None
         try:
