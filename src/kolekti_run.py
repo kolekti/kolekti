@@ -40,7 +40,10 @@ def main():
             logging.config.fileConfig('logging-cmd.conf')
             #logging.basicConfig(format='%(message)s', level=logging.INFO)
     except:
-        logging.basicConfig(level=logging.INFO)
+        if args.verbose:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
 
         
     if args.config:
@@ -206,9 +209,7 @@ def main():
                         logger.debug(' [W] %s'%(event['stacktrace'],) )
             logger.info("Publication complete")
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            logger.error("Publication ended with errors")
+            logger.exception("Publication ended with errors")
 
     if args.cmd == 'make_release':
         from kolekti import publish
@@ -225,9 +226,7 @@ def main():
             p.make_release(toc, xjob, release_name=args.name)
             logger.info("Release sucessful")
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            logger.error("Release ended with errors")
+            logger.exception("Release ended with errors")
                     
     if args.cmd == 'publish_release':
         from kolekti import publish
@@ -250,11 +249,10 @@ def main():
                 if event['event'] == "warning":
                     logger.info(' [W] %s\n%s'%(msg) )
 
-            logger.info("Publication complete")
+            logger.info("Release publication complete")
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            logger.error("Publication ended with errors")
+
+            logger.exception("Release publication ended with errors")
             
     if args.cmd == 'diagnostic':
         from kolekti import diagnostic
@@ -265,9 +263,7 @@ def main():
             else:
                 d.diag_project()
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            logger.error("Diagnostics failed")
+            logger.exception("Diagnostics failed")
                     
     if args.cmd == 'varods':
         from kolekti import variables
