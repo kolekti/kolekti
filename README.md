@@ -24,6 +24,7 @@ Installation avec docker
 
 Prérequis
 ---------
+
 * docker https://docs.docker.com/engine/installation/
 * docker-compose https://docs.docker.com/compose/install
 
@@ -36,8 +37,10 @@ Récupérer le code de Kolekti depuis github
 Configuration
 -------------
 
-Editer le fichier .env pour configurer l'environnement dans lequel est lancé Kolekti.
-*Parametres pour l'envoi d'emails,
+Editer le fichier `.env` pour configurer l'environnement dans lequel est lancé Kolekti.
+
+* Parametres pour l'envoi d'emails
+
     KOLEKTI_EMAIL_HOST=mail.yourdomain.name
     KOLEKTI_EMAIL_PORT=465
     KOLEKTI_EMAIL_USER=kolekti@yourdomain.name
@@ -45,13 +48,16 @@ Editer le fichier .env pour configurer l'environnement dans lequel est lancé Ko
     KOLEKTI_EMAIL_FROM=kolekti@.yourdomain.name
 
 * Mode deboggage
+
     KOLEKTI_DEBUG=True
 
-* Configuration reseau 
+* Configuration reseau
+
     EXTERNAL_PORT=8800
     VIRTUAL_HOST=localhost
 
 * Utilisateur
+
     UID=1001
     GID=1001
 
@@ -85,4 +91,4 @@ pour installer les alias dans votre shell:
 vous pouvez alors utiliser les alias:
 
 * `kolekti` : pour lancer kolekti en CLI
-* `kolekti-manage` pour acceder aux commande de gestion de django
+* `kolekti-manage` : pour acceder aux commande de gestion de django
