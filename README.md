@@ -39,7 +39,7 @@ Configuration
 
 Editer le fichier `.env` pour configurer l'environnement dans lequel est lancé Kolekti.
 
-* Parametres pour l'envoi d'emails
+Parametres pour l'envoi d'emails
 
     KOLEKTI_EMAIL_HOST=mail.yourdomain.name
     KOLEKTI_EMAIL_PORT=465
@@ -47,16 +47,16 @@ Editer le fichier `.env` pour configurer l'environnement dans lequel est lancé 
     KOLEKTI_EMAIL_PASSWORD=
     KOLEKTI_EMAIL_FROM=kolekti@.yourdomain.name
 
-* Mode deboggage
+Mode deboggage
 
     KOLEKTI_DEBUG=True
 
-* Configuration reseau
+Configuration reseau
 
     EXTERNAL_PORT=8800
     VIRTUAL_HOST=localhost
 
-* Utilisateur
+Utilisateur
 
     UID=1001
     GID=1001
