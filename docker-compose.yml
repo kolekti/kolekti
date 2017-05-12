@@ -1,0 +1,41 @@
+version: '2'
+services:
+  kolekti:
+    image: sbonhomme/kolekti-base
+    volumes:
+      - "${KOLEKTI_SRC}:/kolekti/src:rw"
+      - "${KOLEKTI_SVN}:/svn:rw"
+      - "${KOLEKTI_PROJECTS}:/projects:rw"
+      - "${KOLEKTI_DB}:/db:rw"
+      - "./fonts:/usr/share/fonts/extra"
+    ports:
+      - "8000"
+    environment:
+      PYTHONPATH: /kolekti/src
+      GUNICORN_OPTS:
+      UID:
+      GID:
+      KOLEKTI_DBFILE: /db/db.sqlite3
+      KOLEKTI_EMAIL_HOST:
+      KOLEKTI_EMAIL_PORT:
+      KOLEKTI_EMAIL_USER:
+      KOLEKTI_EMAIL_PASSWORD:
+      KOLEKTI_EMAIL_FROM:
+      KOLEKTI_DEBUG:
+      VIRTUAL_HOST:
+  front:
+    # the front is an apache, acting as a proxy to wsgi, serving static content and doing svn
+    image: sbonhomme/kolekti-front
+    volumes:
+      - "${KOLEKTI_SRC}:/kolekti/src:ro"
+      - "${KOLEKTI_LOG}/apache2:/var/log/apache2:rw"
+      - "${KOLEKTI_SVN}:/svn:rw"
+      - "${KOLEKTI_DB}:/db:ro"
+    ports:
+      - "${EXTERNAL_PORT}:80"
+    links:
+      - kolekti
+    environment:
+      KOLEKTI_DBFILE: /db/db.sqlite3
+      UID:
+      GID:
