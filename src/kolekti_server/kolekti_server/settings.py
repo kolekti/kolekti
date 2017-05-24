@@ -192,7 +192,8 @@ EMAIL_USE_TLS=False
 EMAIL_USE_SSL=True
 DEFAULT_FROM_EMAIL = os.getenv('KOLEKTI_EMAIL_FROM',email_config.get('from',''))
 
-LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
+#LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
+LOG_PATH = '/var/log/kolekti'
 
 LOGGING = {
     'version': 1,
