@@ -42,7 +42,7 @@ Configuration
 
 Editer le fichier `.env` pour configurer l'environnement dans lequel est lancé Kolekti.
 
-Parametres pour l'envoi d'emails
+### Parametres pour l'envoi d'emails
 
     KOLEKTI_EMAIL_HOST=mail.yourdomain.name
     KOLEKTI_EMAIL_PORT=465
@@ -50,18 +50,18 @@ Parametres pour l'envoi d'emails
     KOLEKTI_EMAIL_PASSWORD=
     KOLEKTI_EMAIL_FROM=kolekti@.yourdomain.name
 
-Mode deboggage
+### Mode deboggage
 
     KOLEKTI_DEBUG=True
 
 *Il est conseillé de laisser le mode debug pour un installation locale*
 
-Configuration reseau
+### Configuration reseau
 
     EXTERNAL_PORT=8800
     VIRTUAL_HOST=localhost
 
-Utilisateur
+### Utilisateur
 
     UID=1000
     GID=1000
@@ -73,7 +73,7 @@ Les données *utilisateur* de Kolekti : projets, dépôts svn, logs, base de don
 
 Il convient de crééer ces dossiers, avant de démarrer kolekti :
 
-   mkdir -p run/db run/logs run/fonts run/prince run/projects run/svn run/log/kolekti
+    mkdir -p run/db run/logs run/fonts run/prince run/projects run/svn run/log/kolekti
 
 
 Lancement du serveur
