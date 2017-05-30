@@ -26,7 +26,10 @@ Prérequis
 ---------
 
 * docker https://docs.docker.com/engine/installation/
-* docker-compose https://docs.docker.com/compose/install
+* docker-compose https://docs.docker.com/compose/install/#alternative-install-options
+
+> Kolekti a été développé, testé et est déployé avec docker-comopse 1.7.1
+> Cette version est installée en utilisant le méthode pip.
 
 Récupérer le code de Kolekti depuis github
 
@@ -51,6 +54,8 @@ Mode deboggage
 
     KOLEKTI_DEBUG=True
 
+*Il est conseillé de laisser le mode debug pour un installation locale*
+
 Configuration reseau
 
     EXTERNAL_PORT=8800
@@ -58,8 +63,17 @@ Configuration reseau
 
 Utilisateur
 
-    UID=1001
-    GID=1001
+    UID=1000
+    GID=1000
+
+Données utilisateur
+-------------------
+
+Les données *utilisateur* de Kolekti : projets, dépôts svn, logs, base de données pour la gestion des utilisateurs, sont présente dans le sous-dossier *run* du dossier Kolekti.
+
+Il convient de crééer ces dossiers, avant de démarrer kolekti :
+
+   mkdir -p run/db run/logs run/fonts run/prince run/projects run/svn run/log/kolekti
 
 
 Lancement du serveur
