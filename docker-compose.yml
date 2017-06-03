@@ -1,13 +1,14 @@
 version: '2'
 services:
   kolekti:
-    image: local-kolekti-base
+    image: sbonhomme/kolekti-base
     volumes:
       - "${KOLEKTI_SRC}:/kolekti/src:rw"
+      - "${KOLEKTI_STATIC}:/static:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_PROJECTS}:/projects:rw"
       - "${KOLEKTI_DB}:/db:rw"
-      - "${KOLEKTI_LOG}/kolekti:/var/log/kolekti:rw"
+      - "${KOLEKTI_LOG}/kolekti:/var/log:rw"
       - "${KOLEKTI_FONTS}:/usr/share/fonts/extra"
     ports:
       - "8000"
@@ -29,7 +30,8 @@ services:
     image: sbonhomme/kolekti-front
     volumes:
       - "${KOLEKTI_SRC}:/kolekti/src:ro"
-      - "${KOLEKTI_LOG}/apache2:/var/log/apache2:rw"
+      - "${KOLEKTI_STATIC}:/static:ro"
+      - "${KOLEKTI_LOG}:/var/log:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_DB}:/db:ro"
     ports:

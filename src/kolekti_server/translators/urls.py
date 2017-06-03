@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from views import *
 from django.contrib import admin
 admin.autodiscover()
 
-urls = [
+urlpatterns = [
 
     url(r'^$', TranslatorsHomeView.as_view(), name='translators_home'),
     url(r'^(?P<project>[0-9_.\w-]+)/', include([
@@ -28,4 +28,4 @@ urls = [
         ])),
     ])),
 ]
-urlpatterns = patterns('', *urls)
+

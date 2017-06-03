@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 from kserver.views import *
 from kserver_saas.views import *
@@ -12,7 +12,7 @@ from django.views.static import serve as staticView
 
 from django.contrib import admin
 
-urls = [
+urlpatterns = [
 #    url(r'^accounts/register/$', RegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/profile/$', UserProfileView.as_view(), name="user_profile"),
 #    url(r'^accounts/', include('registration.backends.default.urls')),
@@ -74,7 +74,7 @@ urls = [
 ]
 
 if os.sys.platform[:3] == "win":
-    urls.extend([
+    urlpatterns.extend([
         url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
         url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
         url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
@@ -83,7 +83,7 @@ if os.sys.platform[:3] == "win":
         ])
 else:
     # Saas
-    urls.extend([
+    urlpatterns.extend([
         url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
         url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
         url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
@@ -91,7 +91,7 @@ else:
         url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
         ])
 
-urls.extend([
+urlpatterns.extend([
     url(r'^settings/$', SettingsView.as_view(), name='settings'),
     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
     url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
@@ -145,8 +145,6 @@ urls.extend([
 #    url(r'^publications', staticView, name="kolekti_raw_publication"),
 #    url(r'^drafts', staticView, name="kolekti_raw_draft"),
 
-
-urlpatterns = patterns('', *urls)
 
 
 admin.autodiscover()
