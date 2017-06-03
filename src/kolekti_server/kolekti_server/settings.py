@@ -193,6 +193,31 @@ EMAIL_USE_TLS=False
 EMAIL_USE_SSL=True
 DEFAULT_FROM_EMAIL = os.getenv('KOLEKTI_EMAIL_FROM',email_config.get('from',''))
 
+# password validation
+
+AUTH_PASSWORD_VALIDATORS = [
+        {
+            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'OPTIONS': {
+                'min_length': 9,
+                }
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        },
+        {
+            'NAME': 'kserver.validators.HTPasswordGenerator',
+        },
+    ]
+
+AUTH_SYNC_HTPASS = '/auth'
+    
 #LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
 LOG_PATH = '/var/log/kolekti'
 
