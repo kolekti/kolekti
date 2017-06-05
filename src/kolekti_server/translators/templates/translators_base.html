@@ -35,6 +35,7 @@
 
 	</div>
 	<div class="collapse navbar-collapse" id="navbar">
+{% comment %}
 	  <ul class="nav navbar-nav">
             <li {% block current_home %}{% endblock %}><a href="/"><i class="fa fa-home fa-3"></i></a></li>
 	    <li {% block current_trames %}{% endblock %}><a href="/tocs/">Trames</a></li>
@@ -54,9 +55,6 @@
 		<li><a href="/import/">Importer un fichier tableur</a></li>
 		<li role="presentation" class="divider"></li>
 		<li><a href="/sync/">Synchronisation</a></li>
-		{% if active_project_admin %}
-		<li><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
-		{% endif %}
 		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>
@@ -64,13 +62,10 @@
 	      </ul>
 	    <li>
 	  </ul>
-
+{% endcomment %}
 	  <ul class="nav navbar-nav navbar-right ">          
 	    <li><a href="/static/help/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
-	    {% if kolekti.saas %}
-            <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
-	    {% endif %}
-	    <li>
+            <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	  </ul>
 	  <!--
 	  <form class="navbar-form navbar-right navbar-input-group" role="search" action="/search">
@@ -92,83 +87,9 @@
       </div>
 -->
     </div> <!-- navbar -->
-    <div class="navbar navbar-fixed-top"  id="navbar2">
-      <div class="container-fluid">
-	<div class="row">
-	  <div class="col-sm-12">
-	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
-	      {% include "user_menu.html" %}
-	      <div class="btn-group pull-right" role="group">
-		<button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
-		  <span>
-		    <span class="spinner"><i class="fa fa-spinner fa-spin"></i></span> 
-		    <span class="circle"><i class="fa fa-circle"></i></span> 
-		    rev <span id="revnum">{{ syncnum.revision.number }}</span>
-		  </span>
-		</button>
-	      </div>
-	      <div class="btn-group  pull-right" role="group">
-		{% block infobuttons %}
-		<div class="btn-group" role="group">
-		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		    Projet {{ active_project_name }} ({{ active_srclang }})
-		    <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-		    {% for project in projects %}
-		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li>
-		    {% endfor %}
-		    <li role="presentation" class="divider"></li>
-		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
-		  </ul>
-		</div>
-	      </div>
-	      {% block infobuttons_lang %}
-	      {% comment %}
-	      <div class="btn-group" role="group">
 
-		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
-		  {{ active_srclang }}
-		  <span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
-		</ul>
-	      </div>
-	      {% endcomment %}
-	      {% endblock %}
-
-	      {% endblock %}
-	    </div>
-	  </div>
-	</div>
-      </div>
-    </div>
     {% block page-content %}{% endblock %}
 
-
-    <div class="modal fade">
-      <div class="modal-dialog modal-lg">
-	<div class="modal-content">
-	  <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
-            <h4 class="modal-title">{% block modal-title %}Modal title{% endblock %}</h4>
-	  </div>
-	  <form id="modalform" method="POST">
-	    <div class="modal-body">
-              {% block modal-body %}<p>Generic modal</p>{% endblock %}
-	    </div>
-	    <div class="modal-footer">
-	      {% block modal-footer %}{% endblock %}
-              <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-	    </div>
-	  </form>
-	</div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
 
     {% block footer %}{% endblock %}
     
@@ -178,8 +99,10 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/settings.js"></script>
+    <!--
     <script src="/static/js/kolekti-utils.js"></script>
     <script src="/static/js/kolekti-common.js"></script>
+    -->
     {% block extrascripts %}{% endblock %}
   </body>
 </html>

@@ -180,6 +180,8 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
                 'releaselangs' : release_languages,
                 'default_srclang':default_srclang,
                 'active_project_name' : self.request.kolekti_userproject.project.name,
+                'active_project_directory' : self.request.kolekti_userproject.project.directory,                                      
+                'active_project_admin' : self.request.kolekti_userproject.is_admin,                           
                 'active_srclang' : self.request.kolekti_userproject.srclang,
 #                'syncnum' : self._syncnumber,
                 'kolektiversion' : self._kolektiversion,
@@ -341,12 +343,17 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
     
 class HomeView(kolektiMixin, View):
     template_name = "home.html"
-    def get(self, request):
 
+    def get(self, request):
         context = self.get_context_data()
         if context.get('active_project') is None:
-            return HttpResponseRedirect(reverse('projects')) 
-        return self.render_to_response(context)
+            try:
+                request.user.groups.get(name=u'translator')
+                return HttpResponseRedirect(reverse('translators_home')) 
+            except ObjectDoesNotExist:
+                return HttpResponseRedirect(reverse('projects')) 
+        else:
+            return self.render_to_response(context)
 
 
 class ProjectsView(kolektiMixin, View):
@@ -491,8 +498,11 @@ class PublicationsListJsonView(kolektiMixin, View):
 class PublicationsZipView(kolektiMixin, View):
     def get(self,request):
         path = request.GET.get('path')
+        zipname = path.split('/')[-1]
         try:
-            return HttpResponse(self.zip_publication(path),content_type="application/zip")
+            response = HttpResponse(self.zip_publication(path),content_type="application/zip")
+            response['Content-Disposition'] = 'attachment; filename=%s.zip'%zipname
+            return response
         except:
             import traceback
             print traceback.format_exc()
@@ -573,10 +583,15 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
         languages, release_languages, default_srclang = self.project_langs()
         states = []
         for lang in release_languages:
-            if self.syncMgr is None:
-                state = "unknown"
-            else:
-                state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            asfilename = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
+            logger.debug(asfilename)
+            state = self.syncMgr.propget("release_state",asfilename)
+            logger.debug(state)
+            if state is None:
+                logger.debug(self.exists(asfilename))
+                if self.exists(asfilename):
+                    states.append((lang, "local"))
+
             if state == "source_lang":
                 states.insert(0,(lang, state))
             else:
@@ -1398,6 +1413,7 @@ class BrowserView(kolektiMixin, View):
             context.update({'pathsteps':pathsteps})
             context.update({'mode':mode})
             context.update({'path':path})
+            context.update({'project':self.request.kolekti_userproject.project.directory})
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
             return self.render_to_response(context)
         except:
@@ -1407,12 +1423,18 @@ class BrowserView(kolektiMixin, View):
 class BrowserReleasesView(BrowserView):
     template_name = "browser/releases.html"
     def get_directory(self, path):
-
+        projectdir = self.request.kolekti_userproject.project.directory
+        logger.debug('get releases %s',projectdir)
+        if self.syncMgr is not None :
+            svn_url = self.syncMgr.geturl()
+            if svn_url[:7] == 'file://':
+                svn_url = 'https://' + settings.HOSTNAME + '/svn/' + projectdir
         try:
             releases = {}
             res = []
             for assembly, date in self.get_release_assemblies(path):
                 item = {'name':assembly,
+                        'project':projectdir,
                         'type':"text/xml",
                         'date':date}
                 res.append(item)
@@ -1434,7 +1456,7 @@ class BrowserReleasesView(BrowserView):
                         found = True
                 except:
                     releases[assembly]=item
-                    logger.error('release list error')
+                    # logger.exception('release list error')
             # logger.debug(releases)
             return releases.values()
 #            return res
@@ -1579,7 +1601,7 @@ class ReleaseView(PublicationView):
         
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
-                print ET.tostring(jprofile)
+                logger.debug(ET.tostring(jprofile))
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
                 else:

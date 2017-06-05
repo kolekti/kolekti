@@ -74,9 +74,11 @@ class SvnClient(object):
         self.__username = username
         self.__password = password
         self.__accept_cert = accept_cert
+        if not username is None:
+            self._client.set_default_username(username)
         
         def get_login( realm, username, may_save ):
-            if self.__username is None:
+            if self.__username is None or self.__password is None:
                 raise ExcSyncRequestAuth
             return True, self.__username, self.__password, True
         self._client.callback_get_login = get_login
@@ -102,8 +104,8 @@ class SvnClient(object):
         self._client.callback_ssl_server_trust_prompt = callback_accept_cert
         
 class SynchroManager(SvnClient):
-    def __init__(self, base):
-        super(SynchroManager, self).__init__()
+    def __init__(self, base, username = None):
+        super(SynchroManager, self).__init__(username = username)
         self._base = base
         try:
             self._info = self._client.info(base)
@@ -385,7 +387,6 @@ class SynchroManager(SvnClient):
 
     def propset(self, name, value, path):
         ospath = self.__makepath(path)
-        logger.debug("svn proset %s %s %s"%(name,value,path))
         self._client.propset(name, value, ospath)
         
     def propget(self, name, path):

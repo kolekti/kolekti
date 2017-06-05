@@ -55,7 +55,7 @@
        <tr>
 	<th style="width:50px"></th>
 	<th><a href="#" class="sortcol sortcol-name" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
-	<th><a href="#">Etat</a></th>
+	<th>Etat</th>
 	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
 	<th>Actions</th>
 	<th style="width:5%">Synchro</th>
@@ -89,13 +89,22 @@
 	     class="filelink"
 	     {% endif %}
 	     >{{ f.name }}</a></td>
-	<td{% if not f.indexes %} class="kolekti-browser-release-state"{% endif %}></td>
+ 	{% if not f.indexes %}
+	<td class="kolekti-browser-release-state"></td>
+
+	{% else %}
+	<td></td>
+	{% endif %}
+	
 	<td class="kolekti-browser-date">{{ f.date|date:"d/m/Y H:i" }}</td>
 	<td class="kolekti-browser-item-action">
 	  {% if not f.indexes %}
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+          {% comment %}
+	  <a href="{% url 'translators_release' project=project release=f.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
+          {% endcomment %}
 	  {% endif %}
 	  {% if not f.type == "text/directory" %}
 	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">
@@ -143,11 +152,9 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
-	  {% if not f.type == "text/directory" %}
-	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">
-	    <i class="fa fa-copy"></i>
-	  </button>
-	  {% endif %}
+	  
+	  <a href="{% url 'translators_release' project=project release=f.name|add:'_'|add:fi.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
+
 	</td>
 	<td class="kolekti-browser-sync"></td>
       </tr>

@@ -31,7 +31,6 @@ from searchindex import IndexManager
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-ns = {'namespaces':{"h":"http://www.w3.org/1999/xhtml"}}
 
 objpathes = {
     "0.6":{
@@ -56,8 +55,12 @@ objpathes = {
         }
     }
 
- 
+
+
 class kolektiBase(object):
+
+    namespaces = {"h":"http://www.w3.org/1999/xhtml"}
+
     def __init__(self, path=None, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
@@ -74,7 +77,7 @@ class kolektiBase(object):
         if path is not None:
             self.set_project(path)
                 
-    def set_project(self, path):
+    def set_project(self, path, username=None):
             
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
@@ -117,7 +120,7 @@ class kolektiBase(object):
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
-            self.syncMgr = SynchroManager(self._path)
+            self.syncMgr = SynchroManager(self._path, username)
         except ExcSyncNoSync:
             self.syncMgr = None
         try:
@@ -296,7 +299,40 @@ class kolektiBase(object):
         z =  zf.getvalue()
         zf.close()
         return z
-                
+    
+    def zip_release(self, release, langs):
+        try:
+            logger.debug('zip %s %s'%(release, langs))
+            path = "/releases/"+release
+            from zipfile import ZipFile
+            from StringIO import StringIO
+            zf= StringIO()
+            top = self.getOsPath(path)
+            logger.debug(top)
+            with ZipFile(zf, "w") as zippy:
+                logger.debug('zip open')
+                for root, dirs, files in os.walk(top):
+                    rt=root[len(top) + 1:]
+                    if rt[:7] != 'sources':
+                        continue
+                    logger.debug("rt %s", rt)
+                    try:
+                        lang = rt.split("/")[1]
+                        if lang in langs:
+                            for name in files:
+                                logger.debug(name)
+                                zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+                    except IndexError:
+                        pass
+                    
+            z =  zf.getvalue()
+            zf.close()
+            logger.debug('zip done')
+            return z
+        except:
+            logger.exception('release zip failed')
+            return None
+    
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
@@ -857,4 +893,26 @@ class PrefixResolver(ET.Resolver):
             localpath=url.split('/')[2:]
             return self.resolve_filename(os.path.join(self.model.projectpath, *localpath),context)
 
+
+class KolektiValidationError(Exception):
+    pass
+
+class kolektiTests(kolektiBase):
+    testcases = {
+        'assembly': [
+#            {'xpath':'/h:html/h:head//h:div[@class="topic"]',
+#                 'message':"No topic found"},
+            {'xpath':'/h:html',
+                 'message':"No topic found"}
+            ],
+        'variables':[]
+        }
+        
+    nsmap={"h":"http://www.w3.org/1999/xhtml"}
+    
+    def test_xml(self,xml, kind):
+        for testcase in self.testcases[kind]:
+            logger.debug('testcase %s',testcase['xpath'])
+            if len(xml.xpath(testcase['xpath'], namespaces = self.namespaces)) == 0:
+                raise KolektiValidationError(testcase['message'])
 

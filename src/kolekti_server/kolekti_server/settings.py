@@ -23,11 +23,32 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '9ewjmy&i^@0kgd6(bapt%@azcl2wka6ml^tcs9v*9@-2%705#y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-HOSTNAME=os.getenv('VIRTUAL_HOST','0.0.0.0')
-ALLOWED_HOSTS = [HOSTNAME,'127.0.0.1', 'localhost']
+DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
+if DEBUG:
+    HOSTNAME='0.0.0.0'
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
+    ALLOWED_HOSTS='*'
 
+
+SITE_ID = 1 
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+    )
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_EMAIL_VERIFICATION="mandatory"
+ACCOUNT_ADAPTER = 'invitations.models.InvitationsAdapter'
+INVITATIONS_ALLOW_JSON_INVITES = True
+INVITATIONS_ACCEPT_INVITE_AFTER_SIGNUP = True
 
 # Application definition
 
@@ -37,10 +58,16 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'bootstrapform',
-    'registration',
+#    'registration',
     'kserver',
     'kserver_saas',
+    'translators',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'invitations',
     'django.contrib.admin',
 )
 
@@ -81,7 +108,7 @@ WSGI_APPLICATION = 'kolekti_server.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-FR'
 
 TIME_ZONE = 'UTC'
 
@@ -96,6 +123,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/static'
 
 if os.sys.platform[:3] == "win":
     STATIC_PATH="kserver/static/"
@@ -165,7 +193,34 @@ EMAIL_USE_TLS=False
 EMAIL_USE_SSL=True
 DEFAULT_FROM_EMAIL = os.getenv('KOLEKTI_EMAIL_FROM',email_config.get('from',''))
 
-LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
+# password validation
+
+AUTH_PASSWORD_VALIDATORS = [
+        {
+            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'OPTIONS': {
+                'min_length': 8,
+                }
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        },
+        {
+            'NAME': 'kserver_saas.validators.HTPasswordGenerator',
+        },
+    ]
+
+AUTH_SYNC_HTPASS = os.getenv('KOLEKTI_PRIVATE','/etc/kolekti') + '/htpasswd'
+AUTH_SYNC_HTGROUP = os.getenv('KOLEKTI_PRIVATE','/etc/kolekti') + '/htgroup'
+    
+#LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
+LOG_PATH = '/var/log/kolekti'
 
 LOGGING = {
     'version': 1,
