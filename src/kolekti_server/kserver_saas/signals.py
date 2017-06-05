@@ -23,8 +23,6 @@ from kserver_saas.models import Project, UserProject, UserProfile
 from kolekti.synchro import SVNProjectManager
 from kserver_saas.svnutils import SVNProjectCreator
 
-logger.debug('signals loaded')
-
 @receiver(post_save, sender=Project)
 def post_save_project_callback(sender, **kwargs):
     created = kwargs['created']
@@ -98,7 +96,7 @@ def __generate_hooks(project):
 
 def __generate_htgroup():
     '''update svn acces group file'''
-    with open("/private/htgroup", 'w') as groupfile:
+    with open(settings.AUTH_SYNC_HTGROUP, 'w') as groupfile:
         groupfile.write('[groups]\n')
         projects = Project.objects.all()
         for project in projects:
