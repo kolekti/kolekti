@@ -8,8 +8,10 @@ services:
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_PROJECTS}:/projects:rw"
       - "${KOLEKTI_DB}:/db:rw"
-      - "${KOLEKTI_LOG}/kolekti:/var/log:rw"
+      - "${KOLEKTI_LOG}:/var/log:rw"
       - "${KOLEKTI_FONTS}:/usr/share/fonts/extra"
+      - "${KOLEKTI_PRIVATE}:/private"
+      - "${KOLEKTI_PRIVATE}/prince:/usr/lib/prince/license/:ro"
     ports:
       - "8000"
     environment:
@@ -29,11 +31,10 @@ services:
     # the front is an apache, acting as a proxy to wsgi, serving static content and doing svn
     image: sbonhomme/kolekti-front
     volumes:
-      - "${KOLEKTI_SRC}:/kolekti/src:ro"
       - "${KOLEKTI_STATIC}:/static:ro"
       - "${KOLEKTI_LOG}:/var/log:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
-      - "${KOLEKTI_DB}:/db:ro"
+      - "${KOLEKTI_PRIVATE}:/private:ro"
     ports:
       - "${EXTERNAL_PORT}:80"
     links:

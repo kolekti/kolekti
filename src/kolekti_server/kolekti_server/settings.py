@@ -202,7 +202,7 @@ AUTH_PASSWORD_VALIDATORS = [
         {
             'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
             'OPTIONS': {
-                'min_length': 9,
+                'min_length': 8,
                 }
         },
         {
@@ -212,11 +212,11 @@ AUTH_PASSWORD_VALIDATORS = [
             'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
         },
         {
-            'NAME': 'kserver.validators.HTPasswordGenerator',
+            'NAME': 'kserver_saas.validators.HTPasswordGenerator',
         },
     ]
 
-AUTH_SYNC_HTPASS = '/auth'
+AUTH_SYNC_HTPASS = '/private/htpasswd'
     
 #LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
 LOG_PATH = '/var/log/kolekti'

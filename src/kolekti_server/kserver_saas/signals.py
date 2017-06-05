@@ -58,7 +58,7 @@ def post_save_userproject_callback(sender, **kwargs):
             username = instance.user.username
             # TODO : use urllib (Win compatibility)
             project_directory = instance.project.directory
-
+            
             url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
             logger.debug('checkout %s %s'%(username, url))
             projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
@@ -66,8 +66,9 @@ def post_save_userproject_callback(sender, **kwargs):
                 SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
             except:
                 logger.exception('error during checkout')
-            __generate_hooks(instance.project)
-
+        __generate_hooks(instance.project)
+        __generate_htgroup()
+        
 @receiver(post_delete, sender = UserProject)
 def post_delete_userproject_callback(sender, **kwargs):
     instance = kwargs['instance']
@@ -77,8 +78,10 @@ def post_delete_userproject_callback(sender, **kwargs):
         if os.path.exists(user_project_directory):
             shutil.rmtree(user_project_directory)
         __generate_hooks(instance.project)
+        __generate_htgroup()
 
 def __generate_hooks(project):
+    ''' generate svn hooks in project repository'''
     if settings.KOLEKTI_AUTOSYNC:
         project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
         if os.path.exists(project_directory):
@@ -93,6 +96,25 @@ def __generate_hooks(project):
             st = os.stat(hooksfile)
             os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
+def __generate_htgroup():
+    '''update svn acces group file'''
+    with open("/private/htgroup", 'w') as groupfile:
+        groupfile.write('[groups]\n')
+        projects = Project.objects.all()
+        for project in projects:
+            project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+            if os.path.exists(project_directory):
+                logins = [userproject.user.username for userproject in UserProject.objects.filter(project = project)]
+                groupfile.write("%s = %s\n" % (project.directory.encode('utf-8'),', '.join(login.encode('utf-8') for login in logins)))
+        for project in projects:
+            # same there, an empty name project just blocks all other
+            project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+            if os.path.exists(project_directory):
+                groupfile.write('\n')
+                groupfile.write('[%s:/]\n' % project.directory.encode('utf-8'))
+                groupfile.write('@%s = rw\n' % project.directory.encode('utf-8'))
+
+                                                                                                                                                                                                                                                                
     
 @receiver(user_signed_up)
 def post_sign_up_callback(sender, **kwargs):
