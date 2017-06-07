@@ -167,7 +167,7 @@ class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):
         except TranslatorRelease.DoesNotExist:
             # checkout 
                     
-            tr = TranslatorRelease(project = _project, release_name = release, user = user)
+            tr = TranslatorRelease.objects.create(project = _project, release_name = release, user = user)
             tr.save()
         return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
 
