@@ -218,7 +218,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_SYNC_HTPASS = os.getenv('KOLEKTI_PRIVATE','/etc/kolekti') + '/htpasswd'
 AUTH_SYNC_HTGROUP = os.getenv('KOLEKTI_PRIVATE','/etc/kolekti') + '/htgroup'
-    
+
+LOGIN_REDIRECT_URL = "/"
+
 #LOG_PATH = os.path.join(KOLEKTI_BASE,'.logs')
 LOG_PATH = '/var/log/kolekti'
 
