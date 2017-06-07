@@ -20,6 +20,7 @@ services:
       UID:
       GID:
       KOLEKTI_DBFILE: /db/db.sqlite3
+      KOLEKTI_PRIVATE: /private
       KOLEKTI_EMAIL_HOST:
       KOLEKTI_EMAIL_PORT:
       KOLEKTI_EMAIL_USER:
