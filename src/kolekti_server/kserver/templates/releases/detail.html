@@ -219,7 +219,7 @@
 		  <div class="form-group">
 		    <label for="release_copy_from_lang">Sélectionnez la langue source à partir de laquelle doit être crée la version <em>{{ rlang }}</em> : </label>
 		    <select name="release_copy_from_lang">
-		      {% for mrlang, mstate in langstates %}
+		      {% for mrlang, mstate, focus in langstates %}
 		      {% if mstate != 'unknown' %} 
 		      <option value="{{ mrlang }}">{{ mrlang }}</option>
 		      {% endif %}
