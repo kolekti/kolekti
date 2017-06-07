@@ -43,7 +43,10 @@
     </div>
   </div>
 </div>  
-
+    {% empty %}
+    <div class="alert alert-info" role="alert">
+      <p>No translation assigned yet !</p>
+      </div>
 {% endfor %}
 
       <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
