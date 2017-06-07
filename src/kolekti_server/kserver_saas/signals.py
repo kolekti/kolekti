@@ -53,20 +53,23 @@ def post_save_userproject_callback(sender, **kwargs):
     logger.debug('post save handler: save userproject')
     if instance.is_saas:
         if created or raw:
-            username = instance.user.username
-            # TODO : use urllib (Win compatibility)
-            project_directory = instance.project.directory
-            
-            url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
-            logger.debug('checkout %s %s'%(username, url))
-            projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
             try:
+                username = instance.user.username
+                # TODO : use urllib (Win compatibility)
+                project_directory = instance.project.directory
+            
+                url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
+                logger.debug('checkout %s %s'%(username, url))
+                projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
                 SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
+                __generate_hooks(instance.project)
+                __generate_htgroup()
             except:
-                logger.exception('error during checkout')
-        __generate_hooks(instance.project)
-        __generate_htgroup()
-        
+                loggger.exception('Could not create user project')
+                if os.path.exists(user_project_directory):
+                    shutil.rmtree(user_project_directory)
+            
+            
 @receiver(post_delete, sender = UserProject)
 def post_delete_userproject_callback(sender, **kwargs):
     instance = kwargs['instance']
