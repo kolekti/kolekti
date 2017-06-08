@@ -333,7 +333,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         for chunck in sourceiter:
             nbchunck += 1
             chunck.update({'id':nbchunck})
-            yield template.render(Context(chunck))
+            yield template.render(chunck)
         
 
     def set_extension(self, path, default):
