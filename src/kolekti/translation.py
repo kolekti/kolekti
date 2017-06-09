@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 class TranslationImporter(kolektiTests):
 
     html = "{http://www.w3.org/1999/xhtml}"
+
+    def __init__(self, *args, **kwargs):
+        super(TranslationImporter, self).__init__(*args, **kwargs)
     
     def __get_path(self, path, release, lang):
         pathparts = path.split('/')
@@ -96,9 +99,155 @@ class TranslationImporter(kolektiTests):
             files.append(projectfile)
             #self.write(ifilec, projectfile, "wb", sync = False)
         return files
+
+    def _get_source_lang(self, release):
+        release_sources_dir = "/".join(['/releases',release,'sources'])
+        for l in self.list_directory(release_sources_dir):
+            if l == 'share':
+                continue
+            try:
+                assembly_file = "%(rd)s/%(lang)s/assembly/%(release)s_asm.html"%{
+                    'rd': release_sources_dir,
+                    'lang': l,
+                    'release': release
+                    }
+                state = self.syncMgr.propget("release_state",assembly_file)
+                if state=="sourcelang":
+                    return l
+            except:
+                import traceback
+                print traceback.format_exc()
+                continue
+
+    def _check_attribute(self, elta, attr):
+        attr = attr.replace('{http://www.w3.org/XML/1998/namespace}','')
+        if attr == "content" and elta.xpath('local-name()="meta" and @name="LANG" and @scheme ="condition"'):
+            return False
+        if attr == "lang" and elta.xpath('local-name()="body"'):
+            return False
+        if attr == "xml:lang" and elta.xpath('local-name()="body"'):
+            return False
+        return True
+        
+    def _compare_attributes(self, elta, eltb):
+        for attr,val in elta.attrib.iteritems():
+            if self._check_attribute(elta, attr):
+                if eltb.get(attr) != val:
+                    raise KolektiValidationError('structure does not match')
+                
+
+            
+    def _iter_structures(self, elta, eltb):
+        taga = elta.xpath('local-name()')
+        tagb = eltb.xpath('local-name()')
+        if taga != tagb:
+            raise KolektiValidationError('structure does not match')
+
+        self._compare_attributes(elta, eltb)
+        
+        if taga == "div":
+            if elta.get('class') =='topic':
+                return 
+        for subelta, subeltb in zip(elta, eltb):
+            self._iter_structures(subelta, subeltb)
+        
+    def check_structure(self, assembly, release) :
+        srclang = self._get_source_lang(release)
+        src_assembly = self.parse('/releases/%(release)s/sources/%(lang)s/assembly/%(release)s_asm.html'%{
+            'release':release,
+            'lang':srclang})
+        self._iter_structures(src_assembly.getroot(), assembly.getroot())
+       
+            
+    def import_assembly(self, assembly_src):
+        # xml parse
+        try:
+            assembly = ET.fromstring(assembly_src)
+        except:
+            raise KolektiValidationError('xml parse error')
+
+        # check lang
+        try:
+            lang = set(assembly.xpath('/html:html/html:body/@lang|/html:html/html:body/@xml:lang', namespaces=self.namespaces))[0]
+        except:
+            raise KolektiValidationError('could not detect language')
+
+        # get assembly dir
+        try:
+            release = assembly.xpath('/html:html/html:head/html:meta[@name="kolekti.releasedir"]/@content')
+            if not os.path.exists(os.path.join(self.path, 'releases', release)):
+                raise KolektiValidationError('release directory does not exists')            
+            if not os.path.exists(os.path.join(self.path, 'releases', release , 'sources', lang)):
+                raise KolektiValidationError('language directory does not exists')
+        except:
+            raise KolektiValidationError('could not detect release name')
+
+        assembly_dir = os.path.join(self._path, 'releases', release, 'sources', lang, 'assembly')
+        assembly_file = os.path.join(assembly_dir, release + '_asm.html')
+        try:
+            state = self.syncMgr.propget("release_state",assembly_file)
+            if not (state == 'edition' or state == 'validation'):
+                raise KolektiValidationError('release state does not allow update of translation')
+        except:
+            raise KolektiValidationError('could not get release state')
+
+        self.check_structure(assembly, release)
     
     def commit(self, files):
         pass
 
     def rollback(self, files):
         pass
+
+# command line
+    
+def cmd_compare(args):
+    """ compare two assembly, runs in a relase directory
+    args : (.lang) language of the assembly to compare to sourcelang
+    """
+    projectdir = os.path.dirname(os.path.dirname(os.getcwd()))
+    release = os.path.basename(os.getcwd())
+    importer = TranslationImporter(projectdir)
+    assembly = importer.parse('releases/%(release)s/sources/%(lang)s/assembly/%(release)s_asm.html'% {
+        'release':release,
+        'lang':args.lang
+        })
+    importer.check_structure(assembly, release)
+
+def cmd_import(args):
+    """ import a assembly in a project
+    args : object with assembly and project attributes
+    """
+    ti = TranslationImporter(args.project)
+    with open(args.assembly) as f:
+        assembly = f.read()
+    ti.import_assembly(assembly)
+    
+def main():
+    import argparse
+
+    
+    
+    argparser = argparse.ArgumentParser()
+    subparsers = argparser.add_subparsers(title='commands')
+    parser_compare = subparsers.add_parser('compare', help="compare assembly structure to source lang")
+    parser_compare.add_argument('lang', action="store")
+    defaults = {'cmd':'compare'}
+    parser_compare.set_defaults(**defaults)
+
+    parser_compare = subparsers.add_parser('import', help="import assembly in project")
+    parser_compare.add_argument('assembly', action="store")
+    parser_compare.add_argument('project', action="store")
+    defaults = {'cmd':'compare'}
+    parser_compare.set_defaults(**defaults)
+    
+    args = argparser.parse_args()
+    
+    if args.cmd == 'compare':
+        cmd_compare(args)
+
+    if args.cmd == 'import':
+        cmd_import(args)
+        
+if __name__ == '__main__':
+    main()

@@ -202,6 +202,10 @@ class kolektiBase(object):
 
     def dirname(self, path):
         return "/".join(path.split('/')[:-1])
+
+    def list_directory(self, root):
+        root = self.__makepath(root)
+        return os.listdir(root)
     
     def get_directory(self, root=None, filter=None):
         res=[]

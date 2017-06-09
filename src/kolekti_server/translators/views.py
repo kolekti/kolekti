@@ -239,6 +239,34 @@ class TranslatorsSourceAssemblyView(TranslatorsMixin, View):
         assembly = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases', release,'sources',lang, 'assembly',release+'_asm.html')
         return serve(request, os.path.basename(assembly), os.path.dirname(assembly))
 
+class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
+    def post(self, request, project, release):
+        res=[]
+        form = UploadTranslationForm(request.POST, request.FILES)
+        logger.debug(form.is_valid())
+        if form.is_valid():
+            self.project(project)
+            uploaded_file = request.FILES[u'upload_file']
+            path = tempfile.mkdtemp()
+            with open(os.path.join(path,uploaded_file.name), "wb") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+            try:
+                importer = TranslationImporter(project_path)
+                files = importer.import_assembly(os.path.join(path, uploaded_file.name))
+            except KolektiValidationError, e:                
+                logger.exception('error in translation import')
+                return HttpResponse(json.dumps({"status":"error","message":str(e)}),content_type="text/plain")
+
+            except:
+                logger.exception('unexpected error in translation import')
+                return HttpResponse(json.dumps({"status":"error","message":str(e)}),content_type="text/plain")
+
+            return HttpResponse(json.dumps({"status":"success","message":'upload successful'}),content_type="text/plain")
+        else:
+            logger.debug(form)
+            return HttpResponse(json.dumps({"status":"error","message":"select a file"}),content_type="text/plain")
+    
 class TranslatorsUploadView(TranslatorsMixin, View):
     def post(self, request, project, release):
         res=[]
