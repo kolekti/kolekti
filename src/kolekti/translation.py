@@ -133,7 +133,7 @@ class TranslationImporter(kolektiTests):
         for attr,val in elta.attrib.iteritems():
             if self._check_attribute(elta, attr):
                 if eltb.get(attr) != val:
-                    raise KolektiValidationError('structure does not match')
+                    raise KolektiValidationError('structure does not match [ettributes]')
                 
 
             
@@ -156,7 +156,15 @@ class TranslationImporter(kolektiTests):
         src_assembly = self.parse('/releases/%(release)s/sources/%(lang)s/assembly/%(release)s_asm.html'%{
             'release':release,
             'lang':srclang})
-        self._iter_structures(src_assembly.getroot(), assembly.getroot())
+        try :
+            src_assembly = src_assembly.getroot()
+        except AttributeError:
+            pass
+        try :
+            assembly = assembly.getroot()
+        except AttributeError:
+            pass
+        self._iter_structures(src_assembly, assembly)
        
             
     def import_assembly(self, assembly_src):
@@ -168,30 +176,38 @@ class TranslationImporter(kolektiTests):
 
         # check lang
         try:
-            lang = set(assembly.xpath('/html:html/html:body/@lang|/html:html/html:body/@xml:lang', namespaces=self.namespaces))[0]
+            lang = assembly.xpath('/h:html/h:body/@lang|/h:html/h:body/@xml:lang', namespaces=self.namespaces)[0]
         except:
+            logger.exception('language not found')
             raise KolektiValidationError('could not detect language')
 
         # get assembly dir
         try:
-            release = assembly.xpath('/html:html/html:head/html:meta[@name="kolekti.releasedir"]/@content')
-            if not os.path.exists(os.path.join(self.path, 'releases', release)):
-                raise KolektiValidationError('release directory does not exists')            
-            if not os.path.exists(os.path.join(self.path, 'releases', release , 'sources', lang)):
-                raise KolektiValidationError('language directory does not exists')
+            release = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.releasedir"]/@content', namespaces=self.namespaces)[0]
         except:
+            logger.exception('release name not found')
             raise KolektiValidationError('could not detect release name')
 
+        if not os.path.exists(os.path.join(self._path, 'releases', release)):
+            raise KolektiValidationError('release directory does not exists')            
+        if not os.path.exists(os.path.join(self._path, 'releases', release , 'sources', lang)):
+            raise KolektiValidationError('language directory does not exists')
+        
         assembly_dir = os.path.join(self._path, 'releases', release, 'sources', lang, 'assembly')
-        assembly_file = os.path.join(assembly_dir, release + '_asm.html')
+        assembly_file = '/'.join(['releases', release, 'sources', lang, 'assembly', release + '_asm.html'])
         try:
             state = self.syncMgr.propget("release_state",assembly_file)
             if not (state == 'edition' or state == 'validation'):
                 raise KolektiValidationError('release state does not allow update of translation')
         except:
+            logger.exception('import release state')
             raise KolektiValidationError('could not get release state')
 
         self.check_structure(assembly, release)
+        self.check_variables(assembly, release)
+                
+        self.fix_topic_sources(assembly, release)
+        self.fix_links(assembly, release)
     
     def commit(self, files):
         pass
@@ -225,8 +241,8 @@ def cmd_import(args):
     
 def main():
     import argparse
+    from django.conf import settings
 
-    
     
     argparser = argparse.ArgumentParser()
     subparsers = argparser.add_subparsers(title='commands')
@@ -235,11 +251,11 @@ def main():
     defaults = {'cmd':'compare'}
     parser_compare.set_defaults(**defaults)
 
-    parser_compare = subparsers.add_parser('import', help="import assembly in project")
-    parser_compare.add_argument('assembly', action="store")
-    parser_compare.add_argument('project', action="store")
-    defaults = {'cmd':'compare'}
-    parser_compare.set_defaults(**defaults)
+    parser_import = subparsers.add_parser('import', help="import assembly in project")
+    parser_import.add_argument('assembly', action="store")
+    parser_import.add_argument('project', action="store")
+    defaults = {'cmd':'import'}
+    parser_import.set_defaults(**defaults)
     
     args = argparser.parse_args()
     
@@ -250,4 +266,5 @@ def main():
         cmd_import(args)
         
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     main()

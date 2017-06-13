@@ -253,7 +253,11 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
                     f.write(chunk)
             try:
                 importer = TranslationImporter(project_path)
-                files = importer.import_assembly(os.path.join(path, uploaded_file.name))
+                with open(os.path.join(path, uploaded_file.name)) as f:
+                   src = f.read() 
+
+                assembly_info = importer.import_assembly(src, dry_run = True)
+                
             except KolektiValidationError, e:                
                 logger.exception('error in translation import')
                 return HttpResponse(json.dumps({"status":"error","message":str(e)}),content_type="text/plain")
