@@ -65,7 +65,8 @@ def post_save_userproject_callback(sender, **kwargs):
                 __generate_hooks(instance.project)
                 __generate_htgroup()
             except:
-                loggger.exception('Could not create user project')
+                logger.exception('Could not create user project')
+                user_project_directory = os.path.join(projectsroot, project_directory)
                 if os.path.exists(user_project_directory):
                     shutil.rmtree(user_project_directory)
             
