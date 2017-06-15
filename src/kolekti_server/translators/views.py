@@ -55,15 +55,6 @@ class TranslatorsSharedMixin(kolektiBase):
 
 
         
-class TranslatorsAdminMixin(TranslatorsSharedMixin):
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(TranslatorsAdminMixin, cls).as_view(**initkwargs)
-        if settings.KOLEKTI_MULTIUSER:
-            return login_required(view)
-        else:
-            return view
-
 
     
 class TranslatorsMixin(TranslatorsSharedMixin):
@@ -129,61 +120,6 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             
         return self.render_to_response(context)
 
-class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
-    template_name = "translators_admin.html"
-    def get(self, request, project):
-        try:
-            uesrproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
-        except  UserProject.DoesNotExist:
-            return HttpResponse(status=401)
-        releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
-        releases = []
-        for release in os.listdir(releasepath):
-            releaseinfo = {'langs':[], 'name':release}
-            for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
-                    assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')
-                    if os.path.exists(assemblypath):
-                        releaseinfo['langs'].append({'lang': lang})
-                    
-            releaseinfo.update({
-                'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
-                })
-            releases.append(releaseinfo) 
-        context = {
-            'translators': User.objects.filter(groups__name='translator'),
-            'releases':releases,
-            'languages':self.project_languages(project),
-            'project': Project.objects.get(directory = project)
-            }            
-        return self.render_to_response(context)
-
-class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):
-    def post(self, request, project, release):
-        username = request.POST.get('translator')
-        user = User.objects.get(username = username)
-        _project = Project.objects.get(directory = project)
-        try:
-            tr = TranslatorRelease.objects.get(release_name = release, user = user, project = _project)
-        except TranslatorRelease.DoesNotExist:
-            # checkout 
-                    
-            tr = TranslatorRelease.objects.create(project = _project, release_name = release, user = user)
-            tr.save()
-        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
-
-class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
-    def post(self, request, project, release):
-        username = request.POST.get('translator')
-        user = User.objects.get(username = username)
-        try:
-            tr = TranslatorRelease.objects.get(release_name = release, project__directory = project, user = user)
-            logger.debug(tr)
-            tr.delete()
-            
-        except TranslatorRelease.DoesNotExist:
-            logger.debug('not found')
-        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
-    
 class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseAllStatesView):
     def get(self, request, project):
         self.project(project)        
@@ -343,3 +279,72 @@ class TranslatorsStaticView(TranslatorsMixin, View):
         except:
             logger.exception('static error')
             return HttpResponse(status=500)            
+
+
+
+# TRanslation assignment, for admin users of project
+        
+class TranslatorsAdminMixin(TranslatorsSharedMixin):
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(TranslatorsAdminMixin, cls).as_view(**initkwargs)
+        if settings.KOLEKTI_MULTIUSER:
+            return login_required(view)
+        else:
+            return view
+    
+class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
+    template_name = "translators_admin.html"
+    def get(self, request, project):
+        try:
+            uesrproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
+        except  UserProject.DoesNotExist:
+            return HttpResponse(status=401)
+        releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
+        releases = []
+        for release in os.listdir(releasepath):
+            releaseinfo = {'langs':[], 'name':release}
+            for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
+                    assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')
+                    if os.path.exists(assemblypath):
+                        releaseinfo['langs'].append({'lang': lang})
+                    
+            releaseinfo.update({
+                'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
+                })
+            releases.append(releaseinfo) 
+        context = {
+            'translators': User.objects.filter(groups__name='translator'),
+            'releases':releases,
+            'languages':self.project_languages(project),
+            'project': Project.objects.get(directory = project)
+            }            
+        return self.render_to_response(context)
+
+class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):
+    def post(self, request, project, release):
+        username = request.POST.get('translator')
+        user = User.objects.get(username = username)
+        _project = Project.objects.get(directory = project)
+        try:
+            tr = TranslatorRelease.objects.get(release_name = release, user = user, project = _project)
+        except TranslatorRelease.DoesNotExist:
+            # checkout 
+                    
+            tr = TranslatorRelease.objects.create(project = _project, release_name = release, user = user)
+            tr.save()
+        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+
+class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
+    def post(self, request, project, release):
+        username = request.POST.get('translator')
+        user = User.objects.get(username = username)
+        try:
+            tr = TranslatorRelease.objects.get(release_name = release, project__directory = project, user = user)
+            logger.debug(tr)
+            tr.delete()
+            
+        except TranslatorRelease.DoesNotExist:
+            logger.debug('not found')
+        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+    

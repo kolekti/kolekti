@@ -11,7 +11,24 @@
 
 {% block page-content %}
 <div class="row">
-  <div class="col-md-offset-1 col-md-10">
+  <div class="col-md-offset-1 col-md-3">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i clas="fa fa-upload"/>Upload Translation</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12">
+            <form method="POST" >
+               {{ upload_form|bootstrap }}
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-7">
 
     {% for release in releases %}
     
