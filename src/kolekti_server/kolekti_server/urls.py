@@ -137,8 +137,16 @@ urlpatterns.extend([
     url(r'^search', SearchView.as_view(),name="kolekti_search"),
 
     url(r'^admin/', include(admin.site.urls)),
+])
     
-    url(r'^static/(?P<path>.*)$', staticView, {'document_root' : settings.STATIC_PATH}),
+if settings.DEBUG:
+    from django.contrib.staticfiles import views
+    urlpatterns.extend([
+        url(r'^staticdev/(?P<path>.*)$', views.serve),
+    ])
+    
+urlpatterns.extend([
+    url(r'^staticdev/(?P<path>.*)$', staticView, {'document_root' : settings.STATIC_PATH}),
     url(r'(?P<path>.*)$', projectStaticView.as_view(), name="project_static"),
 ])
     
