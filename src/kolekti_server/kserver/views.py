@@ -1760,7 +1760,7 @@ class SyncView(kolektiMixin, View):
 
     def post(self, request):
         from kolekti.synchro import SynchroManager
-        sync = SynchroManager(self.request.kolekti_projectpath)
+        sync = SynchroManager(self.request.kolekti_projectpath, username = request.user.username)
         action = request.POST.get('action')
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
