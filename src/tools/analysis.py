@@ -215,7 +215,7 @@ class Checker(object):
                     for elt in assembly.xpath('//ancestor::h:div[@class="topic"]//*[@id]', **ns):
                         elt_id = elt.get('id')
                         mod_id = elt.xpath('ancestor::h:div[@class="topic"]', **ns)[0].get('id')
-                        if elt_id.split('_', 1) == mod_id:
+                        if elt_id.split('_', 0) == mod_id:
                             continue
                         elt.set('id', mod_id + "_" + elt_id)
                         modified = True
