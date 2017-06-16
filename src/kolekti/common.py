@@ -751,7 +751,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content')
-            raise KolektiVariableValueError
+        raise KolektiVariableValueError
 
 
     @property
