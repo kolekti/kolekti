@@ -55,6 +55,8 @@ objpathes = {
         }
     }
 
+class KolektiVariableValueError(Exception):
+    pass
 
 
 class kolektiBase(object):
@@ -727,11 +729,21 @@ class kolektiBase(object):
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
+        try:
+            return self.search_variable_value(values, criteria_dict)
+        except KolektiVariableValueError:
+            logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
+            return ET.XML("<content>[??]</content>")
+
+
+        
+    def search_variable_value(self, values, criteria_dict):
         for value in values:
             accept = True
             for criterion in value.findall('crit'):
                 criterion_name = criterion.get('name')
-                
+                if criterion.get('value') == "*":
+                    continue
                 if criterion_name in criteria_dict:
                     if not criteria_dict.get(criterion_name) == criterion.get('value'):
                         accept = False
@@ -739,8 +751,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content')
-        logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return ET.XML("<content>[??]</content>")
+            raise KolektiVariableValueError
 
 
     @property
@@ -920,3 +931,79 @@ class kolektiTests(kolektiBase):
             if len(xml.xpath(testcase['xpath'], namespaces = self.namespaces)) == 0:
                 raise KolektiValidationError(testcase['message'])
 
+
+import unittest
+            
+class VariableTest(unittest.TestCase):
+    """Test case for variables"""
+    def setUp(self):
+        self.kolekti = kolektiBase()
+    
+    def test_value_single(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><content>OK</content></value></values>')
+        criteria_dict={}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+    def test_value_criterion(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><crit name="foo" value="bar"/><content>OK</content></value></values>')
+        
+        criteria_dict={"foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+        criteria_dict={"foo":"baz"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+        
+        criteria_dict={}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+
+    def test_value_criteria(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><crit name="foo" value="bar"/><crit name="foo2" value="bar2"/><content>OK</content></value></values>')
+        
+        criteria_dict={"foo":"bar", "foo2":"bar2"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+        criteria_dict={"foo":"bar"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+        criteria_dict={"foo":"baz", "foo2":"baz2"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+
+    def test_value_criterion_star(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('''<values><value><crit name="foo" value="*"/><content>OK</content></value></values>''')
+        criteria_dict={"foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+        criteria_dict={}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+    def test_value_criteria_star(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('''<values><value><crit name="Z" value="a"/><crit name="foo" value="*"/><content>OK</content></value></values>''')
+        criteria_dict={"foo":"bar"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+        
+        criteria_dict={"Z":"a"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+        criteria_dict={"Z":"a", "foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
