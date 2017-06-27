@@ -1,11 +1,12 @@
 {% extends "base-wide.html" %}
+{% load static %}
 
 {% block current_tools %}class="menu-current"{% endblock %}
 {% block title %}Paramètres de publication{% endblock %}
 {% block help-topic %}job{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-jobslist.js"></script>
+    <script src="{% static "js/kolekti-jobslist.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

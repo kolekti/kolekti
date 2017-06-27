@@ -7,5 +7,9 @@ class UploadTranslationForm(forms.Form):
     upload_file  = forms.FileField()
     lang  = forms.CharField()
 
+class UploadCertificateForm(forms.Form):
+    upload_file  = forms.FileField()
+    path  = forms.CharField()
+
 class UploadAssemblyForm(forms.Form):
     upload_file  = forms.FileField()

@@ -1,231 +1,283 @@
 
 
 
-var update_documents = function(project, release, lang, container) {
-    
+var update_documents = function(project, release, lang, container, statecell, status ) {
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
-		console.log(data)
-                if (data.length > 0) {
-                    container.closest('.release').data('translated', true)
-                } else {
-                    container.closest('.release').data('translated', false)
-                }  
-                
-		var refresh = false;
-		container.html($('<ul>', {
-		    "class" : "list-group",
-		    "html":$('<li>', {
-			"class":"list-group-item",
-			"html":$('<table>', {
-                            "class":"table",
-                            "html":$('<tbody>', {
-                                "html": $.map(data, function(v) {
-			            if (v[2]) { 
-			                return [$('<tr>', {
-				            "html":[
-                                                $('<td>',{
-                                                    "html":v[0],
-                                                }),
-                                                $('<td>',{
-                                                    "html":$('<span>',{
-//                                                        "class":"label label-default",
-                                                        "html":$('<a>',{
-					                    'href':'/translator/' + project +'/'+ v[1],
-					                    "target":"_documents",
-					                    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
-					                }),
-                                                    })
-                                                })
-				            ]
-                                        })
-                                               ]
-			            } else {
-			                refresh = true;
-			                return $('<tr>', {
-				            "html":[
-                                                $('<td>',{
-                                                    "html":v[0],
-                                                }),
-                                            ]
-                                        })
-                                    }
+//		    console.log(data)
+		    var refresh = false;
+            if(container.is(':empty')) {
+                $.each(data, function(index, docs) {
+                    container.append($('<tr>', {
+                        'class':'t'+index,
+                        'html':$('<th>', {
+                            html:docs[0]
+                        })
+                    }))
+                });
+            }
+
+            var can_validate_all = (status == 'validation')
+            
+            $.each(data, function(index, docs) {
+                var row = container.find('tr.t'+index)
+                var doclink;
+                if(!docs[3]) can_validate_all = false
+                if (docs[2]) {
+                    var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certif/";
+                    doclink = [$('<a>',{
+					    'href':'/translator/' + project +'/'+ docs[1],
+                        'title':docs[0],
+					    "target":"_documents",
+					    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
+					}), ' ']
+                    
+                    if(status == "publication")
+                        doclink.push(
+                            $("<span>", {
+                                "class":"text-success",
+                                "html":$("<i>", {
+                                    'class': "fa fa-check"
                                 })
-			    })
-			})
-		    })
-		}));
-
-                container.find('ul').prepend([
-		    $('<li>', {
-			'class':'list-group-item sources',
-			'html':$('<button>', {
-			    'class':'btn btn-small btn-primary sources',
-                            "data-toggle":"modal",
-                            "data-target":"#downloadModal",
-			    'html':[$('<i>',{'class':'fa fa-download'}),' Download sources']})
-		    }),
-                ])
-                    // some documents could not be generated or are missing, display Generate documents command
-		if(refresh) {
-                    container.find('ul').append([
-		        $('<li>', {
-			    'class':'list-group-item refresh',
-			    'html':$('<button>', {
-			        'class':'btn btn-small btn-primary republish',
-			        'html':[$('<i>',{'class':'fa fa-refresh'}),' Generate documents']})
-		        }),
-		
-		        $('<li>', {
-			    'class':'list-group-item hidden processing',
-			    'html':$('<div>', {
-			        'class':'alert alert-warning',
-			        'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Creating documents...']})
-		        })
-		    ])
-
-		// if no refresh required, display command to commit this language
-
-		} else {
-                    var sourcelang = container.closest('.release').data('sourcelang')
-                    console.log(lang, sourcelang)
-                    if (lang != sourcelang) {
-                        container.find('ul').append([
-		            $('<li>', {
-			        'class':'list-group-item upload',
-			        'html':[
-                                    $('<button>', {
-			                'class':'btn btn-small btn-primary upload',
-                                        "data-toggle":"modal",
-                                        "data-target":"#uploadModal",
-			            'html':[$('<i>',{'class':'fa fa-upload'}),' Upload '+ lang +' translation']}),
-                                "&nbsp;",
-                                    data.length?$('<button>', {
-			                'class':'btn btn-small btn-success commit',
-			                'html':[$('<i>',{'class':'fa fa-ok'}),' Validate this language']}):""
+                            }))
+                            
+                    if(status == "validation")
+                        doclink.push(
+                            $('<form>', {
+                                "method":"POST",
+                                "action":certif_url,
+                                "class":"form form-inline",
+                                "style":"display:inline",
+                                "html":[
+                                    $('<a>', {
+                                        'title':"Upload certificate ",
+                                        'class':"btn btn-xs "+ (docs[3]?"btn-success":"btn-default"),
+                                        'html': $("<i>", {
+                                            'class': "fa fa-check-square"
+                                        })
+                                    }).on('click', function(){
+                                        $(this).next().click()
+                                    }),
+                                    $('<input>', {
+                                        'type':"file",
+                                        'name':"upload_file",
+                                        'class':"hidden btn btn-xs btn-default btn-upload-certificate"
+                                    }).on('change', function() {
+                                        var formdata = new FormData($(this).closest('form')[0])
+                                        //        formdata.append('file', this.files[0]);
+                                        
+                                        $.ajax({
+                                            url : certif_url,
+                                            data : formdata,
+                                            type : 'POST',
+                                            processData: false,
+                                            contentType: false,
+                                        }).done(function(data){
+                                            data = JSON.parse(data)
+                                            console.log(data)
+                                            window.location.reload()
+                                        })
+                                        
+                                        //  $(this).closest('form').submit()
+                                        
+                                    }),
+                                    $('<input>', {
+                                        'type':"hidden",
+                                        'name':"path",
+                                        'value':docs[1]
+                                    })
+                                    
                                 ]
                             })
-                        ])
-                        container.find('ul').append([
-		            $('<li>', {
-			        'class':'list-group-item hidden processing-commit',
-			        'html':$('<div>', {
-			            'class':'alert alert-warning',
-			            'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Processing...']})
-		            }),
-		            $('<li>', {
-			        'class':'list-group-item hidden processing-upload',
-			        'html':$('<div>', {
-			            'class':'alert alert-warning',
-			            'html':[$('<i>',{'class':'fa fa-refresh fa-spin'}),' Uploading...']})
-		            })
-		        ])
-                    }
-                }
+                        );
+                } else {
+                    doclink = $("<i>", {
+                        'class': "fa fa-question"
+                    })
+                };
+                   
+                row.append($('<td>', {
+                    html:doclink
+                }));
+            });
+
+            
+            
+            $(statecell).append(
+                $('<th>',{
+                    'html':[
+                        $('<span>', {
+			                "html":lang
+                        }),
+                        (!can_validate_all)?"":$('<a>', {
+                            'title':"Validate all documents in this language ",
+                            'class':"btn btn-xs btn-primary",
+                            'style':"margin-left:6px",
+                            'html': $("<i>", {
+                                'class': "fa fa-check-square"
+                            })
+                        }).on('click', function(){
+                            var url = "/translator/"+project+'/'+release+'/'+lang + "/commit/"
+                            $.ajax({
+                                url : url,
+                                type : 'POST',
+                                processData: false,
+                                contentType: false,
+                            }).done(function(data){
+                                data = JSON.parse(data)
+                                console.log(data)
+                                window.location.reload()
+                            })
+                        })
+                    ]
+		        })
+            )
+
 	    })
 };
 
 
 
-var update_releases_langs = function(release, lang) {
-    console.log('update_releases_langs', release, lang)
+var update_releases_langs = function(release) {
+    console.log('update_releases_langs', release)
     var sourcelang,
-	releasepath = release.data('release'),
-	project = release.data('project'),
-	statecell = release.find('.kolekti-release-langs'),
-	documentcell = release.find('.kolekti-release-documents');
-    statecell.html("")
-    documentcell.html("")
-    console.log("getting release langs. " + releasepath)
+	    releasepath = release.data('release'),
+	    project = release.data('project'),
+	    statecell = release.find('.kolekti-release-langs'),
+        documentscell = release.find('.kolekti-release-documents');
+    
+
+    statecell.html("<td></td>")
+    documentscell.html("")
     $.getJSON('/translator/'+project+'/release/states/?release=/releases/'+releasepath)
-	.success(function(data) {
-	    //		console.log(data)
-	    $.each(data, function(index,item) {
-		var i = item[0]
-		var v = item[1]
-		//		    console.log(i,v,this)
-		if (v) {
-		    statecell.append($('<span>',{
-			"class":"langstate lg-"+i+" "+v+ ((v == "sourcelang")?" active":""),
-			"html":$('<a>',{
-			    "class":"releaselang",
-			    "href":"#",
-			    "data-lang":i,
-			    "data-project":project,
-			    "data-release":releasepath,
-			    "html":i
-			})
-		    }))
-		    if (v == 'sourcelang') {
-			sourcelang = i
-			release.data('sourcelang', i)
-                    }
-                    if ((lang && v == lang) || (v == 'sourcelang')) {
-                        release.data('lang', i)
-			release.attr('data-lang', i)
-			update_documents(project, releasepath, i, documentcell)
-		    }
-	        } else {
-                    statecell.append($('<span>',{
-			"class":"langstate lg-"+i+" nostate",
-			"html":$('<a>',{
-			    "class":"releaselang",
-			    "href":"#",
-			    "data-lang":i,
-			    "data-project":project,
-			    "data-release":releasepath,
-			    "html":i
-			})
-		    }))
+	    .success(function(data) {
+	        $.each(data, function(index,item) {
+		        var i = item[0]
+		        var v = item[1]
+                
+		        if (v == 'sourcelang' || v == "translation" || v == "validation" || v == "publication" ) {
+                    update_documents(project, releasepath, i, documentscell, statecell, v);
                 }
-                   if (lang)
-                       statecell.find('.lg-'+lang).addClass('active')
-                   else
-                       statecell.find('.sourcelang').addClass('active')
+            });
 	    });
-	})
 };
 
-var republish_documents = function(releaseelt, callbacks){
-    var release = releaseelt.data('release')
-    var project = releaseelt.data('project')
-    var documentcell = releaseelt.find('.kolekti-release-documents')
-    var lang = releaseelt.data('lang')
-    releaseelt.find('.processing').removeClass('hidden')
-    releaseelt.find('.refresh').addClass('hidden')
+var republish_documents = function(project, release, lang, callbacks){
     $.get('/translator/'+project+'/publish/?release=/releases/'+release  + "&lang=" + lang)
-	.success(function(data) {
-            callbacks.hasOwnProperty('success') && callbacks['success']()
-	})
+	    .success(function(data) {
+            callbacks.hasOwnProperty('success') && callbacks['success'](data)
+	    })
         .error(function(x,e) {
             callbacks.hasOwnProperty('error') && callbacks['error']()
         })
-	.always(function() {
-	    releaseelt.find('.refresh').removeClass('hidden')
-	    releaseelt.find('.processing').addClass('hidden')
+	    .always(function() {
             callbacks.hasOwnProperty('always') && callbacks['always']()
-	})
+	    })
 }
 
-$(function() {
-    
+$(function() {    
     $('.release').each(function(){
-	update_releases_langs($(this))
+	    update_releases_langs($(this))
     });
 
+    
+    $('.upload-assembly-form').on('submit', function(e) {
+        console.log("upload", this)
+        e.preventDefault()
+        $('#uploadStatusModal .upload-status').html('')
+        $('#uploadStatusModal').modal()
+        $('#uploadStatusModal .upload-progress').show()
+        $('#uploadStatusModal .upload-progress .progresstxt').html("Uploading...")
+        var formdata = new FormData($(this)[0])
+//        formdata.append('file', this.files[0]);
+        
+        $.ajax({
+            url : '/translator/upload/',
+            data : formdata,
+            type : 'POST',
+            processData: false,
+            contentType: false,
+        }).done(function(data){
+            data = JSON.parse(data)
+            console.log(data)
+            
+            if (data.status == 'success') {
+                $('#uploadStatusModal .upload-status').html(
+                    $('<div>', {
+                        'class':'alert alert-success',
+                        'html':$('<div>', {
+                            'class':'alert-content',
+                            'html':data.message
+                        })
+                    })
+                )
+                $('#uploadStatusModal .upload-progress .progresstxt').html("Publishing...")
+                republish_documents(data.info.project, data.info.release, data.info.lang, {
+                    'success': function(pdata) {
+                        $('#uploadStatusModal .upload-progress').hide()
+                        console.log(pdata)
+                        var release_elt = $('.release')
+                        $('#uploadStatusModal .upload-status').append(
+                            $('<div>', {
+                                'class':'alert alert-success',
+                                'html':$('<div>', {
+                                    'class':'alert-content',
+                                    'html':"publication sucessful"
+                                })
+                            })
+                        )
+//            	        update_documents(data.info.project, data.info.release, data.info.lang)
+                    }
+                })
+
+            } else {
+                $('#uploadStatusModal .upload-progress').hide()
+                $('#uploadStatusModal .upload-status').html(
+                    $('<div>', {
+                        'class':'alert alert-danger',
+                        'html':$('<div>', {
+                            'class':'alert-content',
+                            'html':data.message
+                        })
+                    })
+                )
+            }
+        }).error(function() {
+            $('#uploadStatusModal .upload-progress').hide()
+            $('#uploadStatusModal .upload-status').html(
+                $('<div>', {
+                    'class':'alert alert-danger',
+                    'html':$('<div>', {
+                        'class':'alert-content',
+                        'html':'an unexpected error occured'
+                    })
+                })
+            )
+            
+        }).always(function() {
+
+        })
+        
+        return true;
+    })
+
+    $('#uploadStatusModal').on('hidden.bs.modal', function() {
+        window.location.reload()
+    })
+    
     $('body').on('click','.releaselang', function(e) {
         e.preventDefault()
         e.stopPropagation()
-	var releaseo = $(this).closest('.release')
+	    var releaseo = $(this).closest('.release')
         var release = $(releaseo).data('release')
-	var project = $(releaseo).data('project')
-	var lang = $(this).data('lang')
-	$(releaseo).data('lang',lang)
-	var statecell = $(this).closest('.kolekti-release-langs')
-	var documentcell = $(releaseo).find('.kolekti-release-documents')
+	    var project = $(releaseo).data('project')
+	    var lang = $(this).data('lang')
+	    $(releaseo).data('lang',lang)
+	    var statecell = $(this).closest('.kolekti-release-langs')
+	    var documentcell = $(releaseo).find('.kolekti-release-documents')
         update_documents(project, release, lang, documentcell)
-	statecell.find('span').removeClass('active')
-	statecell.find('.lg-'+lang).addClass('active')
+	    statecell.find('span').removeClass('active')
+	    statecell.find('.lg-'+lang).addClass('active')
     })
 	
     $('body').on('click','.republish', function() {
@@ -242,6 +294,7 @@ $(function() {
         })
     })
 
+    
     $('body').on('click','.commit', function() {
 	var release = $(this).closest('.release').data('release')
 	var project = $(this).closest('.release').data('project')
@@ -268,7 +321,7 @@ $(function() {
         var sourcelang = $(release).data('sourcelang')
         var lang = $(release).data('lang')
         var modal = $(this)
-        console.log($(release).data('translated'))
+//        console.log($(release).data('translated'))
         if ((lang != $(release).data('sourcelang')) && $(release).data('translated'))
             modal.find('.translations').show()
         else

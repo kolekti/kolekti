@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 {% load ostags %}
 {% load csssafe %}
+{% load static %}
 
 {% block current_trames %}class="menu-current"{% endblock %}
 {% block help-topic %}toc{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-tocs.css" />
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-tocs.css" %}" />
     <link rel="stylesheet" type="text/css"  href="/criteria.css" />
     <link rel="stylesheet" type="text/css"  href="/kolekti/ui-stylesheets/toc.css" />
 {% endblock %}
 
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-topics-common.js"></script>
-    <script src="/static/js/kolekti-tocs.js"></script>
-    <script src="/static/js/kolekti-tocs-filter.js"></script>
+    <script src="{% static "js/kolekti-topics-common.js" %}"></script>
+    <script src="{% static "js/kolekti-tocs.js" %}"></script>
+    <script src="{% static "js/kolekti-tocs-filter.js" %}"></script>
 {% endblock %}
 
 {% block title %}

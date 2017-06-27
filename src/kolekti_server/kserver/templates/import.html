@@ -1,15 +1,16 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Importer un fichier tableur{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}import{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-import.css"></link>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-import.css" %}"></link>
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-import.js"></script>
+    <script src="{% static "js/kolekti-import.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

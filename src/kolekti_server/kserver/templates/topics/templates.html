@@ -1,11 +1,12 @@
 {% extends "base-wide.html" %}
+{% load static %}
 
 {% block title %}Modules{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}topic{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-topic-templatelist.js"></script>
+    <script src="{% static "js/kolekti-topic-templatelist.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

@@ -1,11 +1,12 @@
 {% extends "base-wide.html" %}
+{% load static %}
 
 {% block title %}Templates de publication{% endblock %}
 {% block current_tools %}class="menu-current"{% endblock %}
 {% block help-topic %}trames{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-publication-templates.js"></script>
+    <script src="{% static "js/kolekti-publication-templates.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

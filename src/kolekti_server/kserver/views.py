@@ -122,7 +122,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
     
     def projects(self):
         projects = []
-        logger.debug(self.request.user.username)
+#        logger.debug(self.request.user.username)
         if settings.KOLEKTI_MULTIUSER:
             userprojects = UserProject.objects.filter(user = self.request.user)
         else:
@@ -584,11 +584,8 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
         states = []
         for lang in release_languages:
             asfilename = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
-            logger.debug(asfilename)
             state = self.syncMgr.propget("release_state",asfilename)
-            logger.debug(state)
             if state is None:
-                logger.debug(self.exists(asfilename))
                 if self.exists(asfilename):
                     states.append((lang, "local"))
 
@@ -973,7 +970,6 @@ class VariablesDetailsView(VariablesMixin):
             raise
         
     def post(self, request):
-        logger.debug(dict(request.POST))
         try:
             action = request.POST.get('action')
             path = request.POST.get('path')
@@ -1424,7 +1420,7 @@ class BrowserReleasesView(BrowserView):
     template_name = "browser/releases.html"
     def get_directory(self, path):
         projectdir = self.request.kolekti_userproject.project.directory
-        logger.debug('get releases %s',projectdir)
+#        logger.debug('get releases %s',projectdir)
         if self.syncMgr is not None :
             svn_url = self.syncMgr.geturl()
             if svn_url[:7] == 'file://':
@@ -1601,7 +1597,7 @@ class ReleaseView(PublicationView):
         
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
-                logger.debug(ET.tostring(jprofile))
+#                logger.debug(ET.tostring(jprofile))
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
                 else:
@@ -1782,7 +1778,10 @@ class SyncView(kolektiMixin, View):
                         
                 sync.commit(files, commitmsg)
             if resolve == "remote":
-                sync.revert(files)
+                try:
+                    sync.revert(files)
+                except:
+                    logger.exception('impossible to revert')
                 sync.update(files)
 
         elif action == "merge":

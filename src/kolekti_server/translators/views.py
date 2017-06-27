@@ -1,7 +1,10 @@
 import os
 import json
 import tempfile
+import urllib2
+import shutil
 from lxml import etree as ET
+
 
 from django.views.static import serve
 from django.shortcuts import render
@@ -22,12 +25,13 @@ logger = logging.getLogger('kolekti.'+__name__)
 from kserver_saas.models import Project, UserProject
 from kserver.views import LoginRequiredMixin, ReleaseAllStatesView
 
-from models import TranslatorRelease
-from forms import UploadTranslationForm
+from .models import TranslatorRelease
+from .synchro import TranslatorSynchro
+from .forms import UploadTranslationForm, UploadAssemblyForm, UploadCertificateForm 
 
 from kolekti.common import kolektiBase, KolektiValidationError
 from kolekti.publish import ReleasePublisher
-from kolekti.translation import  TranslationImporter
+from kolekti.translation import  TranslationImporter, AssemblyImporter
 
 def in_translator_group(user):
     if user:
@@ -55,13 +59,13 @@ class TranslatorsSharedMixin(kolektiBase):
 
 
         
-
-    
+        
 class TranslatorsMixin(TranslatorsSharedMixin):
     @method_decorator(user_passes_test(in_translator_group, login_url='/'))
     def dispatch(self, *args, **kwargs):
         return super(TranslatorsMixin,  self).dispatch(*args, **kwargs)
 
+        
     def send_mail_translation_added(self, project, release, lang, user):
         dst = [up.user.email for up in UserProject.objects.filter(project__directory = project, is_admin = True)]
         mail_params = {
@@ -111,19 +115,51 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             releases = TranslatorRelease.objects.filter(user = request.user, project__directory = project)
             if release is not None:
                 releases = releases.filter(release_name = release)
-        context = {'releases':[]}
+        
+        form = UploadAssemblyForm()
+        context = {'upload_form':form, 'releases':[]}
         for release in releases:
             context['releases'].append({
                 'self' : release,
-                'langs': self.project_languages(release.project.directory)
+#                'langs': self.project_languages(release.project.directory)
                 })
             
         return self.render_to_response(context)
 
+
+    def post(self, request, project = None, release = None):
+        res=[]
+        form = UploadTranslationForm(request.POST, request.FILES)
+        logger.debug(form.is_valid())
+        if form.is_valid():
+            uploaded_file = request.FILES[u'upload_file']
+            assembly = uploaded_file.read() 
+            importer = TranslationImporter()
+            release = importer.guess_release(assembly)
+            project = TranslatorRelease.objects.get(release = release).project
+            importer.import_assembly(assembly)
+        else:
+            context = {}
+            return self.render_to_response(context)
+        
+            
 class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseAllStatesView):
     def get(self, request, project):
-        self.project(project)        
-        return super(TranslatorsReleaseStatusesView, self).get(request)
+
+        path, release = request.GET.get('release').rsplit('/',1)
+
+        sync_mgr = TranslatorSynchro(project, release, request.user.username)  
+
+        release_langs = self.project_languages(project)[1]
+        states = []
+        for lang in release_langs:
+            asfilename = "/".join(['/releases', release, "sources", lang, "assembly", release+'_asm.html'])
+            state = sync_mgr.lang_state(lang)
+            if state == "source_lang":
+                states.insert(0,(lang, state))
+            else:
+                states.append((lang, state))
+        return HttpResponse(json.dumps(states),content_type="application/json")
     
 class TranslatorsLangsView(TranslatorsMixin, View):
     def get(self, request, project):
@@ -131,14 +167,17 @@ class TranslatorsLangsView(TranslatorsMixin, View):
 
 class TranslatorsDocumentsView(TranslatorsMixin, View):
     def get(self, request, project):
-        logger.debug('documents')
         release_path = request.GET.get('release')
         assembly_name = release_path.rsplit('/',1)[1]
         lang = request.GET.get('lang',"")
         projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
         publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
-        res = [(l, p.replace('/releases/',''), e) for l, p, e in publisher.documents_release(assembly_name)]
-        logger.debug(res)
+        res = []
+        
+        for l, p, e in publisher.documents_release(assembly_name):
+            logger.debug(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
+            v = os.path.exists(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
+            res.append((l, p.replace('/releases/',''), e, v)) 
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsPublishView(TranslatorsMixin, View):
@@ -175,24 +214,58 @@ class TranslatorsSourceAssemblyView(TranslatorsMixin, View):
         assembly = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases', release,'sources',lang, 'assembly',release+'_asm.html')
         return serve(request, os.path.basename(assembly), os.path.dirname(assembly))
 
-class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
-    def post(self, request, project, release):
-        res=[]
-        form = UploadTranslationForm(request.POST, request.FILES)
+class TranslatorsCertificateUploadView(TranslatorsMixin, View):
+    def post(self, request, project, release, lang):
+        form = UploadCertificateForm(request.POST, request.FILES)
         logger.debug(form.is_valid())
         if form.is_valid():
-            self.project(project)
+            uploaded_file = request.FILES[u'upload_file']
+            docpath = request.POST[u'path']
+            path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath + '.cert')
+            try:
+                os.makedirs(path)
+            except:
+                pass
+            with open(os.path.join(path,uploaded_file.name), "wb") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+                    
+            # adds publications to svn
+            try:
+                doc_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases",docpath)
+                cert_res = os.path.join(path,uploaded_file.name)
+                sync_mgr = TranslatorSynchro(project, release, request.user.username)
+                try:
+                    sync_mgr._client.add(doc_res, recurse = False, add_parents = True)
+                    sync_mgr._client.add(cert_res, recurse = False, add_parents = True)
+                except:
+                    pass
+                release_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", release)
+                rev = sync_mgr._client.checkin(release_res, "translator validation", recurse = True)
+                logger.debug('rev %s'%str(rev)) 
+                return HttpResponse(json.dumps({"status":"success","message":'upload successful'}),content_type="text/plain")
+            except:
+                logger.exception('could not check in')
+        return HttpResponse(json.dumps({"status":"error","message":'upload failed'}),content_type="text/plain")
+#        return HttpResponseRedirect(reverse('translators_home'))
+    
+class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
+    def post(self, request):
+        res=[]
+        form = UploadAssemblyForm(request.POST, request.FILES)
+        logger.debug(form.is_valid())
+        if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = tempfile.mkdtemp()
             with open(os.path.join(path,uploaded_file.name), "wb") as f:
                 for chunk in uploaded_file.chunks():
                     f.write(chunk)
             try:
-                importer = TranslationImporter(project_path)
+                importer = AssemblyImporter(settings.KOLEKTI_BASE, request.user.username)
                 with open(os.path.join(path, uploaded_file.name)) as f:
                    src = f.read() 
 
-                assembly_info = importer.import_assembly(src, dry_run = True)
+                assembly_info = importer.import_assembly(src)
                 
             except KolektiValidationError, e:                
                 logger.exception('error in translation import')
@@ -200,9 +273,25 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
 
             except:
                 logger.exception('unexpected error in translation import')
-                return HttpResponse(json.dumps({"status":"error","message":str(e)}),content_type="text/plain")
+                return HttpResponse(json.dumps({"status":"error","message":'unexpected error'}),content_type="text/plain")
+            finally:
+                shutil.rmtree(path)
 
-            return HttpResponse(json.dumps({"status":"success","message":'upload successful'}),content_type="text/plain")
+            assembly_path = os.path.join(
+                settings.KOLEKTI_BASE,
+                request.user.username,
+                assembly_info['project'],
+                'releases',
+                assembly_info['release'],
+                'sources',
+                assembly_info['lang'],
+                'assembly',
+                assembly_info['release']+ '_asm.html')
+            
+            sync_mgr = TranslatorSynchro(assembly_info['project'], assembly_info['release'], request.user.username)
+            sync_mgr._client.propset("release_state", "validation", assembly_path)
+            rev = sync_mgr._client.checkin(assembly_path, "translator validation")
+            return HttpResponse(json.dumps({"status":"success","message":'upload successful','info':assembly_info}),content_type="text/plain")
         else:
             logger.debug(form)
             return HttpResponse(json.dumps({"status":"error","message":"select a file"}),content_type="text/plain")
@@ -247,16 +336,22 @@ class TranslatorsUploadView(TranslatorsMixin, View):
 class TranslatorsCommitLangView(TranslatorsMixin, View):
     def post(self, request, project, release, lang):
         releasedir = '/'.join(['/releases', release, 'sources', lang])
-        assembly = '/'.join([releasedir, 'assembly',release+'_asm.html'])
+        assembly_path = os.path.join(
+            settings.KOLEKTI_BASE,
+            request.user.username,
+            project,
+            'releases',
+            release,
+            'sources',
+            lang,
+            'assembly',
+            release + '_asm.html')
+        
         state = "publication"
-        self.project(project)
-        try:
-            self.syncMgr.add_resource(releasedir)
-        except:
-            logger.debug('resource already added')
-        self.syncMgr.propset("release_state", state, assembly)
+        sync_mgr = TranslatorSynchro(project, release, request.user.username)  
+        sync_mgr._client.propset("release_state", state, assembly_path)
         commitmsg = 'validate translation'
-        self.syncMgr.commit(releasedir, commitmsg)
+        sync_mgr._client.checkin(assembly_path, commitmsg)
         self.send_mail_translation_added(project, release, lang, request.user)
         
         return HttpResponse(json.dumps({"status":"success","message":'Translation completed'}),content_type="text/plain")
@@ -297,7 +392,7 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
     template_name = "translators_admin.html"
     def get(self, request, project):
         try:
-            uesrproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
+            userproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
         except  UserProject.DoesNotExist:
             return HttpResponse(status=401)
         releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
@@ -315,7 +410,7 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
             releases.append(releaseinfo) 
         context = {
             'translators': User.objects.filter(groups__name='translator'),
-            'releases':releases,
+            'releases':sorted(releases),
             'languages':self.project_languages(project),
             'project': Project.objects.get(directory = project)
             }            
@@ -341,10 +436,13 @@ class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
         user = User.objects.get(username = username)
         try:
             tr = TranslatorRelease.objects.get(release_name = release, project__directory = project, user = user)
-            logger.debug(tr)
             tr.delete()
             
         except TranslatorRelease.DoesNotExist:
             logger.debug('not found')
         return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
     
+class TranslatorsAdminReleaseStatusesView(TranslatorsAdminMixin, ReleaseAllStatesView):
+    def get(self, request, project):
+        self.project(project)
+        return super(TranslatorsAdminReleaseStatusesView, self).get(request)

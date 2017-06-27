@@ -110,6 +110,7 @@ class SynchroManager(SvnClient):
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
+            logger.exception('unable to setup sync client')
             raise ExcSyncNoSync
 
     def __makepath(self, path):
@@ -414,3 +415,14 @@ class SVNProjectManager(SvnClient):
         except pysvn.ClientError:
             logger.exception("checkout of project failed : %s"%url)
             raise ExcSyncNoSync
+        
+    def checkout_release(self, folder, url, release):
+        ospath = os.path.join(self._projectsroot, folder)
+        try:
+            if not os.path.exists(ospath):
+                self._client.checkout(url + '/kolekti', os.path.join(ospath, "kolekti"))
+            self._client.checkout(url + "/releases/" + release, os.path.join(ospath, "releases", release))
+        except pysvn.ClientError:
+            logger.exception("checkout of project failed : %s"%url)
+            raise ExcSyncNoSync
+        

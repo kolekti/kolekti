@@ -14,27 +14,54 @@
     height: 12px;
     width: 10px;
     padding: 0 2px;
-    border-bottom:3px solid #C0C0C0;
+    border: 1px solid rgb(221, 221, 221);
+    background-color: white;
+    opacity:1;
+    position:relative;
 }
 
-
- .kolekti-browser-release-state .langstate.edition {
-    border-bottom-color: #d9edf7;
+.kolekti-browser-release-state .langstate a{
+    position:relative;
+    z-index: 10;
 }
 
-.kolekti-browser-release-state .langstate.translation,
-.kolekti-browser-release-state .langstate.validation {
-    background-color: #d9edf7;
-    border-bottom-color: #d9edf7;
+.kolekti-browser-release-state .releaselangback {
+    position: absolute;
+    bottom: 0;
+    color: red;
+     width: 100%;
+    display: inline-block;
+    left: 0;
+    z-index: 5;
 }
 
-
-.kolekti-browser-release-state .langstate.publication {
-    background-color: #dff0d8;
-    border-bottom-color: #dff0d8;
+.kolekti-browser-release-state .langstate.sourcelang .releaselangback{
+    background-color: #a6f087;
+    height: 100%;
 }
 
-.kolekti-browser-release-state .langstate.sourcelang {
-    background-color: #bff0aa;
-    border-bottom-color: #bff0aa;
+.kolekti-browser-release-state .langstate.edition .releaselangback{
+    background-color: #98d1f7;
+    height: 25%;
 }
+
+.kolekti-browser-release-state .langstate.translation .releaselangback{
+    background-color: #98d1f7;
+    height: 50%;
+}
+
+.kolekti-browser-release-state .langstate.validation .releaselangback{
+    background-color: #98d1f7;
+    height: 85%;
+}
+
+.kolekti-browser-release-state .langstate.publication .releaselangback{
+    background-color: #a6f087;
+    height: 100%;
+}
+
+.kolekti-browser-release-state .langstate.nostate .releaselangback{
+    background-color: #D0D0D0;
+    height:20%;
+}
+

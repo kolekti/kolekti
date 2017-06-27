@@ -1060,6 +1060,7 @@ class Releaser(Publisher):
         release_index = xjob.get('releaseindex', "")
         release_prev_index = xjob.get('releaseprev')
         xjob.set('id',release_dir + '_asm')
+        ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.project","content": self._config['project']})
         ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releasedir","content": release_dir})
         ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releasename","content": release_name})
         ET.SubElement(xtoc.xpath("/h:html/h:head",namespaces=self.nsmap)[0], "{http://www.w3.org/1999/xhtml}meta", attrib = {"name":"kolekti.releaseindex","content": release_index})

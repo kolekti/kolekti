@@ -124,6 +124,7 @@ class kolektiBase(object):
         try:
             self.syncMgr = SynchroManager(self._path, username)
         except ExcSyncNoSync:
+            logger.exception('could not set SyncManager')
             self.syncMgr = None
         try:
             self.indexMgr = IndexManager(projectspath, projectdir)

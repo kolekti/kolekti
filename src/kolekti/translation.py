@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 from django.utils.text import get_valid_filename
 
 from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
-from common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError
+from .common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError
 from kolekti import plugins
+from .synchro import SynchroManager
 
 logger = logging.getLogger(__name__)
 
@@ -100,23 +101,37 @@ class TranslationImporter(kolektiTests):
             #self.write(ifilec, projectfile, "wb", sync = False)
         return files
 
-    def _get_source_lang(self, release):
-        release_sources_dir = "/".join(['/releases',release,'sources'])
-        for l in self.list_directory(release_sources_dir):
+
+    def commit(self, files):
+        pass
+
+    def rollback(self, files):
+        pass
+
+
+class AssemblyImporter(object):
+    namespaces = {'h':'http://www.w3.org/1999/xhtml'}
+    def __init__(self, path, username):
+        self._path = path
+        self._username = username 
+
+        
+    def _get_source_lang(self, project, release):
+        release_dir = os.path.join(self._path, self._username, project, 'releases', release)
+        syncmgr = SynchroManager(release_dir, self._username)
+        for l in os.listdir(os.path.join(self._path, self._username, project, 'releases', release, 'sources')):
             if l == 'share':
                 continue
             try:
-                assembly_file = "%(rd)s/%(lang)s/assembly/%(release)s_asm.html"%{
-                    'rd': release_sources_dir,
+                assembly_file = "sources/%(lang)s/assembly/%(release)s_asm.html"%{
                     'lang': l,
                     'release': release
                     }
-                state = self.syncMgr.propget("release_state",assembly_file)
+                state = syncmgr.propget("release_state",assembly_file)
                 if state=="sourcelang":
                     return l
             except:
-                import traceback
-                print traceback.format_exc()
+                logger.exception('could not get lang state')
                 continue
 
     def _check_attribute(self, elta, attr):
@@ -133,7 +148,7 @@ class TranslationImporter(kolektiTests):
         for attr,val in elta.attrib.iteritems():
             if self._check_attribute(elta, attr):
                 if eltb.get(attr) != val:
-                    raise KolektiValidationError('structure does not match [ettributes]')
+                    raise KolektiValidationError('structure does not match [attributes] [%s]'%attr)
                 
 
             
@@ -151,11 +166,11 @@ class TranslationImporter(kolektiTests):
         for subelta, subeltb in zip(elta, eltb):
             self._iter_structures(subelta, subeltb)
         
-    def check_structure(self, assembly, release) :
-        srclang = self._get_source_lang(release)
-        src_assembly = self.parse('/releases/%(release)s/sources/%(lang)s/assembly/%(release)s_asm.html'%{
-            'release':release,
-            'lang':srclang})
+    def check_structure(self, project, assembly, release) :
+        srclang = self._get_source_lang(project, release)
+        logger.debug(srclang)
+        src_assembly_file = os.path.join(self._path, self._username, project, 'releases', release, "sources", srclang, "assembly", release+"_asm.html")
+        src_assembly = ET.parse(src_assembly_file)
         try :
             src_assembly = src_assembly.getroot()
         except AttributeError:
@@ -165,13 +180,48 @@ class TranslationImporter(kolektiTests):
         except AttributeError:
             pass
         self._iter_structures(src_assembly, assembly)
-       
-            
+
+
+
+    def check_variables(self, project, assembly, release) :
+        pass
+    
+    def fix_topic_sources(self, project, assembly, release) :
+        pass
+    
+    def fix_links(self, project, assembly, release) :
+        pass
+    
+    def guess_project(self, assembly):
+        try:
+            project = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.project"]/@content', namespaces=self.namespaces)[0]
+        except:
+            logger.exception('project meta not found')
+            raise KolektiValidationError('could not detect project')
+
+        if not os.path.exists(os.path.join(self._path, self._username, project)):
+            raise KolektiValidationError('project directory does not exists')
+        
+        return project
+    
+    def guess_release(self, assembly, project):
+        # get assembly dir
+        try:
+            release = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.releasedir"]/@content', namespaces=self.namespaces)[0]
+        except:
+            logger.exception('release name not found')
+            raise KolektiValidationError('could not detect release name')
+
+        if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release)):
+            raise KolektiValidationError('release directory does not exists')            
+        return release
+    
     def import_assembly(self, assembly_src):
         # xml parse
         try:
             assembly = ET.fromstring(assembly_src)
         except:
+            logger.exception('Assembly parse error')
             raise KolektiValidationError('xml parse error')
 
         # check lang
@@ -180,41 +230,36 @@ class TranslationImporter(kolektiTests):
         except:
             logger.exception('language not found')
             raise KolektiValidationError('could not detect language')
-
-        # get assembly dir
-        try:
-            release = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.releasedir"]/@content', namespaces=self.namespaces)[0]
-        except:
-            logger.exception('release name not found')
-            raise KolektiValidationError('could not detect release name')
-
-        if not os.path.exists(os.path.join(self._path, 'releases', release)):
-            raise KolektiValidationError('release directory does not exists')            
-        if not os.path.exists(os.path.join(self._path, 'releases', release , 'sources', lang)):
+        
+        project = self.guess_project(assembly)
+        release = self.guess_release(assembly, project)
+        if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
             raise KolektiValidationError('language directory does not exists')
         
-        assembly_dir = os.path.join(self._path, 'releases', release, 'sources', lang, 'assembly')
-        assembly_file = '/'.join(['releases', release, 'sources', lang, 'assembly', release + '_asm.html'])
+
+        release_dir = os.path.join(self._path, self._username, project, 'releases', release)
+        assembly_dir = os.path.join(release_dir, 'sources', lang, 'assembly')
+        assembly_file = '/'.join(['sources', lang, 'assembly', release + '_asm.html'])
+        syncmgr = SynchroManager(release_dir, self._username)
+        
         try:
-            state = self.syncMgr.propget("release_state",assembly_file)
-            if not (state == 'edition' or state == 'validation'):
-                raise KolektiValidationError('release state does not allow update of translation')
+            state = syncmgr.propget("release_state", assembly_file)
         except:
             logger.exception('import release state')
             raise KolektiValidationError('could not get release state')
 
-        self.check_structure(assembly, release)
-        self.check_variables(assembly, release)
-                
-        self.fix_topic_sources(assembly, release)
-        self.fix_links(assembly, release)
-    
-    def commit(self, files):
-        pass
+        if not (state == 'translation' or state == 'validation'):
+                raise KolektiValidationError('release state does not allow update of translation')
 
-    def rollback(self, files):
-        pass
+        self.check_structure(project, assembly, release)
+        self.check_variables(project, assembly, release)            
+        self.fix_topic_sources(project, assembly, release)
+        self.fix_links(project, assembly, release)
 
+        with open(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang, 'assembly', release+"_asm.html"), 'w') as f:
+            f.write(ET.tostring(assembly, encoding='utf-8'))
+        return {'project':project, 'release': release, 'lang':lang}
+        
 # command line
     
 def cmd_compare(args):

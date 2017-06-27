@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}job{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-job.css"></script>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-job.css" %}"></script>
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-job.js"></script>
+    <script src="{% static "js/kolekti-job.js" %}"></script>
 {% endblock %}
 
 {% block title %}Paramètres de publication : {{ name }}{% endblock %}

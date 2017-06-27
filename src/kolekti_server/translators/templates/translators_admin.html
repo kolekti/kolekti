@@ -1,11 +1,14 @@
 {% extends 'translators_base.html' %}
+{% load static %}
+
 
 {% block extracss %}
-    <link href="/static/css/translation-langlist.css" type="text/css" rel="stylesheet"/>
+    <link href="{% static '/css/translation-langlist.css' %}" type="text/css" rel="stylesheet"/>
 {% endblock %}
 
     {% block extrascripts %}
-    <script type="text/javascript" src="/static/js/translators-admin.js"></script>
+    <script type="text/javascript" src="{% static 'js/translators-admin.js' %}"></script>
+    <script src="{% static 'js/kolekti-common.js' %}"></script>
     {% endblock %}
 
     
@@ -15,12 +18,12 @@
 
     <div class="row">
       <div class="col-md-6">
-	<div class="form form-horizontal">
-	  <div class="form-group">
-	    <label for="translatorfield" class="control-label">Filter</label>
-	    <input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
-	  </div>
-	</div>
+	    <div class="form">
+	      <div class="form-group">
+	        <label for="filter_field" class="control-label">Filter</label>
+	        <input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
+	      </div>
+	    </div>
       </div>
       <div class="col-md-6">	
 	<div class="alert alert-warning alert-dismissible" role="alert">
@@ -38,16 +41,20 @@
       <div class="col-md-12">	
 	<div class="panel panel-default release filterable" data-filter-value="{{ release.name }}" data-project="{{ project.directory }}" data-release="{{ release.name }}">
 	  <div class="panel-heading">
-            <span class="pull-right"><a href="{% url 'translators_release' project=project.directory release=release.name %}">Acceder à l'interface traducteurs</a></span>
+        <span class="pull-right kolekti-release-langs"></span>
 	    <h3 class="panel-title">
-	      <span class="release_name">{{ release.name }}</span>
+	      <span class="release_name">{{ release.name }}</span>        
 	    </h3>
 	  </div>
-	  
+
+      
 	  <div class="panel-body">
+
 	    <div class="kolekti-release-translators" >
 	      <ul class="list-group">
-		
+
+            
+            
 		{% if release.translators|length %}
 		{% for translator in release.translators %}
 		
@@ -73,7 +80,7 @@
 		{% endif %}
 		<li class="list-group-item">
 		  <form class="form-inline form-admin-translation"
-			action="{% url 'translators_admin_add' project=project.name release=release.name %}"
+			action="{% url 'translators_admin_add' project=project.directory release=release.name %}"
 			method="POST"
 			enctype="multipart/form-data">
 		    <input type="hidden" name="release" value="{{ release.name }}"/>
@@ -93,6 +100,7 @@
 		</li>
 	      </ul>
 	    </div>
+        <span class="pull-right"><a href="{% url 'translators_release' project=project.directory release=release.name %}">Translator interface</a></span>
 
 	    {% comment %}
 	    <div class="kolekti-release-documents">
@@ -100,10 +108,14 @@
 	    </div>
 	    {% endcomment %}
 	  </div>
+                      
 	</div>
+
       </div>
     {% endfor %}
     </div>
   </div>
 </div>
 {% endblock %}
+
+

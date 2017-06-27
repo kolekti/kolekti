@@ -1,11 +1,12 @@
 {% extends "base-wide.html" %}
+{% load static %}
 
 {% block title %}Trames{% endblock %}
 {% block current_trames %}class="menu-current"{% endblock %}
 {% block help-topic %}toc{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-toclist.js"></script>
+    <script src="{% static "js/kolekti-toclist.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

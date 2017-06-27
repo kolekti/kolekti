@@ -1,12 +1,14 @@
 {% extends 'translators_base.html' %}
+{% load static %}
+{% load bootstrap %}
 
 {% block extracss %}
-    <link href="/static/css/translation-langlist.css" type="text/css" rel="stylesheet"/>
+<link href="{% static "css/translation-langlist.css"%}" type="text/css" rel="stylesheet"/>
 {% endblock %}
 
 {% block extrascripts %}
-    <script type="text/javascript" src="/static/js/translators.js"></script>
-    <script type="text/javascript" src="/static/js/translators-upload.js"></script>
+<script type="text/javascript" src="{% static "js/translators.js" %}"></script>
+<script type="text/javascript" src="{% static "js/translators-upload.js" %}"></script>
 {% endblock %}
 
 {% block page-content %}
@@ -19,8 +21,14 @@
       <div class="panel-body">
         <div class="row">
           <div class="col-md-12">
-            <form method="POST" >
-               {{ upload_form|bootstrap }}
+            <form method="POST" class="form upload-assembly-form">
+              {{ upload_form|bootstrap }}
+              <div class="form-group">
+		        <div class="pull-right">
+		          <button type="submit" class="btn btn-primary">Upload</button>
+		        </div>
+	          </div>
+              
             </form>
           </div>
         </div>
@@ -39,124 +47,143 @@
          data-source-zip-url="{% url 'translators_src_zip' project=release.self.project.directory release=release.self.release_name %}"
          data-upload-url="{% url 'translators_upload' project=release.self.project.directory release=release.self.release_name  %}"
          >
-  <div class="panel-heading">
-    <h3 class="panel-title">
-      <span class="project_name">{{ release.self.project.name }}</span>
-      <span class="release_name">{{ release.self.release_name }}</span>
-    </h3>
-  </div>
-  <div class="panel-body">
-    <div class="row">
-      <div class="col-md-12">
-
-	<div class="kolekti-release-langs" >
-      <!-- foo -->
-      
-	</div>
-	<div class="kolekti-release-documents">
-	  {{ manifest }}
-	</div>
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <span class="project_name">{{ release.self.project.name }}</span>
+          <span class="release_name">{{ release.self.release_name }}</span>
+        </h3>
       </div>
-    </div>
-  </div>
-</div>  
-    {% empty %}
-    <div class="alert alert-info" role="alert">
-      <p>No translation assigned yet !</p>
-      </div>
-{% endfor %}
-
-      <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="downloadModalLabel">Download sources</h4>
-            </div>
-            <div class="modal-body">
-	      <div class="row">
-	        <div class="col-md-6">
-	          <dl>
-                    <dt>Sources (<span class="sourcelangtext"></span>)</dt>
-	            <dd>
-                      <i class="fa fa-download"></i>&nbsp;
-		      <a class="link-source source zip" href="">Complete sources (zip)</a> <span class="lang-source"></span>
-	            </dd>
-	            <dd>
-                      <i class="fa fa-download"></i>&nbsp;
-		      <a class="link-source source assembly" href="">Assembly</a> <span class="lang-source"></span>
-	            </dl>
-	          </ul>
-	        </div>
-	        <div class="col-md-6 translations">
-	          <dl>
-                    <dt>Latest translation (<span class="langtext"></span>)</dt>
-	            <dd>
-                      <i class="fa fa-download"></i>&nbsp;
-		      <a class="link-source current zip" href="">Complete sources (zip)</a> <span class="lang-source"></span>
-	            </dd>
-	            <dd>
-                      <i class="fa fa-download"></i>&nbsp;
-		      <a class="link-source current assembly" href="">Assembly</a> <span class="lang-source"></span>
-	            </dd>
-	          </dl>
-	        </div>
-	      </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="table-responsive">
+              <table class="table table-bordered documents-table">
+                <thead>
+	              <tr class="kolekti-release-langs">
+                  </tr>
+                </thead>
+                <tbody class="kolekti-release-documents">
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
-      
-      <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="uploadModalLabel">Upload Translation (<span class="langtext"></span>)</h4>
+    </div>  
+    {% empty %}
+    <div class="alert alert-info" role="alert">
+      <p>No translation assigned yet !</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  
+  <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="downloadModalLabel">Download sources</h4>
+        </div>
+        <div class="modal-body">
+	      <div class="row">
+	        <div class="col-md-6">
+	          <dl>
+                <dt>Sources (<span class="sourcelangtext"></span>)</dt>
+	            <dd>
+                  <i class="fa fa-download"></i>&nbsp;
+		          <a class="link-source source zip" href="">Complete sources (zip)</a> <span class="lang-source"></span>
+	            </dd>
+	            <dd>
+                  <i class="fa fa-download"></i>&nbsp;
+		          <a class="link-source source assembly" href="">Assembly</a> <span class="lang-source"></span>
+	          </dl>
             </div>
+            <div class="col-md-6 translations">
+              <dl>
+                <dt>Latest translation (<span class="langtext"></span>)</dt>
+	            <dd>
+                  <i class="fa fa-download"></i>&nbsp;
+	              <a class="link-source current zip" href="">Complete sources (zip)</a> <span class="lang-source"></span>
+	            </dd>
+	            <dd>
+                  <i class="fa fa-download"></i>&nbsp;
+		          <a class="link-source current assembly" href="">Assembly</a> <span class="lang-source"></span>
+	            </dd>
+	          </dl>
+	        </div>
+	      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="uploadModalLabel">Upload Translation (<span class="langtext"></span>)</h4>
+        </div>
 	    <form class="form-horizontal form-upload-translation"
-                  action=""
-		  method="POST"
-		  enctype="multipart/form-data">
+              action=""
+		      method="POST"
+		      enctype="multipart/form-data">
                 <div class="modal-body">
-	          <input type="hidden" name="lang" class="langinput" value=""/>
-	          <div class="form-group">
-		    <label for="filefield" class="col-sm-4 control-label">Upload file</label>
-		    <div class="col-sm-8">
-		      <input class="form-control- upload" id="upload_field" name="upload_file" type="file" />
-		    </div>
-	          </div>
+	              <input type="hidden" name="lang" class="langinput" value=""/>
+	              <div class="form-group">
+		            <label for="filefield" class="col-sm-4 control-label">Upload file</label>
+		            <div class="col-sm-8">
+		              <input class="form-control- upload" id="upload_field" name="upload_file" type="file" />
+		            </div>
+	              </div>
                   
                   <div class="upload-success hidden alert alert-success" role="alert">
-	            <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	            <div class="alert-content"></div>
-	          </div>
-	          <div class="upload-error hidden alert alert-warning" role="alert">
-	            <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>	      
-	            <div class="alert-content"></div>
-	          </div>
-	          <div class="upload-progress hidden alert alert-warning">
-	            <i class='fa fa-refresh fa-spin'></i> Upload in progress...
-	          </div>
+	                <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	                <div class="alert-content"></div>
+	              </div>
+	              <div class="upload-error hidden alert alert-warning" role="alert">
+	                <button type="button" class="close upload-status-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>	      
+	                <div class="alert-content"></div>
+	              </div>
+	              <div class="upload-progress hidden alert alert-warning">
+	                <i class='fa fa-refresh fa-spin'></i> Upload in progress...
+	              </div>
                 </div>
                 <div class="modal-footer">
                   <div class="form-group">
-		    <div class="col-sm-offset-2 col-sm-10">
-		      <button type="submit" class="btn btn-primary">Upload</button>
+		            <div class="col-sm-offset-2 col-sm-10">
+		              <button type="submit" class="btn btn-primary">Upload</button>
                       <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		    </div>
-	          </div>
+		            </div>
+	              </div>
                 </div>
-            </form>
+        </form>
 	  </div>
 	</div>
-      </div>
-
-      
-
   </div>
+  
+  <div class="modal fade" id="uploadStatusModal" tabindex="-1" role="dialog" aria-labelledby="uploadStatusModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="uploadStatusModalLabel">Uploading Translation</h4>
+        </div>
+        <div class="modal-body">
+          <div class="upload-status">                
+          </div>
+          <div class="upload-progress">
+            <div class="alert alert-info" role="alert">
+	          <div class="alert-content"><i class="fa fa-spinner"></i> <span class="progresstxt"></span></div>
+	        </div>                
+          </div>
+        </div>
+      </div>
+    </div>
+    
   </div>
 {% endblock %}
