@@ -421,6 +421,7 @@ class SVNProjectManager(SvnClient):
         try:
             if not os.path.exists(ospath):
                 self._client.checkout(url + '/kolekti', os.path.join(ospath, "kolekti"))
+                self._client.checkout(url + '/sources', os.path.join(ospath, "sources"))
             self._client.checkout(url + "/releases/" + release, os.path.join(ospath, "releases", release))
         except pysvn.ClientError:
             logger.exception("checkout of project failed : %s"%url)

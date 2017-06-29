@@ -1232,7 +1232,7 @@ class ReleasePublisher(Publisher):
         try:
             for jobscript in xjob.xpath('/job/scripts/script'):
                 jobscript.set("enabled","0")
-            for jobprofile in xjob.xpath('/job/profiles/profile'):
+            for jobprofile in xjob.xpath('/job/profiles/profile[@enabled="1"]'):
                 for lang in self._publangs:
                     self._publang = lang
                     ref = self.release_script_filename(release, lang, jobprofile, jobscript)
