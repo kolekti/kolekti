@@ -27,7 +27,7 @@ SECRET_KEY = '9ewjmy&i^@0kgd6(bapt%@azcl2wka6ml^tcs9v*9@-2%705#y'
 DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
 if DEBUG:
     HOSTNAME='0.0.0.0'
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', os.getenv('VIRTUAL_HOST','localhost.localdomain')]
 else:
     HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
     ALLOWED_HOSTS='*'
