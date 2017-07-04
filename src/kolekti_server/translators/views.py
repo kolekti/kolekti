@@ -407,13 +407,28 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
             releaseinfo.update({
                 'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
                 })
-            releases.append(releaseinfo) 
+            releases.append(releaseinfo)
+        userprojects = UserProject.objects.filter(user = self.request.user)
+        userproject = userprojects.get(project__directory = project)
+        projects = []
+        for up in userprojects:
+            pproject={
+                'userproject':up,
+                'name':up.project.name,
+                'id':up.project.pk,
+            }
+            projects.append(pproject)
+            
         context = {
+            'active_project_name':Project.objects.get(directory = project).name,
+            'projects':projects,
             'translators': User.objects.filter(groups__name='translator'),
             'releases':sorted(releases),
             'languages':self.project_languages(project),
-            'project': Project.objects.get(directory = project)
-            }            
+            'project': Project.objects.get(directory = project),
+            'active_srclang' : userproject.srclang,
+            }
+
         return self.render_to_response(context)
 
 class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):

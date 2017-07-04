@@ -1,6 +1,9 @@
-{% extends 'translators_base.html' %}
+{% extends 'base-wide.html' %}
 {% load static %}
 
+{% block current_releases %}class="menu-current"{% endblock %}
+
+{% block title %}Assigner les traductions{% endblock %}
 
 {% block extracss %}
     <link href="{% static '/css/translation-langlist.css' %}" type="text/css" rel="stylesheet"/>
@@ -12,7 +15,7 @@
     {% endblock %}
 
     
-{% block page-content %}
+{% block content %}
 <div class="row">
   <div class="col-md-offset-1 col-md-10">
 
@@ -58,7 +61,7 @@
 		{% if release.translators|length %}
 		{% for translator in release.translators %}
 		
-		<li class="list-group-item">
+		<li class="list-group-item list-group-item-info">
 		  <div class="pull-right">
 		    <form 
 		       action="{% url 'translators_admin_remove' project=project.name release=release.name %}"
@@ -74,8 +77,8 @@
 		</li>
 		{% endfor %}
 		{% else %}
-		<li class="list-group-item">
-		  <div class="info">No translator assigned</div>
+		<li class="list-group-item list-group-item-warning">
+		  <div class="info ">No translator assigned</div>
 		</li>
 		{% endif %}
 		<li class="list-group-item">

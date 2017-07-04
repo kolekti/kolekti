@@ -150,7 +150,6 @@ class AssemblyImporter(object):
                 if eltb.get(attr) != val:
                     raise KolektiValidationError('structure does not match [attributes] [%s]'%attr)
                 
-
             
     def _iter_structures(self, elta, eltb):
         taga = elta.xpath('local-name()')
@@ -159,6 +158,9 @@ class AssemblyImporter(object):
             raise KolektiValidationError('structure does not match')
 
         self._compare_attributes(elta, eltb)
+
+        if taga == "head":
+            return
         
         if taga == "div":
             if elta.get('class') =='topic':
