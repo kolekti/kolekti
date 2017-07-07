@@ -22,6 +22,7 @@ var update_documents = function(project, release, lang, container, statecell, st
             $.each(data, function(index, docs) {
                 var row = container.find('tr.t'+index)
                 var doclink;
+                console.log(docs)
                 if(!docs[3]) can_validate_all = false
                 if (docs[2]) {
                     var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certif/";
@@ -29,10 +30,10 @@ var update_documents = function(project, release, lang, container, statecell, st
 					    'href':'/translator/' + project +'/'+ docs[1],
                         'title':docs[0],
 					    "target":"_documents",
-					    'html':$('<i>',{'class':'fa fa-file-pdf-o'})
+					    'html':$('<i>',{'class':'fa fa-file-' + docs[4] + '-o'})
 					}), ' ']
                     
-                    if(status == "publication")
+                    if(status == "validation" || status == "publication")
                         doclink.push(
                             $("<span>", {
                                 "class":"text-success",
@@ -41,14 +42,15 @@ var update_documents = function(project, release, lang, container, statecell, st
                                 })
                             }))
                             
-                    if(status == "validation")
+                    if(status == "translation")
                         doclink.push(
-                            $('<form>', {
+/*                            $('<form>', {
                                 "method":"POST",
                                 "action":certif_url,
                                 "class":"form form-inline",
                                 "style":"display:inline",
                                 "html":[
+*/
                                     $('<a>', {
                                         'title':"Upload certificate ",
                                         'class':"btn btn-xs "+ (docs[3]?"btn-success":"btn-default"),
@@ -56,13 +58,17 @@ var update_documents = function(project, release, lang, container, statecell, st
                                             'class': "fa fa-check-square"
                                         })
                                     }).on('click', function(){
-                                        $(this).next().click()
-                                    }),
+
+                                        $('#upload_delivery_dialog').dialog()
+//                                        $(this).next().click()
+                                    })
+/*                                    
                                     $('<input>', {
                                         'type':"file",
                                         'name':"upload_file",
                                         'class':"hidden btn btn-xs btn-default btn-upload-certificate"
                                     }).on('change', function() {
+                                        
                                         var formdata = new FormData($(this).closest('form')[0])
                                         //        formdata.append('file', this.files[0]);
                                         
@@ -81,14 +87,15 @@ var update_documents = function(project, release, lang, container, statecell, st
                                         //  $(this).closest('form').submit()
                                         
                                     }),
-                                    $('<input>', {
+*/
+/*                                    $('<input>', {
                                         'type':"hidden",
                                         'name':"path",
                                         'value':docs[1]
                                     })
                                     
                                 ]
-                            })
+                            })*/
                         );
                 } else {
                     doclink = $("<i>", {

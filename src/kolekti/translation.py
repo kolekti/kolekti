@@ -170,7 +170,7 @@ class AssemblyImporter(object):
         
     def check_structure(self, project, assembly, release) :
         srclang = self._get_source_lang(project, release)
-        logger.debug(srclang)
+
         src_assembly_file = os.path.join(self._path, self._username, project, 'releases', release, "sources", srclang, "assembly", release+"_asm.html")
         src_assembly = ET.parse(src_assembly_file)
         try :

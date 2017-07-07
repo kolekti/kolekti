@@ -1200,7 +1200,7 @@ class ReleasePublisher(Publisher):
             profilepath = self.substitute_criteria(profile.find('dir').get('value'), profile, extra = {'LANG':lang})
             profilepath = self.substitute_criteria(profilepath, profile, extra = {'LANG':lang})
         except:
-            profilepath
+            logger.exception('unable to get profile path')
             
 
         # get link
@@ -1211,10 +1211,11 @@ class ReleasePublisher(Publisher):
             raise
         
         link = scrdef.find('link').get('ref')
+        ptype = scrdef.find('link').get('type')
         link = link.replace('_PUBURI_', '/'.join([profilepath, lang]))
         link = link.replace('_PUBNAME_', filename)
         filepath = '/'.join(['/releases', release, link])
-        return filepath
+        return filepath, ptype
    
     def documents_release(self, release):
         try :
@@ -1232,12 +1233,12 @@ class ReleasePublisher(Publisher):
         try:
             for jobscript in xjob.xpath('/job/scripts/script'):
                 jobscript.set("enabled","0")
-            for jobprofile in xjob.xpath('/job/profiles/profile[@enabled="1"]'):
-                for lang in self._publangs:
-                    self._publang = lang
-                    ref = self.release_script_filename(release, lang, jobprofile, jobscript)
+                for jobprofile in xjob.xpath('/job/profiles/profile[@enabled="1"]'):
+                    for lang in self._publangs:
+                        self._publang = lang
+                        ref, reftype = self.release_script_filename(release, lang, jobprofile, jobscript)
                 
-                    yield (jobprofile.find('label').text, ref, self.exists(ref))
+                        yield (jobprofile.find('label').text, ref, self.exists(ref), reftype)
         except:
             logger.exception('documents release error')
         return

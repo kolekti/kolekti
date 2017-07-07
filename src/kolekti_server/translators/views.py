@@ -174,10 +174,10 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
         publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
         res = []
         
-        for l, p, e in publisher.documents_release(assembly_name):
+        for l, p, e, t in publisher.documents_release(assembly_name):
             logger.debug(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
             v = os.path.exists(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
-            res.append((l, p.replace('/releases/',''), e, v)) 
+            res.append((l, p.replace('/releases/',''), e, v, t)) 
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsPublishView(TranslatorsMixin, View):
@@ -289,7 +289,7 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
                 assembly_info['release']+ '_asm.html')
             
             sync_mgr = TranslatorSynchro(assembly_info['project'], assembly_info['release'], request.user.username)
-            sync_mgr._client.propset("release_state", "validation", assembly_path)
+#            sync_mgr._client.propset("release_state", "validation", assembly_path)
             rev = sync_mgr._client.checkin(assembly_path, "translator validation")
             return HttpResponse(json.dumps({"status":"success","message":'upload successful','info':assembly_info}),content_type="text/plain")
         else:
@@ -347,7 +347,7 @@ class TranslatorsCommitLangView(TranslatorsMixin, View):
             'assembly',
             release + '_asm.html')
         
-        state = "publication"
+        state = "validation"
         sync_mgr = TranslatorSynchro(project, release, request.user.username)  
         sync_mgr._client.propset("release_state", state, assembly_path)
         commitmsg = 'validate translation'
