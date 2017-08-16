@@ -1,12 +1,13 @@
 {% extends "basemenufix.html" %}
 {% load timetags %}
+{% load static %}
 
 {% block title %}Synchronisation{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}synchro{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-synchro.js"></script>
+    <script src="{% static "js/kolekti-synchro.js" %}"></script>
 {% endblock %}
 
 {# no repository #}

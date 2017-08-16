@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Browser{% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-list.js"></script>
+    <script src="{% static "js/kolekti-list.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

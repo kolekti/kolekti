@@ -1,0 +1,2 @@
+alias kolekti-manage="docker exec -ti kolekti_kolekti_1 python /kolekti/src/kolekti_server/manage.py"
+alias kolekti="docker exec -ti kolekti_kolekti_1 python /kolekti/src/kolekti_run.py"

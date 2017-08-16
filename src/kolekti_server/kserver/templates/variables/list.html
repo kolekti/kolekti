@@ -1,16 +1,21 @@
+<<<<<<< HEAD
 {% extends "base-wide.html" %}
+=======
+{% extends "base.html" %}
+{% load static %}
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 
 {% block title %}Variables{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-illustrations.css"></link>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-illustrations.css" %}"></link>
 {% endblock %}
 
     {% block extrascripts %}
-    <script src="/static/js/kolekti-variablesutils.js"></script>
-    <script src="/static/js/kolekti-variableslist.js"></script>
+    <script src="{% static "js/kolekti-variablesutils.js" %}"></script>
+    <script src="{% static "js/kolekti-variableslist.js" %}"></script>
 {% endblock %}
 
 {% block menu %}

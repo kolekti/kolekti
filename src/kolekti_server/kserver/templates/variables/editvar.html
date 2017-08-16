@@ -1,22 +1,23 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-variables.css"/>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-variables.css" %}"/>
 {% endblock %}
 
 {% block extrascripts %}
 
-{# <script src="/static/js/kolekti-variables.js"></script> #}
+{# <script src="{% static "js/kolekti-variables.js" %}"></script> #}
 <script>
   var kolekti_variable_data = {{ vardata|safe }};;
   var kolekti_variable_current = {{current}};
   var kolekti_variable_path = "{{ path }}";
 </script>
 
-<script src="/static/js/kolekti-variables-edit-{{method}}.js"></script>
+<script src="{% static "js/kolekti-variables-edit-{{method}}.js" %}"></script>
 {% endblock %}
 
 {% block title %}Variables : <a href="{% url 'variabledetails' %}?path={{ path }}">{{ name }}</a>{% endblock %}
@@ -51,7 +52,7 @@
       <!-- Variable panes -->
       <div class="tab-content varedit form form-horizontal">
 
-	{% if method = "line" %}
+	{% if method == "line" %}
 	
 	{% for condition in conditions %}
 	<div class="form-group">

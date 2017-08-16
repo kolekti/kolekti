@@ -1,4 +1,11 @@
 $(document).ready(function() {
+    var label_state = {
+        "sourcelang":"Langue source",
+        "edition":"Nouvelle version",
+        "translation":"Traduction en cours",
+        "validation":"Validation en cours",
+        "publication":"Traduction validée"
+    }
 
     kolekti_browser({'root':'/releases',
 		     'url':"/browse/releases/",
@@ -21,7 +28,8 @@ $(document).ready(function() {
 		//	document.location.href = '/release/detail/?release='+path
 		*/
 	    })
-    
+
+
 	.setup(function(){
 	    console.log('browser loaded');	    
 	    $('.kolekti-browser-release-state').each(function() {
@@ -38,10 +46,15 @@ $(document).ready(function() {
 			    if (v)
 				statecell.append($('<span>',{
 				    "class":"langstate "+v,
-				    "html":$('<a>',{
-					"href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
-					"html":i
-				    })
+				    "html":[
+                        $('<a>',{
+                            "title":label_state[v],
+					        "href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
+					        "html":i
+				        })
+                        ,$('<span>',{
+                            "class":"releaselangback"}
+                          )]
 				}))
 			})	      
 					       

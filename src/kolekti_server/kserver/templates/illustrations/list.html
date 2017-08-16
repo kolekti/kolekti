@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% load ostags %}
+{% load static %}
 
 {% block current_images %}class="menu-current"{% endblock %}
 {% block help-topic %}images{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-illustrations.css"></link>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-illustrations.css" %}"></link>
 {% endblock %}
 
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-illustrationsutils.js"></script>
-    <script src="/static/js/kolekti-illustrationslist.js"></script>
+    <script src="{% static "js/kolekti-illustrationsutils.js" %}"></script>
+    <script src="{% static "js/kolekti-illustrationslist.js" %}"></script>
 {% endblock %}
 
 {% block title %}Images{% endblock %}

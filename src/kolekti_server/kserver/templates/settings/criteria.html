@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}criteria{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-criteria.css"></script>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-criteria.css" %}"></script>
 {% endblock %}
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-criteria.js"></script>
+    <script src="{% static "js/kolekti-criteria.js" %}"></script>
 {% endblock %}
 
 {% block title %}Critères{% endblock %}

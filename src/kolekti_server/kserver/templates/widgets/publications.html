@@ -6,7 +6,7 @@
       <span class="pull-right"><small>{{ publication.time|print_timestamp  }}</small></span>
     </h5>
   {% for event in publication.content %}
-    {% if event.event = "result" %}
+    {% if event.event == "result" %}
     <ul class="list-unstyled">
       {% for doc in  event.docs %}
       {% if doc.url %} 
@@ -18,7 +18,7 @@
     </ul>
     {% endif %}
 
-    {% if event.event = "error" %}
+    {% if event.event == "error" %}
     <p class="text-error">Une erreur est survenue au cours de cette publication</p>
     {% endif %}
   {% endfor %}

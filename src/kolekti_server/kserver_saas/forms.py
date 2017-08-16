@@ -7,7 +7,7 @@ logger = logging.getLogger('kolekti.'+__name__)
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from registration.forms import RegistrationForm
+#from registration.forms import RegistrationForm
 from django.utils.text import get_valid_filename
 
 from kserver_saas.models import Project
@@ -22,11 +22,11 @@ class UserProfileForm(forms.Form):
     phone = forms.CharField(max_length = 32,  required = False, label="Téléphone")
     
 
-class kolektiRegistrationForm(RegistrationForm, UserProfileForm):
-    cgv = forms.BooleanField(widget=forms.CheckboxInput,
-                             label=_(u'I have read and agree to the Terms of Service'),
-                             error_messages={'required': _("You must agree to the terms to register")}
-                         )
+#class kolektiRegistrationForm(RegistrationForm, UserProfileForm):
+#    cgv = forms.BooleanField(widget=forms.CheckboxInput,
+#                             label=_(u'I have read and agree to the Terms of Service'),
+#                             error_messages={'required': _("You must agree to the terms to register")}
+#                         )
         
 class NewProjectForm(forms.Form):
     

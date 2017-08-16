@@ -1,0 +1,68 @@
+
+.langstate {
+    margin-right:5px;
+    border-radius:2px;
+    height: 12px;
+    width: 10px;
+    padding: 0 2px;
+    border: 1px solid rgb(221, 221, 221);
+    background-color: white;
+    opacity:1;
+    position:relative;
+    font-size: 120%
+}
+.langstate a{
+        position:relative;
+    z-index: 10;
+}
+
+
+.releaselangback {
+    position: absolute;
+    bottom: 0;
+    color: red;
+     width: 100%;
+    display: inline-block;
+    left: 0;
+    z-index: 5;
+}
+
+.langstate.sourcelang .releaselangback{
+    background-color: #a6f087;
+    height: 100%;
+}
+
+.langstate.edition .releaselangback{
+    background-color: #98d1f7;
+    height: 25%;
+}
+
+
+.langstate.translation a {
+    font-weight:bold;
+}
+
+.langstate.translation .releaselangback{
+    background-color: #98d1f7;
+    height: 50%;
+}
+
+.langstate.validation a {
+    font-weight:bold;
+}
+
+.langstate.validation .releaselangback{
+    background-color: #98d1f7;
+    height: 85%;
+}
+
+.langstate.publication .releaselangback{
+    background-color: #a6f087;
+    height: 100%;
+}
+
+.langstate.nostate .releaselangback{
+    background-color: #D0D0D0;
+    
+}
+

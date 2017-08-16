@@ -68,6 +68,14 @@ class plugin(pluginBase.plugin):
 
         # produce pdf with modified pivot
         res = self.start_cmd()
+
+        # remove pivot nbpages attributes
+        del body.attrib['data-pagecount']
+        del body.attrib['data-pagecount-mod-2']
+        del body.attrib['data-pagecount-mod-4']
+        del body.attrib['data-pagecount-mod-8']
+        del body.attrib['data-pagecount-mod-16']
+
         
         return res
     

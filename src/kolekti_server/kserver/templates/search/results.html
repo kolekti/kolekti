@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-search.css"></script>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-search.css" %}"></script>
 {% endblock %}
 
 
 {% block extrascripts %}
-    <script src="/static/js/kolekti-search.js"></script>
+    <script src="{% static "js/kolekti-search.js" %}"></script>
 {% endblock %}
 
 {% block title %}Résultats de la recherche pour <em>{{ query }}</em>{% endblock %}

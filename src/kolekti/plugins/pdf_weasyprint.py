@@ -69,29 +69,32 @@ class plugin(pluginBase.plugin):
         pdf = os.path.join(self.getOsPath(pubdir),self.publication_file+'.pdf')
         
         HTML(string = ET.tostring(pivot)).write_pdf(pdf)
-        # count pages in pdf
-        with open(pdf, 'rb') as pdffile:
-            nbpages = PdfFileReader(pdffile).getNumPages() 
 
-        logger.debug( "pdf nbpages : %d"%(nbpages,))
+        if self.scriptdef.xpath('boolean(parameters/parameter[@name="two_passes"]/@value = "yes")'):
+            # count pages in pdf
+            with open(pdf, 'rb') as pdffile:
+                nbpages = PdfFileReader(pdffile).getNumPages() 
+                
+            logger.debug( "pdf nbpages : %d"%(nbpages,))
     
-        # update pivot body attributes
-        body.set('data-pagecount', str(nbpages))
-        body.set('data-pagecount-mod-2', str(nbpages % 2))
-        body.set('data-pagecount-mod-4', str(nbpages % 4))
-        body.set('data-pagecount-mod-8', str(nbpages % 8))
-        body.set('data-pagecount-mod-16', str(nbpages % 16))
+            # update pivot body attributes
+            body.set('data-pagecount', str(nbpages))
+            body.set('data-pagecount-mod-2', str(nbpages % 2))
+            body.set('data-pagecount-mod-4', str(nbpages % 4))
+            body.set('data-pagecount-mod-8', str(nbpages % 8))
+            body.set('data-pagecount-mod-16', str(nbpages % 16))
 
 
-        pivfile = pubdir + "/document_nbpage_attrs.xhtml"
-        self.xwrite(pivot, pivfile, sync = False)
-
-        # produce pdf with modified pivot
-        HTML(string = ET.tostring(pivot)).write_pdf(pdf)
+            pivfile = pubdir + "/document_nbpage_attrs.xhtml"
+            self.xwrite(pivot, pivfile, sync = False)
+            
+            # produce pdf with modified pivot
+            HTML(string = ET.tostring(pivot)).write_pdf(pdf)
 
         subst = {}
         for p in self.scriptdef.xpath('parameters/parameter'):
             subst.update({p.get('name'):p.get('value')})
+                
         pubdir = self.pubdir(self.assembly_dir, self.profile)
         subst.update({
             "APPDIR":self._appdir,

@@ -1,11 +1,22 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% load ostags %}
+=======
+{% extends "base-wide.html" %}
+{% load static %}
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 
 {% block current_home %}class="menu-current"{% endblock %}
 
 {% block title %}Gestion des projets{% endblock %}
 {% block help-topic %}projects{% endblock %}
 
+<<<<<<< HEAD
+=======
+{% block extracss %}
+<link href="{% static "css/kolekti-home.css" %}" rel="stylesheet">
+{% endblock %}
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 
 {% block content %}    
 {% if user_projects|length %}
@@ -84,4 +95,10 @@
   </div>
 </div>
 
+<<<<<<< HEAD
+=======
+{% block extrascripts %}
+<script src="{% static "js/kolekti-home.js" %}"></script>
+<script src="{% static "d3.min.js" %}"></script>
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 {% endblock %}

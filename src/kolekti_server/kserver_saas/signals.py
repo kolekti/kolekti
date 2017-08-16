@@ -13,13 +13,15 @@ from django.conf import settings
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils.text import get_valid_filename
+from django.contrib.auth.models import Group, User
 
-from kserver_saas.models import Project, UserProject
+from allauth.account.signals import user_signed_up
+from invitations.signals import invite_accepted
+
+from kserver_saas.models import Project, UserProject, UserProfile
 
 from kolekti.synchro import SVNProjectManager
 from kserver_saas.svnutils import SVNProjectCreator
-
-logger.debug('signals loaded')
 
 @receiver(post_save, sender=Project)
 def post_save_project_callback(sender, **kwargs):
@@ -51,19 +53,24 @@ def post_save_userproject_callback(sender, **kwargs):
     logger.debug('post save handler: save userproject')
     if instance.is_saas:
         if created or raw:
-            username = instance.user.username
-            # TODO : use urllib (Win compatibility)
-            project_directory = instance.project.directory
-
-            url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
-            logger.debug('checkout %s %s'%(username, url))
-            projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
             try:
+                username = instance.user.username
+                # TODO : use urllib (Win compatibility)
+                project_directory = instance.project.directory
+            
+                url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
+                logger.debug('checkout %s %s'%(username, url))
+                projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
                 SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
+                __generate_hooks(instance.project)
+                __generate_htgroup()
             except:
-                logger.exception('error during checkout')
-            __generate_hooks(instance.project)
-
+                logger.exception('Could not create user project')
+                user_project_directory = os.path.join(projectsroot, project_directory)
+                if os.path.exists(user_project_directory):
+                    shutil.rmtree(user_project_directory)
+            
+            
 @receiver(post_delete, sender = UserProject)
 def post_delete_userproject_callback(sender, **kwargs):
     instance = kwargs['instance']
@@ -73,8 +80,10 @@ def post_delete_userproject_callback(sender, **kwargs):
         if os.path.exists(user_project_directory):
             shutil.rmtree(user_project_directory)
         __generate_hooks(instance.project)
+        __generate_htgroup()
 
 def __generate_hooks(project):
+    ''' generate svn hooks in project repository'''
     if settings.KOLEKTI_AUTOSYNC:
         project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
         if os.path.exists(project_directory):
@@ -89,4 +98,43 @@ def __generate_hooks(project):
             st = os.stat(hooksfile)
             os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
+def __generate_htgroup():
+    '''update svn acces group file'''
+    with open(settings.AUTH_SYNC_HTGROUP, 'w') as groupfile:
+        groupfile.write('[groups]\n')
+        projects = Project.objects.all()
+        for project in projects:
+            project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+            if os.path.exists(project_directory):
+                logins = [userproject.user.username for userproject in UserProject.objects.filter(project = project)]
+                groupfile.write("%s = %s\n" % (project.directory.encode('utf-8'),', '.join(login.encode('utf-8') for login in logins)))
+        for project in projects:
+            # same there, an empty name project just blocks all other
+            project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+            if os.path.exists(project_directory):
+                groupfile.write('\n')
+                groupfile.write('[%s:/]\n' % project.directory.encode('utf-8'))
+                groupfile.write('@%s = rw\n' % project.directory.encode('utf-8'))
+
+                                                                                                                                                                                                                                                                
     
+@receiver(user_signed_up)
+def post_sign_up_callback(sender, **kwargs):
+    logger.debug('signup callback')
+    user = kwargs['user']
+    
+    up = UserProfile(user = user)
+    up.save()
+    
+@receiver(invite_accepted)
+def post_invite_callback(sender, **kwargs):
+    logger.debug('invite callback')
+    logger.debug(kwargs)
+    email = kwargs['email']
+    try:
+        user = User.objects.get(email = email)
+        group = Group.objects.get(name='translator')
+        user.groups.add(group)
+        
+    except User.DoesNotExist:
+        logger.debug('user not found')

@@ -31,7 +31,6 @@ from searchindex import IndexManager
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 
-ns = {'namespaces':{"h":"http://www.w3.org/1999/xhtml"}}
 
 objpathes = {
     "0.6":{
@@ -56,8 +55,14 @@ objpathes = {
         }
     }
 
- 
+class KolektiVariableValueError(Exception):
+    pass
+
+
 class kolektiBase(object):
+
+    namespaces = {"h":"http://www.w3.org/1999/xhtml"}
+
     def __init__(self, path=None, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory
@@ -74,7 +79,7 @@ class kolektiBase(object):
         if path is not None:
             self.set_project(path)
                 
-    def set_project(self, path):
+    def set_project(self, path, username=None):
             
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
@@ -117,8 +122,9 @@ class kolektiBase(object):
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
         try:
-            self.syncMgr = SynchroManager(self._path)
+            self.syncMgr = SynchroManager(self._path, username)
         except ExcSyncNoSync:
+            logger.exception('could not set SyncManager')
             self.syncMgr = None
         try:
             self.indexMgr = IndexManager(projectspath, projectdir)
@@ -199,6 +205,10 @@ class kolektiBase(object):
 
     def dirname(self, path):
         return "/".join(path.split('/')[:-1])
+
+    def list_directory(self, root):
+        root = self.__makepath(root)
+        return os.listdir(root)
     
     def get_directory(self, root=None, filter=None):
         res=[]
@@ -296,7 +306,40 @@ class kolektiBase(object):
         z =  zf.getvalue()
         zf.close()
         return z
-                
+    
+    def zip_release(self, release, langs):
+        try:
+            logger.debug('zip %s %s'%(release, langs))
+            path = "/releases/"+release
+            from zipfile import ZipFile
+            from StringIO import StringIO
+            zf= StringIO()
+            top = self.getOsPath(path)
+            logger.debug(top)
+            with ZipFile(zf, "w") as zippy:
+                logger.debug('zip open')
+                for root, dirs, files in os.walk(top):
+                    rt=root[len(top) + 1:]
+                    if rt[:7] != 'sources':
+                        continue
+                    logger.debug("rt %s", rt)
+                    try:
+                        lang = rt.split("/")[1]
+                        if lang in langs:
+                            for name in files:
+                                logger.debug(name)
+                                zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+                    except IndexError:
+                        pass
+                    
+            z =  zf.getvalue()
+            zf.close()
+            logger.debug('zip done')
+            return z
+        except:
+            logger.exception('release zip failed')
+            return None
+    
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
@@ -687,11 +730,21 @@ class kolektiBase(object):
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
         criteria_dict = self._get_criteria_dict(profile)
         criteria_dict.update(extra)
+        try:
+            return self.search_variable_value(values, criteria_dict)
+        except KolektiVariableValueError:
+            logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
+            return ET.XML("<content>[??]</content>")
+
+
+        
+    def search_variable_value(self, values, criteria_dict):
         for value in values:
             accept = True
             for criterion in value.findall('crit'):
                 criterion_name = criterion.get('name')
-                
+                if criterion.get('value') == "*":
+                    continue
                 if criterion_name in criteria_dict:
                     if not criteria_dict.get(criterion_name) == criterion.get('value'):
                         accept = False
@@ -699,8 +752,7 @@ class kolektiBase(object):
                     accept = False
             if accept:
                 return value.find('content')
-        logger.info("Warning: Variable not matched : %s %s"%(sheet, variable))
-        return ET.XML("<content>[??]</content>")
+        raise KolektiVariableValueError
 
 
     @property
@@ -858,3 +910,101 @@ class PrefixResolver(ET.Resolver):
             return self.resolve_filename(os.path.join(self.model.projectpath, *localpath),context)
 
 
+class KolektiValidationError(Exception):
+    pass
+
+class kolektiTests(kolektiBase):
+    testcases = {
+        'assembly': [
+#            {'xpath':'/h:html/h:head//h:div[@class="topic"]',
+#                 'message':"No topic found"},
+            {'xpath':'/h:html',
+                 'message':"No topic found"}
+            ],
+        'variables':[]
+        }
+        
+    nsmap={"h":"http://www.w3.org/1999/xhtml"}
+    
+    def test_xml(self,xml, kind):
+        for testcase in self.testcases[kind]:
+            logger.debug('testcase %s',testcase['xpath'])
+            if len(xml.xpath(testcase['xpath'], namespaces = self.namespaces)) == 0:
+                raise KolektiValidationError(testcase['message'])
+
+
+import unittest
+            
+class VariableTest(unittest.TestCase):
+    """Test case for variables"""
+    def setUp(self):
+        self.kolekti = kolektiBase()
+    
+    def test_value_single(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><content>OK</content></value></values>')
+        criteria_dict={}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+    def test_value_criterion(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><crit name="foo" value="bar"/><content>OK</content></value></values>')
+        
+        criteria_dict={"foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+        criteria_dict={"foo":"baz"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+        
+        criteria_dict={}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+
+    def test_value_criteria(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('<values><value><crit name="foo" value="bar"/><crit name="foo2" value="bar2"/><content>OK</content></value></values>')
+        
+        criteria_dict={"foo":"bar", "foo2":"bar2"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+
+        criteria_dict={"foo":"bar"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+        criteria_dict={"foo":"baz", "foo2":"baz2"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+
+
+    def test_value_criterion_star(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('''<values><value><crit name="foo" value="*"/><content>OK</content></value></values>''')
+        criteria_dict={"foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+        criteria_dict={}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+    def test_value_criteria_star(self):
+        """Test la fonction search_variable_value"""
+        values=ET.XML('''<values><value><crit name="Z" value="a"/><crit name="foo" value="*"/><content>OK</content></value></values>''')
+        criteria_dict={"foo":"bar"}
+        with self.assertRaises(KolektiVariableValueError):
+            self.kolekti.search_variable_value(values, criteria_dict)
+        
+        criteria_dict={"Z":"a"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        
+        criteria_dict={"Z":"a", "foo":"bar"}
+        val = self.kolekti.search_variable_value(values, criteria_dict)
+        self.assertEqual(val.text, 'OK')
+        

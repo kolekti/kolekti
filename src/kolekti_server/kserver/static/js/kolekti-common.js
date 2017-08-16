@@ -9,8 +9,15 @@ $(function() {
 
     var setstatus = function(data) {
 	    var color="default";
-	    // console.log(data.revision.status);
-	    switch(data.revision.status) {
+	// console.log(data.revision.status);
+	if (!data.hasOwnProperty('revision')) {
+	    $('#btn_rev').removeClass('btn-default')
+	    $('#btn_rev').addClass('btn-danger')
+	    $('#btn_rev>span').addClass('strong')
+	    $('#btn_rev').attr('title', 'impossible de contacter le serveur')
+	    return
+	}
+	switch(data.revision.status) {
 	    case '*':
 		color="warning"
 		$('#btn_rev').attr('title', gettext('vos modifications locales n\'ont pas été synchronisées'))
@@ -92,9 +99,11 @@ $(function() {
 	if(pendingrevnumrequest)
 	    return
         var url = Urls.kolekti_sync_remote_status(kolekti.project)
-	$.get(url).done(function(data){
-	    $('#revnum').html(data.revision.number);
-	})
+	    $.get(url).done(function(data){
+	        if (data.revision)
+	            $('#revnum').html(data.revision.number);
+
+	    })
     }
     
     $(window).focus(function(){
@@ -124,7 +133,11 @@ $(function() {
     
     $('body').on('keyup',".input-filter-menu", function(e) {
 	var filter = this.value.toLowerCase();
-	$(this).closest('ul').find('li.filterable')
+	var filterable = $($(this).data('filter-list'))
+	if (filterable.length == 0)
+	    filterable = $(this).closest('ul')
+	
+	filterable.find('.filterable')
 	    .each(function() {
 		$(this).show();
 		var itemval = $(this).attr('data-filter-value').toLowerCase();
@@ -136,7 +149,7 @@ $(function() {
     $(document).on('shown.bs.dropdown','.filterable-menu', function () {
 	$(this).find('.input-filter-menu').val('');
 	$(this).find('.input-filter-menu').focus();
-	$(this).find('li.filterable')
+	$(this).find('.filterable')
 	    .each(function() {
 		$(this).show()
 	    });

@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="/static/css/kolekti-variables.css"></script>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-variables.css" %}"></script>
 {% endblock %}
 
 {% block extrascripts %}
-<script src="/static/js/kolekti-variables.js" type="text/javascript"></script>
+<script src="{% static "js/kolekti-variables.js" %}" type="text/javascript"></script>
 <script>
   var kolekti_variable_data = {{ vardata|safe }};;
   var kolekti_variable_path = "{{ path }}";

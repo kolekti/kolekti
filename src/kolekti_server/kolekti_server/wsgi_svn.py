@@ -15,8 +15,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kolekti_server.settings_svn")
 
 application = get_wsgi_application()
 
-from django.contrib.auth.models import User, Group
-from kserver.models import UserProject
+from django.contrib.auth.models import Group
+from kserver_saas.models_svn import User
+from kserver_saas.models import UserProject
 
 def check_password(environ, user, password):
     repo_dir = environ.get("PATH_INFO").split("/")[2]

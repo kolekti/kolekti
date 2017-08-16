@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,12 +8,12 @@
     <title>Kolekti</title>
 
     <!-- Bootstrap -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static "bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
     
     <!-- Font Awesome -->
-    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{% static "font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
 
-    <link href="/static/css/kolekti.css" rel="stylesheet">
+    <link href="{% static "css/kolekti.css" %}" rel="stylesheet">
     {% block extracss %}{% endblock %}
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -82,10 +83,10 @@
     </div><!-- /.modal -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="/static/jquery.js"></script>
+    <script src="{% static "jquery.js" %}"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/static/js/kolekti-utils.js"></script>
+    <script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/kolekti-utils.js" %}"></script>
     {% block extrascripts %}{% endblock %}
   </body>
 </html>

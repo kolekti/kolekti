@@ -89,10 +89,12 @@ class plugin(PublisherMixin,kolektiBase):
         #        _, tmpname = tempfile.mkstemp(dir = self.getOsPath(self.pubdir(self.assembly_dir, self.profile)))
         _, tmpname = tempfile.mkstemp()
         inputtype = self.scriptspec.get("input")
-        print type(self.input)
+        logger.debug(type(self.input))
         for item in self.input:
+            logger.debug(item)
             if item.get('type', '') == inputtype:
                 if 'ET' in item.keys():
+                    logger.debug(item['ET'].xpath('//h:body/@*',namespaces=self.nsmap))
                     with open(tmpname, 'w') as tmpfile:
                         tmpfile.write(ET.tostring(item['ET']))
                 if "file"  in item.keys():
@@ -144,7 +146,7 @@ class plugin(PublisherMixin,kolektiBase):
 
             if cmd.find("_INCOPY_") >= 0:
                 tmpfile = self.copyinput()
-                print tmpfile
+                logger.debug(tmpfile)
                 subst.update({'INCOPY':tmpfile})
                                             
             cmd=self._substscript(cmd, subst, self.profile)
@@ -186,10 +188,7 @@ class plugin(PublisherMixin,kolektiBase):
             res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
 
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            print traceback.format_exc()
-            logger.error("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
+            logger.exception("Erreur lors de l'execution du script %(label)s"% {'label': scriptlabel.encode('utf-8')})
             raise
 
         finally:

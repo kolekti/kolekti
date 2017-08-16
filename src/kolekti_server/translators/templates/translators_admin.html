@@ -1,0 +1,124 @@
+{% extends 'base-wide.html' %}
+{% load static %}
+
+{% block current_releases %}class="menu-current"{% endblock %}
+
+{% block title %}Assigner les traductions{% endblock %}
+
+{% block extracss %}
+    <link href="{% static '/css/translation-langlist.css' %}" type="text/css" rel="stylesheet"/>
+{% endblock %}
+
+    {% block extrascripts %}
+    <script type="text/javascript" src="{% static 'js/translators-admin.js' %}"></script>
+    <script src="{% static 'js/kolekti-common.js' %}"></script>
+    {% endblock %}
+
+    
+{% block content %}
+<div class="row">
+  <div class="col-md-offset-1 col-md-10">
+
+    <div class="row">
+      <div class="col-md-6">
+	    <div class="form">
+	      <div class="form-group">
+	        <label for="filter_field" class="control-label">Filter</label>
+	        <input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
+	      </div>
+	    </div>
+      </div>
+      <div class="col-md-6">	
+	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  <div id="invitation">
+	    Invite translator: <input type="text" placeholder="email" id="invite_email"/> <button class="btn btn-sm btn-default" id="invite_email_btn">Send</button>
+	  </div>
+	</div>
+      </div>
+    </div>
+    
+    
+    <div class="row" id="release_list">
+      {% for release in releases %}
+      <div class="col-md-12">	
+	<div class="panel panel-default release filterable" data-filter-value="{{ release.name }}" data-project="{{ project.directory }}" data-release="{{ release.name }}">
+	  <div class="panel-heading">
+        <span class="pull-right kolekti-release-langs"></span>
+	    <h3 class="panel-title">
+	      <span class="release_name">{{ release.name }}</span>        
+	    </h3>
+	  </div>
+
+      
+	  <div class="panel-body">
+
+	    <div class="kolekti-release-translators" >
+	      <ul class="list-group">
+
+            
+            
+		{% if release.translators|length %}
+		{% for translator in release.translators %}
+		
+		<li class="list-group-item list-group-item-info">
+		  <div class="pull-right">
+		    <form 
+		       action="{% url 'translators_admin_remove' project=project.name release=release.name %}"
+		       method="POST"
+		       enctype="multipart/form-data">
+		      <input type="hidden" name="release" value="{{ release.name }}"/>
+		      <input type="hidden" name="project" value="{{ project.directory }}"/>
+		      <input type="hidden" name="translator" value="{{ translator.user.username }}"/>
+		      <button data-username="{{translator.user.username}}" class="btn btn-default btn-xs remove-translator"><i class="fa fa-trash"></i></button>
+		    </form>
+		  </div>
+		  <div>{{translator.user.username}} ({{translator.user.first_name}} {{translator.user.last_name}})</div>
+		</li>
+		{% endfor %}
+		{% else %}
+		<li class="list-group-item list-group-item-warning">
+		  <div class="info ">No translator assigned</div>
+		</li>
+		{% endif %}
+		<li class="list-group-item">
+		  <form class="form-inline form-admin-translation"
+			action="{% url 'translators_admin_add' project=project.directory release=release.name %}"
+			method="POST"
+			enctype="multipart/form-data">
+		    <input type="hidden" name="release" value="{{ release.name }}"/>
+		    <input type="hidden" name="project" value="{{ project.directory }}"/>
+		    <div class="form-group">
+		      <label for="translatorfield" class="control-label">Add translator</label>
+		      <select class="form-control" id="translatorfield" name="translator">
+			{% for translator in translators %}
+			<option>{{ translator.username }}</option>
+			{% endfor %}
+		      </select>
+		    </div>
+		    <div class="form-group">
+		      <button type="submit" class="btn btn-default btn-sm">Add</button>
+		    </div>
+		  </form>
+		</li>
+	      </ul>
+	    </div>
+        <span class="pull-right"><a href="{% url 'translators_release' project=project.directory release=release.name %}">Translator interface</a></span>
+
+	    {% comment %}
+	    <div class="kolekti-release-documents">
+	      {{ manifest }}
+	    </div>
+	    {% endcomment %}
+	  </div>
+                      
+	</div>
+
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

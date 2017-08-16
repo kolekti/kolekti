@@ -149,7 +149,7 @@ class kolektiMixin(LoginRequiredMixin):
     def projects(self):
         """List projects available for user"""
         projects = []
-        logger.debug(self.request.user.username)
+#        logger.debug(self.request.user.username)
         if settings.KOLEKTI_MULTIUSER:
             userprojects = UserProject.objects.filter(user = self.request.user)
         else:
@@ -260,7 +260,7 @@ class kolektiMixin(LoginRequiredMixin):
         for chunck in sourceiter:
             nbchunck += 1
             chunck.update({'id':nbchunck})
-            yield template.render(Context(chunck))
+            yield template.render(chunck)
         
 
     def set_extension(self, path, default):
@@ -270,6 +270,7 @@ class kolektiMixin(LoginRequiredMixin):
     
 class HomeView(kolektiMixin, TemplateView):
     template_name = "home.html"
+<<<<<<< HEAD
     def get(self, request):
         context, kolekti = self.get_context_data()
         return self.render_to_response(context)
@@ -279,6 +280,19 @@ class ProjectHomeView(kolektiMixin, TemplateView):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         return self.render_to_response(context)
+=======
+
+    def get(self, request):
+        context = self.get_context_data()
+        if context.get('active_project') is None:
+            try:
+                request.user.groups.get(name=u'translator')
+                return HttpResponseRedirect(reverse('translators_home')) 
+            except ObjectDoesNotExist:
+                return HttpResponseRedirect(reverse('projects')) 
+        else:
+            return self.render_to_response(context)
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 
 
 class ProjectsView(kolektiMixin, TemplateView):
@@ -396,8 +410,20 @@ class PublicationsZipView(kolektiMixin, View):
         context, kolekti = self.get_context_data({'project':project})
         kolekti = context['kolekti']
         path = request.GET.get('path')
+<<<<<<< HEAD
         payload = self.zip_publication(path)
         return HttpResponse(payload, content_type="application/zip")
+=======
+        zipname = path.split('/')[-1]
+        try:
+            response = HttpResponse(self.zip_publication(path),content_type="application/zip")
+            response['Content-Disposition'] = 'attachment; filename=%s.zip'%zipname
+            return response
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=404)
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
 
 class ReleasesPublicationsListJsonView(kolektiMixin, View):
     def get(self, request, project):
@@ -596,7 +622,12 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
         languages, release_languages, default_srclang = self.project_langs()
         states = []
         for lang in release_languages:
-            state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+            asfilename = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
+            state = self.syncMgr.propget("release_state",asfilename)
+            if state is None:
+                if self.exists(asfilename):
+                    states.append((lang, "local"))
+
             if state == "source_lang":
                 states.insert(0,(lang, state))
             else:
@@ -605,9 +636,19 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
 
     
 class ReleaseStateView(kolektiMixin, TemplateView):
+<<<<<<< HEAD
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project})
         state = self.syncMgr.propget("release_state","/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html']))
+=======
+    def get(self, request):
+        path, assembly_name = request.GET.get('release').rsplit('/',1)
+        lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
+        if self.syncMgr is None:
+            state = "unknown"
+        else:
+            state = self.syncMgr.propget("release_state","/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html']))
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
         return HttpResponse(state)
 
     def post(self,request, project, release, lang):
@@ -965,9 +1006,13 @@ class VariablesDetailsView(VariablesMixin):
             logger.exception('unable to process variable file')
             raise
         
+<<<<<<< HEAD
     def post(self, request, project, lang, variable_path):
         context, kolekti = self.get_context_data({'project': project})
         logger.debug(dict(request.POST))
+=======
+    def post(self, request):
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
         try:
             action = request.POST.get('action')
             path = request.POST.get('path')
@@ -1452,6 +1497,7 @@ class BrowserView(kolektiMixin, TemplateView):
             context.update({'pathsteps':pathsteps})
             context.update({'mode':mode})
             context.update({'path':path})
+            context.update({'project':self.request.kolekti_userproject.project.directory})
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
             return self.render_to_response(context)
         except:
@@ -1461,11 +1507,21 @@ class BrowserView(kolektiMixin, TemplateView):
 class BrowserReleasesView(BrowserView):
     template_name = "browser/releases.html"
     def get_directory(self, path):
+<<<<<<< HEAD
+=======
+        projectdir = self.request.kolekti_userproject.project.directory
+#        logger.debug('get releases %s',projectdir)
+        if self.syncMgr is not None :
+            svn_url = self.syncMgr.geturl()
+            if svn_url[:7] == 'file://':
+                svn_url = 'https://' + settings.HOSTNAME + '/svn/' + projectdir
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
         try:
             releases = {}
             res = []
             for assembly, date in self.get_release_assemblies(path):
                 item = {'name':assembly,
+                        'project':projectdir,
                         'type':"text/xml",
                         'date':date}
                 res.append(item)
@@ -1487,7 +1543,7 @@ class BrowserReleasesView(BrowserView):
                         found = True
                 except:
                     releases[assembly]=item
-                    logger.error('release list error')
+                    # logger.exception('release list error')
             # logger.debug(releases)
             return releases.values()
 #            return res
@@ -1554,7 +1610,71 @@ class BrowserUploadView(kolektiMixin, View):
 
 
         
+<<<<<<< HEAD
 class TopicEditorView(kolektiMixin, TemplateView):
+=======
+        try:
+            for jprofile in xjob.xpath('/job/profiles/profile'):
+#                logger.debug(ET.tostring(jprofile))
+                if not jprofile.find('label').text in profiles:
+                    jprofile.getparent().remove(jprofile)
+                else:
+                    jprofile.set('enabled',"1")
+
+            for jscript in xjob.xpath('/job/scripts/script'):
+                if not jscript.find('label').text in scripts:
+                    jscript.getparent().remove(jscript)
+                else:
+                    jscript.set('enabled',"1")
+
+            xjob.getroot().set('pubdir',pubdir)
+            xjob.getroot().set('releasename',release_name)
+            xjob.getroot().set('releaseindex',release_index)
+            if not (release_prev_index is None):
+                xjob.getroot().set('releaseprevindex',release_prev_index)
+                        
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(self.request.kolekti_projectpath, tocpath, xjob)))
+#            r = publish.Releaser(projectpath, lang=self.request.kolekti_userproject.srclang)
+#            pp = r.make_release(tocpath, xjob)
+            
+
+#            release_dir = pp[0]['assembly_dir']
+            
+#            p = publish.ReleasePublisher(projectpath, langs=[self.request.kolekti_userproject.srclang])
+#            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release_dir, pp[0]['pubname'])), content_type="text/html")
+
+        except:
+            import traceback
+            print traceback.format_exc()
+#            self.loghandler.flush()
+            context.update({'success':False})
+#            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+            
+            return self.render_to_response(context)
+
+    def release_iter(self, projectpath, tocpath, xjob):
+        lang=self.request.kolekti_userproject.srclang
+        r = publish.Releaser(projectpath, lang = lang)
+        pp = r.make_release(tocpath, xjob)
+        release_dir = pp[0]['assembly_dir'][:-1]
+        yield {
+            'event':'release',
+            'ref':release_dir,
+            'releasedir':pp[0]['releasedir'],
+            'time':pp[0]['datetime'],
+            'lang':lang,
+        }
+        
+        if self.syncMgr is not None :
+            self.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+        p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
+        for e in p.publish_assembly(pp[0]['pubname']):
+            yield e
+        
+            
+class TopicEditorView(kolektiMixin, View):
+>>>>>>> 80fb374eaff5d3e99cb21f3ff85631908f1b4b9a
     template_name = "topics/edit-ckeditor.html"
     def get(self, request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project})
@@ -1652,7 +1772,7 @@ class SyncView(kolektiMixin, TemplateView):
     def post(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         from kolekti.synchro import SynchroManager
-        sync = SynchroManager(self.request.kolekti_projectpath)
+        sync = SynchroManager(self.request.kolekti_projectpath, username = request.user.username)
         action = request.POST.get('action')
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
@@ -1674,7 +1794,10 @@ class SyncView(kolektiMixin, TemplateView):
                         
                 sync.commit(files, commitmsg)
             if resolve == "remote":
-                sync.revert(files)
+                try:
+                    sync.revert(files)
+                except:
+                    logger.exception('impossible to revert')
                 sync.update(files)
 
         elif action == "merge":
