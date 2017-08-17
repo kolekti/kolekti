@@ -3,7 +3,8 @@ $(document).ready(function() {
    var build_ui = function() {
        var crit, val;
        var conditions = {}
-       $.get('/criteria.json').success(
+       var url_criteria = Urls.kolekti_criteria_json(kolekti.project)
+       $.get(url_criteria).success(
 	   function(conditions) {
 //	   var xml_criteria = $($.parseXML(data))
 /*	   $(xml_criteria).find('criterion[type=enum]').each(function(i,c){

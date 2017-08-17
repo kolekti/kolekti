@@ -1,5 +1,5 @@
 
-    var topic_templates = ['default.xht'];
+var topic_templates = ['default.xht'];
 
 var create_topic = function(browser, folder, update_function) {
     var filename = $(browser).find('#new_name').val();
@@ -64,7 +64,8 @@ var create_topic = function(browser, folder, update_function) {
     
 
 $(document).ready(function() {
-    $.get('/topics/templates/?lang='+kolekti.lang)
+	var url= Urls.kolekti_topic_templates(kolekti.project, kolekti.lang)
+    $.get(url)
 	.success(function(data) {
 	    topic_templates = data;
 	});

@@ -134,7 +134,7 @@ STATIC_ROOT = '/static'
 if os.sys.platform[:3] == "win":
     STATIC_PATH="kserver/static/"
 else:
-    STATIC_PATH="kolekti_server/kserver/static/"
+    STATIC_PATH="/kolekti/src/kolekti_server/kserver/static/"
     
 from kolekti.settings import settings as kolekti_settings
 KOLEKTI_CONFIG = kolekti_settings()

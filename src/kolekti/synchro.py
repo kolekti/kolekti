@@ -69,7 +69,7 @@ class SvnClient(object):
         pysvn.wc_status_kind.incomplete,
         ]
     
-    def __init__(self, username=None, password=None, accept_cert=False):
+    def __init__(self, username=None, password=None, accept_cert=False):        
         self._client = pysvn.Client()
         self.__username = username
         self.__password = password
@@ -95,6 +95,7 @@ class SvnClient(object):
         
         def callback_accept_cert(arg):
             logger.debug("callback certificate %s"%arg)
+            return  True, 1, True
             if self.__accept_cert:
                 return  True, 1, True
             if arg['hostname'] == 'kolekti' and arg['realm'] == 'https://07.kolekti.net:443':

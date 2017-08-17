@@ -167,7 +167,7 @@ class kolektiBase(object):
     def process_path(self,path):
         return path
 
-    def syspath(self, path):
+    def syspath(self, path=''):
         return self.__makepath(path)
 
     def localpath(self, path):
@@ -597,15 +597,12 @@ class kolektiBase(object):
         except:
             logger.exception('Search index unavailable')
 
-    def makedirs(self, path, sync=False):
+    def makedirs(self, path, sync = False):
         ospath = self.__makepath(path)
         if not os.path.exists(ospath):
             os.makedirs(ospath)
             if sync:
                 self.post_save(path)
-            #if hasattr(self, "_draft") and self._draft is False:
-                # svn add if file did not exist
-                # self.post_save(path)
         
     def rmtree(self, path):
         ospath = self.__makepath(path)

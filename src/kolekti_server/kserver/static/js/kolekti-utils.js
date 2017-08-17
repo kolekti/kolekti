@@ -838,16 +838,16 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.create-folder', function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-	folderpath = path + "/" + $(parent).find(".foldername").val();
-	$.post(Urls.kolekti_browser_mkdir(kolekti.project),{'path':path})
+	    folderpath = path + $(parent).find(".foldername").val();
+	    $.post(Urls.kolekti_browser_mkdir(kolekti.project),{'path':folderpath})
             .done(function(data) {
-	        path = folderpath
-	        if (update_url) {
-                    var url = Urls['kolekti_project_static'](kolekti.project + path)
-		    window.history.pushState(path,document.title, url + '/')
+                path = folderpath + '/';
+	            if (update_url) {
+                    var url = Urls.kolekti_project_static(kolekti.project, folderpath.substring(1))
+		            window.history.pushState(folderpath, document.title, url + '/')
                 }
-	        update();
-	    })
+	            update();
+	        })
     })
     
     $(parent).on('click', '.create-file', function(e) {

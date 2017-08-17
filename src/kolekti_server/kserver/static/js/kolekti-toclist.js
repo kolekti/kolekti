@@ -22,20 +22,20 @@ $(document).ready(function() {
     kolekti_browser({'root': "/sources/" + kolekti.lang + '/tocs',
                      'path': path,
                      'urlname': 'kolekti_tocs_browse',
-		     'parent':".browser",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'create_actions':'yes',
-		     'create_builder':create_builder
-		    })
-	.select(
-	    function(path) {
+		             'parent':".browser",
+		             'title':" ",
+		             'titleparent':".title",
+		             'mode':"selectonly",
+		             'modal':"no",
+		             'os_actions':'yes',
+		             'create_actions':'yes',
+		             'create_builder':create_builder
+		            })
+	    .select(
+	        function(path) {
                 console.log(path)
                 var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/tocs/','')
-		document.location.href = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath)
-	    })
-	.create(create_toc)
+		        document.location.href = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath)
+	        })
+	    .create(create_toc)
 });

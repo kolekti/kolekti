@@ -173,7 +173,7 @@
     <script src="{% static 'jquery-ui.min.js' %}"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' packages='kserver' %}"></script>
+    <script type="text/javascript" src="{% url 'javascript-catalog' packages='kserver' %}"></script>
     <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
     {% if project %}
     <script src="{% url 'kolekti_settings_js' project=project %}"></script>
