@@ -21,7 +21,8 @@ $(document).ready(function() {
 		            })
 	    .select(
 	        function(path) {
-                var release_path = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/releases/','')
+                console.log(path);
+                var release_path = path.replace('/releases/','')
 		        document.location.href = Urls.kolekti_release_detail(kolekti.project, release_path, kolekti.lang)
 		        
                 /*
@@ -37,17 +38,14 @@ $(document).ready(function() {
 	    .setup(function(){
 	        console.log('browser loaded');	    
 	        $('.kolekti-browser-release-state').each(function() {
-		        console.log($(this).closest('tr'));
 		        var releasepath = $(this).closest('tr').data('name')
 		        var statecell = $(this)
-		        console.log(releasepath)
                 var url_states = Urls.kolekti_release_states(kolekti.project, releasepath)
 		        $.getJSON(url_states)
 		            .success(function(data) {
 			            $.each(data, function(index,item) {
 			                var i = item[0]
 			                var v = item[1]
-			                console.log(i,v,this)
 			                if (v)
 				                statecell.append($('<span>',{
 				                    "class":"langstate "+v,
@@ -63,7 +61,6 @@ $(document).ready(function() {
 				                }))
 			            });	      
 					        
-			            console.log(data)
 		            })
 	        });
 	    });

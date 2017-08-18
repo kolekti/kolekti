@@ -78,11 +78,11 @@
 	<td class="kolekti-browser-name">
 	  <a
 	     {% if pathsteps.0.label == "sources" or pathsteps.0.label == "kolekti" %}
-	     href="{{ path|urlencode }}/{{f.name|urlencode}}"
+	     href="{% url "kolekti_project_static" project=project path=path|add:f.name %}
 	     {% else %}
 	     href="#"
 	     {% endif %}
-	     data-mimetype="{{ f.type }}"
+	     data-mimetype="text/plain"
 	     {% if f.indexes %}
 	     class="dirtoggle"	     
 	     {% else %}
