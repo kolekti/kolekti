@@ -64,7 +64,7 @@
 		<li class="list-group-item list-group-item-info">
 		  <div class="pull-right">
 		    <form 
-		       action="{% url 'translators_admin_remove' project=project.name release=release.name %}"
+		       action="{% url 'translators_admin_remove' project=project.directory release=release.name %}"
 		       method="POST"
 		       enctype="multipart/form-data">
 		      <input type="hidden" name="release" value="{{ release.name }}"/>
