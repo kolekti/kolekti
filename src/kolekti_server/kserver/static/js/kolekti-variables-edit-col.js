@@ -25,7 +25,7 @@ $(function() {
 		   }
 	
 	$.ajax({
-	    url:'/variables/editvar/',
+	    url:Urls.kolekti_variable_editcol(kolekti.project, kolekti.lang, kolekti_variable_path),
 	    type:'POST',
 	    data:JSON.stringify(data),
 	    contentType:'text/javascript'

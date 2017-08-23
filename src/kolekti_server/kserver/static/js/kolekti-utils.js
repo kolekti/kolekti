@@ -412,8 +412,8 @@ var kolekti_browser = function(args) {
 		    $(parent).find('.kolekti-action-move').click(function(e){
 			$.post(Urls.kolekti_browser_move(kolekti.project),
 			       {
-                                   'path': path + "/" + $(this).closest('tr').data('name'),
-				   'to': path + "/" + $(this).data('dir')
+                       'from': path + $(this).closest('tr').data('name'),
+				       'to': path + $(this).data('dir')
 			       })
 			    .done(function(data) {
 				// console.log(data)
@@ -585,7 +585,7 @@ var kolekti_browser = function(args) {
 		accept:"tr.file",
 		hoverClass: "ui-state-hover",
 		drop: function( event, ui ) {
-		    browser_move_dialog($(ui.draggable).data('name'), path + '/' +  $(this).data('name'), null)
+		    browser_move_dialog($(ui.draggable).data('name'), path +  $(this).data('name') + '/', null)
 		}	    
 	    })
 
@@ -676,8 +676,8 @@ var kolekti_browser = function(args) {
 				    $(this).closest('.alert-body').html()
 				    $.post(Urls.kolekti_browser_move(kolekti.project), 
                                            {
-                                               'path':path + "/" + filename,
-					       'to':newpath + "/" + newfilename
+                                               'from':path + filename,
+					                           'to':newpath + newfilename
                                            })
 					.done(update)
 					.fail(

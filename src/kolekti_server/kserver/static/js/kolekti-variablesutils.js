@@ -3,13 +3,12 @@ progressHandlingFunction = function(){}
 
 var create_varfile = function(browser, folder, update_function) {
     var filename = $(browser).find('#new_name').val();
-    $.post('/variables/create/',
-	   {
-	       'path': folder + "/" + filename
-	   })
-	.done(
+    var path = folder + "/" + filename;
+    $.post(
+	    Urls.kolekti_variable_create(kolekti.project, kolekti.lang, path)
+    ).done(
 	    function(topicpath) {
-		update_function()
+		    update_function()
 	    }
 	)
 };
@@ -25,7 +24,8 @@ var upload_varfile = function(e) {
     var thisform = $('form#uploadform');
     var formData = new FormData(thisform.get()[0]);
     $.ajax({
-        url: '/variables/upload',  //server script to process data
+        url: Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, path)
+//        url: '/variables/upload',  //server script to process data
         type: 'POST',
         xhr: function() {  // custom xhr
             myXhr = $.ajaxSettings.xhr();

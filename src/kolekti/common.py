@@ -95,7 +95,7 @@ class kolektiBase(object):
         projectspath = os.path.dirname(self._path[:-1])
 
         try:
-            self._project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
+            self.project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
             # logger.debug("project config")
             # logger.debug(ET.tostring(conf))
             self._config = {
@@ -683,12 +683,12 @@ class kolektiBase(object):
         return criteria_dict
 
     def get_criteria_def_dict(self, include_lang = False):
-        criteria = self._project_settings.xpath("/settings/criteria/criterion")
+        criteria = self.project_settings.xpath("/settings/criteria/criterion")
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):[v.text for v in c]})
         if include_lang:
-            criteria_dict.update({'LANG':[l.text for l in self._project_settings.xpath('/settings/releases/lang')]})
+            criteria_dict.update({'LANG':[l.text for l in self.project_settings.xpath('/settings/releases/lang')]})
         return criteria_dict
 
 

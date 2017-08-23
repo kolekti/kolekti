@@ -1100,10 +1100,10 @@ class VariablesEditvarView(VariablesMixin):
     def get(self, request, project, lang, variable_path):
         context, kolekti = self.get_context_data({'project': project})
         index = int(request.GET.get('index',1)) - 1
-        name=path.rsplit('/',1)[1]
         project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-        context.update(self.variable_details(kolekti, project_variable_path))
+        context.update(self.variable_details(kolekti, project_variable_path, True))
         context.update({
+            "variable_path":variable_path,
             "method":"line",
             "current":index,
             })
@@ -1116,10 +1116,10 @@ class VariablesEditcolView(VariablesMixin):
         context, kolekti = self.get_context_data({'project': project})
         path = request.GET.get('path')
         index = int(request.GET.get('index', 1)) - 1
-        name=path.rsplit('/',1)[1]
         project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-        context.update(self.variable_details(kolekti, project_variable_path))
+        context.update(self.variable_details(kolekti, project_variable_path, True))
         context.update({
+            "variable_path":variable_path,                                          
             "method":"col",
             "current":index,
             })
@@ -1131,7 +1131,6 @@ class VariablesUploadView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project': project})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            print "form valid"
             uploaded_file = request.FILES[u'upload_file']
             project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
 
@@ -1287,7 +1286,7 @@ class PublicationTemplatesView(kolektiMixin, TemplateView):
     template_name = "publication-templates/list.html"
 
 class JobListView(kolektiMixin, TemplateView):
-    template_name = "publication-templates/list.html"
+    template_name = "publication-parameters/list.html"
 
 
 class JobCreateView(kolektiMixin, View):
@@ -1310,8 +1309,8 @@ class JobEditView(kolektiMixin, TemplateView):
 
     def get(self, request, project, job_path):
         context, kolekti = self.get_context_data({'project': project})
-        xjob = kolekti.parse(path)
-        xjob.getroot().append(copy(self._project_settings))
+        xjob = kolekti.parse('/kolekti/publication-parameters/' + job_path)
+        xjob.getroot().append(copy(kolekti._project_settings))
         xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
         try:
             xscripts = kolekti.parse('/kolekti/pubscripts.xml').getroot()
@@ -1490,7 +1489,7 @@ class BrowserView(kolektiMixin, TemplateView):
             context.update({'pathsteps':pathsteps})
             context.update({'mode':mode})
             context.update({'path':path})
-            context.update({'project':self.request.kolekti_userproject.project.directory})
+#            context.update({'project':self.request.kolekti_userproject.project.directory})
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
             return self.render_to_response(context)
         except:

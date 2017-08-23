@@ -1,7 +1,7 @@
 {% extends "base-wide.html" %}
 {% load static %}
 
-{% block title %}Modules{% endblock %}
+{% block title %}Modèles de modules{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
 {% block help-topic %}topic{% endblock %}
 
@@ -18,7 +18,8 @@
 <div class="main">
   <div class="title">
   </div>
-  <div class="browserparent">
+  <div class="browserparent" >
+    <div class="browser" data-browserpath="/sources/{{ lang }}/templates/{% if topic_template_path%}{{topic_template_path}}/{% endif %}">
   </div>
 </div>
 {% endblock %}

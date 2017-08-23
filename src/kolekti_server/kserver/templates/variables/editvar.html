@@ -17,10 +17,13 @@
   var kolekti_variable_path = "{{ path }}";
 </script>
 
-<script src="{% static "js/kolekti-variables-edit-{{method}}.js" %}"></script>
+{% with 'js/kolekti-variables-edit-'|add:method|add:'.js' as staticjs %}
+<script src="{% static staticjs %}"></script>
+{% endwith %}
+
 {% endblock %}
 
-{% block title %}Variables : <a href="{% url 'variabledetails' %}?path={{ path }}">{{ name }}</a>{% endblock %}
+{% block title %}Variables : <a href="{% url 'kolekti_variable_details' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
 
 {% block content %}
 <div id="main">

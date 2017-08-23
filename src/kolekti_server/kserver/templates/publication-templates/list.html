@@ -1,9 +1,9 @@
 {% extends "base-wide.html" %}
 {% load static %}
 
-{% block title %}Templates de publication{% endblock %}
+{% block title %}Modèles de sorties{% endblock %}
 {% block current_tools %}class="menu-current"{% endblock %}
-{% block help-topic %}trames{% endblock %}
+{% block help-topic %}settings{% endblock %}
 
 {% block extrascripts %}
     <script src="{% static "js/kolekti-publication-templates.js" %}"></script>
@@ -18,7 +18,7 @@
 <div class="main">
   <div class="title">
   </div>
-  <div class="browser">
+  <div class="browser" data-browserpath="/kolekti/publication-templates/{% if pt_path%}{{pt_path}}/{% endif %}">
   </div>
 </div>
 {% endblock %}

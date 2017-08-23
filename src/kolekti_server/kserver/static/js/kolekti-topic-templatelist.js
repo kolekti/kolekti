@@ -1,7 +1,7 @@
 $(document).ready(function() {
     
-    kolekti_browser({'root':'/sources/'+kolekti.lang+'/templates',
-		     'parent':".browserparent",
+    kolekti_browser({'root':'/sources/'+kolekti.lang+'/templates/',
+		     'parent':".browser",
 		     'buttonsparent':".buttons",
 		     'mode':"create",
 		     'modal':"no",

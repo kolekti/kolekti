@@ -27,8 +27,8 @@ $(document).ready(function() {
 		    })
 	.select(
 	    function(path) {
-                var variable_path = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/variables/','')
-		document.location.href = Urls.kolekti_variable_details(kolekti.project, kolekti.lang, variable_path)
+            var variable_path = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/variables/','')
+		    document.location.href = Urls.kolekti_variable_details(kolekti.project, kolekti.lang, variable_path)
 	    })
     	.create(create_varfile) 
 	.setup_file(setup_varfile);

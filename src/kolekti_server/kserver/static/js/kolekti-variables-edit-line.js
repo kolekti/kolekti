@@ -21,11 +21,11 @@ $(function() {
     $('#btn_save').on('click', function() {
 	record_values();
 	var data = { "path":kolekti_variable_path,
-		     "data":kolekti_variable_data["values"]
+		         "data":kolekti_variable_data["values"]
 		   }
 	
 	$.ajax({
-	    url:'/variables/editvar/',
+	    url:Urls.kolekti_variable_editval(kolekti.project, kolekti.lang, kolekti_variable_path),
 	    type:'POST',
 	    data:JSON.stringify(data),
 	    contentType:'text/javascript'

@@ -32,6 +32,7 @@ $(document).ready( function () {
     $('#btn_save').on('click', function(e){
 	$.ajax({
 	    url:'/settings/criteria',
+	    url:Urls.kolekti_criteria_edit(kolekti.project),
 	    type:'POST',
 	    data:serialize(),
 	    contentType:'text/xml'

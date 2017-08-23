@@ -117,7 +117,7 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
 
     def criteria_definitions(self, _, *args):
         logger.debug('xslt ext criteria_definitions')
-        return self._project_settings.xpath("/settings/criteria/criterion")
+        return self.project_settings.xpath("/settings/criteria/criterion")
 
     def lang(self, _, *args):
         logger.debug('lang criteria_definitions')

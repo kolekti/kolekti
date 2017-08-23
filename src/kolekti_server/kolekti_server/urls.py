@@ -36,11 +36,16 @@ urls = [
             url(r'^criteria/$', CriteriaEditView.as_view(), name='kolekti_criteria_edit'),
             url(r'^criteria.css$', CriteriaCssView.as_view(), name='kolekti_criteria_css'),
             url(r'^criteria.json$', CriteriaJsonView.as_view(), name='kolekti_criteria_json'),
-            url(r'^publication-templates/$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
+            url(r'^publication-templates/$', include([
+                url(r'^$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
+                url(r'^(?P<pt_path>.+)/$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
+            ])),
+#            .as_view(), name='kolekti_publication_templates'),
             url(r'^publication-parameters/', include([
-                url(r'^/$', JobListView.as_view(), name='kolekti_jobs'),
+                url(r'^$', JobListView.as_view(), name='kolekti_jobs'),
                 url(r'^create/', JobCreateView.as_view(), name='kolekti_job_create'),
                 url(r'^(?P<job_path>.+)/edit/$', JobEditView.as_view(), name='kolekti_job_edit'),
+                url(r'^(?P<job_path>.+)/$', JobListView.as_view(), name='kolekti_jobs_path'),                
             ])),
         ])),
 
@@ -61,6 +66,7 @@ urls = [
                 
             url(r'^topics/$', TopicsListView.as_view(), name='kolekti_topics'),
             url(r'^topics/templates/$', TopicTemplatesView.as_view(),name='kolekti_topic_templates'),
+            url(r'^topics/templates/(?P<topic_template_path>.+)/', TopicTemplatesView.as_view(),name='kolekti_topic_templates_path'),
             url(r'^topics/(?P<topic_path>.+)/', include([
                 url(r'^meta.json$', TopicMetaJsonView.as_view(),name='kolekti_topic_meta_json'),
                 url(r'^edit$', TopicEditorView.as_view(),name='kolekti_topic_edit'),
