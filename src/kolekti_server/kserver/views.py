@@ -1310,8 +1310,8 @@ class JobEditView(kolektiMixin, TemplateView):
     def get(self, request, project, job_path):
         context, kolekti = self.get_context_data({'project': project})
         xjob = kolekti.parse('/kolekti/publication-parameters/' + job_path)
-        xjob.getroot().append(copy(kolekti._project_settings))
-        xjob.getroot().find('settings').append(copy(self.get_scripts_defs()))
+        xjob.getroot().append(copy(kolekti.project_settings))
+        xjob.getroot().find('settings').append(copy(kolekti.get_scripts_defs()))
         try:
             xscripts = kolekti.parse('/kolekti/pubscripts.xml').getroot()
             for pubscript in xscripts.xpath('/scripts/pubscript'):
@@ -1320,16 +1320,16 @@ class JobEditView(kolektiMixin, TemplateView):
         except:
             logger.exception('unable to get local script definitions')
 
-        xsl = self.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
+        xsl = kolekti.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
         try:
             ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
         except:
-            self.log_xsl(xsl.error_log)
-            raise Exception, xsl.error_log
+            kolekti.log_xsl(xsl.error_log)
+#            raise Exception, xsl.error_log
 
-        context.update({'job':self.get_job_edit(job_path)})
+        context.update({'job':kolekti.get_job_edit(job_path)})
         context.update({'path':job_path})
-        context.update({'name':self.basename(job_path)})
+        context.update({'name':kolekti.basename(job_path)})
         return self.render_to_response(context)
 
     def post(self, request, project, job_path):
