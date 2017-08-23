@@ -484,13 +484,13 @@ $(document).ready( function () {
 	};
 	
 	if ($(this).attr('id') == 'btn_release') {
-	    url += 'release/'
+	    url = Urls.kolekti_toc_release(kolekti.project, kolekti.lang, toc)
 	    $('.modal-title').html('Création de version');
 	    check_release(params, do_publish)
 
 	} else {
-	    url += 'draft/'
-	    $('.modal-title').html('Publication');
+        url = Urls.kolekti_toc_publish(kolekti.project, kolekti.lang, toc)
+	    $('.modal-title').html('Publication de la trame');
 	    do_publish()
 	}
 

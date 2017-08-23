@@ -123,7 +123,7 @@ $(document).ready(function() {
     $('#btn_save').on('click', function(e){
 	var path = $(this).data('path');
 	$.ajax({
-	    url:'/settings/job?path='+path,
+	    url:Urls.kolekti_job_edit(kolekti.project, path),
 	    type:'POST',
 	    data:serialize(),
 	    contentType:'text/xml'

@@ -462,16 +462,16 @@ class TocEditView(kolektiMixin, TemplateView):
     def post(self, request, project, lang, toc_path):
         context, kolekti = self.get_context_data({'project':project})
         xtoc = kolekti.parse_string(request.body)
-        toc_path_project = '/'.join('/sources', lang, 'tocs', toc_path)
+        toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
         xtoc_save = kolekti.get_xsl('django_toc_save')
         xtoc = xtoc_save(xtoc)
-        self.write(str(xtoc), toc_path_project)
-        return HttpResponseRedirect(reverse('kolekti_toc_edit', kwargs = {'project': project }))
+        kolekti.write(str(xtoc), toc_path_project)
+        return HttpResponseRedirect(reverse('kolekti_toc_edit', kwargs = {'project': project, 'lang': lang, 'toc_path':toc_path }))
 
 class TocCreateView(kolektiMixin, View):
     def post(self, request, project, lang, toc_path):
         context, kolekti = self.get_context_data({'project':project})
-        toc_path_project = '/'.join('/sources', lang, 'tocs', toc_path)
+        toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
         tocpath = self.set_extension(toc_path_project, ".html")
         toc = kolekti.parse_html_string("""<?xml version="1.0"?>
 <!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
@@ -498,17 +498,18 @@ class TocUsecasesView(kolektiMixin, View):
         return HttpResponse(json.dumps(result), content_type="application/json")
 
     
-class PublicationView(kolektiMixin, View):
-    template_name = "publication.html"
-    def __init__(self, *args, **kwargs):
-        super(PublicationView, self).__init__(*args, **kwargs)
+# class PublicationView(kolektiMixin, TemplateView):
+#     template_name = "publication.html"
+#     def __init__(self, *args, **kwargs):
+#         super(PublicationView, self).__init__(*args, **kwargs)
 
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(PublicationView, cls).as_view(**initkwargs)
-        return condition(etag_func=None)(view)
+#     @classmethod
+#     def as_view(cls, **initkwargs):
+#         view = super(PublicationView, cls).as_view(**initkwargs)
+#         return condition(etag_func=None)(view)
     
-class TocPublishView(PublicationView):
+class TocPublishView(kolektiMixin, TemplateView):
+    template_name = "publication.html"
     def post(self, request, project, lang, toc_path):
         context, kolekti = self.get_context_data({'project': project})
         jobpath = request.POST.get('job')
@@ -532,16 +533,18 @@ class TocPublishView(PublicationView):
 
             xjob.getroot().set('pubdir',pubdir)
 
-            p = publish.DraftPublisher(kolekti.project_path, lang=self.request.kolekti_userproject.srclang)
-            return StreamingHttpResponse(self.format_iterator(p.publish_draft(tocpath, xjob, pubtitle)), content_type="text/html")
+            p = publish.DraftPublisher(kolekti.syspath(), lang=lang)
+            return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_path, xjob, pubtitle)), content_type="text/html")
 
         except:
             import traceback
+            logging.exception('publication error')
             context.update({'success':False})
             context.update({'stacktrace':traceback.format_exc()})
             return self.render_to_response(context)
         
-class TocReleaseView(PublicationView):
+class TocReleaseView(kolektiMixin, TemplateView):
+    template_name = "publication.html"                                                                              
     def post(self, request, project, lang, toc_path):
         context, kolekti = self.get_context_data({'project': project})
         jobpath = request.POST.get('job')
@@ -574,7 +577,7 @@ class TocReleaseView(PublicationView):
             if not (release_prev_index is None):
                 xjob.getroot().set('releaseprevindex',release_prev_index)
                         
-            return StreamingHttpResponse(self.format_iterator(self.release_iter(self.request.kolekti_projectpath, toc_path, xjob)))
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti.syspath(), toc_path, xjob)))
         except:
             import traceback
             print traceback.format_exc()
@@ -826,7 +829,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project})
 
-        assembly_path = '/'.join(['/reelases/',release,'sources',lang,'assembly',release+'_asm.html'])
+        assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
         xassembly = kolekti.parse_string(payload)
         
@@ -849,7 +852,8 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class ReleasePublishView(kolektiMixin, View):
+class ReleasePublishView(kolektiMixin, TemplateView):
+    template_name = "publication.html"
     def post (self, request, project, release, lang):        
         context, kolekti=self.get_context_data({'project':project})
         try:
@@ -903,7 +907,7 @@ class PictureUploadView(kolektiMixin, TemplateView):
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
-            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb") 
+            kolekti.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
@@ -1305,13 +1309,14 @@ class JobCreateView(kolektiMixin, View):
         
 
 class JobEditView(kolektiMixin, TemplateView):
-    template_name = "settings/job.html"
+    template_name = "publication-parameters/job.html"
 
     def get(self, request, project, job_path):
         context, kolekti = self.get_context_data({'project': project})
         xjob = kolekti.parse('/kolekti/publication-parameters/' + job_path)
         xjob.getroot().append(copy(kolekti.project_settings))
         xjob.getroot().find('settings').append(copy(kolekti.get_scripts_defs()))
+        ejob = None
         try:
             xscripts = kolekti.parse('/kolekti/pubscripts.xml').getroot()
             for pubscript in xscripts.xpath('/scripts/pubscript'):
@@ -1322,12 +1327,13 @@ class JobEditView(kolektiMixin, TemplateView):
 
         xsl = kolekti.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
         try:
-            ejob = xsl(xjob, path="'%s'"%path, jobname="'%s'"%self.basename(path))
+            ejob = xsl(xjob, path="'/kolekti/publication-parameters/%s'"%job_path, jobname="'%s'"%kolekti.basename(job_path))
         except:
             kolekti.log_xsl(xsl.error_log)
+            logger.exception("could not apply xslt")
 #            raise Exception, xsl.error_log
-
-        context.update({'job':kolekti.get_job_edit(job_path)})
+            
+        context.update({'job':str(ejob)})
         context.update({'path':job_path})
         context.update({'name':kolekti.basename(job_path)})
         return self.render_to_response(context)
@@ -1336,32 +1342,31 @@ class JobEditView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project': project})
         try:
             xjob = kolekti.parse_string(request.body)
-            kolekti.xwrite(xjob, job_path)
+            kolekti.xwrite(xjob, '/kolekti/publication-parameters/' + job_path)
             return HttpResponse('ok')
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('job save failed')
             return HttpResponse(status=500)
 
 
 class CriteriaView(kolektiMixin, View):
     def get(self, request, project):
-        self.get_context_data({'project': project})
-        return HttpResponse(self.read('/kolekti/settings.xml'),content_type="text/xml")
+        context, kolekti = self.get_context_data({'project': project})
+        return HttpResponse(kolekti.read('/kolekti/settings.xml'),content_type="text/xml")
 
 class CriteriaCssView(kolektiMixin, TemplateView):
     template_name = "settings/criteria-css.html"
     def get(self, request, project):
-        self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project})
         try:
             settings = kolekti.parse('/kolekti/settings.xml')
-            xsl = self.get_xsl('django_criteria_css')
+            xsl = kolekti.get_xsl('django_criteria_css')
             #print xsl(settings)
             return HttpResponse(str(xsl(settings)), "text/css")
         except:
-            import traceback
-            print traceback.format_exc()
-            
+            logger.exception('generate criteria css failed')
+            return HttpResponse(status=500)
+        
 class CriteriaJsonView(kolektiMixin, View):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
@@ -1369,8 +1374,9 @@ class CriteriaJsonView(kolektiMixin, View):
             criterias = kolekti.get_criteria_def_dict()
             return HttpResponse(json.dumps(criterias),content_type="application/json")
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('generate criteria json failed')
+            return HttpResponse(status=500)
+
     
                 
 class CriteriaEditView(kolektiMixin, TemplateView):
@@ -1403,8 +1409,7 @@ class CriteriaEditView(kolektiMixin, TemplateView):
             kolekti.xwrite(settings, '/kolekti/settings.xml')
             return HttpResponse('ok')
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('criteria save failed')
             return HttpResponse(status=500)
    
 class BrowserExistsView(kolektiMixin, View):
@@ -1445,8 +1450,8 @@ class BrowserDeleteView(kolektiMixin, View):
         try:
             kolekti.delete_resource(path)
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('delete resource failed')
+            return HttpResponse(status=500)
         return HttpResponse(json.dumps(not(kolekti.path_exists(path))),content_type="application/json")
 
 class BrowserView(kolektiMixin, TemplateView):
@@ -1532,8 +1537,6 @@ class BrowserReleasesView(BrowserView):
 #            return res
         except:
             logger.exception('release list error')
-            import traceback
-            print traceback.format_exc()
             return super(BrowserReleasesView, self).get_directory(path)
                       
             
@@ -1584,7 +1587,7 @@ class BrowserUploadView(kolektiMixin, View):
             name = request.POST['name']
             payload = request.POST['file']
             data = base64.decodestring(payload)
-            self.write(data, path + "/" + name, mode="wb")
+            kolekti.write(data, path + "/" + name, mode="wb")
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             import traceback

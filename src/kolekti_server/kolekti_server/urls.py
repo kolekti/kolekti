@@ -36,7 +36,7 @@ urls = [
             url(r'^criteria/$', CriteriaEditView.as_view(), name='kolekti_criteria_edit'),
             url(r'^criteria.css$', CriteriaCssView.as_view(), name='kolekti_criteria_css'),
             url(r'^criteria.json$', CriteriaJsonView.as_view(), name='kolekti_criteria_json'),
-            url(r'^publication-templates/$', include([
+            url(r'^publication-templates/', include([
                 url(r'^$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
                 url(r'^(?P<pt_path>.+)/$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
             ])),
@@ -58,7 +58,7 @@ urls = [
                     url(r'^usecases$', TocUsecasesView.as_view(), name='kolekti_toc_usecases'),
                     url(r'^create$', TocCreateView.as_view(),name='kolekti_toc_create'),
                     url(r'^publish$', TocPublishView.as_view(),name='kolekti_toc_publish'),
-                    url(r'^release$', TocReleaseView.as_view(),name='kolekti_publish_release'),
+                    url(r'^release$', TocReleaseView.as_view(),name='kolekti_toc_release'),
                     url(r'^$', TocsListView.as_view(), name='kolekti_tocs_browse'),        
 
                 ])),
