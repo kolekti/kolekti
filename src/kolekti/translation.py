@@ -118,7 +118,7 @@ class AssemblyImporter(object):
     def __init__(self, path, username):
         self._path = path
         self._username = username 
-
+        self.__parser = ET.XMLParser(load_dtd=True)
         
     def _get_source_lang(self, project, release):
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
