@@ -24,7 +24,8 @@ urlpatterns = [
             url(r'^upload/$', TranslatorsUploadView.as_view(), name='translators_upload'),
             url(r'^(?P<lang>[_.\w-]+)/', include([
                 url('commit/$', TranslatorsCommitLangView.as_view(), name='translators_commit_lang'),
-                url('certif/$', TranslatorsCertificateUploadView.as_view(), name='translators_upload_certif'),
+                url('certify/$', TranslatorsCertifyDocumentView.as_view(), name='translators_upload_certif'),
+                url('certificate/upload/$', TranslatorsCertificateUploadView.as_view(), name='translators_upload_certif'),
             ])),
             url(r'^(?P<path>.*)$', TranslatorsStaticView.as_view(), name='translators_static'),
             

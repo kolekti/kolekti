@@ -3,6 +3,7 @@ import json
 import tempfile
 import urllib2
 import shutil
+import time
 from lxml import etree as ET
 
 
@@ -27,7 +28,7 @@ from kserver.views import LoginRequiredMixin, ReleaseAllStatesView
 
 from .models import TranslatorRelease
 from .synchro import TranslatorSynchro
-from .forms import UploadTranslationForm, UploadAssemblyForm, UploadCertificateForm 
+from .forms import UploadTranslationForm, UploadAssemblyForm, UploadCertificateForm, CertifyDocumentForm 
 
 from kolekti.common import kolektiBase, KolektiValidationError
 from kolekti.publish import ReleasePublisher
@@ -175,8 +176,11 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
         res = []
         
         for l, p, e, t in publisher.documents_release(assembly_name):
-            logger.debug(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
-            v = os.path.exists(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
+            try:
+                v = os.listdir(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
+            except OSError:
+                v = []
+                
             res.append((l, p.replace('/releases/',''), e, v, t)) 
         return HttpResponse(json.dumps(res),content_type="application/json")
         
@@ -214,13 +218,66 @@ class TranslatorsSourceAssemblyView(TranslatorsMixin, View):
         assembly = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases', release,'sources',lang, 'assembly',release+'_asm.html')
         return serve(request, os.path.basename(assembly), os.path.dirname(assembly))
 
+class TranslatorsCertificatesView(TranslatorsMixin, View):
+    def get(self, request, project, certpath):
+        path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", certpath + u'.cert')
+        try:
+            res = list(os.listdir(path))
+        except OSError:
+            res=[]
+        return HttpResponse(json.dumps(res))
+
+class TranslatorsCertifyDocumentView(TranslatorsMixin, View):
+    def _create_certificate(self, certpath):
+        with open(os.path.join(certpath, 'kolekti.cert'), 'w') as cf:
+            cert = ET.Element('cert')
+            ET.SubElement(cert,'property',name="time", value=unicode(time.time()))
+            ET.SubElement(cert,'property',name="author", value=self.request.user.username)
+            ET.SubElement(cert,'property',name="instance", value=settings.HOSTNAME)
+            cf.write(ET.tostring(cert, encoding="utf-8"))
+            
+            
+    def post(self, request, project, release, lang):
+        form = CertifyDocumentForm(request.POST)
+        if form.is_valid():
+            docpath = request.POST[u'path']
+            certpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath + '.cert')
+            doc_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath)
+            sync_mgr = TranslatorSynchro(project, release, request.user.username)
+                # adds publications to svn
+            try:
+                sync_mgr._client.add(doc_res, recurse = False, add_parents = True)                
+            except:
+                logger.exception('Document already under version control')
+                pass
+            
+            if not os.path.exists(certpath):
+                os.makedirs(certpath)
+            self._create_certificate(certpath)
+            try:
+                sync_mgr._client.add(certpath, recurse = True, add_parents = True)
+            except:
+                logger.exception('Certificate already under version control')
+                pass
+
+            release_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", release)
+            try:
+                rev = sync_mgr._client.checkin(release_res, "translator validation", recurse = True)
+                logger.debug('rev %s'%str(rev)) 
+                return HttpResponse(json.dumps({"status":"success","message":'certification successful'}),content_type="text/plain")
+            except:
+                logger.exception('could not check in')
+        return HttpResponse(json.dumps({"status":"error","message":'certification failed'}),content_type="text/plain")
+    
 class TranslatorsCertificateUploadView(TranslatorsMixin, View):
     def post(self, request, project, release, lang):
         form = UploadCertificateForm(request.POST, request.FILES)
+        logger.debug(request.POST)
         logger.debug(form.is_valid())
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             docpath = request.POST[u'path']
+#            path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases",  release , 'certificates' , lang)
             path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath + '.cert')
             try:
                 os.makedirs(path)
@@ -229,23 +286,8 @@ class TranslatorsCertificateUploadView(TranslatorsMixin, View):
             with open(os.path.join(path,uploaded_file.name), "wb") as f:
                 for chunk in uploaded_file.chunks():
                     f.write(chunk)
-                    
-            # adds publications to svn
-            try:
-                doc_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases",docpath)
-                cert_res = os.path.join(path,uploaded_file.name)
-                sync_mgr = TranslatorSynchro(project, release, request.user.username)
-                try:
-                    sync_mgr._client.add(doc_res, recurse = False, add_parents = True)
-                    sync_mgr._client.add(cert_res, recurse = False, add_parents = True)
-                except:
-                    pass
-                release_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", release)
-                rev = sync_mgr._client.checkin(release_res, "translator validation", recurse = True)
-                logger.debug('rev %s'%str(rev)) 
-                return HttpResponse(json.dumps({"status":"success","message":'upload successful'}),content_type="text/plain")
-            except:
-                logger.exception('could not check in')
+            return HttpResponse(json.dumps({"status":"success","message":'upload successful',"filename":uploaded_file.name, "path": docpath}),content_type="text/plain")        
+                
         return HttpResponse(json.dumps({"status":"error","message":'upload failed'}),content_type="text/plain")
 #        return HttpResponseRedirect(reverse('translators_home'))
     
@@ -335,7 +377,6 @@ class TranslatorsUploadView(TranslatorsMixin, View):
         
 class TranslatorsCommitLangView(TranslatorsMixin, View):
     def post(self, request, project, release, lang):
-        releasedir = '/'.join(['/releases', release, 'sources', lang])
         assembly_path = os.path.join(
             settings.KOLEKTI_BASE,
             request.user.username,

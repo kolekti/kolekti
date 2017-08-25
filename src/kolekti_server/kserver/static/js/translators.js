@@ -17,15 +17,15 @@ var update_documents = function(project, release, lang, container, statecell, st
                 });
             }
 
-            var can_validate_all = (status == 'validation')
+            var can_validate_all = (status == 'translation')
             
             $.each(data, function(index, docs) {
                 var row = container.find('tr.t'+index)
                 var doclink;
                 console.log(docs)
-                if(!docs[3]) can_validate_all = false
+                if(!docs[3].length) can_validate_all = false
                 if (docs[2]) {
-                    var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certif/";
+                    var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certificate/upload/";
                     doclink = [$('<a>',{
 					    'href':'/translator/' + project +'/'+ docs[1],
                         'title':docs[0],
@@ -52,41 +52,41 @@ var update_documents = function(project, release, lang, container, statecell, st
                                 "html":[
 */
                                     $('<a>', {
-                                        'title':"Upload certificate ",
-                                        'class':"btn btn-xs "+ (docs[3]?"btn-success":"btn-default"),
+                                        'title':"Validate translation ",
+                                        'class':"btn btn-xs "+ (docs[3].length?"btn-success":"btn-default"),
                                         'html': $("<i>", {
                                             'class': "fa fa-check-square"
                                         })
                                     }).on('click', function(){
-
-                                        $('#upload_delivery_dialog').dialog()
-//                                        $(this).next().click()
+                                        $('#certificates').html('<ul></ul>')
+                                        $.each(docs[3], function(i, doc) {
+                                            $('#certificates ul').append(
+                                                $('<li>', {html: $("<a>", {"href": '/translator/' + project + '/' + docs[1] + '.cert/' + doc, 'html':doc})})
+                                            )
+                                        });
+                                        if (!docs[3].length) {
+                                            $('#certificates').hide()
+                                        } else {
+                                            $('#certificates').show()
+                                        }
+                                        
+                                        $('#upload_delivery_dialog input[name="upload_file"]').val('');
+                                        $('#upload_delivery_dialog input[name="path"]').val(docs[1])
+                                        $('#upload_delivery_dialog form').data('project', project)
+                                        $('#upload_delivery_dialog form').data('release', release)
+                                        $('#upload_delivery_dialog form').data('lang', lang)
+                                        $('#upload_delivery_dialog form').data('certificates', docs[3])
+                                        $('#upload_delivery_dialog form').attr('action', certif_url);
+                                        $('#upload_delivery_dialog').modal()
+                                        
+                                        
                                     })
 /*                                    
                                     $('<input>', {
                                         'type':"file",
                                         'name':"upload_file",
                                         'class':"hidden btn btn-xs btn-default btn-upload-certificate"
-                                    }).on('change', function() {
-                                        
-                                        var formdata = new FormData($(this).closest('form')[0])
-                                        //        formdata.append('file', this.files[0]);
-                                        
-                                        $.ajax({
-                                            url : certif_url,
-                                            data : formdata,
-                                            type : 'POST',
-                                            processData: false,
-                                            contentType: false,
-                                        }).done(function(data){
-                                            data = JSON.parse(data)
-                                            console.log(data)
-                                            window.location.reload()
-                                        })
-                                        
-                                        //  $(this).closest('form').submit()
-                                        
-                                    }),
+                                    })
 */
 /*                                    $('<input>', {
                                         'type':"hidden",
@@ -95,8 +95,9 @@ var update_documents = function(project, release, lang, container, statecell, st
                                     })
                                     
                                 ]
-                            })*/
+                                })*/
                         );
+                    
                 } else {
                     doclink = $("<i>", {
                         'class': "fa fa-question"
@@ -118,7 +119,7 @@ var update_documents = function(project, release, lang, container, statecell, st
                         }),
                         (!can_validate_all)?"":$('<a>', {
                             'title':"Validate all documents in this language ",
-                            'class':"btn btn-xs btn-primary",
+                            'class':"btn btn-xs btn-default",
                             'style':"margin-left:6px",
                             'html': $("<i>", {
                                 'class': "fa fa-check-square"
@@ -218,6 +219,7 @@ $(function() {
                         })
                     })
                 )
+                
                 $('#uploadStatusModal .upload-progress .progresstxt').html("Publishing...")
                 republish_documents(data.info.project, data.info.release, data.info.lang, {
                     'success': function(pdata) {
@@ -344,4 +346,61 @@ $(function() {
         modal.find('.link-source.current.assembly').attr('href', source_assembly_url + "?lang=" + lang)
         modal.find('form.form-upload-translation').attr('action', upload_url) 
     })
+
+    $('#upload_certificate').on('click', function() {
+        $('#input_upload_certificate').click()
+    })
+                    
+    $('#validate_translation').on('click', function() {
+        var project = $('#upload_delivery_dialog form').data('project');
+        var release = $('#upload_delivery_dialog form').data('release');
+        var lang = $('#upload_delivery_dialog form').data('lang');
+        var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certify/";
+        var formdata = new FormData($('#upload_delivery_dialog form')[0])
+
+        $.ajax({
+            url : certif_url,
+            data : formdata,
+            type : 'POST',
+            processData: false,
+            contentType: false,
+        }).done(function(data){
+            data = JSON.parse(data)
+            console.log(data)
+            
+        })
+    })
+    
+    $('#input_upload_certificate').on('change', function() {
+        
+        var formdata = new FormData($(this).closest('form')[0])
+        //        formdata.append('file', this.files[0]);
+        var certif_url = $(this).closest('form').attr('action');
+        console.log(formdata)
+        $.ajax({
+            url : certif_url,
+            data : formdata,
+            type : 'POST',
+            processData: false,
+            contentType: false,
+        }).done(function(data){
+            data = JSON.parse(data)
+            console.log(data)
+            var certs = $('#upload_delivery_dialog form').data('certificates');
+            var project = $('#upload_delivery_dialog form').data('project');
+            var release = $('#upload_delivery_dialog form').data('release');
+            var lang = $('#upload_delivery_dialog form').data('lang');
+            certs.push(data.filename)
+            $('#certificates ul').append(
+                $('<li>', {html: $("<a>", {"href": '/translator/' + project + '/' + data.path + '.cert/' + data.filename, 'html':data.filename})})
+                                            )
+            $('#certificates').show();
+            var release_elt = $('.release[data-project="'+ project +'"][data-release="'+ release +'"]');
+            var documentcell = release_elt.find('.kolekti-release-documents')
+            update_documents(project, release, lang, documentcell)
+            
+        })        
+    })
+
+
 })

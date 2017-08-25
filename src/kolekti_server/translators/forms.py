@@ -11,5 +11,8 @@ class UploadCertificateForm(forms.Form):
     upload_file  = forms.FileField()
     path  = forms.CharField()
 
+class CertifyDocumentForm(forms.Form):
+    path  = forms.CharField()
+
 class UploadAssemblyForm(forms.Form):
     upload_file  = forms.FileField()
