@@ -5,6 +5,7 @@
 import os
 import json
 from zipfile import ZipFile
+import re
 
 import mimetypes
 mimetypes.init()
@@ -221,6 +222,12 @@ class AssemblyImporter(object):
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release)):
             raise KolektiValidationError('release directory does not exists')            
         return release
+
+    def lang_unalias(self, lang):
+        lang = str(lang).lower()
+        if re.match('[a-z]{2}[-_][a-z]{2}', lang):
+            return lang[:2]
+        return lang
     
     def import_assembly(self, assembly_src):
         # xml parse
@@ -234,14 +241,16 @@ class AssemblyImporter(object):
         # check lang
         try:
             lang = assembly.xpath('/h:html/h:body/@lang|/h:html/h:body/@xml:lang', namespaces=self.namespaces)[0]
+            
         except:
             logger.exception('language not found')
             raise KolektiValidationError('could not detect language')
         
         project = self.guess_project(assembly)
         release = self.guess_release(assembly, project)
+        lang = self.lang_unalias(lang)
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
-            raise KolektiValidationError('language directory does not exists')
+            raise KolektiValidationError('language directory does not exists [%s]'%lang)
         
 
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
