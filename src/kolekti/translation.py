@@ -5,6 +5,7 @@
 import os
 import json
 from zipfile import ZipFile
+import re
 
 import mimetypes
 mimetypes.init()
@@ -28,7 +29,8 @@ class TranslationImporter(kolektiTests):
 
     def __init__(self, *args, **kwargs):
         super(TranslationImporter, self).__init__(*args, **kwargs)
-    
+        self.__parser = ET.XMLParser(load_dtd=True)
+        
     def __get_path(self, path, release, lang):
         pathparts = path.split('/')
         try:
@@ -43,9 +45,12 @@ class TranslationImporter(kolektiTests):
             projectfile = self.__get_path(filepath, release, lang)
         if importfiletype in ("text/html", "text/xml", "application/xml"):
             try:
-                xml = ET.fromstring(filec)
+                xml = ET.fromstring(filec, self.__parser)
             except:
-                raise KolektiValidationError('xml parse error')
+                error = self.__parser.error_log[0]
+                logger.exception("assembly parse error")
+                raise KolektiValidationError('xml parse error: line %d:%d\n%s'%(error.line, error.column, error.message))
+
             logger.debug(xml.tag)
             # test if assembly
             if xml.tag == self.html + 'html':
@@ -114,7 +119,7 @@ class AssemblyImporter(object):
     def __init__(self, path, username):
         self._path = path
         self._username = username 
-
+        self.__parser = ET.XMLParser(load_dtd=True)
         
     def _get_source_lang(self, project, release):
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
@@ -172,7 +177,7 @@ class AssemblyImporter(object):
         srclang = self._get_source_lang(project, release)
 
         src_assembly_file = os.path.join(self._path, self._username, project, 'releases', release, "sources", srclang, "assembly", release+"_asm.html")
-        src_assembly = ET.parse(src_assembly_file)
+        src_assembly = ET.parse(src_assembly_file, self.__parser)
         try :
             src_assembly = src_assembly.getroot()
         except AttributeError:
@@ -210,33 +215,42 @@ class AssemblyImporter(object):
         # get assembly dir
         try:
             release = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.releasedir"]/@content', namespaces=self.namespaces)[0]
-        except:
+        except:            
             logger.exception('release name not found')
             raise KolektiValidationError('could not detect release name')
 
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release)):
             raise KolektiValidationError('release directory does not exists')            
         return release
+
+    def lang_unalias(self, lang):
+        lang = str(lang).lower()
+        if re.match('[a-z]{2}[-_][a-z]{2}', lang):
+            return lang[:2]
+        return lang
     
     def import_assembly(self, assembly_src):
         # xml parse
         try:
-            assembly = ET.fromstring(assembly_src)
+            assembly = ET.fromstring(assembly_src, self.__parser)
         except:
+            error = self.__parser.error_log[0]
             logger.exception('Assembly parse error')
-            raise KolektiValidationError('xml parse error')
+            raise KolektiValidationError('xml parse error: line %d:%d\n%s'%(error.line, error.column, error.message))
 
         # check lang
         try:
             lang = assembly.xpath('/h:html/h:body/@lang|/h:html/h:body/@xml:lang', namespaces=self.namespaces)[0]
+            
         except:
             logger.exception('language not found')
             raise KolektiValidationError('could not detect language')
         
         project = self.guess_project(assembly)
         release = self.guess_release(assembly, project)
+        lang = self.lang_unalias(lang)
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
-            raise KolektiValidationError('language directory does not exists')
+            raise KolektiValidationError('language directory does not exists [%s]'%lang)
         
 
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)

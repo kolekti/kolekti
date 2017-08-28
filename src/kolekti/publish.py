@@ -874,10 +874,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     self.copyDirs(source,target)
 
             except:
-                import traceback
-                logger.error("Impossible de copier la ressource %s"%source)
-                logger.debug(traceback.format_exc())
-                print traceback.format_exc()
+                logger.exception("Impossible de copier la ressource %s"%source)
                 raise
 
 

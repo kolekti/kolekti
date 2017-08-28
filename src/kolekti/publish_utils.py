@@ -156,8 +156,8 @@ class PublisherExtensions(PublisherMixin, XSLExtensions):
         return r
 
     def variable(self, _, *args):
-        logger.debug('variable %s',str(args))
-        logger.debug(ET.tostring(self._profile))
+#        logger.debug('variable %s',str(args))
+#        logger.debug(ET.tostring(self._profile))
         sheet = self.substitute_criteria(args[0], self._profile)
         variable = self.substitute_criteria(args[1], self._profile)
 

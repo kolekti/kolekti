@@ -16,7 +16,7 @@
   <div class="col-md-offset-1 col-md-3">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title"><i clas="fa fa-upload"/>Upload Translation</h3>
+        <h3 class="panel-title"><i clas="fa fa-upload"></i>Upload Translation</h3>
       </div>
       <div class="panel-body">
         <div class="row">
@@ -77,6 +77,49 @@
     {% endfor %}
   </div>
 
+  <div class="modal fade" id="upload_delivery_dialog" tabindex="-1" role="dialog" aria-labelledby="upload_delivery_label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="upload_delivery_label">Validate translation</h4>
+        </div>
+        <div class="modal-body">
+	      <div class="row">
+	        <div class="col-md-12">
+              <p>Click the <em>Validate translation</em> button to deliver the translation. The kolekti Project members will be notified by email, and you will not be able to upload new translation for this language.</p>
+              <p>
+              <p>Additionally, you may upload a delivery document.</p>
+              <div id="certificates">
+                <ul>
+                  <li>No document.</li>
+                </ul>
+              </div>
+              <div>
+                <button id="upload_certificate" class="btn btn-xs btn-default">Add document...</button>
+	            <form class="form-horizontal form-upload-certificate hidden"
+                      action=""
+		              method="POST"
+		              enctype="multipart/form-data">
+                  <input  id="input_upload_certificate" type="file" name="upload_file" class="hidden btn btn-xs btn-default btn-upload-certificate"/>
+                  <input type="hidden" name="path" value=""/>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+	      <div class="row">
+	        <div class="col-md-12 pull-right">
+              <!--
+              -->
+              <button id="validate_translation" class="btn btn-primary">Validate translation</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
     <div class="modal-dialog" role="document">
