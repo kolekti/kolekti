@@ -14,8 +14,9 @@ $(document).ready(function() {
 		    })
 		  .select(
 		      function(path) {
-			  window.opener.CKEDITOR.tools.callFunction( funcNum, path );
-			  window.close();
+                  var project_path = '/' + path.split('/').slice(2).join('/');
+			      window.opener.CKEDITOR.tools.callFunction( funcNum, project_path );
+			      window.close();
 		      }
 		  )
     ;

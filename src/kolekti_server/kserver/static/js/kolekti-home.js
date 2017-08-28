@@ -378,36 +378,36 @@ $(document).ready(function() {
 		    },
 	'history':{'title':'Historique du projet',
 			   'content':function() {
-			       return widget_loader('/widgets/project-history/')
+			       return widget_loader(Urls.kolekti_widget_project_history(kolekti.project))
 			   }
 			 },
 	'_history':{'title':'Dernières modifications',
 		   'content':function() {
-		       return widget_loader('kolekti-history');
+		       return widget_loader(kolekti.project, Urls.kolekti_widget(''));
 		   }
 		  },
 	'publications':{'title':'Dernières publications',
 			'content':function() {
-			    return widget_loader('/widgets/publications/');
+			    return widget_loader(Urls.kolekti_widget_publication_list(kolekti.project));
 			}
 		       },
 	'_releases':{'title':'Dernières versions',
 		    'content':function() {
-			return publication_widget_builder('/releases/publications/list.json')
+			    return publication_widget_builder(Urls.kolekti_release_publications_list_json(kolekti.project));
 		    }
 		   },
 	'releases':{'title':'Dernières versions',
 		    'content':function() {
-			return widget_loader('/widgets/releasepublications/')
+			    return widget_loader(Urls.kolekti_widget_release_publications_list(kolekti.project));
 		    }
 		   },
 	'activity':{'title':'Activité du projet',
 			       'width':2,
  			       'content':function() {
-				   return graph_widget_loader('/project/history/')
+				       return graph_widget_loader(Urls.kolekti_project_history(kolekti.project));
 			       },
  			       'render':function(w) {
-				   return graph_widget_render(w,'/project/history/')
+				   return graph_widget_render(Urls.kolekti_project_history(kolekti.project));
 			       }
 			  }
     }

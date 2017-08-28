@@ -978,11 +978,11 @@ var kolekti_browser = function(args) {
 		    pic.name = f.name;
 		    pic.path = path;
 		    $.ajax({
-			type: 'POST',
-			url: '/browse/upload',
-			data: $.param(pic),
+			    type: 'POST',
+			    url: Urls.kolekti_browser_upload(kolekti.project),
+			    data: $.param(pic),
 		    }).done(function(data) {
-			def.resolve(data) ;
+			    def.resolve(data) ;
 		    })
 		}
 		loader.readAsDataURL(f);

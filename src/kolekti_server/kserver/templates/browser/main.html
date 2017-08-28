@@ -1,3 +1,14 @@
+{% if status == "error" %}
+<div class="browser" id="{{ id }}">
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+      <div class="alert alert-warning" role="alert">
+        {{ msg }}
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
 <div class="browser" id="{{ id }}">
   <div class="row">
     <div class="col-sm-12 col-md-12">
@@ -110,3 +121,4 @@
   </div>
   </div>
 </div>
+{% endif %}

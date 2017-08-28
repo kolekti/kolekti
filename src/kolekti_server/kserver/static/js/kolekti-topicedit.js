@@ -14,7 +14,7 @@ $(document).ready( function () {
 	    //	extraAllowedContent : 'var ins dl dt dd span *(*)',
 	    entities : false,
 	    fillEmptyBlocks: false,
-	    filebrowserBrowseUrl:      Urls.kolekti_ckbrowser(kolekti.project)
+	    filebrowserBrowseUrl:      Urls.kolekti_ckbrowser(kolekti.project),
 	    filebrowserImageBrowseUrl: Urls.kolekti_ckbrowser(kolekti.project)+'?path=/sources/'+kolekti.lang+'/pictures/',
 	    filebrowserLinkBrowseUrl:  Urls.kolekti_ckbrowser(kolekti.project)+'?path=/sources/'+kolekti.lang+'/topics/',
 	    
@@ -95,14 +95,14 @@ $(document).ready( function () {
 		$(window).trigger(e); // let other modules determine whether to prevent closing
 	if(e.isDefaultPrevented()) {
 	    // e.message is optional
-	    return e.message || 'le document a été modifié, voulez vous réélement quitter sans enregistrer ?';
+	    return e.message || 'le document a été modifié, voulez vous réellement quitter sans enregistrer ?';
 	}
     });
     
     $(window).on('webapp:page:closing', function(e) {
 	if(savestate) {
 	    e.preventDefault();
-	    e.message = 'le document a été modifié, voulez vous réélement quitter sans enregistrer ?';
+	    e.message = 'le document a été modifié, voulez vous réellement quitter sans enregistrer ?';
 	}
     });
 

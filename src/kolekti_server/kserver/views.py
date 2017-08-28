@@ -1472,25 +1472,28 @@ class BrowserView(kolektiMixin, TemplateView):
         try:
             path = request.GET.get('path','/')
             mode = request.GET.get('mode','select')
-
-            files = filter(self.__browserfilter, kolekti.get_directory(path))
+            try:
+                files = filter(self.__browserfilter, kolekti.get_directory(path))
             
-            for f in files:
-                fpath =  path[1:] + f.get('name')
-                if f.get('type','') == 'text/directory':
-                    fpath = fpath + '/' 
-                f.update({
-                    'icon': fileicons.get(f.get('type'),"fa-file-o"),
-                    'path': fpath,
-                })
-                        
+                for f in files:
+                    fpath =  path[1:] + f.get('name')
+                    if f.get('type','') == 'text/directory':
+                        fpath = fpath + '/' 
+                    f.update({                                               
+                        'icon': fileicons.get(f.get('type'),"fa-file-o"),
+                        'path': fpath,
+                    })
+                    context.update({'files':files})
+            except OSError:
+                context.update({'status':'error'})
+                context.update({'msg':'%s does not exists'%path})
+    
             pathsteps = []
             startpath = ""
             for step in path.split("/")[1:-1]:
                 startpath = startpath + "/" + step
                 pathsteps.append({'label':step, 'path': startpath})
 
-            context.update({'files':files})
             context.update({'pathsteps':pathsteps})
             context.update({'mode':mode})
             context.update({'path':path})
@@ -1556,17 +1559,23 @@ class BrowserCKView(kolektiMixin, TemplateView):
         client_filter = None
         if client_filter_name is not None:
             client_filter = getattr(self, client_filter_name)
+        try:
+            files = filter(self.__browserfilter, kolekti.get_directory(path,client_filter))
             
-        files = filter(self.__browserfilter, kolekti.get_directory(path,client_filter))
-
-        for f in files:
-            f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
+            for f in files:
+                f.update({'icon':fileicons.get(f.get('type'),"fa-file-o")})
+            context.update({'files':files})
+            context.update({'status':'ok'})
+        except OSError:
+            context.update({'status':'error'})
+            context.update({'msg':'%s does not exists'%path})
+            
         pathsteps = []
         startpath = ""
         for step in path.split("/")[1:]:
             startpath = startpath + "/" + step
             pathsteps.append({'label':step, 'path': startpath})
-        context.update({'files':files})
+
         context.update({'pathsteps':pathsteps})
         context.update({'mode':mode})
         context.update({'path':path})
@@ -1599,12 +1608,18 @@ class BrowserUploadView(kolektiMixin, View):
 
 class TopicEditorView(kolektiMixin, TemplateView):
     template_name = "topics/edit-ckeditor.html"
+
+    def _process_topic_read(self, xtopic):
+        
+    
     def get(self, request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project})
         topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
-        topic = kolekti.read(topic_project_path)
+        xtopic = kolekti.parse(topic_project_path)
+        self._process_topic_read(xtopic)
+        
         context.update({
-            "body":topic,
+            "body":ET.tostring(xtopic, encoding='utf-8'),
             "title": kolekti.basename(topic_path),
             })
         return self.render_to_response(context)
@@ -1615,8 +1630,8 @@ class TopicEditorView(kolektiMixin, TemplateView):
             topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
             topic = request.body
             xtopic = kolekti.parse_string(topic)
-
-            kolekti.write(topic, topic_project_path)
+            self._process_topic_save(xtopic)
+            kolekti.xwrite(xtopic, topic_project_path)
             return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
 
         except:
@@ -1649,8 +1664,11 @@ class TopicCreateView(kolektiMixin, View):
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request, project, lang):
         context, kolekti = self.get_context_data({'project': project})
-        tpls = kolekti.get_directory(root = "/sources/"+lang+"/templates")
-        tnames = [t['name'] for t in tpls]
+        try:
+            tpls = kolekti.get_directory(root = "/sources/"+lang+"/templates")
+            tnames = [t['name'] for t in tpls]
+        except OSError:
+            tnames=[]
         return HttpResponse(json.dumps(tnames),content_type="application/json")
 
 class TemplateEditorView(TopicEditorView):
