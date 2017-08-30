@@ -1609,17 +1609,14 @@ class BrowserUploadView(kolektiMixin, View):
 class TopicEditorView(kolektiMixin, TemplateView):
     template_name = "topics/edit-ckeditor.html"
 
-    def _process_topic_read(self, xtopic):
-        
     
     def get(self, request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project})
         topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
-        xtopic = kolekti.parse(topic_project_path)
-        self._process_topic_read(xtopic)
+        topic = kolekti.read(topic_project_path)
         
         context.update({
-            "body":ET.tostring(xtopic, encoding='utf-8'),
+            "body":topic,
             "title": kolekti.basename(topic_path),
             })
         return self.render_to_response(context)
@@ -1630,8 +1627,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
             topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
             topic = request.body
             xtopic = kolekti.parse_string(topic)
-            self._process_topic_save(xtopic)
-            kolekti.xwrite(xtopic, topic_project_path)
+            kolekti.write(topic, topic_project_path)
             return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
 
         except:
