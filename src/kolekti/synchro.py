@@ -1,4 +1,4 @@
- -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 #     kOLEKTi : a structural documentation generator
 #     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
