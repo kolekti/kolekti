@@ -89,7 +89,11 @@
 	  <div class="row">
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Exporter</h5>
-	      {% if srclang %}	      
+          {% if srclang and  srclang == lang %}
+          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+		Assemblage source [{{lang}}]
+
+	      {% else %}
 	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
 		Assemblage source [{{srclang}}]
 	      </a>
@@ -97,26 +101,21 @@
 	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
 		Assemblage traduit [{{lang}}]
 	      </a>
-	      {% else %}
-	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
-		Assemblage source [{{lang}}]
 	      </a>
 	      {% endif %}
 	      
 	    </div>
-	    {% if srclang %}
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Importer</h5>
 	      <form method="POST" class="upload_form" enctype="multipart/form-data">
 		<div class="input-group">
-		  <label style="font-weight:100">Assemblage traduit [{{lang}}]
+		  <label style="font-weight:100">Assemblage [{{lang}}]
 		  <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
 		  
 		</div>
 		<button type="submit" class="btn btn-default btn-xs">Valider</button>
 	      </form>
 	    </div>
-	    {% endif %}
 	  </div>
 	</div>
       </div>

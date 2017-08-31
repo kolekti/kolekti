@@ -761,7 +761,10 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                     assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
         except IOError:
             pass
+        logger.debug(assembly_path)
         srclang = self.syncMgr.propget('release_srclang', assembly_path)
+        if srclang is None:
+            srclang = self.project_langs()[2]
         parameters = self.parse('/'.join([release_path,"kolekti","publication-parameters",assembly_name+"_asm.xml"]))
         profiles = []
         for profile in parameters.xpath('/job/profiles/profile[@enabled="1"]'):
@@ -784,6 +787,8 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'srclang':srclang,
             'validactions':self.__has_valid_actions(release_path)
         })
+        logger.debug(context)
+        logger.debug(context.get('srclang','not defined'))
         return self.render_to_response(context)
     
     def post(self, request):
