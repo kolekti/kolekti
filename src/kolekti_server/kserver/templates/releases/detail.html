@@ -92,7 +92,7 @@
           {% if srclang and  srclang == lang %}
           <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
 		Assemblage source [{{lang}}]
-
+          </a>
 	      {% else %}
 	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
 		Assemblage source [{{srclang}}]
@@ -100,7 +100,6 @@
 	      <br>
 	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
 		Assemblage traduit [{{lang}}]
-	      </a>
 	      </a>
 	      {% endif %}
 	      
