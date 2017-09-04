@@ -1094,9 +1094,10 @@ class VariablesEditcolView(VariablesMixin):
     
 class VariablesUploadView(kolektiMixin, TemplateView):
     def post(self, request):
+        logger.debug("ods post")
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            print "form valid"
+            logger.debug( "form valid")
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
             converter = OdsToXML(self.request.kolekti_projectpath)

@@ -518,6 +518,13 @@ Defines events for languages and release state in toolbar
     $('#btn_update').on('click', function() {
 	
     })
+
+    // variables import
     
+    $('#variables_pane').on('click',".upload-varfile", upload_varfile_form)
+    $('.doimport').on('click', function(e) {
+	    upload_varfile()
+	$('#uploadmodal').modal('hide');
+    });
 
 })

@@ -316,6 +316,27 @@
 	</div>
 	
       </div>
+      <div id="uploadmodal" class="modal fade">
+        <div class="modal-dialog">
+          <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+	      <h4 class="modal-title">Importer fichier ods</h4>
+	        </div>
+	        <form id="uploadform" method="POST" enctype="multipart/form-data">
+	          <div class="modal-body">
+	            <p>Sélectionnez ou déposez le fichier ods à importer</p>
+	            <input type="file" id="upload_file" name="upload_file" class="form-control upload"/>
+	            <input type="hidden" id="variable_file_path" name="path" value=""/>
+	          </div>
+	          <div class="modal-footer">
+	            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+	            <button type="button" class="btn btn-primary doimport">Importer</button>
+	      </div>
+	        </form>
+          </div>
+        </div>
+      </div>
     </div>
 {% endblock %}
 
