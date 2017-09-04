@@ -202,27 +202,29 @@ Defines events for languages and release state in toolbar
     })
 
     $('#btn_variables').on('click', function() {
-	$('#preview').parent().addClass('hidden');
-	$('.btn-release-pane').removeClass('active')
-	$(this).addClass('active')
-	$('.release-panel-part').addClass('hidden')
+	    $('#preview').parent().addClass('hidden');
+	    $('.btn-release-pane').removeClass('active')
+	    $(this).addClass('active')
+	    $('.release-panel-part').addClass('hidden')
+        
 	$('#variables_pane').removeClass('hidden')
-	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
-		     'parent':"#variables_pane",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'create_actions':'yes',
-		     'create_builder':upload_variable_builder_builder()
-		    })
-	.select(
-	    function(path) {
-		
-	    })
-	.create(upload_varfile)
-	.setup_file(setup_varfile);
+	    kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
+		                 'parent':"#variables_pane",
+		                 'title':" ",
+		                 'titleparent':".title",
+		                 'mode':"selectonly",
+		                 'modal':"no",
+		                 'os_actions':'yes',
+		                 'create_actions':'yes',
+		                 'create_builder':upload_variable_builder_builder()
+		                })
+	        .select(
+			    function(path) {
+		            window.location.href = "/variables/detail/?path="+path;
+                
+	            })
+	        .create(upload_varfile)
+	        .setup_file(setup_varfile);
     })
 
     var do_save = function() {
