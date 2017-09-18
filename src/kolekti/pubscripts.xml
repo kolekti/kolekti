@@ -71,11 +71,19 @@
          type="boolean"/>
 
       <parameter name="labels" 
-         type="resource" 
-         dir="sources/{LANG}/variables"
-         file="WebHelp5_labels"
-	 ext="xml"
-         />
+                 type="resource"
+                 dir="kolekti/publication-templates/WebHelp5/variables"
+                 file="labels"
+	             ext="xml"
+                 />
+      
+      <parameter name="condition_labels" 
+                 type="resource" 
+                 dir="kolekti/publication-templates/WebHelp5/variables"
+	             ext="xml"
+	             onfail="silent"
+                 />
+      
       <parameter name="generate" 
          type="resource" 
          dir="kolekti/publication-templates/WebHelp5/xsl"
@@ -146,11 +154,20 @@
          type="boolean"/>
 
       <parameter name="labels" 
-         type="resource" 
-         dir="kolekti/publication-templates/WebHelp5/variables"
-         file="labels"
-	 ext="xml"
-         />
+                 type="resource" 
+                 dir="kolekti/publication-templates/WebHelp5/variables"
+                 file="labels"
+	             ext="xml"
+                 />
+      
+      <parameter name="condition_labels" 
+                 type="resource"
+                 dir="kolekti/publication-templates/WebHelp5/variables"
+                 file="condition_labels"
+	             ext="xml"
+	             onfail="silent"
+                 />
+      
       <parameter name="generate" 
          type="resource" 
          dir="kolekti/publication-templates/WebHelp5/xsl"

@@ -21,6 +21,7 @@ import os
 import time
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 
 from lxml import etree as ET
 
@@ -38,7 +39,7 @@ class plugin(pluginBase.plugin):
         main publication function
         """
         res = []
-        logging.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
+        logger.debug( "WebHelp5  : %s %s"%(self.assembly_dir,self.publication_dir))
 
         # copy libs from assembly space to publication directory
         
@@ -53,7 +54,7 @@ class plugin(pluginBase.plugin):
 
         # ouvrir le fichier template
         templatename = self.get_script_parameter('template')
-        logging.debug( "WebHelp5 template : %s"%templatename)
+        logger.debug( "WebHelp5 template : %s"%templatename)
         if len(templatename):
             tfile="%s.xht"%templatename
         else:
@@ -71,7 +72,7 @@ class plugin(pluginBase.plugin):
             pass
         
         #self.copy_dirfiles(os.path.join(pubpath,'css'),os.path.join(pubpath,self.publisher.pivname,'css'))
-        print self.pivot, self.input
+        # logger.debug(self.pivot, self.input)
         self.copymedias()
         
 
@@ -83,7 +84,7 @@ class plugin(pluginBase.plugin):
         #    f=ET.XSLT(filter)
         #    pivot=f(pivot)
         #except:
-        #    logging.debug("warning: Filter file not found: %s"%filterfile)
+        #    logger.debug("warning: Filter file not found: %s"%filterfile)
 
         # generer l'index pour recherche
         try:
@@ -97,6 +98,10 @@ class plugin(pluginBase.plugin):
         css=self.get_script_parameter('css')
         self.copyDirs('/'.join([self.assembly_dir,'kolekti','publication-templates','WebHelp5','styles']),
                       '/'.join([self.publication_plugin_dir, 'usercss']))
+
+        # include user condition labels :
+        self.user_conditions_labels()
+        
         # générer les pages
         xslt=self.get_xsl('generate', profile = self.profile, lang = self._publang)
         puburl=self.getUrlPath(self.publication_plugin_dir)
@@ -109,7 +114,7 @@ class plugin(pluginBase.plugin):
             )
         res.append({'type':"html", "label":"%s_%s"%(self.publication_file,self.scriptname), "url": "%s/index.html"%self.publication_plugin_dir})
         # except:
-        #    logging.error('WebHelp5: pages generation failed')
+        #    logger.error('WebHelp5: pages generation failed')
         #    import traceback
         #    logging.debug(traceback.format_exc())
         #    logging.debug(xslt.error_log)
@@ -141,11 +146,11 @@ class plugin(pluginBase.plugin):
         #    import traceback
         #    logging.debug(traceback.format_exc())
         #    print traceback.format_exc()
-        logging.debug( "generation complete")
+        logger.debug( "generation complete")
         return res
     
     def index(self,pivot):
-        logging.debug("**** Search index")
+        logger.debug("**** Search index")
         self.__firstmod = ""
         idx=ac_index.indexer()
         b=pivot.xpath("/h:html/h:body",namespaces={'h':htmlns})[0]
@@ -158,7 +163,7 @@ class plugin(pluginBase.plugin):
                 for word in ac_index.lexer(e.tail):
                     idx.addword(word,modid)
         
-        logging.debug("**** Search index DONE")
+        logger.debug("**** Search index DONE")
         return idx.writewords()
 
     def getmodid(self,elt):
@@ -177,6 +182,28 @@ class plugin(pluginBase.plugin):
                 break
         return res
 
+    def user_conditions_labels(self):
+        try:
+            translations = self.parse('/'.join([self.assembly_dir,'kolekti','publication-templates','WebHelp5','variables', 'condition_labels.xml']))
+        except:
+            logger.exception('could not parse condition labels')
+            translations = ET.XML('<variables/>')
+        condnames = set()
+        condvalues = set()
+        head = self.pivot.xpath('/h:html/h:head', namespaces={'h':htmlns})[0]
+        for meta in head.xpath('h:meta[@scheme="user_condition"]', namespaces={'h':htmlns}):
+            condnames.add(meta.get('name'))
+            condvalues.add(meta.get('content'))
+            
+        for c in list(condnames) + list(condvalues) :
+            label = translations.xpath('string(/variables/variable[@code="%s"]/value[crit[@name="LANG"][@value="%s"]]/content)'%(c, self._publang))
+            if len(label) == 0:
+                label = c
+            logger.debug(c)
+            logger.debug(label)
+            
+            ET.SubElement(head, '{%s}meta'%htmlns, scheme = "user_condition_label", name=c, content=label)
+                             
 
     def filter_pivot(self,pivot):
         try:
@@ -186,6 +213,8 @@ class plugin(pluginBase.plugin):
             filtered_pivot=xslt(pivot)
         except:
             import traceback
-            logging.debug(traceback.format_exc())
+            logger.debug(traceback.format_exc())
             return pivot
         return filtered_pivot
+
+    
