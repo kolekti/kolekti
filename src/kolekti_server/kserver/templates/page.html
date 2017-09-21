@@ -145,27 +145,27 @@
     </div>
     {% block page-content %}{% endblock %}
 
-
+    <div class="main-modal">
     <div class="modal fade">
       <div class="modal-dialog modal-lg">
-	<div class="modal-content">
-	  <div class="modal-header">
+	    <div class="modal-content">
+	      <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
             <h4 class="modal-title">{% block modal-title %}Modal title{% endblock %}</h4>
-	  </div>
-	  <form id="modalform" method="POST">
-	    <div class="modal-body">
+	      </div>
+	      <form id="modalform" method="POST">
+	        <div class="modal-body">
               {% block modal-body %}<p>Generic modal</p>{% endblock %}
-	    </div>
-	    <div class="modal-footer">
-	      {% block modal-footer %}{% endblock %}
+	        </div>
+	        <div class="modal-footer">
+	          {% block modal-footer %}{% endblock %}
               <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-	    </div>
-	  </form>
-	</div><!-- /.modal-content -->
+	        </div>
+	      </form>
+	    </div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
-
+    </div>
     {% block footer %}{% endblock %}
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

@@ -59,10 +59,11 @@ class KolektiVariableValueError(Exception):
     pass
 
 
+namespaces = {"h":"http://www.w3.org/1999/xhtml"}
+ns= {"namespaces":namespaces}
+
 class kolektiBase(object):
-
-    namespaces = {"h":"http://www.w3.org/1999/xhtml"}
-
+    namespaces = namespaces
     def __init__(self, path=None, *args, **kwargs):
 #        super(kolektiBase, self).__init__(path)
         #TODO  :  read ini file for gettininstallation directory

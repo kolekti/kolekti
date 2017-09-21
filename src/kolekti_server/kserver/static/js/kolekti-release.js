@@ -202,27 +202,29 @@ Defines events for languages and release state in toolbar
     })
 
     $('#btn_variables').on('click', function() {
-	$('#preview').parent().addClass('hidden');
-	$('.btn-release-pane').removeClass('active')
-	$(this).addClass('active')
-	$('.release-panel-part').addClass('hidden')
+	    $('#preview').parent().addClass('hidden');
+	    $('.btn-release-pane').removeClass('active')
+	    $(this).addClass('active')
+	    $('.release-panel-part').addClass('hidden')
+        
 	$('#variables_pane').removeClass('hidden')
-	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
-		     'parent':"#variables_pane",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'create_actions':'yes',
-		     'create_builder':upload_variable_builder_builder()
-		    })
-	.select(
-	    function(path) {
-		
-	    })
-	.create(upload_varfile)
-	.setup_file(setup_varfile);
+	    kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
+		                 'parent':"#variables_pane",
+		                 'title':" ",
+		                 'titleparent':".title",
+		                 'mode':"selectonly",
+		                 'modal':"no",
+		                 'os_actions':'yes',
+		                 'create_actions':'yes',
+		                 'create_builder':upload_variable_builder_builder()
+		                })
+	        .select(
+			    function(path) {
+		            window.location.href = "/variables/detail/?path="+path;
+                
+	            })
+	        .create(upload_varfile)
+	        .setup_file(setup_varfile);
     })
 
     var do_save = function() {
@@ -329,9 +331,9 @@ Defines events for languages and release state in toolbar
     $('.btn_publish').on('click', function() {
 	var url='/releases/publish/'
 
-	$('.modal-body').html('<div id="pubresult"></div>');
-	$('.modal-title').html('Publication');
-	$('.modal-footer').html(
+	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
+	$('.main-modal .modal-title').html('Publication');
+	$('.main-modal .modal-footer').html(
 	    $('<button>', {
 		'class':'btn btn-default',
 		'type':'button',
@@ -341,8 +343,8 @@ Defines events for languages and release state in toolbar
 		 $('.modal').modal('hide')
 	     })
 	);
-	$('.modal-footer').hide();
-	$('.modal').modal({backdrop: "static"});
+	$('.main-modal .modal-footer').hide();
+	$('.main-modal .modal').modal({backdrop: "static"});
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>').appendTo($('#pubresult'));
 	//params = get_publish_params(job)
 
@@ -396,7 +398,7 @@ Defines events for languages and release state in toolbar
 	}).always(function() {
 	    $('#pub_progress').remove();
 	    $('#pub_end').show();
-	    $('.modal-footer').show();
+	    $('.main-modal .modal-footer').show();
 	    load_publications();
 	});
     })
@@ -404,9 +406,9 @@ Defines events for languages and release state in toolbar
 
     // validation actions
     var confirm_valid_actions = function() {
-	$('.modal-body').html('<div>Des actions sont requises pour la validation de cette langue, voulez vous les effectuer ?</div>');
-	$('.modal-title').html('Validation');
-	$('.modal-footer').html([
+	$('.main-modal .modal-body').html('<div>Des actions sont requises pour la validation de cette langue, voulez vous les effectuer ?</div>');
+	$('.main-modal .modal-title').html('Validation');
+	$('.main-modal .modal-footer').html([
 	    $('<button>', {
 		'class':'btn btn-default',
 		'type':'button',
@@ -422,35 +424,35 @@ Defines events for languages and release state in toolbar
 		'html':'Annuler'
 	    }
 	     ).on('click',function() {
-		 $('.modal').modal('hide')
+		 $('.main-modal .modal').modal('hide')
 	     })
 	]
 	);
-	$('.modal').on('hidden.bs.modal', function (e) {
+	$('.main-modal .modal').on('hidden.bs.modal', function (e) {
 		console.log('hide modal');
 	});
-	$('.modal').modal({backdrop: "static"})
+	$('.main-modal .modal').modal({backdrop: "static"})
 	
     }
     
     var do_valid_actions = function() {
 	var url='/releases/validate/'
 
-	$('.modal-body').html('<div id="pubresult"></div>');
-	$('.modal-title').html('Validation');
-	$('.modal-footer').html(
+	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
+	$('.main-modal .modal-title').html('Validation');
+	$('.main-modal .modal-footer').html(
 	    $('<button>', {
 		'class':'btn btn-default',
 		'type':'button',
 		'html':'Fermer'
 	    }
 	     ).on('click',function() {
-		 $('.modal').modal('hide')
+		 $('.main-modal .modal').modal('hide')
 	     })
 	);
 
-	$('.modal-footer button').hide();
-	$('.modal').modal({backdrop: "static"});
+	$('.main-modal .modal-footer button').hide();
+	$('.main-modal .modal').modal({backdrop: "static"});
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Validation de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Actions de validation en cours</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Actions de validation effectuées</div></div></div>').appendTo($('#pubresult'));
 	
 	//params = get_publish_params(job)
@@ -506,7 +508,7 @@ Defines events for languages and release state in toolbar
 	}).always(function() {
 	    $('#pub_progress').remove();
 	    $('#pub_end').show();
-	    $('.modal-footer button').show();
+	    $('.main-modal .modal-footer button').show();
 	    
 	});
     }
@@ -516,6 +518,13 @@ Defines events for languages and release state in toolbar
     $('#btn_update').on('click', function() {
 	
     })
+
+    // variables import
     
+    $('#variables_pane').on('click',".upload-varfile", upload_varfile_form)
+    $('.doimport').on('click', function(e) {
+	    upload_varfile()
+	$('#uploadmodal').modal('hide');
+    });
 
 })

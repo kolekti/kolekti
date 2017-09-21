@@ -9,21 +9,16 @@
 {% endblock %}
 
 {% block extrascripts %}
-
-{# <script src="{% static "js/kolekti-variables.js" %}"></script> #}
 <script>
   var kolekti_variable_data = {{ vardata|safe }};;
   var kolekti_variable_current = {{current}};
   var kolekti_variable_path = "{{ path }}";
 </script>
 
-{% with 'js/kolekti-variables-edit-'|add:method|add:'.js' as staticjs %}
-<script src="{% static staticjs %}"></script>
-{% endwith %}
-
+<script src="{% static 'js/kolekti-variables-edit-'|add:method|add:'.js'" %}"></script>
 {% endblock %}
 
-{% block title %}Variables : <a href="{% url 'kolekti_variable_details' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
+{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable_details' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
 
 {% block content %}
 <div id="main">
