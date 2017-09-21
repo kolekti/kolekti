@@ -3,7 +3,7 @@ $(document).ready( function () {
     
 	
     var make_editor = function(templates, buttons) {
-	console.log(templates)
+
 	var editor = CKEDITOR.replace( 'editor1', {
 	    autoGrow_onStartup : true,
 	    fullPage:true,

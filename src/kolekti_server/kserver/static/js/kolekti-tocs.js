@@ -599,9 +599,11 @@ $(document).ready( function () {
     // modify topic / section
 
     $('body').on('click', '.btn_topic_edit', function(e) {
-	var topic = $(this).closest('.topic');
-	var url = topic.data('kolekti-topic-href');
-	window.open('/topics/edit/?topic='+url);
+	    var topic = $(this).closest('.topic');
+        
+        var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, topic.data('kolekti-topic-href'))
+        
+	    window.open(url);
 
     }) 
 
