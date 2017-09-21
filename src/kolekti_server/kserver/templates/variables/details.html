@@ -16,7 +16,7 @@
 </script>
 {% endblock %}
 
-{% block title %}Variables : <span title="{{ path }}"> {{ name }}</span>{% endblock %}
+{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <span title="{{ path }}"> {{ name }}</span>{% endblock %}
 
 {% block content %}
 
