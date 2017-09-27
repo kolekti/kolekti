@@ -12,6 +12,10 @@ div.main>h1 {
 }
 
 
+footer {
+    height:22px;
+}
+
 /*
 .side .affix {
     width:100%;
@@ -30,6 +34,22 @@ width: 412px;
 }
 }
 */
+
+.kfade {
+    opacity: 0;
+    -webkit-transition: opacity 0.15s linear;
+    -moz-transition: opacity 0.15s linear;
+    -o-transition: opacity 0.15s linear;
+    transition: opacity 0.15s linear;
+}
+.kfade.in {
+    opacity: 1;
+    -webkit-transition: opacity 0.15s linear;
+    -moz-transition: opacity 0.15s linear;
+    -o-transition: opacity 0.15s linear;
+    transition: opacity 0.15s linear;
+}
+
 /** toggles in collapse headers */
 a[data-toggle=mycollapse] span[aria-hidden=true] ,
 a[data-toggle=collapse] span[aria-hidden=true] {

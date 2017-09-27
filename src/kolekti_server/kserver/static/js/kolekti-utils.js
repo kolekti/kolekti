@@ -626,7 +626,7 @@ var kolekti_browser = function(args) {
 	    promise_setup();
 	    
 	    if (modal)
-		$('.modal').modal();
+		    $('.modal').modal();
 	});
 
 	$(window).trigger('kolektibrowserchange');

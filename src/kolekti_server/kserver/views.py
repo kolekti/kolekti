@@ -460,13 +460,18 @@ class TocEditView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
     
     def post(self, request, project, lang, toc_path):
-        context, kolekti = self.get_context_data({'project':project})
-        xtoc = kolekti.parse_string(request.body)
-        toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
-        xtoc_save = kolekti.get_xsl('django_toc_save')
-        xtoc = xtoc_save(xtoc)
-        kolekti.write(str(xtoc), toc_path_project)
-        return HttpResponseRedirect(reverse('kolekti_toc_edit', kwargs = {'project': project, 'lang': lang, 'toc_path':toc_path }))
+        try:
+            context, kolekti = self.get_context_data({'project':project})
+            xtoc = kolekti.parse_string(request.body)
+            toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
+            xtoc_save = kolekti.get_xsl('django_toc_save')
+            xtoc = xtoc_save(xtoc)
+            kolekti.write(str(xtoc), toc_path_project)
+            return HttpResponse(json.dumps({"status":"ok"}),content_type="application/json")
+        except:
+            import traceback
+            logger.exception('could not save toc')
+            return HttpResponse(json.dumps({'status':'error', 'message':'erreur lors de la sauvegarde de la trame', 'stacktrace':traceback.format_exc()}),content_type="application/json")
 
 class TocCreateView(kolektiMixin, View):
     def post(self, request, project, lang, toc_path):

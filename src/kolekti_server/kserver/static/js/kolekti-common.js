@@ -117,6 +117,11 @@ $(function() {
     updatestatus();
     updaterevnum();
 
+    $(window).kolekti_status = function(data) {
+        $('footer p').attr('class', 'bg-danger');
+        $('footer p').html(' ')
+    }
+    
     // history
 
     $('.btn-back').on('click', function() {
@@ -155,7 +160,65 @@ $(function() {
 	    });
     });	 
 
+    window.KOLEKTI_STATE_DONE = 0
+    window.KOLEKTI_STATE_WAIT = 1
+    window.KOLEKTI_STATE_OK = 2
+    window.KOLEKTI_STATE_INFO = 3
+    window.KOLEKTI_STATE_WARN = 4
+    window.KOLEKTI_STATE_ERROR = 5
+    
+    window.kolekti_status = function(state, message, callback) {
+        switch (state) {
+        case window.KOLEKTI_STATE_OK:
+            $('#toaster button').attr('class','btn btn-xs btn-success')
+            break;
+        case window.KOLEKTI_STATE_INFO:
+            $('#toaster button').attr('class','btn btn-xs btn-info')
+            break;
+        case window.KOLEKTI_STATE_WARN:
+            $('#toaster button').attr('class','btn btn-xs btn-warning')
+            break;
+        case window.KOLEKTI_STATE_ERROR:
+            $('#toaster button').attr('class','btn btn-xs btn-danger')
+            break;
+        default:
+            $('#toaster button').attr('class','btn btn-xs btn-default')
+        }
+        
+        if (state == window.KOLEKTI_STATE_WAIT) {
+            $('#toaster .spinner').show()
+        } else {
+            $('#toaster .spinner').hide()
+        }
+        
+        if (message) {
+            $('#toaster .msg').html(message);
+            $('#toaster .msg').show();
+        } else {
+            $('#toaster .msg').hide();
+        }
+        $('#toaster').off('click')
+        $('#toaster').on('click', function() {
+            if (callback)
+                callback()
+            else
+                $('#toaster').removeClass('in')
+        })
+                         
+        
+        if (state == window.KOLEKTI_STATE_DONE) {
+            $('#toaster').removeClass('in')
+        } else {
+            $('#toaster').addClass('in')
+        }
 
+        if (state == window.KOLEKTI_STATE_OK || state == window.KOLEKTI_STATE_INFO) {
+            window.setTimeout(function() {
+                $('#toaster').removeClass('in')
+            }, 2000)
+        }
+    }
+    
 })
 
 var formatTime = function(unixTimestamp) {
@@ -164,12 +227,13 @@ var formatTime = function(unixTimestamp) {
     return dt.toLocaleString();
 }
 
+
 var kolekti_recent = function(name, info, url) {
     if (localStorage) {
-	var storage = "kolekti-recent-"+ window.kolekti.project;
-	var stored = JSON.parse(localStorage.getItem(storage))
-	if (stored == null) stored = [];
-	stored.unshift({'name':name, 'info':info, 'url':url, 'time':Date.now()/1000})
-	localStorage.setItem(storage, JSON.stringify(stored))
+	    var storage = "kolekti-recent-"+ window.kolekti.project;
+	    var stored = JSON.parse(localStorage.getItem(storage))
+	    if (stored == null) stored = [];
+	    stored.unshift({'name':name, 'info':info, 'url':url, 'time':Date.now()/1000})
+	    localStorage.setItem(storage, JSON.stringify(stored))
     }
 }
