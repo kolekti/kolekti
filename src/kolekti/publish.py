@@ -90,16 +90,22 @@ class Publisher(PublisherMixin, kolektiBase):
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
         logger.debug(ET.tostring(assembly)[:1000])
+        
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly)
         self.log_xsl(s.error_log)
-
                         
         s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
         assembly = s(assembly, action="'assemble'")
         self.log_xsl(s.error_log)
 
+        # process id and links
+        s = self.get_xsl('process-id', PublisherExtensions, profile=xjob, lang=self._publang)
+        assembly = s(assembly)
+        self.log_xsl(s.error_log)
+
+        
         # calculate the publication name
         pubname = xjob.get('id','')
         pubname = self.substitute_criteria(pubname, xjob)
@@ -321,10 +327,17 @@ class Publisher(PublisherMixin, kolektiBase):
             assembly = s(assembly)
             self.log_xsl(s.error_log)
 
-            # process links
-            s = self.get_xsl('links', self.getPublisherExtensions(), profile = profile, lang=self._publang)
-            assembly = s(assembly)
-            self.log_xsl(s.error_log)
+            processed_id = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti:processedid"][@content="yes"]', namespaces=self.nsmap)
+            if len(processed_id):
+                # process links
+                s = self.get_xsl('broken-links', self.getPublisherExtensions(), profile = profile, lang=self._publang)
+                assembly = s(assembly)
+                self.log_xsl(s.error_log)
+            else:
+                # process links
+                s = self.get_xsl('links', self.getPublisherExtensions(), profile = profile, lang=self._publang)
+                assembly = s(assembly)
+                self.log_xsl(s.error_log)
 
             # make index
             if assembly.xpath("//h:div[@class='INDEX']", namespaces=self.nsmap):
@@ -1066,26 +1079,29 @@ class Releaser(Publisher):
         # logger.debug(ET.tostring(xtoc)[:1000])
         # assembly
         logger.debug('********************************** CREATE ASSEMBLY')
-        assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
-        create_event = {
-            "lang":self._publang,
-            "assembly_dir":assembly_dir,
-            "pubname":pubname,
-            "releasedir":release_dir,
-            "releasename":release_name,
-            "releaseindex":release_index,
-            "releaseprev":release_prev_index,                    
-            "datetime":time.time(),
-            "toc":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.toc"]/@content)',namespaces=self.nsmap),
-            "job":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.job"]/@content)',namespaces=self.nsmap),
-                    }
-        self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = False)
-        create_event.update({
-            "event":"release_creation",
-            "content":events,
-        })
-        res.append(create_event)
+        try:
+            assembly, assembly_dir, pubname, events = self.publish_assemble(xtoc, xjob)
+            create_event = {
+                "lang":self._publang,
+                "assembly_dir":assembly_dir,
+                "pubname":pubname,
+                "releasedir":release_dir,
+                "releasename":release_name,
+                "releaseindex":release_index,
+                "releaseprev":release_prev_index,                    
+                "datetime":time.time(),
 
+                "toc":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.toc"]/@content)',namespaces=self.nsmap),
+                "job":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.job"]/@content)',namespaces=self.nsmap),
+                }
+            self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = False)
+            create_event.update({
+                "event":"release_creation",
+                "content":events,
+            })
+            res.append(create_event)
+        except:
+            logger.exception('could not create assembly')
         self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         #if self.syncMgr is not None :
