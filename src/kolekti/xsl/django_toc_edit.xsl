@@ -119,6 +119,17 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="html:a[starts-with(@rel,'kolekti:mediawiki')]">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="data-kolekti-topic-id"><xsl:value-of select="generate-id()"/></xsl:attribute>
+      <xsl:attribute name="data-kolekti-topic-url">
+	    <xsl:value-of select="@href"/>
+      </xsl:attribute>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
+  </xsl:template>
+
   <xsl:template name="old">
     <div class="topic" data-kolekti-topic-href="{@href}" data-kolekti-topic-rel="kolekti:topic">
 
