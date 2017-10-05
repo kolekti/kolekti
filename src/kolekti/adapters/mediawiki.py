@@ -10,24 +10,24 @@ import urllib2
 import logging
 logger = logging.getLogger(__name__)
 
-class AdapterWikimedia(object):
+class AdapterMediawiki(object):
 
     html_parser = ET.HTMLParser()
 
     def __init__(self, *args, **kwargs):
-        logger.debug("init extension wikimedia")
+        logger.debug("init extension mediawiki")
         self.images = set()
-        super(AdapterWikimedia, self).__init__(*args, **kwargs)
+        super(AdapterMediawiki, self).__init__(*args, **kwargs)
         
-    def gettopic_wikimedia(self, _, *args):
-        logger.debug('gettopic wikimedia')
+    def gettopic_mediawiki(self, _, *args):
+        logger.debug('gettopic mediawiki')
         url = args[0]
         relspec = args[1]
         logger.debug('url %s', url)
         try:
             page = urllib2.urlopen(url)
             source = ET.HTML(page.read())
-            xslpath = os.path.join(self._appdir, 'adapters','xsl','wikimedia.xsl')
+            xslpath = os.path.join(self._appdir, 'adapters','xsl','mediawiki.xsl')
             xsldoc = ET.parse(xslpath)
             exts = [n for n in dir(self.__class__) if not(n.startswith('_'))]
             xsl = ET.XSLT(xsldoc, extensions=ET.Extension(self, exts, ns = "kolekti:extensions:functions:publication"))
@@ -44,14 +44,14 @@ class AdapterWikimedia(object):
                     logger.exception('could not apply mediawiki filter')
                     self.log_xsl(s.error_log)                
         except:
-            logger.exception('wikimedia failed')
+            logger.exception('mediawiki failed')
 
         for img in res.xpath('//img'):
-            newsrc = self.image_wikimedia(None, img.get('src'), url)
+            newsrc = self.image_mediawiki(None, img.get('src'), url)
             img.set('src', newsrc)
         return res.getroot()
 
-    def image_wikimedia(self, _, *args):
+    def image_mediawiki(self, _, *args):
         try:
             src = args[0]
             base = args[1]
@@ -59,12 +59,12 @@ class AdapterWikimedia(object):
             newsrc = '/sources/share/pictures/mediawiki/'+name
             imgurl = urlparse.urljoin(base, src)
             if not imgurl in self.images:
-                logger.debug('get image wikimedia %s', imgurl)
+                logger.debug('get image mediawiki %s', imgurl)
                 self.images.add(imgurl)
                 i = urllib2.urlopen(imgurl)
                 self.makedirs("/sources/share/pictures/mediawiki/")
                 self.write(i.read(),newsrc, mode="wb", sync=False)
             return newsrc
         except:
-            logger.exception('wikimedia image failed')
+            logger.exception('mediawiki image failed')
             return "/error"

@@ -49,11 +49,11 @@
       <xsl:apply-templates select=".//div[@id='mw-content-text']"/>
     </div>
   </xsl:template>
-  
+
 <!--
   <xsl:template match='img/@src'>
     <xsl:attribute name="src">
-      <xsl:value-of select="kfp:image_wikimedia(string(.), $base_url)"/>
+      <xsl:value-of select="kfp:image_mediawiki(string(.), $base_url)"/>
     </xsl:attribute>
   </xsl:template>
 -->

@@ -16,7 +16,7 @@ import json
 from lxml import etree as ET
 
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
-from adapters.wikimedia import AdapterWikimedia
+from adapters.mediawiki import AdapterMediawiki
 
 
 class PublishException(Exception):
@@ -77,7 +77,7 @@ class PublisherMixin(object):
                 pubevents.update({'ET':''})
             map(self.purge_manifest_events, pubevents.values())
         
-class PublisherExtensions(PublisherMixin, AdapterWikimedia, XSLExtensions):
+class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
     """
