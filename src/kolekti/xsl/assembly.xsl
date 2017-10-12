@@ -154,6 +154,33 @@
   </xsl:template>
 
 
+  <xsl:template match="html:a[starts-with(@rel, 'kolekti:mediawiki')]" mode="aggreg" >
+    <xsl:param name="section_depth"/>
+    <xsl:variable name="topic" select="kf:gettopic_wikimedia(string(@href), string(@rel))"/>
+    <!--    <xsl:variable name="topic" select="document($topic_url)"/>-->
+
+    <xsl:text>
+    </xsl:text>
+    <xsl:comment>Wikimedia topic</xsl:comment>
+    <xsl:text>
+    </xsl:text>
+    <div class="topic" id="{generate-id()}">
+      <div class="topicinfo">
+         <xsl:comment>Do not translate</xsl:comment>
+	     <p><span class="infolabel">source</span><span class="infovalue"><a href="{@href}"><xsl:value-of select="@href"/></a></span></p>
+       
+         <!--
+             <xsl:apply-templates select="$topic/html:html/html:head/html:meta|$topic/html/head/meta" mode="topic_info"/>
+         -->
+      </div>
+
+      <xsl:apply-templates select="$topic" mode="aggreg">
+	    <xsl:with-param name="section_depth" select="$section_depth"/>
+      </xsl:apply-templates>
+
+    </div>
+  </xsl:template>
+  
   <xsl:template match="html:a[@rel = 'kolekti:topic']" mode="aggreg" >
     <xsl:param name="section_depth"/>
     <xsl:variable name="topic_url" select="kf:gettopic(string(@href))"/>

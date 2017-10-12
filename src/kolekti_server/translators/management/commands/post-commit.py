@@ -1,6 +1,7 @@
 import os
 import pysvn
 import subprocess
+import datetime
 
 from django.core.management.base import BaseCommand, CommandError
 from translators.models import TranslatorRelease
@@ -20,21 +21,21 @@ class Command(BaseCommand):
         def get_author(self, revision, repo):
             cmd = subprocess.Popen(['/usr/bin/svnlook', 'author', '-r', str(revision), repo], stdout = subprocess.PIPE)
             author = cmd.stdout.read()
-            self.stdout.write(author)
-            return author
+            return author.strip()
                 
         def handle(self, *args, **options):
             from django.conf import settings
-
+            self.stdout.write(str(datetime.datetime.now()))
             revision = options['revision']
             repo = options['repo']
             project = repo.split('/')[-1]
             user = self.get_author(revision, repo)
+            self.stdout.write("author : [%s]"%user)
+                        
             try:
                 acllist = TranslatorRelease.objects.exclude(user__username = user).filter(project__directory = project)
             except TranslatorRelease.DoesNotExist:
                 raise CommandError('No update for "%d" ' % revision)
-
             seen = set()
             client = pysvn.Client()
             for mf in self.get_changed(revision, repo):
@@ -45,6 +46,7 @@ class Command(BaseCommand):
                         seen.add(chunks[1])
                         updates = acllist.filter(release_name = chunks[1])
                         for update in updates:
+                            print str(update.user.username)
                             path = os.path.join(settings.KOLEKTI_BASE, update.user.username, update.project.directory, 'releases', update.release_name)
                             client.update(path)
                             self.stdout.write(path+" updated")

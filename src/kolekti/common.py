@@ -477,7 +477,7 @@ class kolektiBase(object):
     def get_xsl(self, stylesheet, extclass = None, xsldir = None, system_path = False, **kwargs):
         # loads an xsl stylesheet
         # 
-        logger.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
+#        logger.debug("get xsl %s, %s, %s, %s"%(stylesheet, extclass , xsldir , str(kwargs)))
         if xsldir is None:
             xsldir = os.path.join(self._appdir, 'xsl')
         else:

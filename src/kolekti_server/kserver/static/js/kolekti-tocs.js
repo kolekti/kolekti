@@ -75,22 +75,22 @@ $(document).ready( function () {
     // builds the contaxtual menu for any topic entry in the toc
 
     var topicmenu = function(topic) {
-	var parent=topic.hasClass('section')?
-	    topic.children('.panel-heading').find("a").parent():
-	    topic.find('h4.panel-title');
-	parent.append(
-	    $('<span>', {
-		'class':'pull-right kolekti-ui kolekti-ui-topic-actions',
-		'html' :[
-		    (topic.data('kolekti-topic-rel')=='kolekti:topic')?$('<button>', {
-			'type':"button",
-			'class':"btn btn-primary btn-xs btn_topic_edit",
-			'html':[
-			    $('<span>',{
-				'class':"glyphicon glyphicon-pencil",
-				'html':" "}),
-			    " Modifier "
-			]}):"",
+	    var parent=topic.hasClass('section')?
+	        topic.children('.panel-heading').find("a").parent():
+	        topic.find('h4.panel-title');
+	    parent.append(
+	        $('<span>', {
+		        'class':'pull-right kolekti-ui kolekti-ui-topic-actions',
+		        'html' :[
+		            (topic.data('kolekti-topic-rel')=='kolekti:topic')?$('<button>', {
+			            'type':"button",
+			            'class':"btn btn-primary btn-xs btn_topic_edit",
+			            'html':[
+			                $('<span>',{
+				                'class':"glyphicon glyphicon-pencil",
+				                'html':" "}),
+			                " Modifier "
+			            ]}):"",
 		    " ",
 		    $('<span>', {
 			'class':"btn-group",
@@ -856,6 +856,47 @@ $(document).ready( function () {
 	return topic_obj;
     }
 
+    var create_topic_wikimedia_obj = function(path, adapter) {
+	var topic_obj = $('<div>', {
+	    'class':"topic",
+	    'data-kolekti-topic-rel':"kolekti:topic:wikimedia",
+	    'data-kolekti-topic-href':path,
+	    'html':$('<div>', {
+		'class':"panel panel-info",
+		'html':[
+		    $('<div>', {
+			'class':"panel-heading",
+			'html':$('<h4>', {
+			    'class':"panel-title",
+			    'html':[
+				$('<span>',{
+				    'class':"glyphicon glyphicon-link",
+				    'title':"wikimedia: "+path,
+				    'html':" "}),
+				" ",
+				$('<span>',{
+				    'data-toggle':"tooltip", 
+				    'data-placement':"top",
+				    'title':path,
+				    'html':$("<small>", {
+                        "html":[$("<a>", {
+                            "href":path,
+                            "target":"_blank",
+                            "html": path
+                        }),
+                                adapter.length?" [" +adapter+"]":""]
+                    })
+			    })]
+			})
+		    })
+		]
+	    })
+	});
+	
+	topicmenu(topic_obj);
+	return topic_obj;
+    }
+
     var create_section_obj = function(id, title) {
 	var section_obj = $('<div>', {
 	    'class':"section panel panel-info",
@@ -1179,8 +1220,7 @@ $(document).ready( function () {
     });
     
 
-    $('a').each(function(i,refcomp) {
-	if($(refcomp).attr('rel')=="kolekti:topic") {
+    $("a[rel='kolekti:topic']").each(function(i,refcomp) {
 	    var path = $(this).data('kolekti-topic-url');
 	    var idtopic = $(this).data('kolekti-topic-id');
 	    var topic;
@@ -1212,7 +1252,15 @@ $(document).ready( function () {
 			$(refcomp).after(topic_obj)
 			$(refcomp).detach();
 		    });
-	}
+    });
+    $("a[rel^='kolekti:mediawiki']").each(function(i,refcomp) {
+        var path = $(this).data('kolekti-topic-url');
+        var idtopic = $(this).data('kolekti-topic-id');
+        var adapter = $(refcomp).attr('rel').substring(18);
+        var topic;
+        var topic_obj = create_topic_wikimedia_obj(path, adapter);
+        $(refcomp).after(topic_obj)
+        $(refcomp).detach();
     });
 
     $('.section').each(function(i,t){
