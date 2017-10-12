@@ -612,8 +612,8 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_edit', function(e) {
 	    var topic = $(this).closest('.topic');
-        
-        var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, topic.data('kolekti-topic-href'))
+        var topic_path = topic.data('kolekti-topic-href').replace('/sources/'+kolekti.lang+'/topics/','')
+        var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, topic_path)
         
 	    window.open(url);
 
@@ -1002,11 +1002,12 @@ $(document).ready( function () {
 
 	    var insert_topic = function(path) {
             var url = path //Urls.kolekti_project_static(kolekti.project, path)
+            var project_path = '/' + path.split('/').slice(2).join('/');
 		    $.get(url).success(
 		        function(data){
 			        var topic = $.parseXML( data ),
 			            id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			            topic_obj = create_topic_obj(path, id, topic);
+			            topic_obj = create_topic_obj(project_path, id, topic);
 			        if (isafter) { 
 			            refcomp.after(topic_obj);
 			        } else {
