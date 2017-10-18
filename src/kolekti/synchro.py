@@ -78,6 +78,9 @@ class SvnClient(object):
             self._client.set_default_username(username)
         
         def get_login( realm, username, may_save ):
+            logger.debug('get login')
+            logger.debug(realm)
+            logger.debug(username)
             if self.__username is None or self.__password is None:
                 raise ExcSyncRequestAuth
             return True, self.__username, self.__password, True
@@ -127,10 +130,18 @@ class SynchroManager(SvnClient):
         return self._info.get('repos')
 
     def history(self, limit=20):
-        return self._client.log(self._base, limit = limit)
+        try:
+            return self._client.log(self._base, limit = limit)
+        except pysvn.ClientError:
+            return ['No history available']
 
+
+        
     def rev_number(self):
-        h = self._client.log(self._base, limit = 1)
+        try:
+            h = self._client.log(self._base, limit = 1)
+        except pysvn.ClientError:
+            return '??'
         return {"revision":{"number":h[0].revision.number}}
     
     
@@ -194,10 +205,14 @@ class SynchroManager(SvnClient):
         
     def statuses(self, path="", recurse = True):
         res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
-        statuses = self._client.status(self.__makepath(path),
-                                       recurse = recurse,
-                                       get_all = True,
-                                       update = True)
+        try:
+            statuses = self._client.status(self.__makepath(path),
+                                        recurse = recurse,
+                                        get_all = True,
+                                        update = True)
+        except pysvn.ClientError:
+            res['error'] = 'all'
+            return res
         for status in statuses:
             item = {"path":self._localpath(status.path),
                     "ospath":status.path,

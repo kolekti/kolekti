@@ -695,7 +695,7 @@ class kolektiBase(object):
 
     def substitute_criteria(self, string, profile, extra={}):
         try:
-            criteria_dict = self._get_criteria_dict(profile)
+            criteria_dict = self.get_criteria_dict(profile)
         except AttributeError:
             criteria_dict = {}
         criteria_dict.update(extra)
@@ -726,7 +726,7 @@ class kolektiBase(object):
             variables_file = self.process_path(sheet)
         xvariables = self.parse(variables_file + '.xml')
         values = xvariables.xpath('/variables/variable[@code="%s"]/value'%variable)
-        criteria_dict = self._get_criteria_dict(profile)
+        criteria_dict = self.get_criteria_dict(profile)
         criteria_dict.update(extra)
         try:
             return self.search_variable_value(values, criteria_dict)
@@ -856,16 +856,16 @@ class kolektiBase(object):
                                    'msg':'cannot read manifest file',
                                    }]
                         
-    def release_details(self, path, lang):
+    def release_details(self, release, lang):
         res=[]
-        root = self.__makepath(path)
+        root = self.__makepath('/releases/' + release)
         for j in os.listdir(root+'/kolekti/publication-parameters'):
             if j[-16:]=='_parameters.json':
-                release_params = json.loads(self.read(path+'/kolekti/publication-parameters/'+j))
+                release_params = json.loads(self.read('/release/'+ release +'/kolekti/publication-parameters/'+j))
                 resrelease = []
                 
                 for job_params in release_params:
-                    publications = json.loads(self.read(path+'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
+                    publications = json.loads(self.read('/release/'+ release +'/kolekti/publication-parameters/'+job_params['pubname']+'_parameters.json'))
                     resjob = {
                         'lang': lang,
                         'release':release_params,

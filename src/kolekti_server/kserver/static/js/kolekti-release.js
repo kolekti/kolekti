@@ -60,7 +60,7 @@ Defines events for languages and release state in toolbar
 	    type:'POST',
 	    data:event.editor.getData(),
 	    contentType:'text/plain'
-	}).success(function(data) {
+	}).done(function(data) {
 	    savestate = 0;
 	    event.editor.commands.save.disable();
 //	    console.log('save ok')
@@ -185,7 +185,7 @@ Defines events for languages and release state in toolbar
 			})
 	    .select(
 		function(path) {
-		    $.get('/images/details?path='+path)
+		    $.get(Urls.kolekti_picture_details(kolekti.project, path))
 			.done(
 			    function(data) {
 				$('#preview').html([
@@ -253,16 +253,16 @@ Defines events for languages and release state in toolbar
     })
 
     var get_publish_languages = function(all_languages) {
-	if (all_languages) {
-	    var langs = []
-	    $('#release_tabs a').each( function() {
-		if ($(this).data('state') != "unknown")
-		    langs.push($(this).data('lang'));
-	    });
-	    return langs;
-	} else {
-	    return [ $('#release_tabs .active a').first().data('lang') ]
-	}
+	    if (all_languages) {
+	        var langs = []
+	        $('#release_tabs a').each( function() {
+		        if ($(this).data('state') != "unknown")
+		            langs.push($(this).data('lang'));
+	        });
+	        return langs;
+	    } else {
+	        return [ $('#release_tabs .active a').first().data('lang') ]
+	    }
     }
 
     $('.upload_form').on('submit', function(e) {
@@ -288,48 +288,51 @@ Defines events for languages and release state in toolbar
 
     // content loading function
     var load_assembly = function() {
-	$.get('/releases/assembly',{
-	    'release':$('#main').data('release'),
-	    'lang':$('#main').data('lang')
-	}).success(function(data) {
-	    $('#content_pane').html(data)
-	})
+        var release = $('#main').data('release');
+        var lang = $('#main').data('lang');
+	    $.get(Urls.kolekti_release_assembly(kolekti.project, release, lang))
+	        .done(function(data) {
+	            $('#content_pane').html(data)
+	        })
+        
     }
     
     load_assembly();
 
     var load_publications = function() {
-	$.get('/releases/publications',{
-	    'release':$('#main').data('release'),
-	    'lang':$('#main').data('lang')
-	}).success(function(data) {
-	    $('#release_publications').html(data)
-	})
+	    var release = $('#main').data('release');
+        var lang = $('#main').data('lang');
+        $.get(Urls.kolekti_release_publications(kolekti.project, release, lang))
+	        .done(function(data) {
+	            $('#release_publications').html(data)
+	        })
     }    
     load_publications();
 
 
     // supression langue
     $('#suppr_lang').on('click', function() {
-	var url='/releases/delete/'
-	var params = {
-	    'release':$('#main').data('release'),
-	    'lang':get_publish_languages(false)[0]
-	}
-	if(confirm('Voulez vous réellement supprimer cette langue ?'))
-	    $.ajax({
-		url:url,
-		type:'POST',
-		data:params,
-	    }).done(function(data) {
-		window.location.href = "/releases/detail/?release="+params['release']+"&lang="+params['lang'];
-	    })
+	    var release = $('#main').data('release')
+	    var lang = get_publish_languages(false)[0]
+	    var url= Urls.kolekti_release_delete(kolekti.project, release, lang)
+	    if(confirm('Voulez vous réellement supprimer cette langue ?'))
+	        $.ajax({
+		        url:url,
+		        type:'POST',
+	        }).done(function(data) {
+		        window.location.href = Urls.kolekti_release_details(kolekti.project, release, lang)
+	        })
     });
     
     // publication button
 
-    $('.btn_publish').on('click', function() {
-	var url='/releases/publish/'
+$('.btn_publish').on('click', function() {
+
+	var release = $('#main').data('release')
+	var alllang = ($(this).attr('id') == "btn_publish_all")
+	var lang = get_publish_languages(alllang)[0];
+//	var lang = get_publish_languages(false)[0]
+	var url = Urls.kolekti_release_publish(kolekti.project, release, lang)
 
 	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
 	$('.main-modal .modal-title').html('Publication');
@@ -436,20 +439,22 @@ Defines events for languages and release state in toolbar
     }
     
     var do_valid_actions = function() {
-	var url='/releases/validate/'
+	    var alllang = ($(this).attr('id') == "btn_publish_all")
+	    var lang= get_publish_languages(alllang);
+	    var url= Urls.kolekti_release_validate(kolekti.project, release, lang)
 
-	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
-	$('.main-modal .modal-title').html('Validation');
-	$('.main-modal .modal-footer').html(
-	    $('<button>', {
-		'class':'btn btn-default',
-		'type':'button',
-		'html':'Fermer'
-	    }
-	     ).on('click',function() {
-		 $('.main-modal .modal').modal('hide')
-	     })
-	);
+	    $('.main-modal .modal-body').html('<div id="pubresult"></div>');
+	    $('.main-modal .modal-title').html('Validation');
+	    $('.main-modal .modal-footer').html(
+	        $('<button>', {
+		        'class':'btn btn-default',
+		        'type':'button',
+		        'html':'Fermer'
+	        }
+	         ).on('click',function() {
+		         $('.main-modal .modal').modal('hide')
+	         })
+	    );
 
 	$('.main-modal .modal-footer button').hide();
 	$('.main-modal .modal').modal({backdrop: "static"});
@@ -462,8 +467,6 @@ Defines events for languages and release state in toolbar
 	var params = {}
 	var release = $('#main').data('release')
 	params['release']=release;
-	var alllang = ($(this).attr('id') == "btn_publish_all")
-	params['langs']= get_publish_languages(alllang);
 	var streamcallback = function(data) {
 	    $("#pub_results").html(data);
 	}

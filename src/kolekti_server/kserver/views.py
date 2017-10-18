@@ -516,15 +516,16 @@ class TocUsecasesView(kolektiMixin, View):
 class TocPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post(self, request, project, lang, toc_path):
-        context, kolekti = self.get_context_data({'project': project})
-        jobpath = request.POST.get('job')
-        pubdir  = request.POST.get('pubdir')
-        pubtitle= request.POST.get('pubtitle')
-        profiles = request.POST.getlist('profiles[]',[])
-        scripts = request.POST.getlist('scripts[]',[])
-        context={}
-        xjob = kolekti.parse(jobpath)
         try:
+            logger.debug('publish')
+            context, kolekti = self.get_context_data({'project': project})
+            jobpath = request.POST.get('job')
+            pubdir  = request.POST.get('pubdir')
+            pubtitle= request.POST.get('pubtitle')
+            profiles = request.POST.getlist('profiles[]',[])
+            scripts = request.POST.getlist('scripts[]',[])
+            context={}
+            xjob = kolekti.parse(jobpath)
             for jprofile in xjob.xpath('/job/profiles/profile'):
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
@@ -537,10 +538,11 @@ class TocPublishView(kolektiMixin, TemplateView):
                     jscript.set('enabled',"1")
 
             xjob.getroot().set('pubdir',pubdir)
-
+            
             p = publish.DraftPublisher(kolekti.syspath(), lang=lang)
-            return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_path, xjob, pubtitle)), content_type="text/html")
-
+            toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])
+            return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_project_path, xjob, pubtitle)), content_type="text/html")
+        
         except:
             import traceback
             logging.exception('publication error')
@@ -551,6 +553,7 @@ class TocPublishView(kolektiMixin, TemplateView):
 class TocReleaseView(kolektiMixin, TemplateView):
     template_name = "publication.html"                                                                              
     def post(self, request, project, lang, toc_path):
+        logger.debug('create release')
         context, kolekti = self.get_context_data({'project': project})
         jobpath = request.POST.get('job')
         release_name  = request.POST.get('release_name')
@@ -581,8 +584,8 @@ class TocReleaseView(kolektiMixin, TemplateView):
             xjob.getroot().set('releaseindex',release_index)
             if not (release_prev_index is None):
                 xjob.getroot().set('releaseprevindex',release_prev_index)
-                        
-            return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti.syspath(), toc_path, xjob)))
+            toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])                        
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti, lang, toc_project_path, xjob)))
         except:
             import traceback
             print traceback.format_exc()
@@ -591,9 +594,8 @@ class TocReleaseView(kolektiMixin, TemplateView):
             
             return self.render_to_response(context)
 
-    def release_iter(self, projectpath, tocpath, xjob):
-        lang=self.request.kolekti_userproject.srclang
-        r = publish.Releaser(projectpath, lang = lang)
+    def release_iter(self, kolekti, lang, tocpath, xjob):
+        r = publish.Releaser(kolekti.syspath(), lang = lang)
         pp = r.make_release(tocpath, xjob)
         release_dir = pp[0]['assembly_dir'][:-1]
         yield {
@@ -603,9 +605,10 @@ class TocReleaseView(kolektiMixin, TemplateView):
             'time':pp[0]['datetime'],
             'lang':lang,
         }
-        
-        if self.syncMgr is not None :
-            self.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+        if r.syncMgr is not None :
+            r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+        else:
+            logger.debug('no sync manager to set assembly property')
         p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
@@ -716,14 +719,11 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            release_path = request.GET.get('release')
-            assembly_name = release_path.rsplit('/',1)[1]
-            lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
-            assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
-            xassembly = kolekti.parse(path.replace('{LANG}', lang))
+            assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
+            xassembly = kolekti.parse(assembly_path.replace('{LANG}', lang))
             body = xassembly.xpath('/html:html/html:body/*', **ns)
             xsl = kolekti.get_xsl('django_assembly_edit')
-            content = ''.join([str(xsl(t, path="'%s'"%release_path)) for t in body])
+            content = ''.join([str(xsl(t, path="'/releases/%s'"%release)) for t in body])
         except:
             import traceback
             print traceback.format_exc()
@@ -733,10 +733,10 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
 class ReleasePublicationsView(kolektiMixin, TemplateView):
     template_name = "releases/publications.html"
     
-    def __release_publications(self, lang, release_path):
+    def __release_publications(self, lang, release):
         publications = []
         try:
-            mf = json.loads(self.read(release_path + "/manifest.json"))
+            mf = json.loads(self.read("/releases/" + release_path + "/manifest.json"))
             for event in mf:
                 if event.get('event','') == "release_publication":
                     for event2 in event.get('content'):
@@ -750,51 +750,47 @@ class ReleasePublicationsView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({
             'project': project,
-            'publications':self.__release_publications(lang, release_path)
+            'publications':self.__release_publications(lang, release)
         })
         return self.render_to_response(context)
                 
 class ReleaseDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
-    def __has_valid_actions(self,  release_path):
-        assembly = release_path.rsplit('/',1)[1]
-        xjob = kolekti.parse(release_path + '/kolekti/publication-parameters/'+ assembly +'_asm.xml')
-        print xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')
+    def __has_valid_actions(self,  kolekti, release):
+        xjob = kolekti.parse('/releases/' + release + '/kolekti/publication-parameters/'+ release +'_asm.xml')
         return len(xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')) > 0
 
     
     def get_context_data(self, data={}, **kwargs):
         context, kolekti = super(ReleaseDetailsView, self).get_context_data(data, **kwargs)
+        logger.debug(context)
         states = []
         focus = []
-        release_path = context.get('release_path')
-        assembly_name = context.get('assembly_name')
-        assembly_lang = context.get('lang')
+        release = context.get('release')
         langstate = None
-        
         sync = self.get_sync_manager(kolekti)
-
-        for lang in context.get('releaselangs',[]):
-            tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
+        languages, release_languages, default_srclang = self.project_langs(kolekti)
+        for lang in release_languages:
+            tr_assembly_path = '/'.join(['','releases',release,"source",lang,"assembly",release+'_asm.html'])
             if kolekti.path_exists(tr_assembly_path):
                 states.append(sync.propget('release_state',tr_assembly_path))
             else:
                 states.append("unknown")
-            if lang == assembly_lang:
+            if lang == context.get('lang', default_srclang):
                 langstate = states[-1]
             try:
-                focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang).state)
+                focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
                 #import traceback
                 #print traceback.format_exc()
                 focus.append(False)
-        context.update({'langstate':langstate,'langstates':zip(context.get('releaselangs',[]),states,focus)})
+        context.update({'langstate':langstate,'langstates':zip(release_languages,states,focus)})
         return context, kolekti
     
     def get(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project})
-        assembly_path = '/'.join(['/releases',release,"sources",lang,"assembly",release+"_asm.html"])
+        context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
+        assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
         assembly_meta = {}
         try:
             xassembly = kolekti.parse(assembly_path)
@@ -808,7 +804,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
         srclang = sync.propget('release_srclang', assembly_path)
         if srclang is None:
-            srclang = self.project_langs()[2]        
+            srclang = self.project_langs(kolekti)[2]        
         parameters = kolekti.parse('/'.join(['/releases',release,"kolekti","publication-parameters",release+"_asm.xml"]))
         profiles = []
         for profile in parameters.xpath('/job/profiles/profile[@enabled="1"]'):
@@ -821,15 +817,15 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             scripts.append(script.find('label').text)
             #print self.get_assembly_edit(assembly_path)
         context.update({
-            'releasesinfo':kolekti.release_details(release_path, lang),
+            'releasesinfo':kolekti.release_details(release, lang),
             'releaseparams':{'profiles':profiles, 'scripts':scripts},
             'success':True,
-            'release_path':release_path,
-            'assembly_name':assembly_name,
+            'release_path':release,
+            'assembly_name':release,
             'assembly_meta':assembly_meta,
             'lang':lang,
             'srclang':srclang,
-            'validactions':self.__has_valid_actions(release_path)
+            'validactions':self.__has_valid_actions(kolekti, release)
         })
         logger.debug(context)
         logger.debug(context.get('srclang','not defined'))
@@ -861,13 +857,31 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
+class ReleasePublishAllView(kolektiMixin, TemplateView):
+    template_name = "publication.html"
+    def post (self, request, project, release):        
+        context, kolekti=self.get_context_data({'project':project})
+        langs = request.POST.get('langs')
+        try: 
+            p = publish.ReleasePublisher(release, kolekti.syspath(), langs=[lang])
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm")), content_type="text/html")
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            context.update({'success':False})
+#            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
+    
 class ReleasePublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release, lang):        
         context, kolekti=self.get_context_data({'project':project})
         try:
-            p = publish.ReleasePublisher(release_path, kolekti.syspath(), langs=[lang])
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(assembly_name + "_asm")), content_type="text/html")
+            p = publish.ReleasePublisher(release, kolekti.syspath(), langs=[lang])
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm")), content_type="text/html")
 
         except:
             import traceback

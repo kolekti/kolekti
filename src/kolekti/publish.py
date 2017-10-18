@@ -1104,20 +1104,6 @@ class Releaser(Publisher):
             logger.exception('could not create assembly')
         self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
-        #if self.syncMgr is not None :
-        #    try:
-        #        self.syncMgr.propset("release_state","sourcelang",assembly_path)
-        #            self.syncMgr.add_resource(assembly_path)
-        #            self.syncMgr.commit(assembly_path, "Release Creation")
-        #            self.syncMgr.commit(assembly_path, "Release Copy %s from %s"%(
-        #    except:
-        #        import traceback
-        #        res.append({
-        #            'event':'error',
-        #            'msg':"Erreur de synchronisation",
-        #            'stacktrace':traceback.format_exc(),
-        #            'time':time.time(),
-        #            })
                    
         return res
 

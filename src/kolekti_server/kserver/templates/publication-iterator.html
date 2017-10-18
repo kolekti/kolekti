@@ -1,13 +1,20 @@
 {% load timetags %}
 <div class="publication_msg">
   {% if event == "lang" %}
+  
   <hr/>
   <h4><em>Langue {{ label }}</em></h4>
+
   {% elif event == "job" %}
+
   {#  <h4>Publications</h4> #}
+
   {% elif event == "profile" %}
+
   <h6>{{ label }}</h6>
+
   {% elif event == "result" %}
+
   <ul class="result">
     {% for doc in docs %}
     {% if doc.url %}
@@ -15,18 +22,24 @@
     {% endif %}
     {% endfor %}
   </ul>
+
   {% elif event == "release" %}
+
   <h4><em>Version</em></h4>
   <ul class="result">
-    <li><a href="/releases/detail/?release={{ref}}" target="_blank">{{ ref }}</a></li>
-    <li>Assemblage : <a href="{{ref}}/sources/{{ lang }}/assembly/{{ releasedir }}_asm.html" target="_blank">{{ releasedir }}_asm.html</a> [{{ lang }}]</li>
+    <li><a href="{% url 'kolekti_release_details' project release lang %} " target="_blank">{{ ref }}</a></li>
+    <li>Assemblage : <a href="'% url kolekti_project_static {{ref}}/sources/{{ lang }}/assembly/{{ releasedir }}_asm.html" target="_blank">{{ releasedir }}_asm.html</a> [{{ lang }}]</li>
   </ul>
+  
   {% elif event == "warning" %}
+
   <div class="alert alert-warning">
     <h5>Avertissement</h5>
     <p>{{ msg }}</p>
   </div>
+
   {% elif event == "error" %}
+
   <div class="alert alert-danger error">
     <h5>Erreur à la publication</h5>
     <p>{{ msg }}</p>
@@ -39,10 +52,14 @@
       </pre>
     </div>
   </div>
+
   {% elif event == "publication_dir" %}
+
   <hr>
   <div class="alert alert-default">
     <a href="/publications/zip/?path={{ path }}" target="_blank">Zip de l'ensemble des publications</a>
   </div>
+
   {% endif %}
+
 </div>

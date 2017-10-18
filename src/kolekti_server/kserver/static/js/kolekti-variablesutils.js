@@ -24,7 +24,7 @@ var upload_varfile = function(e) {
     var thisform = $('form#uploadform');
     var formData = new FormData(thisform.get()[0]);
     $.ajax({
-        url: Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, path)
+        url: Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, path),
 //        url: '/variables/upload',  //server script to process data
         type: 'POST',
         xhr: function() {  // custom xhr
