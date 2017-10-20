@@ -223,7 +223,7 @@ def main():
                 job = "/kolekti/publication-parameters/"+tocjob+'.xml'
             xjob = p.parse(job)
             xjob.getroot().set('pubdir',args.name)
-            p.make_release(toc, xjob, release_name=args.name)
+            p.make_release(toc, xjob, release_dir=args.name)
             logger.info("Release sucessful")
         except:
             logger.exception("Release ended with errors")
