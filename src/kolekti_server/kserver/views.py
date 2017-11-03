@@ -46,7 +46,7 @@ from django.contrib.auth.decorators import login_required
 from kolekti.common import kolektiBase
 from kolekti.publish_utils import PublisherExtensions
 from kolekti import publish
-from kolekti.searchindex import searcher
+from kolekti.searchindex import Searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
@@ -1736,7 +1736,7 @@ class SearchView(kolektiMixin, View):
     def get(self, request):
         context = self.get_context_data()
         q = request.GET.get('query')
-        s = searcher(self.request.kolekti_projectpath)
+        s = Searcher(self.request.kolekti_projectpath)
         results = s.search(q)
         context.update({"results":results})
         context.update({"query":q})
