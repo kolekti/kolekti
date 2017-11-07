@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^$', HomeView.as_view(), name='home'),
 
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
+    url(r'^widgets/search/$', WidgetSearchView.as_view(), name='WidgetSearch'),
     url(r'^widgets/publications/$', WidgetPublicationsListView.as_view(), name='WidgetPublicationsList'),
     url(r'^widgets/releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='WidgetReleasePublicationsList'),
     url(r'^project/history/$', ProjectHistoryView.as_view(), name='projecthistory'),
@@ -133,8 +134,9 @@ urlpatterns.extend([
     url(r'^publications/zip/$', PublicationsZipView.as_view(),name="publications_zip"),
     url(r'^releases/publications/list.json', ReleasesPublicationsListJsonView.as_view(),name="releases_publications_list_json"),
 
-
-    url(r'^search', SearchView.as_view(),name="kolekti_search"),
+    url(r'^search/$', SearchView.as_view(),name="kolekti_search"),
+    url(r'^search/(?P<page>[0-9]+)/$', SearchView.as_view(),name="kolekti_search_page"),
+    url(r'^search/form/$', SearchFormView.as_view(),name="kolekti_search_form"),
 
     url(r'^admin/', include(admin.site.urls)),
 ])

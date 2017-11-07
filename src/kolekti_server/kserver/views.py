@@ -23,7 +23,7 @@ import logging
 logger = logging.getLogger('kolekti.'+__name__)
        
 from kserver_saas.models import Project, UserProfile, UserProject
-from forms import UploadFileForm
+from forms import UploadFileForm, SearchForm
 
 from django.http import Http404
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
@@ -1731,14 +1731,27 @@ class TocUsecasesView(kolektiMixin, View):
         return HttpResponse(json.dumps(context),content_type="application/json")
 
 
+class SearchFormView(kolektiMixin, TemplateView):
+    template_name = "search/form.html"
+    def get(self, request):
+        context = self.get_context_data()
+        form = SearchForm()
+        context.update({'form':form})
+        return self.render_to_response(context)
+    
 class SearchView(kolektiMixin, View):
     template_name = "search/results.html"
-    def get(self, request):
+    def get(self, request, page=1):
+        context = self.get_context_data()
+        return self.render_to_response(context)
+    
+    def post(self, request, page=1):
         context = self.get_context_data()
         q = request.GET.get('query')
         s = Searcher(self.request.kolekti_projectpath)
-        results = s.search(q)
+        results = s.search(q, page)
         context.update({"results":results})
+        context.update({"page":page})
         context.update({"query":q})
         return self.render_to_response(context)
 
@@ -1925,6 +1938,29 @@ class WidgetView(kolektiMixin, View):
         return self.render_to_response(context)    
 
 
+class WidgetSearchView(WidgetView):
+    template_name = "widgets/search.html"
+    def get(self, request):
+        context = self.get_context_data()
+        form = SearchForm()
+        context.update({'form':form})
+        return self.render_to_response(context)
+
+    def post(self, request, page=1):
+        context = self.get_context_data()
+        q = request.POST.get('query')
+
+        projectspath = os.path.join(settings.KOLEKTI_BASE, request.user.username)
+        project = self.request.kolekti_userproject.project.directory
+        
+        s = Searcher(projectspath, project)
+        results = s.search(q, page)
+        context.update({"results":results})
+        context.update({"page":page})
+        context.update({"query":q})
+        return self.render_to_response(context)
+
+    
 class WidgetProjectHistoryView(WidgetView):
     template_name = "widgets/project-history.html"
     def get_context_data(self):

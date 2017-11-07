@@ -43,7 +43,17 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match = "html:div[@class='topicinfo']">
+  <xsl:template match = "html:div[@class='topic']">
+    <xsl:copy>
+      <xsl:apply-templates select="@class"/>
+      <xsl:attribute name="data-modsource">
+        <xsl:value-of select="html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][text()='source']]/html:span[@class='infovalue']"/>
+      </xsl:attribute>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match = "html:div[@class='topicinfo']">    
       <hr/>
   </xsl:template>
   

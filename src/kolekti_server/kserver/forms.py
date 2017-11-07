@@ -6,3 +6,6 @@ from django import forms
 class UploadFileForm(forms.Form):
     upload_file  = forms.FileField()
     path  = forms.CharField()
+
+class SearchForm(forms.Form):
+    query  = forms.CharField()

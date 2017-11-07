@@ -18,7 +18,8 @@
 
 
 {% block content %}
-<div class="main">
+    <div class="main">
+      
  {% for result in results %}
   <div class="panel panel-default">
     <div class="panel-heading" id='snippet_{{forloop.counter}}'>
@@ -43,6 +44,8 @@
       </div>
     </div>
   </div>
+  {% empty %}
+  <p>no result</p>
   {% endfor %}
 </div>
 {% endblock %}
