@@ -61,7 +61,7 @@ class SearchUtils(object):
 class IndexManager(SearchUtils):
 
     def __init__(self, projectspath, projectdir):
-        super(self, IndexManager).__init__(projectspath, projectdir)
+        super(IndexManager, self).__init__(projectspath, projectdir)
         settings = ET.parse(os.path.join(projectspath, projectdir, 'kolekti', 'settings.xml'))
         self._sourcelangs = [l.text for l in settings.xpath('/settings/languages/lang')]
         self._publangs = [l.text for l in settings.xpath('/settings/releases/lang')]
