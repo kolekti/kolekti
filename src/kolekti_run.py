@@ -224,6 +224,18 @@ def main():
             xjob = p.parse(job)
             xjob.getroot().set('pubdir',args.name)
             p.make_release(toc, xjob, release_dir=args.name)
+            try:
+                cl = pysvn.Client()
+                cl.propset("release_state","sourcelang",os.path.join([basepath,'releases',release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+                cl.propset("release_srclang",args.lang,os.path.join([basepath,'releases',release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+            except:
+                logger.warning('assembly property failed')
+                
+            p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
+        for e in p.publish_assembly(pp[0]['pubname']):
+            yield e
+
+            
             logger.info("Release sucessful")
         except:
             logger.exception("Release ended with errors")
