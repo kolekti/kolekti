@@ -28,7 +28,7 @@ $(document).ready(function() {
 	          { "class":"well navbar-nav col-md-12 col-sm-12 user-condition",
 		        "id":"uc_"+i,
 		        "html":[$('<div>', {
-		            "class":"col-md-12 col-sm-3",
+		            "class":"foo",
 		            "html":get_label(i)}),
 			            $('<div>', {
 			                "class":"btn-group btn-group-justified",
@@ -64,14 +64,14 @@ $(document).ready(function() {
 		        "data-code":i,
 		        "data-codevalue":c[0],
 		        "html":[$('<div>', {
-		            "class":"col-md-12 col-sm-3",
+		            "class":"user-condition-group",
 		            "html":[
 			            $('<div>',{
-			                "class":"col-md-8 col-sm-12",
+			                "class":"col-md-12 col-sm-3",
 			                "html":get_label(i)
 			            }),
 			            $('<div>', {
-			                "class":"btn-group col-md-4 col-sm-12",
+			                "class":"btn-group col-md-12 col-sm-12",
 			                "html":[
 				                $("<button>", {
 				                    "type":"button",

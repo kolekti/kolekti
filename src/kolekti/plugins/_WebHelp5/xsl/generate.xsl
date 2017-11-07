@@ -586,11 +586,15 @@
    <div id="navbarCollapse" class="collapse navbar-collapse sidebar">
      <div id="navbarCollapse-in" class="col-xs-12">
      <div id="search" class="input-append well navbar-nav list-group list-unstyled col-sm-12">
-       <input type="text" id="ksearchinput" placeholder=" {kfp:variable(string($translationfile),'TitreRecherche')}" class="col-sm-11 col-xs-11 col-md-9">
-       </input>
-       <button class="btn btn-info col-sm-1 col-xs-1 col-md-3" id="search_btn" type="button" title="Rechercher">
-         <i class="glyphicon glyphicon-search icon-white"></i>
-       </button>
+       <div class='input-group'>
+         <input type="text" id="ksearchinput" placeholder=" {kfp:variable(string($translationfile),'TitreRecherche')}" class="col-sm-11 col-xs-11 col-md-9">
+         </input>
+         <span class="input-group-btn">
+           <button class="btn btn-info" id="search_btn" type="button" title="Rechercher">
+             <i class="glyphicon glyphicon-search icon-white"></i>
+           </button>
+         </span>
+       </div>
      </div>
      
         
