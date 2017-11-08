@@ -26,9 +26,7 @@
     
     $('#search_btn').on('click', search)
     $('#search_query').on('keydown', function(e) {
-      console.log(e);
       if (e.keyCode == 13){
-          console.log('search');
           search();
       }
     })
@@ -45,7 +43,13 @@
   <dl>
     <dt>
       <span class="label label-info" title="{{result.path}}">{{result.type}}</span>
-      <a href="{{result.path}}">{{result.title}}</a></dt>
+      {% if result.type == "topic" %}
+      <a href="/topics/edit/?topic=/{{result.path}}" target="_blank">{{result.title}}</a>
+      {% else %}
+      <a href="/{{result.path}}">{{result.title}}</a>
+      {% endif %}
+    </dt>
+    
     <dd>
       <span class="hl">{{ result.hl|safe }} </span>
     </dd>
