@@ -16,14 +16,23 @@
     </div>
   </div>
   <script>
-    $('#search_btn').on('click', function() {
-    var query = $('#search_query').val()
-    $.post('/widgets/search/', {'query':query})
-    .done(function(response) {
-    console.log(response)
-    $('#search_results').html(response)
+    var search = function() {
+      var query = $('#search_query').val()
+      $.post('/widgets/search/', {'query':query})
+       .done(function(response) {
+           $('#search_results').html(response)
+       })
+    }
+    
+    $('#search_btn').on('click', search)
+    $('#search_query').on('keydown', function(e) {
+      console.log(e);
+      if (e.keyCode == 13){
+          console.log('search');
+          search();
+      }
     })
-    })
+    
   </script>
            
   <hr/>
