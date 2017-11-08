@@ -232,11 +232,6 @@ def main():
             except:
                 logger.warning('assembly property failed')
                 
-            p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
-            
-            for e in p.publish_assembly(pp[0]['pubname']):
-                yield e
-
             
             logger.info("Release sucessful")
         except:
