@@ -6,7 +6,7 @@
 {% if changes.conflict|length or changes.error|length %}
      <div class="alert alert-warning">
        <h3>
-	 <strong>Attention</strong> : les mêmes fichiers ont été modifiés en local et sur le serveur externe
+	 <strong>Attention</strong> : les mêmes fichiers ont été modifiés par vous et par les autres rédacteurs
        </h3>
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="conflict"/>
@@ -14,8 +14,8 @@
 	 <div class="panel-body">
 	   <p>La mise à jour ne peut pas être automatique. Vous devez choisir entre :</p>
 	   <ul>
-	     <li><strong>Valider les fichiers modifiés en local</strong> : les fichiers modifiés par d'autres utilisateurs sur le serveur externe seront écrasés.</li>
-	     <li><strong>Remplacer vos fichiers par ceux du serveur externe</strong></li>
+	     <li><strong>Valider vos fichiers</strong> : les fichiers modifiés par les autres rédacteurs seront écrasés.</li>
+	     <li><strong>Remplacer vos fichiers par ceux des autres rédacteurs</strong></li>
 	     </ul>
 	   <hr>
 	     <div class="form-group">
@@ -64,8 +64,8 @@
 	       <label class="col-sm-2 control-label">Avec les fichiers sélectionnés : </label>
 	       <div class="col-sm-10">
 		 <select name="resolve" class="form-control select-conflit">
-		   <option value="local">Valider les fichiers modifiés en local</option>
-		   <option value="remote">Remplacer les fichiers par ceux du serveur</option>
+		   <option value="local">Valider mes fichiers</option>
+		   <option value="remote">Remplacer mes fichiers par ceux des autres rédacteurs</option>
 		   {# 	 <option>Marquer comme résolu</option> #}
 		 </select>
 	       </div>
@@ -79,7 +79,7 @@
 	     </div>
 	 </div>
        </div>
-       <button type="submit" class="btn btn-warning btn-block  btn-action-synchro">Appliquer</button>
+       <button type="submit" class="btn btn-warning btn-block  btn-action-synchro">Valider</button>
        </form>
      </div>
   {% else %}
@@ -95,10 +95,10 @@
 	   <hr>
 	     <div class="form-group">
 	       <div class="col-sm-12">
-		 <p>Certains fichiers ont été modifiés sur votre copie de travail et sur le dépot partagé. Il vous est possible de :</p>
+		 <p>Certains fichiers ont été modifiés par vous et par d'autres rédacteurs. Il vous est possible de :</p>
 		 <ul>
-		   <li><strong>Fusionner</strong> automatiquement les modifications locales et distantes,</li>
-		   <li><strong>Remplacer par la version distante</strong>, en écrasant les modifications locales depuis la dernière synchronisation</li>
+		   <li><strong>Fusionner</strong> automatiquement les modifications,</li>
+		   <li><strong>Remplacer par la version des autres rédacteurs</strong>, en écrasant vos modifications personnelles depuis la dernière synchronisation</li>
 		 </ul>
 	       </div>
 	     </div>
@@ -131,7 +131,7 @@
 	       <div class="col-sm-9">
 		 <select name="resolve" class="form-control select-merge">
 		   <option value="merge">Fusionner</option>
-		   <option value="remote">Oublier les modifications locales</option>
+		   <option value="remote">Oublier mes modifications</option>
 		   {# 	 <option>Marquer comme résolu</option> #}
 		 </select>
 	       </div>
@@ -148,7 +148,7 @@
 	 </div>
        </div>
 
-       <button id="dosynchro"  type="submit"  class="btn btn-info btn-warning btn-action-synchro">Appliquer</button>
+       <button id="dosynchro"  type="submit"  class="btn btn-info btn-warning btn-action-synchro">Valider</button>
        </form>
      </div>
 
@@ -158,7 +158,7 @@
      <div class="alert alert-info">
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="update"/>
-       <h3>Récupération en local des fichiers du serveur</h3>
+       <h3>Récupération des modifications des autres rédacteurs</h3>
        <div class="panel panel-default">
 	 <div class="panel-collapse collapse in" id="collapseSynchro">
 	   <div class="panel-body">
@@ -174,7 +174,7 @@
 	   </div>
 	 </div>
        </div>
-       <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Mettre à jour</button>
+       <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
        </form>
      </div>
     {% else %}
@@ -183,7 +183,7 @@
        <div class="alert alert-info">
        <form class="form-horizontal" method="POST">
 	 <input  type="hidden" name="action" value="commit"/>
-         <h3>Envoi des fichiers modifiés vers le serveur externe</h3>
+         <h3>Envoi des fichiers modifiés</h3>
 	 <div class="panel panel-default">
 	   <div class="panel-body">
 	     <div class="form-group">
@@ -225,8 +225,8 @@
 	       <label class="col-sm-3 control-label">Avec les fichiers sélectionnés : </label>
 	       <div class="col-sm-9">
 		 <select name="resolve" class="form-control select-commit">
-		   <option value="commit">Valider les modifications locales</option>
-		   <option value="revert">Oublier les modifications locales</option>
+		   <option value="commit">Valider mes modifications</option>
+		   <option value="revert">Oublier mes modifications</option>
 		   {# 	 <option>Marquer comme résolu</option> #}
 		 </select>
 	       </div>
@@ -263,7 +263,7 @@
     {% if changes.conflict|length %}
     {% if changes.merge|length %}
     <li>Fusion des modifications concurrentes
-      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre utilisateur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
+      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre rédacteur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
     </li>
     {% endif %}
     {% endif %}
@@ -271,15 +271,15 @@
     {% if changes.conflict|length or changes.merge|length %}
     {% if changes.update|length %}
     <li>Récupération en local des fichiers modifiés sur le serveur externe
-      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre utilisateur depuis la dernière synchronisation, cette étape met à jour les fichiers sur votre poste de travail.</p>
+      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre rédacteur depuis la dernière synchronisation.</p>
     </li>
     {% endif %}
     {% endif %}
 
     {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
     {% if changes.commit|length  %}
-    <li>Envoi sur le serveur externe des fichiers modifiés en local
-      <p>{{ changes.commit|length }} fichiers ont été modifiés sur votre poste de travail. Cette étape envoie vos modifications sur le serveur externe.</p>
+    <li>Envoi de mes modifications vers les autres rédacteurs
+      <p>{{ changes.commit|length }} fichiers ont été modifiés par vous.</p>
     </li>
     {% endif %}
     {% endif %}
