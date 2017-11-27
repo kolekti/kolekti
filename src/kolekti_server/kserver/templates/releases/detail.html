@@ -238,8 +238,10 @@
 	    <div class="panel-heading">
 	      {% if state == "unversionned" %}
 	      <p><strong>Cette langue n'a pas été synchronisée, le statut est indisponible</strong><br/>
-		<a href="/sync/">Synchroniser le projet</a>
+		    <a href="/sync/">Synchroniser le projet</a>
 	      </p>
+	      {% elif state == "local" %}
+	      <p><strong>Le statut est indisponible dans un projet mono utilisateur </strong></p>
 	      {% elif state == "sourcelang" %}
 	      <p>Langue source de la version</p>
 	      {% else %}

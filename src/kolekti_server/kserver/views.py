@@ -127,7 +127,6 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             userprojects = UserProject.objects.filter(user = self.request.user)
         else:
             userprojects = UserProject.objects.all()
-
         for up in userprojects:
             project={
                 'userproject':up,
@@ -153,6 +152,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             except ExcSyncNoSync:
                 project.update({"status":"local"})
             projects.append(project)
+            
         return sorted(projects, key=lambda p: p.get('name').lower())
 
 
@@ -173,7 +173,17 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         }
         
         if self.request.kolekti_userproject is not None:
+            up = self.request.kolekti_userproject
             languages, release_languages, default_srclang = self.project_langs()
+            project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory)
+            try:
+                from kolekti.synchro import SynchroManager
+                synchro = SynchroManager(project_path)
+                projecturl = synchro.geturl()
+                context.update({"svn_url":self.process_svn_url(projecturl)})
+            except ExcSyncNoSync:
+                context.update({"svn_url":"local"})
+
             context.update({
                 'kolekti':self._config,
                 'srclangs' : languages,
@@ -584,7 +594,10 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
         states = []
         for lang in release_languages:
             asfilename = "/".join(['/releases',assembly_name,"sources",lang,"assembly",assembly_name+'_asm.html'])
-            state = self.syncMgr.propget("release_state",asfilename)
+            try:
+                state = self.syncMgr.propget("release_state",asfilename)
+            except:
+                state = None
             if state is None:
                 if self.exists(asfilename):
                     states.append((lang, "local"))
@@ -734,7 +747,10 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         for lang in context.get('releaselangs',[]):
             tr_assembly_path = release_path+"/sources/"+lang+"/assembly/"+assembly_name+'_asm.html'
             if self.path_exists(tr_assembly_path):
-                states.append(self.syncMgr.propget('release_state',tr_assembly_path))
+                if (self.syncMgr is not None):
+                    states.append(self.syncMgr.propget('release_state',tr_assembly_path))
+                else:
+                    states.append("local")
             else:
                 states.append("unknown")
             if lang == assembly_lang:
@@ -742,8 +758,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             try:
                 focus.append(ReleaseFocus.objects.get(release = release_path, assembly = assembly_name, lang = lang).state)
             except:
-                #import traceback
-                #print traceback.format_exc()
                 focus.append(False)
         context.update({'langstate':langstate,'langstates':zip(context.get('releaselangs',[]),states,focus)})
         return context
@@ -762,7 +776,10 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         except IOError:
             pass
         logger.debug(assembly_path)
-        srclang = self.syncMgr.propget('release_srclang', assembly_path)
+        try:
+            srclang = self.syncMgr.propget('release_srclang', assembly_path)
+        except:
+            srclang = self.request.kolekti_userproject.srclang
         if srclang is None:
             srclang = self.project_langs()[2]
         parameters = self.parse('/'.join([release_path,"kolekti","publication-parameters",assembly_name+"_asm.xml"]))
@@ -804,7 +821,10 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.update_assembly_lang(xassembly, lang)
         self.xwrite(xassembly, assembly_path)
-        srclang = self.syncMgr.propget('release_srclang', assembly_path)
+        try:
+            srclang = self.syncMgr.propget('release_srclang', assembly_path)
+        except:
+            srclang = self.request.kolekti_userproject.srclang
         context = self.get_context_data({
             'releasesinfo':self.release_details(release_path, lang),
             'success':True,
@@ -1193,10 +1213,12 @@ class ImportTemplateView(kolektiMixin, TemplateView):
 class SettingsJsView(kolektiMixin, TemplateView):
     def get(self, request):
         project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username,request.kolekti_userproject.project.directory)
-        from kolekti.synchro import SynchroManager
-        synchro = SynchroManager(project_path)
-        project_svn_url = synchro.geturl()
-
+        try:
+            from kolekti.synchro import SynchroManager
+            synchro = SynchroManager(project_path)
+            project_svn_url = synchro.geturl()
+        except:
+            project_svn_url = "N/A"
         settings_js="""
         var kolekti = {
         "lang":"%s",

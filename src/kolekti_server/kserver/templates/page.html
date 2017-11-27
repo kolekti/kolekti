@@ -54,8 +54,12 @@
 		<li><a href="{% url 'publication_templates'%}">Modèles de sorties</a></li>
 		<li role="presentation" class="divider"></li>
 		<li><a href="/import/">Importer un fichier tableur</a></li>
+
+        {% if svn_url != "local" %}
 		<li role="presentation" class="divider"></li>
 		<li><a href="/sync/">Synchronisation</a></li>
+        {% endif %}
+        
 		{% if active_project_admin %}
 		<li><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
 		{% endif %}
@@ -101,15 +105,19 @@
 	  <div class="col-sm-12">
 	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
 	      {% include "user_menu.html" %}
+
+          {% if svn_url != "local" %}
 	      <div class="btn-group pull-right" role="group">
-		<button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
-		  <span>
-		    <span class="spinner"><i class="fa fa-spinner fa-spin"></i></span> 
-		    <span class="circle"><i class="fa fa-circle"></i></span> 
-		    rev <span id="revnum">{{ syncnum.revision.number }}</span>
-		  </span>
-		</button>
+		    <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
+		      <span>
+		        <span class="spinner"><i class="fa fa-spinner fa-spin"></i></span> 
+		        <span class="circle"><i class="fa fa-circle"></i></span> 
+		        rev <span id="revnum">{{ syncnum.revision.number }}</span>
+		      </span>
+		    </button>
 	      </div>
+          {% endif %}
+          
 	      <div class="btn-group  pull-right" role="group">
 		{% block infobuttons %}
 		<div class="btn-group" role="group">

@@ -3,292 +3,290 @@
 
 {% block operation %}
 
-{% if changes.conflict|length or changes.error|length %}
-     <div class="alert alert-warning">
-       <h3>
-	 <strong>Attention</strong> : les mêmes fichiers ont été modifiés par vous et par les autres rédacteurs
-       </h3>
-       <form class="form-horizontal" method="POST">
-	 <input  type="hidden" name="action" value="conflict"/>
-       <div class="panel panel-default top-margin">
-	 <div class="panel-body">
-	   <p>La mise à jour ne peut pas être automatique. Vous devez choisir entre :</p>
-	   <ul>
-	     <li><strong>Valider vos fichiers</strong> : les fichiers modifiés par les autres rédacteurs seront écrasés.</li>
-	     <li><strong>Remplacer vos fichiers par ceux des autres rédacteurs</strong></li>
-	     </ul>
-	   <hr>
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 {% if changes.error|length %}
-		 {% for e in changes.error %}
-		 <div class="checkbox">
-		   <label>
-		     <input class="selectentry entry-conflict" data-path="{{ e.path }}" data-basename="{{ e.basename }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		     {{ e.path }}
-		   </label>
-		   <br>
-		 </div>
-		 {% endfor %}
-		 {% else %}
-		 {% for e in changes.conflict %}
-		 <div class="checkbox">
-		   <label>
-		     <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		     {{ e.path }} 
-		   </label>
-		   {% comment %}
-		   {% if e.kind == "file" %}
-		   <span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>
-		   {% endif %}
-		   {% endcomment %}
-		   <br>
-		 </div>
-		 {% endfor %}
-		 {% endif %}
-	       </div>
-	     </div>
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 <div class="checkbox">
-		   <label>
-		     <input id="selectall" type="checkbox" value="">
-		     <small><em>Tout sélectionner / déselectionner</em></small>
-		   </label>
-		 </div>
-	       </div>
-	     </div>
-	     <hr/>
-		     
-	     <div class="form-group">
-	       <label class="col-sm-2 control-label">Avec les fichiers sélectionnés : </label>
-	       <div class="col-sm-10">
-		 <select name="resolve" class="form-control select-conflit">
-		   <option value="local">Valider mes fichiers</option>
-		   <option value="remote">Remplacer mes fichiers par ceux des autres rédacteurs</option>
-		   {# 	 <option>Marquer comme résolu</option> #}
-		 </select>
-	       </div>
-	     </div>
+{% if svn_url == "local" %}
 
-	     <div class="form-group" id="commitmsg">
-	       <label class="col-sm-2 control-label">Description des changements</label>
-	       <div class="col-sm-10">
-		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
-	       </div>
-	     </div>
-	 </div>
-       </div>
-       <button type="submit" class="btn btn-warning btn-block  btn-action-synchro">Valider</button>
-       </form>
-     </div>
-  {% else %}
+<div class="alert alert-warning">
+  <p>La synchronisation n'est pas disponible</p>
+</div>
+
+{% elif changes.conflict|length or changes.error|length %}
+
+<div class="alert alert-warning">
+  <h3>
+	<strong>Attention</strong> : les mêmes fichiers ont été modifiés par vous et par les autres rédacteurs
+  </h3>
+  <form class="form-horizontal" method="POST">
+	<input  type="hidden" name="action" value="conflict"/>
+    <div class="panel panel-default top-margin">
+	  <div class="panel-body">
+	    <p>La mise à jour ne peut pas être automatique. Vous devez choisir entre :</p>
+	    <ul>
+	      <li><strong>Valider vos fichiers</strong> : les fichiers modifiés par les autres rédacteurs seront écrasés.</li>
+	      <li><strong>Remplacer vos fichiers par ceux des autres rédacteurs</strong></li>
+	    </ul>
+	    <hr>
+	    <div class="form-group">
+	      <div class="col-sm-12">
+		    {% if changes.error|length %}
+		    {% for e in changes.error %}
+		    <div class="checkbox">
+		      <label>
+		        <input class="selectentry entry-conflict" data-path="{{ e.path }}" data-basename="{{ e.basename }}" type="checkbox" value="{{e.path}}" name="fileselect" />
+		        {{ e.path }}
+		      </label>
+		      <br>
+		    </div>
+		    {% endfor %}
+		    {% else %}
+		    {% for e in changes.conflict %}
+		    <div class="checkbox">
+		      <label>
+		        <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
+		        {{ e.path }} 
+		      </label>
+		      <br>
+		    </div>
+		    {% endfor %}
+		    {% endif %}
+	      </div>
+	    </div>
+	    <div class="form-group">
+	      <div class="col-sm-12">
+		    <div class="checkbox">
+		      <label>
+		        <input id="selectall" type="checkbox" value="">
+		        <small><em>Tout sélectionner / déselectionner</em></small>
+		      </label>
+		    </div>
+	      </div>
+	    </div>
+	    <hr/>
+		
+	    <div class="form-group">
+	      <label class="col-sm-2 control-label">Avec les fichiers sélectionnés : </label>
+	      <div class="col-sm-10">
+		    <select name="resolve" class="form-control select-conflit">
+		      <option value="local">Valider mes fichiers</option>
+		      <option value="remote">Remplacer mes fichiers par ceux des autres rédacteurs</option>
+		    </select>
+	      </div>
+	    </div>
+
+	    <div class="form-group" id="commitmsg">
+	      <label class="col-sm-2 control-label">Description des changements</label>
+	      <div class="col-sm-10">
+		    <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+	      </div>
+	    </div>
+	  </div>
+    </div>
+    <button type="submit" class="btn btn-warning btn-block  btn-action-synchro">Valider</button>
+  </form>
+</div>
      
-    {% if changes.merge|length %}
-     <div class="alert alert-warning">
-       <form class="form-horizontal" method="POST">
-	 <input  type="hidden" name="action" value="merge"/>
-       <h3>Fusion des modifications concurrentes</h3>
-       <div class="panel panel-default">
-	 <div class="panel-collapse collapse in" id="collapseSynchro">
-	   <div class="panel-body">
-	   <hr>
-	     <div class="form-group">
+{% elif changes.merge|length %}
+     
+<div class="alert alert-warning">
+  <form class="form-horizontal" method="POST">
+	<input  type="hidden" name="action" value="merge"/>
+    <h3>Fusion des modifications concurrentes</h3>
+    <div class="panel panel-default">
+	  <div class="panel-collapse collapse in" id="collapseSynchro">
+	    <div class="panel-body">
+	      <hr>
+	      <div class="form-group">
 	       <div class="col-sm-12">
-		 <p>Certains fichiers ont été modifiés par vous et par d'autres rédacteurs. Il vous est possible de :</p>
-		 <ul>
-		   <li><strong>Fusionner</strong> automatiquement les modifications,</li>
-		   <li><strong>Remplacer par la version des autres rédacteurs</strong>, en écrasant vos modifications personnelles depuis la dernière synchronisation</li>
-		 </ul>
+		     <p>Certains fichiers ont été modifiés par vous et par d'autres rédacteurs. Il vous est possible de :</p>
+		     <ul>
+		       <li><strong>Fusionner</strong> automatiquement les modifications,</li>
+		       <li><strong>Remplacer par la version des autres rédacteurs</strong>, en écrasant vos modifications personnelles depuis la dernière synchronisation</li>
+		     </ul>
 	       </div>
-	     </div>
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 {% for e in changes.merge %}
-		 <div class="checkbox">
-		   <label>
-		     <input class="selectentry entry-merge" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" checked="checked"/>
-		     {{ e.path }} 
-		   </label>
-		   <br>
-		 </div>
-		 {% endfor %}
-	       </div>
-	     </div>
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 <div class="checkbox">
-		   <label>
-		     <input id="selectall" type="checkbox" value="" checked="checked">
-		     <small><em>Tout sélectionner / déselectionner</em></small>
-		   </label>
-		 </div>
-	       </div>
-	     </div>
-	     <hr/>
+	      </div>
+	      <div class="form-group">
+	        <div class="col-sm-12">
+		      {% for e in changes.merge %}
+		      <div class="checkbox">
+		        <label>
+		          <input class="selectentry entry-merge" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" checked="checked"/>
+		          {{ e.path }} 
+		        </label>
+		        <br>
+		      </div>
+		      {% endfor %}
+	        </div>
+	      </div>
+	      <div class="form-group">
+	        <div class="col-sm-12">
+		      <div class="checkbox">
+		        <label>
+		          <input id="selectall" type="checkbox" value="" checked="checked">
+		          <small><em>Tout sélectionner / déselectionner</em></small>
+		        </label>
+		      </div>
+	        </div>
+	      </div>
+	      <hr/>
 	     <div class="form-group">
 	       <label class="col-sm-3 control-label">Avec les fichiers sélectionnés : </label>
 	       <div class="col-sm-9">
-		 <select name="resolve" class="form-control select-merge">
-		   <option value="merge">Fusionner</option>
-		   <option value="remote">Oublier mes modifications</option>
-		   {# 	 <option>Marquer comme résolu</option> #}
-		 </select>
+		     <select name="resolve" class="form-control select-merge">
+		       <option value="merge">Fusionner</option>
+		       <option value="remote">Oublier mes modifications</option>
+		     </select>
 	       </div>
 	     </div>
-
+         
 	     <div class="form-group" id="commitmsg">
 	       <label class="col-sm-3 control-label">Description des changements</label>
 	       <div class="col-sm-9">
-		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+		     <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
 	       </div>
 	     </div>
 	     
-	   </div>
-	 </div>
-       </div>
+	    </div>
+	  </div>
+    </div>
+    
+    <button id="dosynchro"  type="submit"  class="btn btn-info btn-warning btn-action-synchro">Valider</button>
+  </form>
+</div>
 
-       <button id="dosynchro"  type="submit"  class="btn btn-info btn-warning btn-action-synchro">Valider</button>
-       </form>
-     </div>
-
-  {% else %}
-
-    {% if changes.update|length %}
-     <div class="alert alert-info">
-       <form class="form-horizontal" method="POST">
-	 <input  type="hidden" name="action" value="update"/>
-       <h3>Récupération des modifications des autres rédacteurs</h3>
-       <div class="panel panel-default">
-	 <div class="panel-collapse collapse in" id="collapseSynchro">
+{% elif changes.update|length %}
+     
+<div class="alert alert-info">
+  <form class="form-horizontal" method="POST">
+	<input  type="hidden" name="action" value="update"/>
+    <h3>Récupération des modifications des autres rédacteurs</h3>
+    <div class="panel panel-default">
+	  <div class="panel-collapse collapse in" id="collapseSynchro">
 	   <div class="panel-body">
 	     <ul>
 	       
 	       {% for e in changes.update %}
 	       <li>{{ e.path }}
-		 {% comment %}
-		 {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}		   {% endcomment %}
+		     {% comment %}
+		     {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}		   {% endcomment %}
 	       </li>
 	       {% endfor %}
 	     </ul>
 	   </div>
-	 </div>
-       </div>
-       <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
-       </form>
-     </div>
-    {% else %}
-     
-      {% if changes.commit|length  %}
-       <div class="alert alert-info">
-       <form class="form-horizontal" method="POST">
-	 <input  type="hidden" name="action" value="commit"/>
-         <h3>Envoi des fichiers modifiés</h3>
-	 <div class="panel panel-default">
-	   <div class="panel-body">
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 {% for e in changes.commit %}
-	       	 <div class="checkbox">
-		   <label title="{{e.wstatus}}">
-		     <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		     {% if e.wstatus == 'deleted' %}
-		     <s>{{ e.path }}</s>
-		     {% else %}
-		     {{ e.path }}
-		     {% endif %}
-		     {% if e.wstatus == 'added' %} (ajout){% endif %}
-		   </label>
+	  </div>
+    </div>
+    <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
+  </form>
+</div>
 
-		   {% comment %}
-		   {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}
-		   {% endcomment %}
+{% elif changes.commit|length  %}
 
-		 </div>
-		 {% endfor %}
-	       </div>
-	     </div>
+<div class="alert alert-info">
+  <form class="form-horizontal" method="POST">
+	<input  type="hidden" name="action" value="commit"/>
+    <h3>Envoi des fichiers modifiés</h3>
+	<div class="panel panel-default">
+	  <div class="panel-body">
+	    <div class="form-group">
+	      <div class="col-sm-12">
+		    {% for e in changes.commit %}
+	       	<div class="checkbox">
+		      <label title="{{e.wstatus}}">
+		        <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
+		        {% if e.wstatus == 'deleted' %}
+		        <s>{{ e.path }}</s>
+		        {% else %}
+		        {{ e.path }}
+		        {% endif %}
+		        {% if e.wstatus == 'added' %} (ajout){% endif %}
+		      </label>
 
-	     <div class="form-group">
-	       <div class="col-sm-12">
-		 <div class="checkbox">
-		   <label>
-		     <input id="selectall" type="checkbox" value="">
-		     <small><em>Tout sélectionner / déselectionner</em></small>
-		   </label>
-		 </div>
-	       </div>
-	     </div>
-	     <hr/>
-		     
-	     <div class="form-group">
-	       <label class="col-sm-3 control-label">Avec les fichiers sélectionnés : </label>
-	       <div class="col-sm-9">
-		 <select name="resolve" class="form-control select-commit">
-		   <option value="commit">Valider mes modifications</option>
-		   <option value="revert">Oublier mes modifications</option>
-		   {# 	 <option>Marquer comme résolu</option> #}
-		 </select>
-	       </div>
-	     </div>
-
-	     <div class="form-group" id="commitmsg">
-	       <label class="col-sm-2 control-label">Description des changements</label>
-	       <div class="col-sm-10">
-		 <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
-	       </div>
-	     </div>
-
+		      {% comment %}
+		      {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}
+		      {% endcomment %}
+              
+		    </div>
+		    {% endfor %}
+	      </div>
+	    </div>
+        
+	    <div class="form-group">
+	      <div class="col-sm-12">
+		    <div class="checkbox">
+		      <label>
+		        <input id="selectall" type="checkbox" value="">
+		        <small><em>Tout sélectionner / déselectionner</em></small>
+		      </label>
+		    </div>
+	      </div>
+	    </div>
+	    <hr/>
+		
+	    <div class="form-group">
+	      <label class="col-sm-3 control-label">Avec les fichiers sélectionnés : </label>
+	      <div class="col-sm-9">
+		    <select name="resolve" class="form-control select-commit">
+		      <option value="commit">Valider mes modifications</option>
+		      <option value="revert">Oublier mes modifications</option>
+		    </select>
+	      </div>
+	    </div>
+        
+	    <div class="form-group" id="commitmsg">
+	      <label class="col-sm-2 control-label">Description des changements</label>
+	      <div class="col-sm-10">
+		    <textarea id="syncromsg" class="form-control" name="commitmsg"></textarea>
+	      </div>
+	    </div>
+        
 	     
-	   </div>
-	 </div>
-	 <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
-       </form>
-       </div>
-       {% endif %}
-      {% endif %}
-    {% endif %}
-       {% endif %}
-       {% comment %}
-       {% endif %}
-       {% endcomment %}
+	  </div>
+	</div>
+	<button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
+  </form>
+</div>
+
+{% endif %}
+
 {% endblock %}
 
 
 {% block nextsteps %}
-  {% if changes.conflict|length or changes.merge|length or  changes.update|length or changes.commit|length  %}
-  <h3>Étape(s) suivante(s)</h3>
-  <ul>
 
-    {% if changes.conflict|length %}
-    {% if changes.merge|length %}
-    <li>Fusion des modifications concurrentes
-      <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre rédacteur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
-    </li>
-    {% endif %}
-    {% endif %}
+{% if svn_url == "local" %}
 
-    {% if changes.conflict|length or changes.merge|length %}
-    {% if changes.update|length %}
-    <li>Récupération en local des fichiers modifiés sur le serveur externe
-      <p>{{ changes.update|length }} fichiers ont été modifiés par un autre rédacteur depuis la dernière synchronisation.</p>
-    </li>
-    {% endif %}
-    {% endif %}
-
-    {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
-    {% if changes.commit|length  %}
-    <li>Envoi de mes modifications vers les autres rédacteurs
-      <p>{{ changes.commit|length }} fichiers ont été modifiés par vous.</p>
-    </li>
-    {% endif %}
-    {% endif %}
-    {% else %}
-  <div class="alert alert-success">
-    <strong>Le projet est synchronisé</strong>
-  </div>
-  {% endif %}
-
-  </ul>
+{% elif changes.conflict|length or changes.merge|length or  changes.update|length or changes.commit|length  %}
+<h3>Étape(s) suivante(s)</h3>
+<ul>
   
-  {% endblock %}
+  {% if changes.conflict|length %}
+  {% if changes.merge|length %}
+  <li>Fusion des modifications concurrentes
+    <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre rédacteur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
+  </li>
+  {% endif %}
+  {% endif %}
+  
+  {% if changes.conflict|length or changes.merge|length %}
+  {% if changes.update|length %}
+  <li>Récupération en local des fichiers modifiés sur le serveur externe
+    <p>{{ changes.update|length }} fichiers ont été modifiés par un autre rédacteur depuis la dernière synchronisation.</p>
+  </li>
+  {% endif %}
+  {% endif %}
+  
+  {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
+  {% if changes.commit|length  %}
+  <li>Envoi de mes modifications vers les autres rédacteurs
+    <p>{{ changes.commit|length }} fichiers ont été modifiés par vous.</p>
+  </li>
+  {% endif %}
+  {% endif %}
+</ul>
+
+{% else %}
+<div class="alert alert-success">
+  <strong>Le projet est synchronisé</strong>
+</div>
+{% endif %}
+  
+
+{% endblock %}

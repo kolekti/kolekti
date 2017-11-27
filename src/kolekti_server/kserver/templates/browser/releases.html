@@ -152,9 +152,9 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
-	  
+	  {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name|add:'_'|add:fi.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
-
+      {% endcomment %}
 	</td>
 	<td class="kolekti-browser-sync"></td>
       </tr>

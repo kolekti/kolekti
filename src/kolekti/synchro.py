@@ -396,7 +396,6 @@ class SynchroManager(SvnClient):
             props = self._client.propget(name, ospath)
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
-            logger.exception('Proget %s failed on path %s'%(name, path))
             return None
         
 class SVNProjectManager(SvnClient):
