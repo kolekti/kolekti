@@ -59,3 +59,5 @@ class TranslatorRelease(models.Model):
 
     objects = TranslatorReleaseManager()
                                 
+    def __unicode__(self):
+        return u"%s: %s / %s"%(self.user.username,self.project.directory, self.release_name)
