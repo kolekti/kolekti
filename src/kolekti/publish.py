@@ -228,17 +228,16 @@ class Publisher(PublisherMixin, kolektiBase):
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
                     import traceback
-                    logger.error("Assembly Error")
+                    logger.exception("Assembly Error")
                     yield {
                         'event':'error',
                         'msg':"erreur lors de l'assemblage",
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                    logger.debug(traceback.format_exc())
                     
                 # invoke scripts
-                logger.debug(profilename, "starting scripts")
+                logger.debug( "starting scripts %s", profilename)
 #                logger.debug(ET.tostring(xjob))
                     
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
@@ -304,7 +303,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logger.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-
+        logger.debug('profile pub dir %s', pubdir)
         try:
             # logger.debug(assembly)
             # criteria
