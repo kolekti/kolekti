@@ -35,7 +35,8 @@ class Command(BaseCommand):
         parser.add_argument('project', type=str)
         parser.add_argument('-s', '--source', type=str)
         parser.add_argument('-i', '--index', type=str)
-#        parser.add_argument('-f', '--file', type=str)
+        parser.add_argument('-p', '--pass', type=int)
+        
         
     def handle(self, *args, **options):
         from django.conf import settings
@@ -45,44 +46,42 @@ class Command(BaseCommand):
         project = options['project']
         release = options['source']
         newindex = options['index']
+        ppass = options['pass']
         projectpath = os.path.join(settings.KOLEKTI_BASE, user, project)
-        #self._copy_release(projectpath, release, newindex)
-        #self._copy_properties(projectpath, release, newindex)
-        #self._process_release_info(projectpath, release, newindex)
+        
+        self._set_release_info(projectpath, release)
+
+        if ppass==1:
+            self._copy_release(projectpath, release, newindex)
+        if ppass==2:
+            self._update_release(projectpath, release, newindex)
+            self._process_release_info(projectpath, release, newindex)
+        
         self.stdout.write("done.")
         
-    def _copy_properties(self, projectpath, release, newindex):
-        releasename, releaseindex = release.rsplit('_', 1)
-        newrelease = releasename + '_' + newindex
-        properties = {}
-        client = pysvn.Client()
-        checkin = []
-        for lang in os.listdir(os.path.join(projectpath, 'releases', release, 'sources')):
-            assembly = os.path.join(projectpath,'releases', release,'sources', lang, 'assembly', release + '_asm.html')
-            newassembly = os.path.join(projectpath,'releases', newrelease,'sources', lang, 'assembly', newrelease + '_asm.html')
-            if os.path.exists(assembly):
-                props = client.proplist(assembly)
-                for prop, value in props[1].iteitems():
-                    client.propset(prop, value, newassembly)
-            checkin.append(newassembly)
             
     def _copy_release(self, projectpath, release, newindex):
         releasename, releaseindex = release.rsplit('_', 1)
         newrelease = releasename + '_' + newindex
         client = pysvn.Client()
-        shutil.copytree(
+        client.copy(
             os.path.join(projectpath,'releases', release),
             os.path.join(projectpath,'releases', newrelease)
             )
+        
+    def _update_release(self, projectpath, release, newindex):
+        releasename, releaseindex = release.rsplit('_', 1)
+        newrelease = releasename + '_' + newindex
+        client = pysvn.Client()
         for lang in os.listdir(os.path.join(projectpath, 'releases', newrelease, 'sources')):
             if os.path.exists(os.path.join(projectpath,'releases', newrelease,'sources', lang, 'assembly', release + '_asm.html')):
-                shutil.move(
+                client.move(
                     os.path.join(projectpath,'releases', newrelease,'sources', lang, 'assembly', release + '_asm.html'),
                     os.path.join(projectpath,'releases', newrelease,'sources', lang, 'assembly', newrelease + '_asm.html')
                     )
                 self._process_assembly(projectpath, newrelease, lang)
                 
-        shutil.move(
+        client.move(
             os.path.join(projectpath,'releases', newrelease, 'kolekti', 'publication-parameters', release + '_asm.xml'),
             os.path.join(projectpath,'releases', newrelease, 'kolekti', 'publication-parameters', newrelease + '_asm.xml')
             )
@@ -119,6 +118,29 @@ class Command(BaseCommand):
         "releasedir" : newrelease,
         })
         json.dump(mf, open(infofile,'w'))
+        
+    def _set_release_info(self, projectpath, release):
+        infofile = os.path.join(projectpath,'releases', release, 'release_info.json')
+        try:
+            mf = json.load(open(infofile))
+            return
+        except:
+            mf = copy(release_info)
+            
+        releasename, releaseindex = release.rsplit('_', 1)
+
+        date = self._guess_release_date(projectpath, release)
+            
+        mf.update({
+        "assembly_dir" : '/releases/{}'.format(release),
+        "datetime" : self._guess_release_date(projectpath, release),
+        "releaseindex" : releaseindex,
+        "releasename" : releasename,
+        "releasedir" : release,
+        })
+        json.dump(mf, open(infofile,'w'))
+        client = pysvn.Client()
+        client.add(infofile)
         
     def _process_assembly(self, projectpath, newrelease, lang):
         releasename, releaseindex = newrelease.rsplit('_', 1)

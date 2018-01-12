@@ -102,9 +102,14 @@ class Command(BaseCommand):
             pass
         
     def _guess_release_date(self, projectpath, release):
-       c = pysvn.Client() 
-       logs = c.log(os.path.join(projectpath,'releases', release))
-       return int(logs[-1].get('date'))
+        c = pysvn.Client()
+        def callback_get_login(realm, username, may_save):
+            name = "waloo"
+            password = "klondik1"
+            return True, name, password, False
+        c.callback_get_login = callback_get_login
+        logs = c.log(os.path.join(projectpath,'releases', release))
+        return int(logs[-1].get('date'))
                     
     def _process_release_info(self, projectpath, release, newname):
         releasename, releaseindex = newname.rsplit('_', 1)
