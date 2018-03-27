@@ -45,9 +45,9 @@ class Command(BaseCommand):
         projectpath = os.path.join(settings.KOLEKTI_BASE, user, project)
         langs = options['lang']
         if len(langs) == 0:
-            langs = self._get_release_langs(projectpath, release)
+            langs = list(self._get_release_langs(projectpath, release))
 
-        self.stdout.write(str(list(langs)))
+        self.stdout.write(str(langs))
 
         self._publish_release(projectpath, release, list(langs))
 
