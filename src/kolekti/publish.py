@@ -861,13 +861,13 @@ class Publisher(PublisherMixin, kolektiBase):
         except OSError:
             pass
         if filer is None:
-            self.copyDirs(srcdir, destpath)
+            self.copyDirs(srcdir, destpath, sync = not self._draft)
         else:
             try:
                 source= u"%s/%s.%s"%(srcdir,filer,ext)
                 dest=   u"%s/%s.%s"%(destpath,filer,ext)
                 logger.debug('copy resource %s -> %s'%(source, dest))
-                self.copyFile(source,dest)
+                self.copyFile(source, dest, sync = not self._draft)
             except:
                 import traceback
                 logger.error("Impossible de copier la ressource %s"%source)
@@ -883,7 +883,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         self.rmdir(target)
                     except:
                         pass
-                    self.copyDirs(source,target)
+                    self.copyDirs(source,target, sync = not self._draft)
 
             except:
                 logger.exception("Impossible de copier la ressource %s"%source)
@@ -1454,7 +1454,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":valevents,
                     })
-                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync=False)
+                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync = False)
     
             except:
                 import traceback

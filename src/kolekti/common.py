@@ -626,15 +626,21 @@ class kolektiBase(object):
             self.post_save(path)
         return cp
             
-    def copyDirs(self, source, path):
+    def copyDirs(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
 
-        try:
-            shutil.rmtree(ospath)
-        except:
-            logger.exception('could not remove directory')           
-        return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
+        if self.exists(path):
+            try:
+                shutil.rmtree(ospath)
+            except:
+                logger.exception('could not remove directory')
+                
+        res = shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
+        
+        if sync:
+            self.post_save(path)
+        return res 
 
 
     
