@@ -73,7 +73,7 @@
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">
-	    <li><a href="{% static "help" %}{% block help-topic %}index{% endblock %}" target="_kolekti_help">Aide</a></li>
+	    <li><a href="{% static "helpindex" %}/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
