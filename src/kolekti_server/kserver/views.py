@@ -525,6 +525,24 @@ class ReleasesPublicationsListJsonView(kolektiMixin, View):
         }
         return HttpResponse(json.dumps(context),content_type="application/json")
 
+class ReleaseZipView(kolektiMixin, View):
+    def get(self, request):
+        release = request.GET.get('release')
+        now = strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
+        meta = ET.XML('<meta/>')
+        ET.SubElement(meta.getroot(), 'zipdate').text = now
+        ET.SubElement(meta.getroot(), 'ziptime').text = time.time()
+        ET.SubElement(meta.getroot(), 'project').text = self.request.kolekti_userproject.project.directory
+        
+        try:
+            response = HttpResponse(self.zip_release_full(path), content_type="application/zip" meta = meta.getroot())
+            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(release, now)
+            return response
+        except:
+            import traceback
+            print traceback.format_exc()
+            return HttpResponse(status=404)
+    
 
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'

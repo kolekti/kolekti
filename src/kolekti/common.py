@@ -341,6 +341,38 @@ class kolektiBase(object):
             logger.exception('release zip failed')
             return None
     
+    def zip_release_full(self, release, meta):
+        try:
+            files = ET.SubElement(meta, 'files')
+            path = "/releases/"+release
+            from zipfile import ZipFile
+            from StringIO import StringIO
+            zf= StringIO()
+            top = self.getOsPath(path)
+            logger.debug(top)
+            with ZipFile(zf, "w") as zippy:
+                for root, dirs, files in os.walk(top):
+                    rt=root[len(top) + 1:]
+                    if rt[:7] != 'sources' or rt[:7] != 'kolekti':
+                        continue
+                    try:
+                        for name in files:
+                            arcname=str(os.path.join(rt, name))
+                            ET.SubElement(files, 'file').set('path',arcname)
+                            zippy.write(str(os.path.join(root, name)),arcname=arcname)
+                    except IndexError:
+                        pass
+
+                zippy.writestr(ET.tostring(meta), arcname='kolekti/meta.xml')
+            
+            z =  zf.getvalue()
+            zf.close()
+            
+            return z
+        except:
+            logger.exception('release zip full failed')
+            return None
+    
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
