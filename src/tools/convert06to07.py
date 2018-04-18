@@ -9,6 +9,7 @@ import os
 import re
 from lxml import etree as ET
 import argparse
+from zipfile import ZipFile
 import logging
 logger = logging.getLogger('convert')
 #from kolekti.publish_utils import PublisherExtensions
@@ -39,13 +40,41 @@ class XSLExtensions(object):
 
     def topictranslate(self, _, *args):
         srcref = args[0][0]
-        logger.debug(srcref)
         return topic_ref(srcref, self.args)
-
+ 
     def var_section_title(self, _, *args):
         titlestr = args[0]
         r = self.e.match(titlestr)
-        logger.debug(titlestr)
+        if r:
+            var = ET.Element('{http://www.w3.org/1999/xhtml}var')
+            var.set("class",':'.join(r.groups()))
+            return [var]
+        else:
+            return 'FIXME ' + titlestr
+        
+    def translate_jobstring(self, _, *args):
+        thestr = args[0][0]
+        crits  = args[1][0]
+        critlist = crits.xpath('.//criteria/@code')
+        for crit in critlist:
+            e = re.compile(r'_%s_'%crit)
+            thestr = re.sub(e, '{%s}'%crit, thestr)
+
+        thestr = re.sub(self.e, r'{\1:\2}', thestr)
+            
+        return thestr
+
+    def translate_variable(self, _, *args):
+        thestr = args[0][0]
+        critlist = self.args['config'].xpath('/data/profiles/profile/criterias/criteria/@code')
+        for crit in set(critlist):
+            e = re.compile(r'_%s_'%crit)
+            thestr = re.sub(e, r'{%s}'%crit, thestr)
+        return thestr
+        
+    def var_string(self, _, *args):
+        titlestr = args[0]
+        r = self.e.match(titlestr)
         if r:
             var = ET.Element('{http://www.w3.org/1999/xhtml}var')
             var.set("class",':'.join(r.groups()))
@@ -53,7 +82,7 @@ class XSLExtensions(object):
         else:
             return 'FIXME ' + titlestr
 
-        
+       
 def topic_ref(topic06, args):
     topic = topic06.replace('@modules/','')
     topic07 = "/sources/%s/topics/%s"%(args.lang,topic.replace('.xht','.html') )
@@ -67,16 +96,20 @@ def get_xsl(name, args):
     extensions=ET.Extension(XSLExtensions(args=args),exts,ns="kolekti:migrate")
     return ET.XSLT(ET.parse(name),extensions = extensions)
 
-def apply_xsl(stylesheet, args, infile, outfile):
-        xsrc = ET.parse(infile)
+def apply_xsl(stylesheet,  infile, outfile, args, xsl_args={}, parser=ET.XMLParser() ):
+        xsrc = ET.parse(infile, parser)
         xsl = get_xsl(stylesheet, args)
         try:
-            xdst = xsl(xsrc) #ET.tounicode(xsl(toc),pretty_print=True).encode('utf-8')
-            with open(outfile,'w') as ofile:
-                ofile.write(str(xdst))
-                    
+            xdst = xsl(xsrc, **xsl_args) #ET.tounicode(xsl(toc),pretty_print=True).encode('utf-8')
+    #                    
         except ET.XSLTApplyError:
             logging.exception(str(xsl.error_log))
+
+        
+        with open(outfile,'w') as ofile:
+            ofile.write(str(xdst))
+            
+        #       xdst.write(outfile)
 
         return xdst
 
@@ -96,11 +129,51 @@ def convert_toc_topics(toc, args):
             args.target_project,
             topic07
             )
-        apply_xsl('topic_06to07.xsl', args, srcfile, dstfile)
+        apply_xsl('topic_06to07.xsl',  srcfile, dstfile, args)
         logger.debug('topic %s',dstfile)
         convert_topic_assets(srcfile)
         
 
+def makedirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        
+def cmd_convert_enveloppe(args):
+    inenv = args.enveloppe
+    with ZipFile(inenv, 'r') as myzip:
+        config = myzip.open('config/config.xml')
+        xconfig = ET.parse(config)
+        config = myzip.open('config/config.xml')
+        assembly = myzip.open('assembly.xhtml')
+        lang = myzip.read('lang').strip()
+        dargs = args.__dict__
+
+        dargs.update({'config':xconfig})
+        
+        releasename = xconfig.xpath("string(/data/field[@name='mastername']/@value)")
+        releasepath = os.path.join(
+            args.target_project,
+            "releases",
+            releasename)
+    
+        makedirs(os.path.join(releasepath, 'kolekti', 'publication-parameters'))
+        makedirs(os.path.join(releasepath, 'kolekti', 'publication-templates'))
+        makedirs(os.path.join(releasepath, 'sources', lang, 'assembly'))
+        makedirs(os.path.join(releasepath, 'sources', lang, 'pictures'))
+        makedirs(os.path.join(releasepath, 'sources', lang, 'variables','ods'))
+        makedirs(os.path.join(releasepath, 'sources', 'share'))
+        
+        apply_xsl('assembly_06to07.xsl',  assembly, os.path.join(releasepath, 'sources', lang, 'assembly', releasename + '_asm.html'), dargs, xsl_args={'lang': "'%s'"%lang}, parser = ET.HTMLParser())
+        apply_xsl('env_job_06to07.xsl', config, os.path.join(releasepath, 'kolekti', 'publication-parameters', releasename + '_asm.xml'), args)
+
+        for f in  myzip.namelist():
+            if f[:7] == "medias/" and f[-1]!= '/':
+                myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'pictures'))
+            if f[:7] == "sheets/" and f[-1]!= '/':
+                myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'variables', 'ods'))
+
+        
+    
 def cmd_convert_topic(args):
     intopic = os.path.join(
         args.source_project,
@@ -115,7 +188,7 @@ def cmd_convert_topic(args):
         topic_ref(args.topic, args)
     )            
                 
-    apply_xsl('topic_06to07.xsl', args, intopic, outtopic)
+    apply_xsl('topic_06to07.xsl', intopic, outtopic, args)
             
 def cmd_convert_toc(args):
     intoc = os.path.join(
@@ -132,7 +205,7 @@ def cmd_convert_toc(args):
         )
                 
         
-    apply_xsl('toc_06to07.xsl', args, intoc, outtoc)
+    apply_xsl('toc_06to07.xsl', intoc, outtoc, args)
     if args.recurse:
         convert_toc_topics(intoc, args)
     return outtoc
@@ -151,6 +224,7 @@ if __name__ == "__main__":
     parser_toc = subparsers.add_parser('toc', help="convert trame")
     
     defaults={'cmd':'toc', 'ext':'.html'}
+    
     parser_toc.set_defaults(**defaults)
     parser_toc.add_argument('toc', help="kolekti 06 toc to convert")
     parser_toc.add_argument('-r', '--recurse', action='store_true', help="Recusrse into topics")    
@@ -161,16 +235,23 @@ if __name__ == "__main__":
     defaults={'cmd':'topic', 'ext':'.html'}
     parser_topic.set_defaults(**defaults)
     
+    parser_env = subparsers.add_parser('enveloppe', help="convert enveloppe to release")
+    parser_env.add_argument('enveloppe', help="kolekti 06 enveloppe to convert")
+    
+    defaults={'cmd':'enveloppe'}
+    parser_env.set_defaults(**defaults)
+    
     args = parser.parse_args()
 
-    logger.debug(args)
-    
     if args.cmd == 'toc':
         out = cmd_convert_toc(args)
         logger.info('successfully converted toc %s', out)
         
     if args.cmd == 'topic':
         cmd_convert_topic(args)
+
+    if args.cmd == 'enveloppe':
+        cmd_convert_enveloppe(args)
 
 
         
