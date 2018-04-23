@@ -280,21 +280,25 @@
 	      
 	      {% endif %}
 	    </div>
+                  {% if success %}
+        
 	    <div class="panel-body">
 	      <div class="row">
-		<div class="col-sm-6 col-md-6">
-		  <div class="btn-group">
-		    <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
-		      Assemblage
-		    </button>
-		    <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
-		      Images
-		    </button>
-		    <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
-		      Variables
-		    </button>
-		  </div>
-		</div>
+		    <div class="col-sm-6 col-md-6">
+
+		          <div class="btn-group">
+		            <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
+		              Assemblage
+		            </button>
+		            <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
+		              Images
+		            </button>
+		            <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
+		              Variables
+		            </button>
+		          </div>
+
+		    </div>
 	      </div>
 	      <div id="content_pane" class="release-panel-part">
 	      </div>
@@ -304,12 +308,30 @@
 	      <div id="variables_pane" class="release-panel-part hidden">
 	      </div>
 	    </div>
-	    
+        {% else %}
+
+	    <div class="panel-body">
+	      <div class="row">
+		    <div class="col-sm-12 col-md-12">
+              <div class="alert alert-warning">
+                <h3>Erreur XML lors de l'analyse de l'assemblage.</h3>
+                <pre>{{ error }}</pre>
+                {% if request.method == 'POST' %}
+                <h4>L'assemblage n'a pas été importé.</h4>
+                {% endif %}
+                
+              </div>
+
+            </div>
+          </div>
+        </div>
+                  {% endif %}	    
 	  </div>
 	  {% endif %}	  
 	</div>
 	{% endif %}	  
  	{% endfor %}
+
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">
 	  </div>
@@ -340,6 +362,7 @@
         </div>
       </div>
     </div>
+
 {% endblock %}
 
 

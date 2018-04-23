@@ -766,6 +766,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         release_path = request.GET.get('release')
         lang = request.GET.get('lang', self.request.kolekti_userproject.srclang)
         assembly_name = self.basename(release_path)
+        
         assembly_path = '/'.join([release_path,"sources",lang,"assembly",assembly_name+"_asm.html"])
         assembly_meta = {}
         try:
@@ -775,6 +776,16 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                     assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
         except IOError:
             pass
+        except ET.XMLSyntaxError, e:
+            context = self.get_context_data({
+                'success':False,
+                'release_path':release_path,
+                'assembly_name':assembly_name,
+                'lang':lang,
+                'error':e,
+            })
+            return self.render_to_response(context)
+
         logger.debug(assembly_path)
         try:
             srclang = self.syncMgr.propget('release_srclang', assembly_path)
@@ -815,8 +826,17 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         lang=request.GET.get('lang',self.request.kolekti_userproject.srclang)
         assembly_path = '/'.join([release_path,'sources',lang,'assembly',assembly_name+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
-        xassembly = self.parse_string(payload)
-        
+        try:
+            xassembly = self.parse_string(payload)
+        except ET.XMLSyntaxError, e:
+            context = self.get_context_data({
+                'release_path':release_path,
+                'assembly_name':assembly_name,
+                'lang':lang,
+                'error':e,
+            })
+            return self.render_to_response(context)
+            
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release_path)
         self.update_assembly_lang(xassembly, lang)
