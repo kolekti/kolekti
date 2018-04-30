@@ -71,17 +71,24 @@
       <xsl:call-template name="titleclass"/>
     </xsl:variable>
 
-    <p class="TOC_level_{$lev - 1}">
+    <p>
+      <xsl:attribute name="class">
+        <xsl:text>TOC_level_</xsl:text>
+        <xsl:value-of select="$lev - 1"/>
+        <xsl:if test="ancestor::html:div[@class='section'][@data-hidden]">
+          <xsl:text> hidden</xsl:text>
+        </xsl:if>
+      </xsl:attribute>
       <span class="title_num">
-	<xsl:call-template name="number"/>
+	    <xsl:call-template name="number"/>
       </span>
       <xsl:choose>
-	<xsl:when test="@id">
-	  <a href="#{@id}"><xsl:apply-templates  mode="titletoc"/></a>
-	</xsl:when>
-	<xsl:otherwise>
-	  <a href="#{generate-id()}"><xsl:apply-templates  mode="titletoc"/></a>
-	</xsl:otherwise>
+	    <xsl:when test="@id">
+	      <a href="#{@id}"><xsl:apply-templates  mode="titletoc"/></a>
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <a href="#{generate-id()}"><xsl:apply-templates  mode="titletoc"/></a>
+	    </xsl:otherwise>
       </xsl:choose>
     </p>
   </xsl:template>
