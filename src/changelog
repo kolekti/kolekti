@@ -1,0 +1,4 @@
+
+	
+	* Adds 'hidden' attribute on toc titles, in pivot, for sections excluded from toc [fix #157]
+	* Display XML parse  errors in interface instead of generic error 500
