@@ -13,7 +13,7 @@ def statustext(string):
         elif string == 'translation':
             res =  "En traduction"
         elif string == 'validation':
-            res =  "En validation"
+            res =  "En relecture"
         elif string == 'publication':
             res =  "Officialisé"
 
