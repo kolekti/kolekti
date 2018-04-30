@@ -1,0 +1,33 @@
+{% extends "base-wide.html" %}
+{% load static %}
+
+{% block title %}A propos{% endblock %}
+{% block current_about %}class="menu-current"{% endblock %}
+{% block help-topic %}home{% endblock %}
+
+
+
+{% block content %}
+<div>
+  <h3>Kolekti</h3>
+  <p>Version {{ kolektiversion }}</p>
+  <p>Kolekti est une plateforme Libre, sous licence AGPL </p>
+  <p>Kolekti est développé par <a href="https://www.exselt.com">Exselt Services</a></p>
+  <hr/>
+  <p><a href="https://www.kolekti.org">En savoir plus...</a></p>
+  <p><a mailto="contact@kolekti.net">Envoyer un message au support technique...</a></p>
+  <p><a mailto="contact@kolekti.org">Contact commercial...</a></p>
+  
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<footer class="footer navbar-fixed-bottom navbar-inverse">
+  <div class="container-fluid">
+    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+  </div>
+</footer>
+{% endblock %}
+
+

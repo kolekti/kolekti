@@ -26,6 +26,9 @@ urlpatterns = [
 #    url(r'^$', HomeView.as_view(), name='home'),
     url(r'^$', HomeView.as_view(), name='home'),
 
+    url(r'^changelog/$', ChangelogView.as_view(), name='changelog'),
+    url(r'^about/$', AboutView.as_view(), name='about'),
+    
     url(r'^widgets/project-history/$', WidgetProjectHistoryView.as_view(), name='WidgetProjectHistory'),
     url(r'^widgets/search/$', WidgetSearchView.as_view(), name='WidgetSearch'),
     url(r'^widgets/publications/$', WidgetPublicationsListView.as_view(), name='WidgetPublicationsList'),

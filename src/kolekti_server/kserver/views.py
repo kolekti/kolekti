@@ -1972,7 +1972,27 @@ class ProjectHistoryView(kolektiMixin, View):
         except:
             logger.exception("Unable to get project history")
 
+class AboutView(kolektiMixin, View):
+    template_name = "about.html"
 
+class ChangelogView(kolektiMixin, View):
+    template_name = "changelog.html"
+    def get(self, request):
+        context = self.get_context_data()
+        changelog = ""
+        with open(os.path.join(os.path.dirname(self._appdir), 'changelog')) as f:
+            for changelogline in f.readlines():
+                changelog += self.process(changelogline)
+        context.update({'log':changelog})
+        return self.render_to_response(context)
+
+    def process(self, line):
+        line = re.sub(
+            r'\[fix #(\d+)\]', 
+            r'[fix <a href="https://github.com/kolekti/kolekti/issues/\1" target="_blanck">\1</a>]',
+            line)
+        line = line +"<br/>"
+        return line
     
 class WidgetView(kolektiMixin, View):
     def get(self, request):
@@ -1980,6 +2000,9 @@ class WidgetView(kolektiMixin, View):
         return self.render_to_response(context)    
 
 
+
+
+    
 class WidgetSearchView(WidgetView):
     template_name = "widgets/search.html"
     def get(self, request):

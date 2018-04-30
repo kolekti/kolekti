@@ -69,6 +69,14 @@
 		-->
 	      </ul>
 	    <li>
+        <li class="dropdown {% block current_about %}{% endblock %}">
+	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">?</a>
+	      <ul class="dropdown-menu" role="menu">
+            <li><a href="{% url 'changelog' %}">Changelog</a></li>
+            <li><a href="{% url 'about' %}">A propos de kolekti</a></li>
+          </ul>
+        </li>
+
               {% endblock %}
 	  </ul>
 
