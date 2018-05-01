@@ -19,6 +19,8 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+from zipfile import ZipFile
+
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
        
@@ -525,25 +527,109 @@ class ReleasesPublicationsListJsonView(kolektiMixin, View):
         }
         return HttpResponse(json.dumps(context),content_type="application/json")
 
+class ReleaseZipException(Exception):
+    pass
+    
 class ReleaseZipView(kolektiMixin, View):
     def get(self, request):
         release = request.GET.get('release')
-        now = strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
+        releasename = release.split('/')[-1]
+        now = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
         meta = ET.XML('<meta/>')
-        ET.SubElement(meta.getroot(), 'zipdate').text = now
-        ET.SubElement(meta.getroot(), 'ziptime').text = time.time()
-        ET.SubElement(meta.getroot(), 'project').text = self.request.kolekti_userproject.project.directory
-        
+        ET.SubElement(meta, 'zipdate').text = now
+        ET.SubElement(meta, 'ziptime').text = str(time.time())
+        ET.SubElement(meta, 'project').text = self.request.kolekti_userproject.project.directory
         try:
-            response = HttpResponse(self.zip_release_full(path), content_type="application/zip" meta = meta.getroot())
-            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(release, now)
+            response = HttpResponse(self.zip_release_full(release, meta), content_type="application/zip")#, meta = meta.getroot())
+            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(releasename, now)
             return response
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('error while creating zip')
             return HttpResponse(status=404)
-    
 
+    template_name = 'releases/publish-archive.html'
+        
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        context = self.get_context_data()
+        if form.is_valid():
+            uploaded_file = request.FILES[u'upload_file']
+            path = '/tmp'
+            if self.exists(path):
+                self.rmtree(path)
+            self.makedirs(path)
+            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb", sync=False)
+            try:
+                with ZipFile(self.getOsPath(path +'/'+ uploaded_file.name)) as zippy:
+                    for f in zippy.namelist():
+                        zippy.extract(f, self.getOsPath(path))
+                        
+                if not self.exists(path + "/kolekti"):
+                    for f in self.list_directory(path):
+                        if self.exists(path + "/" + f + "/kolekti"):
+                            path = "/tmp/"+f
+                            break;
+                    if path == '/tmp':
+                        context.update({'error':"Dossier kolekti non trouvé dans l'archive"})
+                        raise ReleaseZipException
+                    
+                if not self.exists(path + "/sources"):
+                    context.update({'error':"Dossier sources non trouvé dans l'archive"})
+                    raise ReleaseZipException
+                    
+                release_name = None
+                for f in self.list_directory(path + '/kolekti/publication-parameters'):
+                    if f[-8:] == '_asm.xml':
+                        release_name = f[:-8]
+                        break
+                    
+                if release_name is None:
+                    context.update({'error':"Paramètres de publication non trouvés dans l'archive"})
+                    raise ReleaseZipException
+                
+                if not (path == '/tmp/' + release_name):
+                    self.makedirs('/tmp/' + release_name)
+                    self.move_resource(path + '/kolekti', '/tmp/' + release_name)
+                    self.move_resource(path + '/sources', '/tmp/' + release_name)
+                    path = '/tmp/'+release_name
+                
+                try:
+                    pp = self.parse(path + '/kolekti/publication-parameters/' +release_name + "_asm.xml")
+                except:
+                    context.update({'error':"Paramètres de publication non valides"})
+                    raise ReleaseZipException
+                    
+                langs = []
+                for ll in self.list_directory(path + "/sources"):
+                    if ll == "share":
+                        continue
+                    if self.exists(path + "/sources/" + ll + "/assembly/" + release_name + "_asm.html"):
+                        langs.append(ll)
+                if len(langs) == 0:
+                    context.update({'error':"Aucun assemblage trouvé dans l'archive"})
+                    raise ReleaseZipException
+
+                
+                
+                context.update({
+                    "path":path,
+                    "langs":langs,
+                    "release_name":release_name,
+                    "profiles":pp.xpath('/job/profiles/profile[@enabled="1"]/label/text()'),
+                    "scripts":pp.xpath('/job/scripts/script[@enabled="1"]/label/text()'),
+                    })
+                
+            except ReleaseZipException:
+                logger.exception('Invalid Zip structure')
+                return self.render_to_response(context)
+            except:
+                logger.exception('could not unzip')
+                context.update({'error':"Impossible de décompresser l'archive"})
+                return self.render_to_response(context)            
+        else:
+            context.update({'error':form.errors})
+        return self.render_to_response(context)            
+        
 class TocsListView(kolektiMixin, View):
     template_name = 'tocs/list.html'
     
@@ -804,7 +890,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             })
             return self.render_to_response(context)
 
-        logger.debug(assembly_path)
         try:
             srclang = self.syncMgr.propget('release_srclang', assembly_path)
         except:
@@ -833,8 +918,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'srclang':srclang,
             'validactions':self.__has_valid_actions(release_path)
         })
-        logger.debug(context)
-        logger.debug(context.get('srclang','not defined'))
         return self.render_to_response(context)
     
     def post(self, request):
@@ -1155,7 +1238,6 @@ class VariablesUploadView(kolektiMixin, TemplateView):
         logger.debug("ods post")
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            logger.debug( "form valid")
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
             converter = OdsToXML(self.request.kolekti_projectpath)
@@ -2018,6 +2100,8 @@ class WidgetView(kolektiMixin, View):
         return self.render_to_response(context)    
 
 
+class WidgetPublishArchiveView(WidgetView):
+    template_name = "widgets/publish-archive.html"
 
 
     

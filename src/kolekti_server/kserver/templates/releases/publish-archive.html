@@ -1,0 +1,57 @@
+{% extends "base-wide.html" %}
+{% load static %}
+
+{% block title %}Publication de l'archive{% endblock %}
+{% block current_home %}class="menu-current"{% endblock %}
+{% block help-topic %}home{% endblock %}
+{% block extrascripts %}
+<script src="{% static "js/kolekti-publish-archive.js" %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div id="main" data-release="{{path}}" >
+  {% if error %}
+  <div class="alert alert-warning">
+    {{error}}
+  </div>
+  {% else %}
+  <h3>Version : {{ release_name }}</h3>
+  <div id="pub_before">
+    <h4>Langues</h4>
+    <ul>
+      {% for lang in langs %}
+      <li class="lang" data-lang="{{lang}}"> {{ lang }}</li>
+      {% endfor %}
+    </ul>
+    <h4>Profils de publication</h4>
+    <ul>
+      {% for profile in profiles %}
+      <li> {{ profile }}</li>
+      {% endfor %}
+    </ul>
+    <h4>Scripts</h4>
+    <ul>
+      {% for script in scripts %}
+    <li> {{ script }}</li>
+    {% endfor %}
+    </ul>
+    
+    <hr/>
+    <p><a class="btn btn-primary btn_publish" href="#">Confirmer</a></p>
+  </div>
+  {% endif %}
+  <div id="pubresult"></div>
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<footer class="footer navbar-fixed-bottom navbar-inverse">
+  <div class="container-fluid">
+    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+  </div>
+</footer>
+{% endblock %}
+
+

@@ -1295,6 +1295,8 @@ class ReleasePublisher(Publisher):
     def publish_release(self, assembly, xjob):
         """ publish an assembly"""
         pubevents = []
+        logger.debug('publish')
+        logger.debug(self._publangs)
         try :
             for lang in self._publangs:
                 langpubevt = []
@@ -1327,6 +1329,7 @@ class ReleasePublisher(Publisher):
                 pubevents.append({'event':'lang', 'label':lang, 'content':langpubevt})
         except:
             import traceback
+            logger.exception('erreur lors de la publication')
             errev = {
                 'event':'error',
                 'msg':"erreur lors de la publication",

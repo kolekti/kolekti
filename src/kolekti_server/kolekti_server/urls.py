@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^widgets/search/$', WidgetSearchView.as_view(), name='WidgetSearch'),
     url(r'^widgets/publications/$', WidgetPublicationsListView.as_view(), name='WidgetPublicationsList'),
     url(r'^widgets/releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='WidgetReleasePublicationsList'),
+    url(r'^widgets/publish_archive/$', WidgetPublishArchiveView.as_view(), name='WidgetPublishArchive'),
     url(r'^project/history/$', ProjectHistoryView.as_view(), name='projecthistory'),
     
     url(r'^tocs/$', TocsListView.as_view(), name='toclist'),
@@ -54,6 +55,7 @@ urlpatterns = [
     url(r'^releases/validate', ReleaseValidateView.as_view(),name="releasevalidate"),
     url(r'^releases/assembly', ReleaseAssemblyView.as_view(),name="releaseassembly"),
     url(r'^releases/publications', ReleasePublicationsView.as_view(),name="releasepublications"),
+    url(r'^releases/zip', ReleaseZipView.as_view(),name="releasezip"),
     
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
