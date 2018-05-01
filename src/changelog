@@ -1,5 +1,5 @@
 
-	
+	* Feature export a release to zip, and upload and publish a release
 	* Change label 'En validation' in release status menu [fix #182]
 	* Adds 'hidden' attribute on toc titles, in pivot, for sections excluded from toc [fix #157]
 	* Display XML parse  errors in interface instead of generic error 500
