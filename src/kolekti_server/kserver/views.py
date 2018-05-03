@@ -43,6 +43,7 @@ from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.utils.cache import add_never_cache_headers
 
 # kolekti imports
 from kolekti.common import kolektiBase
@@ -2059,7 +2060,9 @@ class SyncRemoveView(kolektiMixin, View):
                         
 class projectStaticView(kolektiMixin, View):
     def get(self, request, path):
-        return serve(request, path, self.request.kolekti_projectpath)
+        response = serve(request, path, self.request.kolekti_projectpath)
+        add_never_cache_headers(response)
+        return response
 
 class ProjectHistoryView(kolektiMixin, View):
     def get(self, request):

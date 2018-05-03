@@ -1,3 +1,5 @@
+
+	* Prevent browsser caching when serving project files
 	* move changelog and about to user menu
 	
 	* Feature export a release to zip, and upload and publish a release
