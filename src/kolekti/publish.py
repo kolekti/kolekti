@@ -1093,7 +1093,7 @@ class Releaser(Publisher):
                 "toc":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.toc"]/@content)',namespaces=self.nsmap),
                 "job":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.job"]/@content)',namespaces=self.nsmap),
                 }
-            self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = False)
+            self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = True)
             create_event.update({
                 "event":"release_creation",
                 "content":events,
