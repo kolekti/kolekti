@@ -26,9 +26,7 @@
 
 
   <xsl:variable name="translationfile">
-    <xsl:text>/kolekti/publication-templates/</xsl:text>
-    <xsl:value-of select="$helpname" />
-    <xsl:text>/variables/labels</xsl:text>
+    <xsl:text>/kolekti/publication-templates/share/labels</xsl:text>
   </xsl:variable>
 
   <xsl:variable name="helptitle">

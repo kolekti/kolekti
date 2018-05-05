@@ -425,7 +425,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         }
                 
         # copy generic variable file 
-        srcdir = "kolekti/publication-templates/share/variables"
+        srcdir = "kolekti/publication-templates/share"
         srcfile = srcdir + "/labels.xml"
         try:
             self.makedirs(assembly_dir + "/" +srcdir)
@@ -1047,6 +1047,7 @@ class Releaser(Publisher):
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
         # toc = self.get_base_toc(toc) + ".html"
+        
         logger.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
