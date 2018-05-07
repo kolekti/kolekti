@@ -90,15 +90,15 @@
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Exporter</h5>
           {% if srclang and  srclang == lang %}
-          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage source [{{lang}}]
           </a>
 	      {% else %}
-	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage source [{{srclang}}]
 	      </a>
 	      <br>
-	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage traduit [{{lang}}]
 	      </a>
 	      {% endif %}
