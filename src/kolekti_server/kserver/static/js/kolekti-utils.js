@@ -835,14 +835,41 @@ var kolekti_browser = function(args) {
 
     // sorting
 
-    var bsort = function(col, asc) {		 
-	var mylist = $(parent).find('.dirlist tbody');
-	var listitems = mylist.children('tr').get();
-	listitems.sort(function(a, b) {
-	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
-	    return asc?cmp:0-cmp;
-	})
-	$.each(listitems, function(idx, itm) { mylist.append(itm); });
+    
+    var bsort = function(col, asc) {
+        var bsort_function = function(a, b)  {
+            var stra = (''+$(a).data('sort-'+col)).toUpperCase();
+            var strb = (''+$(b).data('sort-'+col)).toUpperCase();
+	        var cmp = stra.localeCompare(strb);
+	        return asc?cmp:0-cmp;
+	    }
+
+	    var mylist = $(parent).find('.dirlist tbody');
+	    var listitems = mylist.children('tr').get();
+        var lastlistitem, parentitems = {};
+        $.each(listitems, function(idx, itm) {
+            if ($(itm).data('sort-'+col)) {
+                lastlistitem = itm
+            }
+            else {
+                if(parentitems[$(lastlistitem).data('name')]) {
+                    parentitems[$(lastlistitem).data('name')].push(itm)
+                } else {
+                    parentitems[$(lastlistitem).data('name')]=[itm]
+                }
+            }
+        });
+	    var listitems = mylist.children('tr.sortableitem').get();
+	    listitems.sort(bsort_function)
+	    $.each(listitems, function(idx, itm) {
+            mylist.append(itm);
+            if (parentitems[$(itm).data('name')]) {
+                parentitems[$(itm).data('name')].sort(bsort_function)
+                $.each(parentitems[$(itm).data('name')], function(iidx, iitm) {
+                    mylist.append(iitm);
+                });
+            }
+        });
     }
 
     

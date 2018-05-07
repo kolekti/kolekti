@@ -63,7 +63,7 @@
     </thead>
     <tbody>
       {% for f in files %}
-      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
+      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %} sortableitem">
 	<td class="kolekti-browser-icon">
 	  {% if f.indexes %}
 	  <a href="#" class="dirtoggle">
@@ -138,7 +138,7 @@
       <tr><td colspan="3">{{f.indexes}}</td></tr>
       -->
       {% for fi in f.indexes %}
-      <tr  data-sort-name="{{ f.name }}_{{ fi.name }}" data-name="{{ f.name }}_{{ fi.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="release-index hidden">
+      <tr  data-name="{{ f.name }}_{{ fi.name }}" class="release-index hidden">
 	<td class="kolekti-browser-icon"><i class="fa fa fa-suitcase"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td class="kolekti-browser-name"><a
