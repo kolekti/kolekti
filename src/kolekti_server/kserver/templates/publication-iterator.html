@@ -39,10 +39,12 @@
       </pre>
     </div>
   </div>
-  {% elif event == "publication_dir" %}
+  {% comment %} FIXME #178
+  {% elif event == "publication_dir" %}  
   <hr>
   <div class="alert alert-default">
     <a href="/publications/zip/?path={{ path }}" target="_blank">Zip de l'ensemble des publications</a>
   </div>
+  {% endcomment %}
   {% endif %}
 </div>
