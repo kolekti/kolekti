@@ -376,7 +376,7 @@ $(document).ready(function() {
                         return widget_loader('/widgets/search/')
                     }
                   },
-        'publish_archive': { 'title':'Publier une archive zip',
+        'publish_archive': { 'title':'Publier une version archivée',
                     'content':function() {
                         return widget_loader('/widgets/publish_archive/')
                     }

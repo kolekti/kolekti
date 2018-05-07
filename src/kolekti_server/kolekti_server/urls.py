@@ -55,7 +55,7 @@ urlpatterns = [
     url(r'^releases/validate', ReleaseValidateView.as_view(),name="releasevalidate"),
     url(r'^releases/assembly', ReleaseAssemblyView.as_view(),name="releaseassembly"),
     url(r'^releases/publications', ReleasePublicationsView.as_view(),name="releasepublications"),
-    url(r'^releases/zip', ReleaseZipView.as_view(),name="releasezip"),
+    url(r'^releases/archive', ReleaseZipView.as_view(),name="releasearchive"),
     
     url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
     url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),

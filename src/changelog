@@ -1,3 +1,4 @@
+	* Update user elements for archive / archive publication
 	* Fix display of release subfolders on release creation [fix #185]
 	* Prevent browsser caching when serving project files
 	* move changelog and about to user menu
