@@ -279,7 +279,10 @@ var kolekti_browser = function(args) {
     os_actions = (os_action_copy || os_action_delete || os_action_move || os_action_rename)
     
     if (args && args.create_actions && args.create_actions=='yes')
-	create_actions= true;
+	    create_actions= true;
+    else if (args && args.create_actions)
+        create_actions= args.create_actions;
+    
     if (args && args.create_builder)
 	create_builder = args.create_builder;
     
@@ -315,9 +318,16 @@ var kolekti_browser = function(args) {
 			  )
 	}).done(function(){
 	    if (!create_actions) {
-		$(parent).find('.kolekti-browser-create-actions').hide()
+		    $(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('.newfile_collapse form'), path)
+            if (create_actions == "files") {
+                $(parent).find('.kolekti-browser-create-actions .newfolder').hide()
+            }
+            else if (create_actions == "folders") {
+                $(parent).find('.kolekti-browser-create-actions .newfile').hide()
+            }
+            else
+		        create_builder($(parent).find('.newfile_collapse form'), path)
 	    }
 
 	    if (!os_actions) 

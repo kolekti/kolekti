@@ -132,6 +132,7 @@ urlpatterns.extend([
     url(r'^topics/create/', TopicCreateView.as_view(),name="topic_create"),
     
     url(r'^templates/$', TopicTemplateListView.as_view(),name="templatelist"),
+    url(r'^templates/create/$', TopicTemplateCreateView.as_view(),name="templatecreate"),
     
     url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 

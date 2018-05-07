@@ -1859,6 +1859,32 @@ class TopicTemplatesView(kolektiMixin, View):
         tnames = [t['name'] for t in tpls]
         return HttpResponse(json.dumps(tnames),content_type="application/json")
 
+class TopicTemplateCreateView(kolektiMixin, View):
+    template_name = "home.html"
+    def post(self, request):
+        try:
+            templatepath = request.POST.get('templatepath')
+            templatepath = self.set_extension(templatepath, ".html")
+            logger.debug(templatepath)
+            topic = """<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <meta content="application/xhtml+xml; charset=UTF-8" http-equiv="content-type" />
+      <title>Titre du module</title>
+      <meta name="kolekti:version" content="0.8" />
+      <link rel="stylesheet" type="text/css" href="/kolekti/stylesheets/editor.css" />
+    </head>
+<body>
+</body>
+"""
+            self.write(topic, templatepath)
+        except:
+            import  traceback
+            print traceback.format_exc()
+        return HttpResponse(json.dumps(templatepath), content_type="application/json")
+
+    
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
         pathes = request.GET.getlist('pathes[]',[])
