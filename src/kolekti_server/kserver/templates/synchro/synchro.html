@@ -1,6 +1,7 @@
 {% extends "basemenufix.html" %}
 {% load timetags %}
 {% load static %}
+{% load svnmsg %}
 
 {% block title %}Synchronisation{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
@@ -38,7 +39,7 @@
 	    <span class="date">{{commit.date|print_timestamp}}</span>
 	    <span class="author pull-right">{{commit.author}}</span>
 	  </p>
-	  <p class="msg">{{commit.message}}</p>
+	  <p class="msg">{{commit.message|svnmsg}}</p>
 	  <p class="link">  
 	    <a href="/sync/revision/{{commit.revision.number}}/">détails</a>
 	  </p>

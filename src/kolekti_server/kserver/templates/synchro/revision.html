@@ -1,10 +1,15 @@
 {% extends "synchro/synchro.html" %}
-
+{% load svnmsg %}
 
 {% block operation %}
 
 <div class="alert alert-info">
-  <h3>Revision {{ revinfo.rev }}</h3>
+  <h3>Revision {{ revnum }}</h3>
+  <p>Description :</p>
+  <p>
+    {{ revinfo.message|svnmsg }}
+  </p>
+  <br/><hr/><br/>
   <p>Fichiers modifiés</p>
   {% for item in revsumm %}
   <div class="row">

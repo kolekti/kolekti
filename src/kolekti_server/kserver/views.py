@@ -1979,6 +1979,7 @@ class SyncRevisionView(kolektiMixin, View):
             "history": sync.history(),
             'revsumm':revsumm,
             'revinfo':revinfo,
+            'revnum':rev,
             'difftext':difftext,
             })
         
