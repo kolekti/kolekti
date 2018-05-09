@@ -1592,11 +1592,13 @@ class BrowserReleasesView(BrowserView):
                     r = {'name':releaseindex, 'type':"text/xml", 'date':date}
                     try:
                         releases[releasename]['indexes'].append(r)
+                        if date > releases[releasename]['date']:
+                            releases[releasename]['date'] = date
                     except KeyError:
                         releases[releasename] = {
                             'name':releasename,
                             'type':"text/xml",                                   
-                            'date':None,
+                            'date':date,
                             'indexes':[r]}
                         found = True
                 except:

@@ -858,7 +858,7 @@ var kolekti_browser = function(args) {
 	    var listitems = mylist.children('tr').get();
         var lastlistitem, parentitems = {};
         $.each(listitems, function(idx, itm) {
-            if ($(itm).data('sort-'+col)) {
+            if ($(itm).hasClass('sortableitem')) {
                 lastlistitem = itm
             }
             else {
@@ -1078,4 +1078,8 @@ $(document).ready(function () {
     $('body').on('keyup','.copynameinput', handle_return)
     $('body').on('keyup','.kolekti-browser-name input[type=text]', handle_return)
 
+
+    $("form.upload_form").on("submit", function() {
+        $(this).find("input[type=file]")
+    })
 });
