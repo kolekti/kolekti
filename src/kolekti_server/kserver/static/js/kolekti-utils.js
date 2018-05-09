@@ -1079,7 +1079,20 @@ $(document).ready(function () {
     $('body').on('keyup','.kolekti-browser-name input[type=text]', handle_return)
 
 
-    $("form.upload_form").on("submit", function() {
-        $(this).find("input[type=file]")
+    $("body").on("change","form.upload_form input[type=file]",  function(e) {
+        var btn = $(this).closest('form').find('button[type=submit]');
+        
+        if ($(this).val().length > 0) {
+            btn.addClass('btn-primary')
+            btn.removeClass('btn-default')
+        } else {
+            btn.addClass('btn-default')
+            btn.removeClass('btn-primary')
+        }
+    })
+    
+    $("body").on("submit", "form.upload_form", function(e) {
+        if($(this).find("input[type=file]").val().length == 0)
+            e.preventDefault()
     })
 });
