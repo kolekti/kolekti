@@ -749,7 +749,7 @@ class kolektiBase(object):
 
         
     def substitute_variables(self, string, profile, extra={}):
-        for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+        for variable in re.findall('{[ /a-zA-Z0-9_-]+:[a-zA-Z0-9_ -]+}', string):
             # logger.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()
