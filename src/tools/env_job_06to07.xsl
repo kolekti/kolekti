@@ -47,8 +47,8 @@
   <xsl:template match="script">
     <script name="multiscript">
       <xsl:copy-of select="@enabled"/>
-      <label>FixME</label>
-      <filename>FixME</filename>
+      <label><xsl:value-of select="@name"/></label>
+      <filename><xsl:value-of select="ext:translate_jobstring(//profile[1]/label/text(), //profile[1]/criterias)"/></filename>
       <publication>
         <script>
           <xsl:copy-of select="@name"/>

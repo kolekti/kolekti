@@ -11,6 +11,7 @@ from lxml import etree as ET
 import argparse
 from zipfile import ZipFile
 import logging
+import shutil
 logger = logging.getLogger('convert')
 #from kolekti.publish_utils import PublisherExtensions
 logger.setLevel(logging.DEBUG)
@@ -155,6 +156,7 @@ def cmd_convert_enveloppe(args):
             args.target_project,
             "releases",
             releasename)
+        print releasepath
     
         makedirs(os.path.join(releasepath, 'kolekti', 'publication-parameters'))
         makedirs(os.path.join(releasepath, 'kolekti', 'publication-templates'))
@@ -163,12 +165,32 @@ def cmd_convert_enveloppe(args):
         makedirs(os.path.join(releasepath, 'sources', lang, 'variables','ods'))
         makedirs(os.path.join(releasepath, 'sources', 'share'))
         
-        apply_xsl('assembly_06to07.xsl',  assembly, os.path.join(releasepath, 'sources', lang, 'assembly', releasename + '_asm.html'), dargs, xsl_args={'lang': "'%s'"%lang}, parser = ET.HTMLParser())
-        apply_xsl('env_job_06to07.xsl', config, os.path.join(releasepath, 'kolekti', 'publication-parameters', releasename + '_asm.xml'), args)
+        apply_xsl(
+            'assembly_06to07.xsl',
+            assembly,
+            os.path.join(releasepath, 'sources', lang, 'assembly', releasename + '_asm.html'),
+            dargs,
+            xsl_args={'lang': "'%s'"%lang},
+            parser = ET.HTMLParser()
+            )
+        
+        apply_xsl(
+            'env_job_06to07.xsl',
+            config,
+            os.path.join(releasepath, 'kolekti', 'publication-parameters', releasename + '_asm.xml'),
+            args
+            )
 
         for f in  myzip.namelist():
             if f[:7] == "medias/" and f[-1]!= '/':
                 myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'pictures'))
+                newpdir = os.path.dirname(os.path.join(releasepath, 'sources', lang, 'pictures',f[7:]))
+                if not os.path.exists(newpdir):
+                    os.makedirs(newpdir)
+                shutil.move(
+                    os.path.join(releasepath, 'sources', lang, 'pictures',f),
+                    os.path.join(releasepath, 'sources', lang, 'pictures',f[7:])
+                    )
             if f[:7] == "sheets/" and f[-1]!= '/':
                 myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'variables', 'ods'))
 
