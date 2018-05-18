@@ -442,6 +442,8 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
         releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
         releases = []
         for release in os.listdir(releasepath):
+            if not os.path.exists(os.path.join(releasepath, release, 'sources')):
+                continue
             releaseinfo = {'langs':[], 'name':release}
             for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
                     assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')
