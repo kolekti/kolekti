@@ -16,7 +16,7 @@
     </xsl:copy>
   </xsl:template>
   
-  <xsl:template match="html:div[@class='topic']/@id"/>
+  <xsl:template match="html:body//@id"/>
   <xsl:template match="html:div[@class='topicinfo']"/>
 
 </xsl:stylesheet>
