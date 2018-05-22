@@ -1,8 +1,16 @@
+
+	* Fix access to translator admin interface
+	* Add extension to assembly downloads [fix #143]
+	* Implement topic template creation [fix #146]
+	* Prevent Browser caching when downloading published pdf files
+	* Fix line braks in commit messages [fix #149]
+	* Fix sort order in release list [fix #183]
+	* Standardize labels xml file location [fix #147]
 	* Update user elements for archive / archive publication
 	* Fix display of release subfolders on release creation [fix #185]
 	* Prevent browsser caching when serving project files
 	* move changelog and about to user menu
-	
+01/05/2018
 	* Feature export a release to zip, and upload and publish a release
 	* Change label 'En validation' in release status menu [fix #182]
 	* Adds 'hidden' attribute on toc titles, in pivot, for sections excluded from toc [fix #157]
