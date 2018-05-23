@@ -155,15 +155,15 @@
 
       <parameter name="labels" 
                  type="resource" 
-                 dir="kolekti/publication-templates/WebHelp5/variables"
+                 dir="kolekti/publication-templates/share"
                  file="labels"
 	             ext="xml"
                  />
       
       <parameter name="condition_labels" 
                  type="resource"
-                 dir="kolekti/publication-templates/WebHelp5/variables"
-                 file="condition_labels"
+                 dir="kolekti/publication-templates/share"
+                 file="labels"
 	             ext="xml"
 	             onfail="silent"
                  />
