@@ -1,0 +1,25 @@
+{% extends "base-wide.html" %}
+{% load static %}
+
+{% block title %}Changelog{% endblock %}
+{% block current_about %}class="menu-current"{% endblock %}
+{% block help-topic %}home{% endblock %}
+
+
+
+{% block content %}
+<div>
+  {{log|safe}}
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<footer class="footer navbar-fixed-bottom navbar-inverse">
+  <div class="container-fluid">
+    <p class="bg-primary">Kolekti {{ kolektiversion }}</p>
+  </div>
+</footer>
+{% endblock %}
+
+

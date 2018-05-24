@@ -228,17 +228,16 @@ class Publisher(PublisherMixin, kolektiBase):
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
                     import traceback
-                    logger.error("Assembly Error")
+                    logger.exception("Assembly Error")
                     yield {
                         'event':'error',
                         'msg':"erreur lors de l'assemblage",
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                    logger.debug(traceback.format_exc())
                     
                 # invoke scripts
-                logger.debug(profilename, "starting scripts")
+                logger.debug( "starting scripts %s", profilename)
 #                logger.debug(ET.tostring(xjob))
                     
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
@@ -304,7 +303,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logger.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-
+        logger.debug('profile pub dir %s', pubdir)
         try:
             # logger.debug(assembly)
             # criteria
@@ -426,7 +425,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         }
                 
         # copy generic variable file 
-        srcdir = "kolekti/publication-templates/share/variables"
+        srcdir = "kolekti/publication-templates/share"
         srcfile = srcdir + "/labels.xml"
         try:
             self.makedirs(assembly_dir + "/" +srcdir)
@@ -862,13 +861,13 @@ class Publisher(PublisherMixin, kolektiBase):
         except OSError:
             pass
         if filer is None:
-            self.copyDirs(srcdir, destpath)
+            self.copyDirs(srcdir, destpath, sync = not self._draft)
         else:
             try:
                 source= u"%s/%s.%s"%(srcdir,filer,ext)
                 dest=   u"%s/%s.%s"%(destpath,filer,ext)
                 logger.debug('copy resource %s -> %s'%(source, dest))
-                self.copyFile(source,dest)
+                self.copyFile(source, dest, sync = not self._draft)
             except:
                 import traceback
                 logger.error("Impossible de copier la ressource %s"%source)
@@ -884,7 +883,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         self.rmdir(target)
                     except:
                         pass
-                    self.copyDirs(source,target)
+                    self.copyDirs(source,target, sync = not self._draft)
 
             except:
                 logger.exception("Impossible de copier la ressource %s"%source)
@@ -1048,6 +1047,7 @@ class Releaser(Publisher):
         # toc = xjob.xpath('string(/*/*[self::toc]/@value)')
         res = []
         # toc = self.get_base_toc(toc) + ".html"
+        
         logger.debug("release toc %s",toc)
         if isinstance(toc,ET._ElementTree):
             xtoc = toc
@@ -1094,7 +1094,7 @@ class Releaser(Publisher):
                 "toc":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.toc"]/@content)',namespaces=self.nsmap),
                 "job":xtoc.xpath('string(/h:html/h:head/h:meta[@name="kolekti.job"]/@content)',namespaces=self.nsmap),
                 }
-            self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = False)
+            self.write(json.dumps(create_event), assembly_dir+"/release_info.json", sync = True)
             create_event.update({
                 "event":"release_creation",
                 "content":events,
@@ -1282,6 +1282,8 @@ class ReleasePublisher(Publisher):
     def publish_release(self, assembly, xjob):
         """ publish an assembly"""
         pubevents = []
+        logger.debug('publish')
+        logger.debug(self._publangs)
         try :
             for lang in self._publangs:
                 langpubevt = []
@@ -1314,6 +1316,7 @@ class ReleasePublisher(Publisher):
                 pubevents.append({'event':'lang', 'label':lang, 'content':langpubevt})
         except:
             import traceback
+            logger.exception('erreur lors de la publication')
             errev = {
                 'event':'error',
                 'msg':"erreur lors de la publication",
@@ -1441,7 +1444,7 @@ class ReleasePublisher(Publisher):
                     "time": int(time.time()),
                     "content":valevents,
                     })
-                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync=False)
+                self.write(json.dumps(mf), self._release_dir + '/manifest.json', sync = False)
     
             except:
                 import traceback

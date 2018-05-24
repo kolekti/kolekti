@@ -1,6 +1,7 @@
 from django.conf.urls import include, url
 
 from kserver.views import *
+#from kserver.debug_views import *
 from kserver_saas.views import *
 from translators.views import *
 # from translators.urls import *
@@ -15,6 +16,8 @@ from django.contrib import admin
 from django_js_reverse.views import urls_js
 
 urls = [
+    url(r'^$', HomeView.as_view(), name='kolekti_home'),
+    
     url(r'^accounts/profile/$', UserProfileView.as_view(), name='user_profile'),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^invitations/', include('invitations.urls', namespace='invitations')),
@@ -22,11 +25,16 @@ urls = [
     
     url(r'^jsreverse/$', urls_js, name='js_reverse'),
 
-    url(r'^$', HomeView.as_view(), name='kolekti_home'),
+    url(r'^changelog/$', ChangelogView.as_view(), name='changelog'),
+    url(r'^about/$', AboutView.as_view(), name='about'),
 
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog, name='javascript-catalog'),
+    url(r'^staticdev/admin/(?P<path>.*)$', staticView),
+    url(r'^staticdev/(?P<path>.*)$', staticView, {'document_root' : 'kserver/static'}),
+    
     url(r'^(?P<project>[^/\?]+)/', include([
         url(r'^$', ProjectHomeView.as_view(), name='kolekti_project_home'),
-        
         
         url(r'^kolekti/', include([
             url(r'^settings/$', SettingsView.as_view(), name='kolekti_settings'),
@@ -41,6 +49,7 @@ urls = [
                 url(r'^(?P<pt_path>.+)/$', PublicationTemplatesView.as_view(), name='kolekti_publication_templates'),
             ])),
 #            .as_view(), name='kolekti_publication_templates'),
+
             url(r'^publication-parameters/', include([
                 url(r'^$', JobListView.as_view(), name='kolekti_jobs'),
                 url(r'^create/', JobCreateView.as_view(), name='kolekti_job_create'),
@@ -48,6 +57,8 @@ urls = [
                 url(r'^(?P<job_path>.+)/$', JobListView.as_view(), name='kolekti_jobs_path'),                
             ])),
         ])),
+
+
 
         
         url(r'^sources/(?P<lang>[^/\?]+)/', include([
@@ -59,14 +70,11 @@ urls = [
                     url(r'^create$', TocCreateView.as_view(),name='kolekti_toc_create'),
                     url(r'^publish$', TocPublishView.as_view(),name='kolekti_toc_publish'),
                     url(r'^release$', TocReleaseView.as_view(),name='kolekti_toc_release'),
-                    url(r'^$', TocsListView.as_view(), name='kolekti_tocs_browse'),        
-
+                    url(r'^$', TocsListView.as_view(), name='kolekti_tocs_browse'),
                 ])),
             ])),
                 
             url(r'^topics/$', TopicsListView.as_view(), name='kolekti_topics'),
-            url(r'^topics/templates/$', TopicTemplatesView.as_view(),name='kolekti_topic_templates'),
-            url(r'^topics/templates/(?P<topic_template_path>.+)/', TopicTemplatesView.as_view(),name='kolekti_topic_templates_path'),
             url(r'^topics/(?P<topic_path>.+)/', include([
                 url(r'^meta.json$', TopicMetaJsonView.as_view(),name='kolekti_topic_meta_json'),
                 url(r'^edit$', TopicEditorView.as_view(),name='kolekti_topic_edit'),
@@ -77,20 +85,22 @@ urls = [
             url(r'^templates/$', TopicTemplateListView.as_view(),name='kolekti_templates'),
             
             url(r'^templates/(?P<template_path>.+)/', include([
-                url(r'^edit/$', TemplateEditorView.as_view(),name='kolekti_topic_editor'),
-                url(r'^create/$', TemplateCreateView.as_view(),name='kolekti_topic_create'),
+                url(r'^edit/$', TopicTemplateEditorView.as_view(),name='kolekti_topic_editor'),
+                url(r'^create/$', TopicTemplateCreateView.as_view(),name='kolekti_topic_create'),
+#                url(r'^topics/templates/$', TopicTemplatesView.as_view(),name='kolekti_topic_templates'),
+#                url(r'^topics/templates/(?P<topic_template_path>.+)/', TopicTemplatesView.as_view(),name='kolekti_topic_templates_path'),
             ])),
             
             url(r'^variables/', include([
                 url(r'^$', VariablesListView.as_view(), name='kolekti_variables'),
                 url(r'^(?P<variable_path>.+)/', include([
+                    url(r'^$', VariablesDetailsView.as_view(), name='kolekti_variable'),
                     url(r'^create$', VariablesCreateView.as_view(), name='kolekti_variable_create'),
                     url(r'^upload$', VariablesUploadView.as_view(), name='kolekti_variable_upload'),
-                    url(r'^detail$', VariablesDetailsView.as_view(), name='kolekti_variable_details'),
+#                    url(r'^detail$', VariablesDetailsView.as_view(), name='kolekti_variable_details'),
                     url(r'^editvar$', VariablesEditvarView.as_view(), name='kolekti_variable_editval'),
                     url(r'^editcol$', VariablesEditcolView.as_view(), name='kolekti_variable_editcol'),
                     url(r'^ods$', VariablesODSView.as_view(), name='kolekti_variable_ods'),
-                    url(r'^$', VariablesListView.as_view(), name='kolekti_variables_browse'),
                 ])),
             ])),
         
@@ -99,34 +109,33 @@ urls = [
                 url(r'^upload$', PictureUploadView.as_view(), name='kolekti_picture_upload'),
                 url(r'^(?P<picture_path>.+)/', include([
                     url(r'^details$', PictureDetailsView.as_view(), name='kolekti_picture_details'),
-                    url(r'^$', PicturesListView.as_view(), name='kolekti_pictures_browse'),
                 ])),
             ])),
-
+            
             url(r'^import/$', ImportView.as_view(), name='kolekti_import'),
             url(r'^import/template/$', ImportTemplateView.as_view(), name='kolekti_import_template'),
 
-        ])),    
+        ])), # sources
             
-            
-        url(r'^publications.json$', PublicationsListJsonView.as_view(),name='kolekti_publications_list_json'),
-        url(r'^publications/(?P<publication_path>.+)/zip/$', PublicationsZipView.as_view(),name='kolekti_publications_zip'),
-
+         
         
         url(r'^releases/$', ReleaseListView.as_view(), name='kolekti_releases'),
         url(r'^releases/(?P<release>[^/\?]+)/', include([
-            url(r'^states/$', ReleaseAllStatesView.as_view(), name='kolekti_release_states'),
+            url(r'^publish/$', ReleasePublishView.as_view(),name='kolekti_release_publish'),
+            url(r'^archive', ReleaseArchiveView.as_view(),name="kolekti_release_archive"),
+            url(r'^states/$', ReleaseStatesView.as_view(), name='kolekti_release_states'),
+            url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_lang_delete'),
+                            
             url(r'^(?P<lang>[^/\?]+)/', include([
-                url(r'^detail/$', ReleaseDetailsView.as_view(), name='kolekti_release_detail'),
-                url(r'^state/$', ReleaseStateView.as_view(), name='kolekti_release_state'),
-                url(r'^focus/$', ReleaseFocusView.as_view(), name='kolekti_release_focus'),
-                url(r'^copy/$', ReleaseCopyView.as_view(), name='kolekti_release_copy'),
-                url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_delete'),
-                url(r'^publish/$', ReleasePublishView.as_view(),name='kolekti_release_publish'),
-                url(r'^validate/$', ReleaseValidateView.as_view(),name='kolekti_release_validate'),
-                url(r'^assembly/$', ReleaseAssemblyView.as_view(),name='kolekti_release_assembly'),
-                url(r'^publications/*', ReleasePublicationsView.as_view(),name='kolekti_release_publications'),
-                url(r'^publications.json$', ReleasesPublicationsListJsonView.as_view(),name='kolekti_release_publications_list_json'),
+                url(r'^detail/$', ReleaseLangDetailsView.as_view(), name='kolekti_release_lang_detail'),
+                url(r'^state/$', ReleaseLangStateView.as_view(), name='kolekti_release_lang_state'),
+                url(r'^focus/$', ReleaseLangFocusView.as_view(), name='kolekti_release_lang_focus'),
+                url(r'^copy/$', ReleaseLangCopyView.as_view(), name='kolekti_release_lang_copy'),
+                url(r'^publish/$', ReleaseLangPublishView.as_view(),name='kolekti_release_lang_publish'),
+                url(r'^validate/$', ReleaseLangValidateView.as_view(),name='kolekti_release_lang_validate'),
+                url(r'^assembly/$', ReleaseLangAssemblyView.as_view(),name='kolekti_release_lang_assembly'),
+                url(r'^publications/*', ReleaseLangPublicationsView.as_view(),name='kolekti_release_lang_publications'),
+                url(r'^publications.json$', ReleaseLangPublicationsListJsonView.as_view(),name='kolekti_release_lang_publications_list_json'),
             ])),
         ])),
         
@@ -140,6 +149,7 @@ urls = [
                 url(r'^revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='kolekti_sync_revision'),
                 url(r'^add$', SyncAddView.as_view(), name='kolekti_sync_add'),
                 url(r'^remove$', SyncRemoveView.as_view(), name='kolekti_sync_remove'),
+
             ])),
             url(r'browse/', include([        
                 url(r'^$', BrowserView.as_view(),name='kolekti_browser'),    
@@ -156,28 +166,94 @@ urls = [
             url(r'^widgets/', include([        
                 url(r'^project-history/$', WidgetProjectHistoryView.as_view(), name='kolekti_widget_project_history'),
                 url(r'^publications/$', WidgetPublicationsListView.as_view(), name='kolekti_widget_publication_list'),
-                url(r'^releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='kolekti_widget_release_publications_list')
+                url(r'^releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='kolekti_widget_release_publications_list'),
+                url(r'^search/$', WidgetSearchView.as_view(), name='kolekti_widget_search'),
+                url(r'^publish_archive/$', WidgetPublishArchiveView.as_view(), name='kolekti_widget_publish_archive'),
             ])),
             url(r'^history/$', ProjectHistoryView.as_view(), name='kolekti_project_history'),
-        ])),
-
-        url(r'^search/$', SearchView.as_view(),name='kolekti_search'),
-        ]))
-    ]
+            url(r'^publications.json$', PublicationsListJsonView.as_view(),name='kolekti_publications_list_json'),
+            url(r'^publications/(?P<publication_path>.+)/zip/$', PublicationsZipView.as_view(),name='kolekti_publications_zip'),
+            url(r'^search/$', SearchView.as_view(),name='kolekti_search'),
+        ])), #/api
+    url(r'^(?P<path>.*)$', ProjectStaticView.as_view(), name='kolekti_project_static'),
     
+  ])), # project
     
-urls.extend([
+# <<<<<<< HEAD
+    
+# urls.extend([
+# =======
+#    url(r'^templates/$', TopicTemplateListView.as_view(),name="templatelist"),
+#    url(r'^templates/create/$', TopicTemplateCreateView.as_view(),name="templatecreate"),
+    
+#    url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
 
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog, name='javascript-catalog'),
-    url(r'^staticdev/(?P<path>.*)$', staticView, {'document_root' : settings.STATIC_PATH}),
-    url(r'^(?P<project>[^/\?]+)/(?P<path>.*)$', ProjectStaticView.as_view(), name='kolekti_project_static'),
-])
+#    url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),
+#    url(r'^publications/zip/$', PublicationsZipView.as_view(),name="publications_zip"),
+#    url(r'^releases/publications/list.json', ReleasesPublicationsListJsonView.as_view(),name="releases_publications_list_json"),
+
+#    url(r'^search/$', SearchView.as_view(),name="kolekti_search"),
+#    url(r'^search/(?P<page>[0-9]+)/$', SearchView.as_view(),name="kolekti_search_page"),
+#    url(r'^search/form/$', SearchFormView.as_view(),name="kolekti_search_form"),
+#>>>>>>> 6514571db0588dce19c15b82f54b2853c39454b7
+
+]
     
 #    url(r'^publications', staticView, name='kolekti_raw_publication'),
 #    url(r'^drafts', staticView, name='kolekti_raw_draft'),
 
 
-urlpatterns = urls + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns = urls # + static(settings.STATIC_URL, document_root=settings.STATIC_PATH)
 
 admin.autodiscover()
+
+
+# =======
+    
+    
+
+# ]
+
+# if os.sys.platform[:3] == "win":
+#     urlpatterns.extend([
+#         url(r'^projects/$', ProjectsView.as_view(), name='projects'),    
+#         url(r'^projects/activate$', ProjectsActivateView.as_view(), name='projects_activate'),
+#         url(r'^projects/language$', ProjectsLanguageView.as_view(), name='projects_language'),
+#         url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+#         url(r'^projects/new$', ProjectsView.as_view(), name='projects_new'),
+#         ])
+# else:
+#     # Saas
+#     urlpatterns.extend([
+#         url(r'^projects/$', SaasProjectsView.as_view(), name='projects'),    
+#         url(r'^projects/activate$', SaasProjectsActivateView.as_view(), name='projects_activate'),
+#         url(r'^projects/language$', SaasProjectsLanguageView.as_view(), name='projects_language'),
+#         url(r'^projects/config$', ProjectsConfigView.as_view(), name='projects_config'),
+#         url(r'^projects/new$', SaasProjectsView.as_view(), name='projects_new'),    
+#         ])
+
+# urlpatterns.extend([
+#     url(r'^settings/$', SettingsView.as_view(), name='settings'),
+#     url(r'^settings.json$', SettingsJsonView.as_view(), name='settings_json'),
+#     url(r'^settings.js$', SettingsJsView.as_view(), name='settings_js'),
+#     url(r'^settings/job$', JobEditView.as_view(), name='jobedit'),
+#     url(r'^settings/jobs/create/', JobCreateView.as_view(), name='jobcreate'),
+#     url(r'^settings/criteria$', CriteriaEditView.as_view(), name='criteriaedit'),
+#     url(r'^criteria/$', CriteriaView.as_view(), name='criteria'),
+#     url(r'^criteria.css$', CriteriaCssView.as_view(), name='criteriacss'),
+#     url(r'^criteria.json$', CriteriaJsonView.as_view(), name='criteriacss'),
+
+#     url(r'^publication-templates/$', PublicationTemplatesView.as_view(), name='publication_templates'),
+# # url(r'^blog/', include('blog.urls')),
+
+#     url(r'^browse/exists$', BrowserExistsView.as_view(),name="kolekti_browser_exists"),
+#     url(r'^browse/mkdir$', BrowserMkdirView.as_view(),name="kolekti_browser_mkdir"),
+#     url(r'^browse/move$', BrowserMoveView.as_view(),name="kolekti_browser_move"),
+#     url(r'^browse/copy$', BrowserCopyView.as_view(),name="kolekti_browser_copy"),
+#     url(r'^browse/delete$', BrowserDeleteView.as_view(),name="kolekti_browser_delete"),
+#     url(r'^browse/ckbrowser$', BrowserCKView.as_view(),name="kolekti_ckbrowser"),
+#     url(r'^browse/ckupload$', BrowserCKUploadView.as_view(),name="kolekti_ckupload"),
+#     url(r'^browse/upload$', BrowserUploadView.as_view(), name='kolekti_browser_upload'),
+#     url(r'^browse/releases/', BrowserReleasesView.as_view(),name="kolekti_browser_releases"),
+#     url(r'^browse', BrowserView.as_view(),name="kolekti_browser"),
+# >>>>>>> 6514571db0588dce19c15b82f54b2853c39454b7

@@ -90,15 +90,15 @@
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Exporter</h5>
           {% if srclang and  srclang == lang %}
-          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage source [{{lang}}]
           </a>
 	      {% else %}
-	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage source [{{srclang}}]
 	      </a>
 	      <br>
-	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm">
+	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
 		Assemblage traduit [{{lang}}]
 	      </a>
 	      {% endif %}
@@ -107,14 +107,20 @@
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Importer</h5>
 	      <form method="POST" class="upload_form" enctype="multipart/form-data">
-		<div class="input-group">
-		  <label style="font-weight:100">Assemblage [{{lang}}]
-		  <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
-		  
-		</div>
-		<button type="submit" class="btn btn-default btn-xs">Valider</button>
+		    <div class="input-group">
+		      <label style="font-weight:100">Assemblage [{{lang}}]
+		        <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
+		        
+		    </div>
+		    <button type="submit" class="btn btn-default btn-xs">Valider</button>
 	      </form>
 	    </div>
+        <!--
+	    <div class="col-sm-12 col-md-12">
+	      <h5>Archiver</h5>
+          <p><a href="{% url 'releasearchive' %}?release={{ release_path }}">Télécharger</a> la version zippée</p>
+        </div>
+        -->
 	  </div>
 	</div>
       </div>
@@ -238,8 +244,10 @@
 	    <div class="panel-heading">
 	      {% if state == "unversionned" %}
 	      <p><strong>Cette langue n'a pas été synchronisée, le statut est indisponible</strong><br/>
-		<a href="/sync/">Synchroniser le projet</a>
+		    <a href="/sync/">Synchroniser le projet</a>
 	      </p>
+	      {% elif state == "local" %}
+	      <p><strong>Le statut est indisponible dans un projet mono utilisateur </strong></p>
 	      {% elif state == "sourcelang" %}
 	      <p>Langue source de la version</p>
 	      {% else %}
@@ -278,21 +286,25 @@
 	      
 	      {% endif %}
 	    </div>
+                  {% if success %}
+        
 	    <div class="panel-body">
 	      <div class="row">
-		<div class="col-sm-6 col-md-6">
-		  <div class="btn-group">
-		    <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
-		      Assemblage
-		    </button>
-		    <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
-		      Images
-		    </button>
-		    <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
-		      Variables
-		    </button>
-		  </div>
-		</div>
+		    <div class="col-sm-6 col-md-6">
+
+		          <div class="btn-group">
+		            <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
+		              Assemblage
+		            </button>
+		            <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
+		              Images
+		            </button>
+		            <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
+		              Variables
+		            </button>
+		          </div>
+
+		    </div>
 	      </div>
 	      <div id="content_pane" class="release-panel-part">
 	      </div>
@@ -302,12 +314,30 @@
 	      <div id="variables_pane" class="release-panel-part hidden">
 	      </div>
 	    </div>
-	    
+        {% else %}
+
+	    <div class="panel-body">
+	      <div class="row">
+		    <div class="col-sm-12 col-md-12">
+              <div class="alert alert-warning">
+                <h3>Erreur XML lors de l'analyse de l'assemblage.</h3>
+                <pre>{{ error }}</pre>
+                {% if request.method == 'POST' %}
+                <h4>L'assemblage n'a pas été importé.</h4>
+                {% endif %}
+                
+              </div>
+
+            </div>
+          </div>
+        </div>
+                  {% endif %}	    
 	  </div>
 	  {% endif %}	  
 	</div>
 	{% endif %}	  
  	{% endfor %}
+
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">
 	  </div>
@@ -338,6 +368,7 @@
         </div>
       </div>
     </div>
+
 {% endblock %}
 
 

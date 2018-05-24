@@ -283,7 +283,10 @@ var kolekti_browser = function(args) {
     os_actions = (os_action_copy || os_action_delete || os_action_move || os_action_rename)
     
     if (args && args.create_actions && args.create_actions=='yes')
-	create_actions= true;
+	    create_actions= true;
+    else if (args && args.create_actions)
+        create_actions= args.create_actions;
+    
     if (args && args.create_builder)
 	create_builder = args.create_builder;
     
@@ -319,9 +322,16 @@ var kolekti_browser = function(args) {
 			  )
 	}).done(function(){
 	    if (!create_actions) {
-		$(parent).find('.kolekti-browser-create-actions').hide()
+		    $(parent).find('.kolekti-browser-create-actions').hide()
 	    } else {
-		create_builder($(parent).find('.newfile_collapse form'), path)
+            if (create_actions == "files") {
+                $(parent).find('.kolekti-browser-create-actions .newfolder').hide()
+            }
+            else if (create_actions == "folders") {
+                $(parent).find('.kolekti-browser-create-actions .newfile').hide()
+            }
+            else
+		        create_builder($(parent).find('.newfile_collapse form'), path)
 	    }
 
 	    if (!os_actions) 
@@ -868,14 +878,41 @@ var kolekti_browser = function(args) {
 
     // sorting
 
-    var bsort = function(col, asc) {		 
-	var mylist = $(parent).find('.dirlist tbody');
-	var listitems = mylist.children('tr').get();
-	listitems.sort(function(a, b) {
-	    var cmp = $(a).data('sort-'+col).toUpperCase().localeCompare($(b).data('sort-'+col).toUpperCase());
-	    return asc?cmp:0-cmp;
-	})
-	$.each(listitems, function(idx, itm) { mylist.append(itm); });
+    
+    var bsort = function(col, asc) {
+        var bsort_function = function(a, b)  {
+            var stra = (''+$(a).data('sort-'+col)).toUpperCase();
+            var strb = (''+$(b).data('sort-'+col)).toUpperCase();
+	        var cmp = stra.localeCompare(strb);
+	        return asc?cmp:0-cmp;
+	    }
+
+	    var mylist = $(parent).find('.dirlist tbody');
+	    var listitems = mylist.children('tr').get();
+        var lastlistitem, parentitems = {};
+        $.each(listitems, function(idx, itm) {
+            if ($(itm).hasClass('sortableitem')) {
+                lastlistitem = itm
+            }
+            else {
+                if(parentitems[$(lastlistitem).data('name')]) {
+                    parentitems[$(lastlistitem).data('name')].push(itm)
+                } else {
+                    parentitems[$(lastlistitem).data('name')]=[itm]
+                }
+            }
+        });
+	    var listitems = mylist.children('tr.sortableitem').get();
+	    listitems.sort(bsort_function)
+	    $.each(listitems, function(idx, itm) {
+            mylist.append(itm);
+            if (parentitems[$(itm).data('name')]) {
+                parentitems[$(itm).data('name')].sort(bsort_function)
+                $.each(parentitems[$(itm).data('name')], function(iidx, iitm) {
+                    mylist.append(iitm);
+                });
+            }
+        });
     }
 
     
@@ -1074,4 +1111,21 @@ $(document).ready(function () {
     $('body').on('keyup','.copynameinput', handle_return)
     $('body').on('keyup','.kolekti-browser-name input[type=text]', handle_return)
 
+
+    $("body").on("change","form.upload_form input[type=file]",  function(e) {
+        var btn = $(this).closest('form').find('button[type=submit]');
+        
+        if ($(this).val().length > 0) {
+            btn.addClass('btn-primary')
+            btn.removeClass('btn-default')
+        } else {
+            btn.addClass('btn-default')
+            btn.removeClass('btn-primary')
+        }
+    })
+    
+    $("body").on("submit", "form.upload_form", function(e) {
+        if($(this).find("input[type=file]").val().length == 0)
+            e.preventDefault()
+    })
 });

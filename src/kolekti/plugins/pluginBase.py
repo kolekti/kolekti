@@ -58,12 +58,13 @@ class plugin(PublisherMixin,kolektiBase):
         
     def get_xsl(self, xslfile, **kwargs):
         logger.debug("get xsl from plugin %s"%self._plugindir)
+        
         try:
             xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
             xsl = super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                                 xsldir = xslpath,
                                                 system_path = False,
-                                                resdir = self.assembly_dir,
+                                                resdir = self.process_path(''),
                                                 **kwargs)
     
         except:
@@ -71,7 +72,7 @@ class plugin(PublisherMixin,kolektiBase):
                                             extclass = self.__ext,
                                             xsldir = os.path.join(self._plugindir,'xsl'),
                                             system_path = True,
-                                            resdir = self.assembly_dir,
+                                            resdir = self.process_path(''),
                                             **kwargs)
         return xsl
     
@@ -80,7 +81,7 @@ class plugin(PublisherMixin,kolektiBase):
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
-                                          resdir = self.assembly_dir,
+                                          resdir = self.process_path(''),
                                           **kwargs)
 
 

@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
+from django.utils.cache import add_never_cache_headers
 
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
@@ -411,7 +412,9 @@ class TranslatorsStaticView(TranslatorsMixin, View):
             projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
             path = "/releases/"+release+"/"+path
             logger.debug("serve %s/%s", path, projectpath)
-            return serve(request, path, projectpath)
+            response = serve(request, path, projectpath)
+            add_never_cache_headers(response)
+            return response
         except:
             logger.exception('static error')
             return HttpResponse(status=500)            
@@ -439,6 +442,8 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
         releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
         releases = []
         for release in os.listdir(releasepath):
+            if not os.path.exists(os.path.join(releasepath, release, 'sources')):
+                continue
             releaseinfo = {'langs':[], 'name':release}
             for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
                     assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')

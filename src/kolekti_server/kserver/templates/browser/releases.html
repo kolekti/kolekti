@@ -63,7 +63,7 @@
     </thead>
     <tbody>
       {% for f in files %}
-      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
+      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %} sortableitem">
 	<td class="kolekti-browser-icon">
 	  {% if f.indexes %}
 	  <a href="#" class="dirtoggle">
@@ -96,12 +96,13 @@
 	<td></td>
 	{% endif %}
 	
-	<td class="kolekti-browser-date">{{ f.date|date:"d/m/Y H:i" }}</td>
+	<td class="kolekti-browser-date">{% if f.type == 'text/directory' %}{{ f.date|date:"d/m/Y H:i" }}{% endif %}</td>
 	<td class="kolekti-browser-item-action">
 	  {% if not f.indexes %}
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+      <a href="{% url 'releasearchive' %}?release={{f.name }}" class="btn btn-default btn-xs" title="Archiver"><i class="fa fa-download"></i></a>
           {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
           {% endcomment %}
@@ -137,7 +138,10 @@
       <tr><td colspan="3">{{f.indexes}}</td></tr>
       -->
       {% for fi in f.indexes %}
-      <tr  data-sort-name="{{ f.name }}_{{ fi.name }}" data-name="{{ f.name }}_{{ fi.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="release-index hidden">
+      <tr  data-name="{{ f.name }}_{{ fi.name }}"
+           data-sort-name="{{ f.name }}_{{ fi.name }}"
+           data-sort-date="d{{ fi.date }}"
+           class="release-index hidden">
 	<td class="kolekti-browser-icon"><i class="fa fa fa-suitcase"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td class="kolekti-browser-name"><a
@@ -152,9 +156,10 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
-	  
+	  <a href="{% url 'releasearchive' %}?release={{f.name }}_{{ fi.name }}" class="btn btn-default btn-xs" title="Archiver"><i class="fa fa-download"></i></a>
+	  {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name|add:'_'|add:fi.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
-
+      {% endcomment %}
 	</td>
 	<td class="kolekti-browser-sync"></td>
       </tr>

@@ -166,6 +166,11 @@ class SynchroManager(SvnClient):
     
     def revision_info(self, revision):
         rev = int(revision)
+        
+        rev_obj = pysvn.Revision( pysvn.opt_revision_kind.number, rev )
+        
+        info = self._client.log(self._base, revision_start=rev_obj, revision_end=rev_obj)
+        
         rev_summ = self._client.diff_summarize(self._base,
                     pysvn.Revision(pysvn.opt_revision_kind.number,rev-1),
                     self._base,
@@ -184,7 +189,7 @@ class SynchroManager(SvnClient):
             logger.exception('could not calculate diff')
             diff_text = "impossible de calculer les différences" 
         shutil.rmtree(tmpdir)
-        return [dict(item) for item in rev_summ], None, diff_text
+        return [dict(item) for item in rev_summ], info[0], diff_text
 
     def revision_diff(self, revision, path):
         ospath = self.__makepath(path)
@@ -349,10 +354,12 @@ class SynchroManager(SvnClient):
         self._client.revert(sorted(osfiles, key = len), recurse = True)
             
     def commit_all(self, log_message):
+        log_message = log_message.replace('\r\n', '\n')
         commit_revision = self._client.checkin(self._base, log_message, recurse = True)
         return commit_revision 
 
     def commit(self, files, log_message):
+        log_message = log_message.replace('\r\n', '\n')
         osfiles = []
         for f in files:
             osfiles.append(self.__makepath(f))
@@ -412,7 +419,6 @@ class SynchroManager(SvnClient):
             props = self._client.propget(name, ospath)
             return props.get(ospath.replace('\\','/').encode('utf8'),None)
         except:
-            logger.exception('Proget %s failed on path %s'%(name, path))
             return None
         
 class SVNProjectManager(SvnClient):

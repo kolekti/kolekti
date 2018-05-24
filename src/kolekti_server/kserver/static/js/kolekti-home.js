@@ -371,6 +371,16 @@ $(document).ready(function() {
 
 
     var widgets_definitions = {
+        'search': { 'title':'Recherche',
+                    'content':function() {
+                        return widget_loader('/widgets/search/')
+                    }
+                  },
+        'publish_archive': { 'title':'Publier une version archivée',
+                    'content':function() {
+                        return widget_loader('/widgets/publish_archive/')
+                    }
+                  },
 	'recent':{'title':'Vos modifications',
 		  'content':function() {
 			 return localstorage_widget_builder('kolekti-recent-'+window.kolekti.project);
@@ -428,9 +438,9 @@ $(document).ready(function() {
     if (localStorage) {
 	var sto_widgets = localStorage.getItem("widgets_main")
 	if (sto_widgets == null)
-	    sto_widgets = [['recent','history','publications'],['activity', 'releases']];
+	    sto_widgets = [['recent','history','publications'],['activity', 'releases', 'search']];
 
-	sto_widgets = [['recent','history','publications']];
+	    sto_widgets = [['recent','history','publications'], ['publish_archive']];
 
 	$.each(sto_widgets, function(i,wlist) {
 	    $.each(wlist, function(j, wn) {

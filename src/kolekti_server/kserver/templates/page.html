@@ -55,10 +55,12 @@
 		<li><a href="{% url 'kolekti_templates' project=project lang=lang %}">Modèles de modules</a></li>
 		<li><a href="{% url 'kolekti_publication_templates' project=project %}">Modèles de sorties</a></li>
 		<li role="presentation" class="divider"></li>
+
 		<li><a href="{% url 'kolekti_import' project=project lang=lang %}">Importer un fichier tableur</a></li>
+        {% if svn_url != "local" %}
 		<li role="presentation" class="divider"></li>
 		<li><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
-
+        {% endif %}
 		{% if active_project_admin %}
 		<li><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
 		{% endif %}
@@ -68,11 +70,12 @@
 		-->
 	      </ul>
 	    <li>
+          
               {% endif %}
 	  </ul>
 
 	  <ul class="nav navbar-nav navbar-right ">
-	    <li><a href="{% static "help" %}{% block help-topic %}index{% endblock %}" target="_kolekti_help">Aide</a></li>
+	    <li><a href="{% static "helpindex" %}/{% block help-topic %}index{% endblock %}.html" target="_kolekti_help">Aide</a></li>
 	    {% if kolekti.saas %}
             <li><a href="/logout"><span class="glyphicon glyphicon-remove-circle"> </span></a></li>
 	    {% endif %}
@@ -105,8 +108,10 @@
 	  <div class="col-sm-12">
 	    <div class="btn-toolbar" role="toolbar" id="kolekti_tools">
 	      {% include "user_menu.html" %}
+
           
           {% if project %}
+          {% if svn_url != "local" %}
 	      <div class="btn-group pull-right" role="group">
 		    <button id="btn_rev" class="btn btn-xs btn-default dropdown-toggle" type="button" >
 		      <span>
@@ -117,6 +122,41 @@
 		    </button>
 	      </div>
           {% endif %}
+          
+	      <div class="btn-group  pull-right" role="group">
+		{% block infobuttons %}
+		<div class="btn-group" role="group">
+		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+		    Projet {{ active_project_name }} ({{ active_srclang }})
+		    <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+		    {% for project in projects %}
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url kolekti_project_home project=project %}">{{project.name}}</a></li>
+<!--		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li> -->
+		    {% endfor %}
+		    <li role="presentation" class="divider"></li>
+		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
+		  </ul>
+		</div>
+	      </div>
+	      {% block infobuttons_lang %}
+	      {% comment %}
+	      <div class="btn-group" role="group">
+
+		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
+		  {{ active_srclang }}
+		  <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
+		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
+		</ul>
+        
+	      </div>
+          {% endblock %}
 
           <div class="btn-group pull-right kfade" role="group" id="toaster">
             <button id="btn_toaster" class="btn btn-xs btn-default" type="button">
@@ -130,6 +170,7 @@
           {% if project %}              
 	      <div class="btn-group  pull-right" role="group">
 		    {% block infobuttons %}
+            
             {% comment %}
 		    <div class="btn-group" role="group">
 		      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
@@ -145,10 +186,13 @@
 		      </ul>
 		    </div>
             {% endcomment %}
+            
             {% endblock %}
           </div>
+          {% endblock %}
           {% endif %}
 	    </div>
+
 	  </div>
 	</div>
   </div>
@@ -216,6 +260,7 @@
     <script src="{% static 'jquery.js' %}"></script>
     <script src="{% static 'jquery-ui.min.js' %}"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
+
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% url 'javascript-catalog' packages='kserver' %}"></script>
     <script src="{% url 'js_reverse' %}" type="text/javascript"></script>

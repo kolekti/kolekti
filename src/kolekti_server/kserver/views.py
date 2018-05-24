@@ -20,11 +20,13 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+from zipfile import ZipFile
+
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
        
 from kserver_saas.models import Project, UserProfile, UserProject
-from forms import UploadFileForm
+from forms import UploadFileForm, SearchForm
 
 from django.http import Http404
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
@@ -42,12 +44,13 @@ from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.utils.cache import add_never_cache_headers
 
 # kolekti imports
 from kolekti.common import kolektiBase
 from kolekti.publish_utils import PublisherExtensions
 from kolekti import publish
-from kolekti.searchindex import searcher
+from kolekti.searchindex import Searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
@@ -154,7 +157,6 @@ class kolektiMixin(LoginRequiredMixin):
             userprojects = UserProject.objects.filter(user = self.request.user)
         else:
             userprojects = UserProject.objects.all()
-
         for up in userprojects:
             project={
                 'userproject':up,
@@ -180,6 +182,7 @@ class kolektiMixin(LoginRequiredMixin):
             except ExcSyncNoSync:
                 project.update({"status":"local"})
             projects.append(project)
+            
         return sorted(projects, key=lambda p: p.get('name').lower())
 
 
@@ -193,6 +196,61 @@ class kolektiMixin(LoginRequiredMixin):
             return ['en'],['en','fr','de'],'en'
         except AttributeError:
             return ['en'],['en','fr','de'],'en'
+
+#     def get_context_data(self, data={}, **kwargs):
+#         context= {
+#             'active_project':self.request.kolekti_userproject,
+#             'projects':self.projects(),
+#         }
+        
+#         if self.request.kolekti_userproject is not None:
+#             up = self.request.kolekti_userproject
+#             languages, release_languages, default_srclang = self.project_langs()
+#             project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory)
+#             try:
+#                 from kolekti.synchro import SynchroManager
+#                 synchro = SynchroManager(project_path)
+#                 projecturl = synchro.geturl()
+#                 context.update({"svn_url":self.process_svn_url(projecturl)})
+#             except ExcSyncNoSync:
+#                 context.update({"svn_url":"local"})
+
+#             context.update({
+#                 'kolekti':self._config,
+#                 'srclangs' : languages,
+#                 'releaselangs' : release_languages,
+#                 'default_srclang':default_srclang,
+#                 'active_project_name' : self.request.kolekti_userproject.project.name,
+#                 'active_project_directory' : self.request.kolekti_userproject.project.directory,                                      
+#                 'active_project_admin' : self.request.kolekti_userproject.is_admin,                           
+#                 'active_srclang' : self.request.kolekti_userproject.srclang,
+# #                'syncnum' : self._syncnumber,
+#                 'kolektiversion' : self._kolektiversion,
+#             })
+#         context.update(data)
+#         return context
+
+    # def get_toc_edit(self, path):
+    #     xtoc = self.parse(path)
+    #     tocmeta = {}
+    #     toctitle = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.title"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+    #     tocauthor = xtoc.xpath('string(/html:html/html:head/html:meta[@name="DC.author"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+    #     if len(toctitle) == 0:
+    #         toctitle = xtoc.xpath('string(/html:html/html:head/html:title)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+    #     for meta in xtoc.xpath('/html:html/html:head/html:meta', namespaces={'html':'http://www.w3.org/1999/xhtml'}):
+    #         if meta.get('name',False):
+    #             tocmeta.update({meta.get('name').replace('.','_'):meta.get('content')})
+    #     tocjob = xtoc.xpath('string(/html:html/html:head/html:meta[@name="kolekti.job"]/@content)', namespaces={'html':'http://www.w3.org/1999/xhtml'})
+    #     xsl = self.get_xsl('django_toc_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
+    #     try:
+    #         etoc = xsl(xtoc)
+    #     except:
+    #         import traceback
+    #         print traceback.format_exc()
+    #         self.log_xsl(xsl.error_log)
+    #         raise Exception, xsl.error_log
+    #     return toctitle, tocauthor, tocmeta, str(etoc)
+#>>>>>>> 6514571db0588dce19c15b82f54b2853c39454b7
 
     def get_sync_manager(self, kolekti):
         from kolekti.synchro import SynchroManager
@@ -415,11 +473,116 @@ class PublicationsZipView(kolektiMixin, View):
             print traceback.format_exc()
             return HttpResponse(status=404)
 
-class ReleasesPublicationsListJsonView(kolektiMixin, View):
+class ReleaseLangPublicationsListJsonView(kolektiMixin, View):
+
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         publications = kolekti.get_releases_publications()
         return HttpResponse(json.dumps(publications),content_type="application/json")
+        
+
+class ReleaseZipException(Exception):
+    pass
+    
+class ReleaseArchiveView(kolektiMixin, View):
+    def get(self, request):
+        release = request.GET.get('release')
+        releasename = release.split('/')[-1]
+        now = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
+        meta = ET.XML('<meta/>')
+        ET.SubElement(meta, 'zipdate').text = now
+        ET.SubElement(meta, 'ziptime').text = str(time.time())
+        ET.SubElement(meta, 'project').text = self.request.kolekti_userproject.project.directory
+        try:
+            response = HttpResponse(self.zip_release_full(release, meta), content_type="application/zip")#, meta = meta.getroot())
+            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(releasename, now)
+            return response
+        except:
+            logger.exception('error while creating zip')
+            return HttpResponse(status=404)
+
+    template_name = 'releases/publish-archive.html'
+        
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        context = self.get_context_data()
+        if form.is_valid():
+            uploaded_file = request.FILES[u'upload_file']
+            path = '/tmp'
+            if self.exists(path):
+                self.rmtree(path)
+            self.makedirs(path)
+            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb", sync=False)
+            try:
+                with ZipFile(self.getOsPath(path +'/'+ uploaded_file.name)) as zippy:
+                    for f in zippy.namelist():
+                        zippy.extract(f, self.getOsPath(path))
+                        
+                if not self.exists(path + "/kolekti"):
+                    for f in self.list_directory(path):
+                        if self.exists(path + "/" + f + "/kolekti"):
+                            path = "/tmp/"+f
+                            break;
+                    if path == '/tmp':
+                        context.update({'error':"Dossier kolekti non trouvé dans l'archive"})
+                        raise ReleaseZipException
+                    
+                if not self.exists(path + "/sources"):
+                    context.update({'error':"Dossier sources non trouvé dans l'archive"})
+                    raise ReleaseZipException
+                    
+                release_name = None
+                for f in self.list_directory(path + '/kolekti/publication-parameters'):
+                    if f[-8:] == '_asm.xml':
+                        release_name = f[:-8]
+                        break
+                    
+                if release_name is None:
+                    context.update({'error':"Paramètres de publication non trouvés dans l'archive"})
+                    raise ReleaseZipException
+                
+                if not (path == '/tmp/' + release_name):
+                    self.makedirs('/tmp/' + release_name)
+                    self.move_resource(path + '/kolekti', '/tmp/' + release_name)
+                    self.move_resource(path + '/sources', '/tmp/' + release_name)
+                    path = '/tmp/'+release_name
+                
+                try:
+                    pp = self.parse(path + '/kolekti/publication-parameters/' +release_name + "_asm.xml")
+                except:
+                    context.update({'error':"Paramètres de publication non valides"})
+                    raise ReleaseZipException
+                    
+                langs = []
+                for ll in self.list_directory(path + "/sources"):
+                    if ll == "share":
+                        continue
+                    if self.exists(path + "/sources/" + ll + "/assembly/" + release_name + "_asm.html"):
+                        langs.append(ll)
+                if len(langs) == 0:
+                    context.update({'error':"Aucun assemblage trouvé dans l'archive"})
+                    raise ReleaseZipException
+
+                
+                
+                context.update({
+                    "path":path,
+                    "langs":langs,
+                    "release_name":release_name,
+                    "profiles":pp.xpath('/job/profiles/profile[@enabled="1"]/label/text()'),
+                    "scripts":pp.xpath('/job/scripts/script[@enabled="1"]/label/text()'),
+                    })
+                
+            except ReleaseZipException:
+                logger.exception('Invalid Zip structure')
+                return self.render_to_response(context)
+            except:
+                logger.exception('could not unzip')
+                context.update({'error':"Impossible de décompresser l'archive"})
+                return self.render_to_response(context)            
+        else:
+            context.update({'error':form.errors})
+        return self.render_to_response(context)            
         
 class TocsListView(kolektiMixin, TemplateView):
     template_name = 'tocs/list.html'
@@ -617,7 +780,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
 class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
-class ReleaseAllStatesView(kolektiMixin, TemplateView):
+class ReleaseStatesView(kolektiMixin, TemplateView):
     def get(self, request, project, release):
         context, kolekti = self.get_context_data({'project':project})
         languages, release_languages, default_srclang = self.project_langs(kolekti)
@@ -626,6 +789,11 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
             asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
             sync = self.get_sync_manager(kolekti)
             state = sync.propget("release_state",asfilename)
+            asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
+            try:
+                state = self.syncMgr.propget("release_state",asfilename)
+            except:
+                state = None
             if state is None:
                 if kolekti.exists(asfilename):
                     states.append((lang, "local"))
@@ -636,8 +804,20 @@ class ReleaseAllStatesView(kolektiMixin, TemplateView):
                 states.append((lang, state))
         return HttpResponse(json.dumps(states),content_type="application/json")
 
+class ReleaseDeleteView(kolektiMixin, View):
+    def post(self, request, project, release,lang):
+        context, kolekti = self.get_context_data({'project': project})
+        try:
+            release = request.POST.get('release')
+            lang = request.POST.get('lang')
+            self.delete_resource('%s/sources/%s'%(release, lang))
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        except:
+            logger.exception("Could not delete release")
+            return HttpResponse(status=500)
+            
     
-class ReleaseStateView(kolektiMixin, TemplateView):
+class ReleaseLangStateView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project})
         sync = self.get_sync_manager(kolekti)
@@ -662,7 +842,7 @@ class ReleaseStateView(kolektiMixin, TemplateView):
             print traceback.format_exc()
             return HttpResponse(status=500)
                     
-class ReleaseFocusView(kolektiMixin, TemplateView):
+class ReleaseLangFocusView(kolektiMixin, TemplateView):
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project})
         try:
@@ -679,7 +859,7 @@ class ReleaseFocusView(kolektiMixin, TemplateView):
             print traceback.format_exc()
             return HttpResponse(status=500)
                     
-class ReleaseCopyView(kolektiMixin, TemplateView):
+class ReleaseLangCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project})
@@ -703,19 +883,7 @@ class ReleaseCopyView(kolektiMixin, TemplateView):
     #    return HttpResponse("ok")
         return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(path,dstlang))
     
-class ReleaseDeleteView(kolektiMixin, View):
-    def post(self, request, project, release):
-        context, kolekti = self.get_context_data({'project': project})
-        try:
-            release = request.POST.get('release')
-            lang = request.POST.get('lang')
-            self.delete_resource('%s/sources/%s'%(release, lang))
-            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
-        except:
-            logger.exception("Could not delete release")
-            return HttpResponse(status=500)
-            
-class ReleaseAssemblyView(kolektiMixin, TemplateView):
+class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project})
         try:
@@ -730,7 +898,7 @@ class ReleaseAssemblyView(kolektiMixin, TemplateView):
         return HttpResponse(content)
     
 
-class ReleasePublicationsView(kolektiMixin, TemplateView):
+class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     template_name = "releases/publications.html"
     
     def __release_publications(self, lang, release):
@@ -754,7 +922,7 @@ class ReleasePublicationsView(kolektiMixin, TemplateView):
         })
         return self.render_to_response(context)
                 
-class ReleaseDetailsView(kolektiMixin, TemplateView):
+class ReleaseLangDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
     def __has_valid_actions(self,  kolekti, release):
@@ -770,11 +938,14 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         release = context.get('release')
         langstate = None
         sync = self.get_sync_manager(kolekti)
-        languages, release_languages, default_srclang = self.project_langs(kolekti)
-        for lang in release_languages:
+        for lang in context.get('releaselangs',[]):
             tr_assembly_path = '/'.join(['','releases',release,"source",lang,"assembly",release+'_asm.html'])
             if kolekti.path_exists(tr_assembly_path):
-                states.append(sync.propget('release_state',tr_assembly_path))
+                if (sync is not None):
+                    states.append(sync.propget('release_state',tr_assembly_path))
+                else:
+                    states.append("local")
+
             else:
                 states.append("unknown")
             if lang == context.get('lang', default_srclang):
@@ -782,8 +953,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             try:
                 focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
-                #import traceback
-                #print traceback.format_exc()
                 focus.append(False)
         context.update({'langstate':langstate,'langstates':zip(release_languages,states,focus)})
         return context, kolekti
@@ -799,10 +968,22 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
                     assembly_meta.update({meta.get('name').replace('.','_'):meta.get('content')})
         except IOError:
             pass
-    
-        sync = self.get_sync_manager(kolekti)
+        except ET.XMLSyntaxError, e:
+            context = self.get_context_data({
+                'success':False,
+                'release_path':release_path,
+                'assembly_name':assembly_name,
+                'lang':lang,
+                'error':e,
+            })
+            return self.render_to_response(context)
 
-        srclang = sync.propget('release_srclang', assembly_path)
+        try:
+            sync = self.get_sync_manager(kolekti)
+            srclang = sync.propget('release_srclang', assembly_path)
+        except:
+            srclang = kolekti.project_srclang
+
         if srclang is None:
             srclang = self.project_langs(kolekti)[2]        
         parameters = kolekti.parse('/'.join(['/releases',release,"kolekti","publication-parameters",release+"_asm.xml"]))
@@ -827,8 +1008,6 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
             'srclang':srclang,
             'validactions':self.__has_valid_actions(kolekti, release)
         })
-        logger.debug(context)
-        logger.debug(context.get('srclang','not defined'))
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
@@ -836,15 +1015,29 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
 
         assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
-        xassembly = kolekti.parse_string(payload)
-        
+        try:
+            xassembly = kolekti.parse_string(payload)
+
+        except ET.XMLSyntaxError, e:
+            context = self.get_context_data({
+                'release_path':release_path,
+                'assembly_name':assembly_name,
+                'lang':lang,
+                'error':e,
+            })
+            return self.render_to_response(context)
+            
         xsl = self.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
-        self.update_assembly_lang(xassembly, lang)
+        
+        kolekti.update_assembly_lang(xassembly, lang)
         kolekti.xwrite(xassembly, assembly_path)
 
         sync = self.get_sync_manager(kolekti)
-        srclang = sync.propget('release_srclang', assembly_path)
+        try:
+            srclang = sync.propget('release_srclang', assembly_path)
+        except:
+            srclang = kolekti.project_srclang
 
         context.update({
             'releasesinfo':kolekti.release_details(release, lang),
@@ -857,7 +1050,7 @@ class ReleaseDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class ReleasePublishAllView(kolektiMixin, TemplateView):
+class ReleasePublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release):        
         context, kolekti=self.get_context_data({'project':project})
@@ -875,7 +1068,7 @@ class ReleasePublishAllView(kolektiMixin, TemplateView):
 
             return self.render_to_response(context)
     
-class ReleasePublishView(kolektiMixin, TemplateView):
+class ReleaseLangPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release, lang):        
         context, kolekti=self.get_context_data({'project':project})
@@ -892,7 +1085,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
 
             return self.render_to_response(context)
 
-class ReleaseValidateView(kolektiMixin, View):
+class ReleaseLangValidateView(kolektiMixin, View):
     def post (self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project})
 
@@ -1257,15 +1450,16 @@ class ImportTemplateView(kolektiMixin, TemplateView):
 
     
 class SettingsJsView(kolektiMixin, TemplateView):
+
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
 
-        project_path = os.path.join(settings.KOLEKTI_BASE, project)
+        project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
         try:
             sync = self.get_sync_manager(kolekti)
             project_svn_url = sync.geturl()
         except ExcSyncNoSync:
-            project_svn_url = ""
+            project_svn_url = "N/A"
             
         settings_js="""
         var kolekti = {
@@ -1548,11 +1742,13 @@ class BrowserReleasesView(BrowserView):
                     r = {'name':releaseindex, 'type':"text/xml", 'date':date}
                     try:
                         releases[releasename]['indexes'].append(r)
+                        if date > releases[releasename]['date']:
+                            releases[releasename]['date'] = date
                     except KeyError:
                         releases[releasename] = {
                             'name':releasename,
                             'type':"text/xml",                                   
-                            'date':None,
+                            'date':date,
                             'indexes':[r]}
                         found = True
                 except:
@@ -1631,11 +1827,11 @@ class BrowserUploadView(kolektiMixin, View):
 
 class TopicEditorView(kolektiMixin, TemplateView):
     template_name = "topics/edit-ckeditor.html"
-
+    ttdir = "topics"
     
     def get(self, request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project})
-        topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
+        topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
         topic = kolekti.read(topic_project_path)
         
         context.update({
@@ -1647,7 +1843,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
     def post(self,request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
+            topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
             topic = request.body
             xtopic = kolekti.parse_string(topic)
             kolekti.write(topic, topic_project_path)
@@ -1680,6 +1876,8 @@ class TopicCreateView(kolektiMixin, View):
             logger.exception("Create topic error")
         return HttpResponse(json.dumps(topicpath), content_type="application/json")
 
+
+    
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request, project, lang):
         context, kolekti = self.get_context_data({'project': project})
@@ -1690,24 +1888,66 @@ class TopicTemplatesView(kolektiMixin, View):
             tnames=[]
         return HttpResponse(json.dumps(tnames),content_type="application/json")
 
-class TemplateEditorView(TopicEditorView):
-    pass
+class TopicTemplateCreateView(kolektiMixin, View):
+    template_name = "home.html"
+    def post(self, request):
+        try:
+            templatepath = request.POST.get('templatepath')
+            templatepath = self.set_extension(templatepath, ".html")
+            logger.debug(templatepath)
+            topic = """<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <meta content="application/xhtml+xml; charset=UTF-8" http-equiv="content-type" />
+      <title>Titre du module</title>
+      <meta name="kolekti:version" content="0.8" />
+      <link rel="stylesheet" type="text/css" href="/kolekti/stylesheets/editor.css" />
+    </head>
+<body>
+</body>
+"""
+            self.write(topic, templatepath)
+        except:
+            import  traceback
+            print traceback.format_exc()
+        return HttpResponse(json.dumps(templatepath), content_type="application/json")
 
-class TemplateCreateView(TopicCreateView):
-    pass
+class TopicTemplateEditorView(TopicEditorView):
+    ttdir = "templates"
+
+class TocUsecasesView(kolektiMixin, View):
+    def get(self, request):
+        pathes = request.GET.getlist('pathes[]',[])
+        context={}
+        for toc in self.itertocs:
+            xtoc=self.parse(toc)
+            for path in pathes:
+                if len(xtoc.xpath('//html:a[@href="%s"]'%path,namespaces={'html':'http://www.w3.org/1999/xhtml'})):
+                    try:
+                        context[path].append(toc)
+                    except:
+                        context[path]=[toc]
+        return HttpResponse(json.dumps(context),content_type="application/json")
 
 
+class SearchFormView(kolektiMixin, TemplateView):
+    template_name = "search/form.html"
+    def get(self, request):
+        context = self.get_context_data()
+        form = SearchForm()
+        context.update({'form':form})
+        return self.render_to_response(context)
     
-
-
 class SearchView(kolektiMixin, TemplateView):
     template_name = "search/results.html"
-    def get(self, request):
-        context, kolekti = self.get_context_data()
-        q = request.GET.get('query')
-        s = searcher(self.request.kolekti_projectpath)
-        results = s.search(q)
+    def get(self, request, project, query, page=1):
+        context, kolekti = self.get_context_data({'project':project})
+        
+        s = Searcher(kolekti.projectpath)
+        results = s.search(q, page)
         context.update({"results":results})
+        context.update({"page":page})
         context.update({"query":q})
         return self.render_to_response(context)
 
@@ -1791,6 +2031,7 @@ class SyncRevisionView(kolektiMixin, TemplateView):
             "history": sync.history(),
             'revsumm':revsumm,
             'revinfo':revinfo,
+            'revnum':rev,
             'difftext':difftext,
             })
         
@@ -1869,12 +2110,13 @@ class SyncRemoveView(kolektiMixin, View):
             return HttpResponse(json.dumps('ok'),content_type="application/json")
         except:
             logger.exception("Unable to remove file to synchro : %s"%path)
-                        
+
+
 class ProjectStaticView(kolektiMixin, View):
     def get(self, request, project, path):
         context, kolekti = self.get_context_data({'project':project})
-        return serve(request, path, kolekti.syspath('/'))
-
+        response =  serve(request, path, kolekti.syspath('/'))
+        return response
 
 class ProjectHistoryView(kolektiMixin, View):
     def get(self, request, project):
@@ -1887,8 +2129,63 @@ class ProjectHistoryView(kolektiMixin, View):
         except:
             logger.exception("Unable to get project history")
 
+class AboutView(kolektiMixin, View):
+    template_name = "about.html"
+
+class ChangelogView(kolektiMixin, View):
+    template_name = "changelog.html"
+    def get(self, request):
+        context = self.get_context_data()
+        changelog = ""
+        with open(os.path.join(os.path.dirname(self._appdir), 'changelog')) as f:
+            for changelogline in f.readlines():
+                changelog += self.process(changelogline)
+        context.update({'log':changelog})
+        return self.render_to_response(context)
+
+    def process(self, line):
+        line = re.sub(
+            r'\[fix #(\d+)\]', 
+            r'[fix <a href="https://github.com/kolekti/kolekti/issues/\1" target="_blanck">\1</a>]',
+            line)
+        line = line +"<br/>"
+        return line
     
-class WidgetProjectHistoryView(kolektiMixin, TemplateView):
+class WidgetView(kolektiMixin, View):
+    def get(self, request):
+        context = self.get_context_data()
+        return self.render_to_response(context)    
+
+
+class WidgetPublishArchiveView(WidgetView):
+    template_name = "widgets/publish-archive.html"
+
+
+    
+class WidgetSearchView(WidgetView):
+    template_name = "widgets/search.html"
+    def get(self, request):
+        context = self.get_context_data()
+        form = SearchForm()
+        context.update({'form':form})
+        return self.render_to_response(context)
+
+    def post(self, request, page=1):
+        context = self.get_context_data()
+        q = request.POST.get('query')
+
+        projectspath = os.path.join(settings.KOLEKTI_BASE, request.user.username)
+        project = self.request.kolekti_userproject.project.directory
+        
+        s = Searcher(projectspath, project)
+        results = s.search(q, page)
+        context.update({"results":results})
+        context.update({"page":page})
+        context.update({"query":q})
+        return self.render_to_response(context)
+
+    
+class WidgetProjectHistoryView(WidgetView):
     template_name = "widgets/project-history.html"
     
     def get(self, request, project):

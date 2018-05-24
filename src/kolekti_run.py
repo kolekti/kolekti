@@ -223,7 +223,16 @@ def main():
                 job = "/kolekti/publication-parameters/"+tocjob+'.xml'
             xjob = p.parse(job)
             xjob.getroot().set('pubdir',args.name)
-            p.make_release(toc, xjob, release_name=args.name)
+            p.make_release(toc, xjob, release_dir=args.name)
+            try:
+                import pysvn
+                cl = pysvn.Client()
+                cl.propset("release_state","sourcelang",os.path.join([basepath,'releases',release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+                cl.propset("release_srclang",args.lang,os.path.join([basepath,'releases',release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+            except:
+                logger.warning('assembly property failed')
+                
+            
             logger.info("Release sucessful")
         except:
             logger.exception("Release ended with errors")
@@ -325,8 +334,6 @@ def main():
         fix = fixture.fixture(basepath)
         fix.apply(args.number)
         
-
-            
 if __name__ == '__main__':
     main()
     

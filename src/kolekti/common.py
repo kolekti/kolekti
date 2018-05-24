@@ -341,6 +341,38 @@ class kolektiBase(object):
             logger.exception('release zip failed')
             return None
     
+    def zip_release_full(self, path, meta):
+        try:
+            archindex = ET.SubElement(meta, 'files')
+#            path = "/releases/"+release
+            from zipfile import ZipFile, ZIP_DEFLATED
+            from StringIO import StringIO
+            zf= StringIO()
+            top = self.getOsPath(path)
+            logger.debug(top)
+            with ZipFile(zf, "w", ZIP_DEFLATED, True) as zippy:
+                for root, dirs, files in os.walk(top):
+                    rt=root[len(top) + 1:]
+                    if rt[:7] != 'sources' and rt[:7] != 'kolekti':
+                        continue
+                    try:
+                        for name in files:
+                            arcname=str(os.path.join(rt, name))
+                            ET.SubElement(archindex, 'file').set('path',arcname)
+                            zippy.write(str(os.path.join(root, name)), arcname)
+                    except IndexError:
+                        pass
+
+                zippy.writestr('kolekti/meta.xml', ET.tostring(meta))
+            
+            z =  zf.getvalue()
+            zf.close()
+            
+            return z
+        except:
+            logger.exception('release zip full failed')
+            return None
+    
     def iter_release_assembly(self, path, assembly, lang, callback):
         assembly_path = '/'.join([path,'sources',lang,'assembly',assembly+'.html'])
         job_path = '/'.join([path,'kolekti', 'publication-parameters',assembly+'.xml'])
@@ -623,15 +655,21 @@ class kolektiBase(object):
             self.post_save(path)
         return cp
             
-    def copyDirs(self, source, path):
+    def copyDirs(self, source, path, sync = False):
         ossource = self.__makepath(source)
         ospath = self.__makepath(path)
 
-        try:
-            shutil.rmtree(ospath)
-        except:
-            logger.exception('could not remove directory')           
-        return shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
+        if self.exists(path):
+            try:
+                shutil.rmtree(ospath)
+            except:
+                logger.exception('could not remove directory')
+                
+        res = shutil.copytree(ossource, ospath, ignore=shutil.ignore_patterns('.svn'))
+        
+        if sync:
+            self.post_save(path)
+        return res 
 
 
     
@@ -708,7 +746,7 @@ class kolektiBase(object):
 
         
     def substitute_variables(self, string, profile, extra={}):
-        for variable in re.findall('{[ /a-zA-Z0-9_]+:[a-zA-Z0-9_ ]+}', string):
+        for variable in re.findall('{[ /a-zA-Z0-9_-]+:[a-zA-Z0-9_ -]+}', string):
             # logger.debug(variable)
             splitVar = variable[1:-1].split(':')
             sheet = splitVar[0].strip()

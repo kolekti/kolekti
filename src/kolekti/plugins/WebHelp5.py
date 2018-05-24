@@ -184,7 +184,7 @@ class plugin(pluginBase.plugin):
 
     def user_conditions_labels(self):
         try:
-            translations = self.parse('/'.join([self.assembly_dir,'kolekti','publication-templates','WebHelp5','variables', 'condition_labels.xml']))
+            translations = self.parse('/'.join([self.assembly_dir,'kolekti','publication-templates','share', 'labels.xml']))
         except:
             logger.exception('could not parse condition labels')
             translations = ET.XML('<variables/>')
