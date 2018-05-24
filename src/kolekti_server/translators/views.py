@@ -25,7 +25,7 @@ logger = logging.getLogger('kolekti.'+__name__)
 # kolekti imports
 
 from kserver_saas.models import Project, UserProject
-from kserver.views import LoginRequiredMixin, ReleaseAllStatesView
+from kserver.views import LoginRequiredMixin, ReleaseStatesView
 
 from .models import TranslatorRelease
 from .synchro import TranslatorSynchro
@@ -145,7 +145,7 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             return self.render_to_response(context)
         
             
-class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseAllStatesView):
+class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseStatesView):
     def get(self, request, project):
 
         path, release = request.GET.get('release').rsplit('/',1)
@@ -503,7 +503,7 @@ class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
             logger.debug('not found')
         return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
     
-class TranslatorsAdminReleaseStatusesView(TranslatorsAdminMixin, ReleaseAllStatesView):
+class TranslatorsAdminReleaseStatusesView(TranslatorsAdminMixin, ReleaseStatesView):
     def get(self, request, project):
         self.project(project)
         return super(TranslatorsAdminReleaseStatusesView, self).get(request)
