@@ -28,7 +28,7 @@ import platform
 
 
 from lxml import etree as ET
-from kolekti.common import kolektiBase
+from kolekti.common import kolektiBase, release_root_dirs
 from kolekti.publish_utils import PublisherMixin, PublisherExtensions, PublishException
 
 class PluginsExtensions(PublisherExtensions):
@@ -202,7 +202,7 @@ class plugin(PublisherMixin,kolektiBase):
         if self.release is None:
             return path
         else:
-            return '/releases/' + self.release + '/' +  path
+            return '/'+ self.release_root_dir +'/' + self.release + '/' +  path
     
     def __call__(self, scriptdef, profile, assembly_dir, inputs):
         self.scriptname = scriptdef.get('name')
@@ -211,10 +211,10 @@ class plugin(PublisherMixin,kolektiBase):
         # check if execute in release or not
         self.release = None
         adparts = assembly_dir[1:].split('/')
-#        logger.debug("adparts: %s ", str(adparts))
-        if len(adparts) == 2 and adparts[0] == "releases":
+        logger.debug("adparts: %s ", str(adparts))
+        if len(adparts) == 2 and adparts[0] in release_root_dirs:
             self.release = adparts[1]
-
+            self.release_root_dir = adparts[0]
         # get context    
         self.scriptdef = scriptdef
         self.profile = profile
