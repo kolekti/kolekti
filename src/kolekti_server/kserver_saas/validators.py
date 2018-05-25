@@ -24,7 +24,7 @@ class HTPasswordGenerator(object):
             if not os.path.isfile(settings.AUTH_SYNC_HTPASS):
                 cmd.insert(1, '-c')
 
-            logger.debug(" ".join(cmd))
+#            logger.debug(" ".join(cmd))
             try:
                 exccmd = subprocess.Popen(
                     ' '.join(cmd),
