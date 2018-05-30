@@ -543,6 +543,7 @@ class ReleaseZipView(kolektiMixin, View):
         try:
             response = HttpResponse(self.zip_release_full(release, meta), content_type="application/zip")#, meta = meta.getroot())
             response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(releasename, now)
+            add_never_cache_headers(response)
             return response
         except:
             logger.exception('error while creating zip')
@@ -1560,7 +1561,9 @@ class BrowserView(kolektiMixin, View):
             context.update({'path':path})
             context.update({'project':self.request.kolekti_userproject.project.directory})
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
-            return self.render_to_response(context)
+            response = self.render_to_response(context)
+            add_never_cache_headers(response)
+            return response
         except:
             import traceback
             print traceback.format_exc()
