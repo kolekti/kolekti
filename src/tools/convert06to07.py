@@ -18,6 +18,12 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
+try:
+    from kolekti import convert06
+except ImportError:
+    print "ERROR : Unable to find kolekti sources, set your PYTHONPATH varible to kolekti src path"
+    sys.exit(1)
+    
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # add formatter to ch
@@ -235,7 +241,6 @@ def cmd_convert_toc(args):
         
         
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('source_project', help="kolekti 06 source project path")
     parser.add_argument('target_project', help="kolekti 07 target project path")
@@ -266,14 +271,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.cmd == 'toc':
-        out = cmd_convert_toc(args)
+        converter = convert06.converter(args.lang, args.source_project)
+        out = converter.convert_toc(args)
         logger.info('successfully converted toc %s', out)
         
     if args.cmd == 'topic':
-        cmd_convert_topic(args)
-
+        converter = convert06.converter(args.lang, args.source_project)
+        converter.convert_topic(args)
+        
     if args.cmd == 'enveloppe':
-        cmd_convert_enveloppe(args)
+        converter = convert06.converter(args.lang, args.source_project)
+        converter.convert_enveloppe(args)
 
 
         
