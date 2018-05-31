@@ -14,7 +14,7 @@ import common
 
 
 class OdsToXML(common.kolektiBase):
-    def convert(self, odsfile, varpath = None, orient="cols"):
+    def convert(self, odsfile, varpath = None, orient="cols", sync=True):
         logger.debug("ods to xml convert")
         # genere le fichier de variables à partir du openoffice
         xslt1=self.get_xsl("ods2xml-%s-pass1"%orient)
@@ -25,7 +25,7 @@ class OdsToXML(common.kolektiBase):
         vx=xslt1(ET.ElementTree(ET.XML(foffx)))
         vy=xslt2(vx)
         if varpath is not None:
-            self.xwrite(vy, varpath)
+            self.xwrite(vy, varpath, sync = sync)
         return vy
 
 class XMLToOds(common.kolektiBase):

@@ -48,7 +48,7 @@ from django.utils.cache import add_never_cache_headers
 # kolekti imports
 from kolekti.common import kolektiBase
 from kolekti.publish_utils import PublisherExtensions
-from kolekti import publish
+from kolekti import convert06, publish
 from kolekti.searchindex import Searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
@@ -550,61 +550,6 @@ class ReleaseZipView(kolektiMixin, View):
 
     template_name = 'releases/publish-archive.html'
 
-    def convert_from_06(self, path):
-        config = path + '/config/config.xml'
-        xconfig = self.parse(config)
-        assembly = path + 'assembly.xhtml'
-        
-        lang = self.read(path + 'lang').strip()
-        dargs = {'config':xconfig}
-        
-        project_path = os.path.join(
-            settings.KOLEKTI_BASE,
-            self.request.user.username,
-            self.request.kolekti_userproject.project.directory)
-        
-        releasename = xconfig.xpath("string(/data/field[@name='mastername']/@value)")
-        releasepath = '/tmp'
-        
-        self.makedirs(os.path.join(releasepath, 'kolekti', 'publication-parameters'))
-        self.makedirs(os.path.join(releasepath, 'kolekti', 'publication-templates'))
-        self.makedirs(os.path.join(releasepath, 'sources', lang, 'assembly'))
-        self.makedirs(os.path.join(releasepath, 'sources', lang, 'pictures'))
-        self.makedirs(os.path.join(releasepath, 'sources', lang, 'variables','ods'))
-        self.makedirs(os.path.join(releasepath, 'sources', 'share'))
-        
-        xsl = self.get_xsl(
-            'assembly_06to07.xsl',
-            xsl_dir = "/kolekti/src/tools"
-            system_path = True
-            )
-        
-            assembly,
-            os.path.join(releasepath, 'sources', lang, 'assembly', releasename + '_asm.html'),
-            dargs,
-            xsl_args={'lang': "'%s'"%lang},
-            parser = ET.HTMLParser()
-            )
-        
-        apply_xsl(
-            'env_job_06to07.xsl',
-            config,
-            os.path.join(releasepath, 'kolekti', 'publication-parameters', releasename + '_asm.xml'),
-            args
-            )
-
-        for f in  myzip.namelist():
-            if f[:7] == "medias/" and f[-1]!= '/':
-                myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'pictures'))
-                newpdir = os.path.dirname(os.path.join(releasepath, 'sources', lang, 'pictures',f[7:]))
-                if not os.path.exists(newpdir):
-                    os.makedirs(newpdir)
-                shutil.move(
-                    os.path.join(releasepath, 'sources', lang, 'pictures',f),
-                    os.path.join(releasepath, 'sources', lang, 'pictures',f[7:])
-                    )
-            if f[:7] == "sheets/" and f[-1]!= '/':
-                myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'variables', 'ods'))
 
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
@@ -615,31 +560,47 @@ class ReleaseZipView(kolektiMixin, View):
             if self.exists(path):
                 self.rmtree(path)
             self.makedirs(path)
-            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb", sync=False)
+            zippath = path +'/'+ uploaded_file.name
+            self.write_chunks(uploaded_file.chunks, zippath, mode = "wb", sync=False)
             try:
-                with ZipFile(self.getOsPath(path +'/'+ uploaded_file.name)) as zippy:
+                logger.debug(self.getOsPath(zippath))
+                with ZipFile(self.getOsPath(zippath)) as zippy:
                     for f in zippy.namelist():
                         zippy.extract(f, self.getOsPath(path))
                         
                 if not self.exists(path + "/kolekti"):
-                    for f in self.list_directory(path):
-                        if self.exists(path + "/" + f + "/kolekti"):
-                            path = "/tmp/"+f
-                            break;
+                    newpath = None
+                    if self.exists(path + "/config/config.xml"):
+                        lang = self.read(path +'/lang').strip()
+                        converter = convert06.Converter(lang, self.getOsPath(path))
+                        releasename = converter.convert_enveloppe({
+                            'enveloppe': self.getOsPath(zippath),
+                            'target_project':self.getOsPath('/')
+                            }, 'tmp')
+                        newpath = "/tmp/" + releasename
+
+                    else:
+                        for f in self.list_directory(path):
+                            if self.exists(path + "/" + f + "/kolekti"):
+                                newpath = "/tmp/"+f
+                                break;
                         
-                        if self.exists(path + "/config/config.xml"):
-                            path = "/tmp/"+f
-                            self.convert_from_06(path)
+                            if self.exists(path + "/" + f + "/config/config"):
+                                newpath = "/tmp/"+f
+                                lang = self.read(newpath +'/lang').strip()
+                                converter = convert06.Converter(lang, self.getOsPath(path))
+                                converter.convert_enveloppe({
+                                    'enveloppe': self.getOsPath(zippath),
+                                    'target_project':self.getOsPath('/')
+                                    }, "tmp/"+f)
                             break;
-                        
-                        if self.exists(path + "/" + f + "/config/config"):
-                            path = "/tmp/"+f
-                            self.convert_from_06(path)
-                            break;
-                    if path == '/tmp':
+
+                    if newpath is None:
                         context.update({'error':"Dossier kolekti non trouvé dans l'archive"})
                         raise ReleaseZipException
-                    
+                    else:
+                        path = newpath
+                logger.debug(path)
                 if not self.exists(path + "/sources"):
                     context.update({'error':"Dossier sources non trouvé dans l'archive"})
                     raise ReleaseZipException
@@ -688,6 +649,10 @@ class ReleaseZipView(kolektiMixin, View):
                 
             except ReleaseZipException:
                 logger.exception('Invalid Zip structure')
+                return self.render_to_response(context)
+            except convert06.ConvertException, e:
+                logger.exception('Unable to convert master')
+                context.update({'error':e.msg})
                 return self.render_to_response(context)
             except:
                 logger.exception('could not unzip')
