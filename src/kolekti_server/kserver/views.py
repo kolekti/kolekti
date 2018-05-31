@@ -23,7 +23,7 @@ from zipfile import ZipFile
 
 import logging
 logger = logging.getLogger('kolekti.'+__name__)
-       
+
 from kserver_saas.models import Project, UserProfile, UserProject
 from forms import UploadFileForm, SearchForm
 
@@ -48,7 +48,7 @@ from django.utils.cache import add_never_cache_headers
 # kolekti imports
 from kolekti.common import kolektiBase
 from kolekti.publish_utils import PublisherExtensions
-from kolekti import publish
+from kolekti import convert06, publish
 from kolekti.searchindex import Searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
@@ -550,7 +550,8 @@ class ReleaseZipView(kolektiMixin, View):
             return HttpResponse(status=404)
 
     template_name = 'releases/publish-archive.html'
-        
+
+
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         context = self.get_context_data()
@@ -560,21 +561,47 @@ class ReleaseZipView(kolektiMixin, View):
             if self.exists(path):
                 self.rmtree(path)
             self.makedirs(path)
-            self.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb", sync=False)
+            zippath = path +'/'+ uploaded_file.name
+            self.write_chunks(uploaded_file.chunks, zippath, mode = "wb", sync=False)
             try:
-                with ZipFile(self.getOsPath(path +'/'+ uploaded_file.name)) as zippy:
+                logger.debug(self.getOsPath(zippath))
+                with ZipFile(self.getOsPath(zippath)) as zippy:
                     for f in zippy.namelist():
                         zippy.extract(f, self.getOsPath(path))
                         
                 if not self.exists(path + "/kolekti"):
-                    for f in self.list_directory(path):
-                        if self.exists(path + "/" + f + "/kolekti"):
-                            path = "/tmp/"+f
+                    newpath = None
+                    if self.exists(path + "/config/config.xml"):
+                        lang = self.read(path +'/lang').strip()
+                        converter = convert06.Converter(lang, self.getOsPath(path))
+                        releasename = converter.convert_enveloppe({
+                            'enveloppe': self.getOsPath(zippath),
+                            'target_project':self.getOsPath('/')
+                            }, 'tmp')
+                        newpath = "/tmp/" + releasename
+
+                    else:
+                        for f in self.list_directory(path):
+                            if self.exists(path + "/" + f + "/kolekti"):
+                                newpath = "/tmp/"+f
+                                break;
+                        
+                            if self.exists(path + "/" + f + "/config/config"):
+                                newpath = "/tmp/"+f
+                                lang = self.read(newpath +'/lang').strip()
+                                converter = convert06.Converter(lang, self.getOsPath(path))
+                                converter.convert_enveloppe({
+                                    'enveloppe': self.getOsPath(zippath),
+                                    'target_project':self.getOsPath('/')
+                                    }, "tmp/"+f)
                             break;
-                    if path == '/tmp':
+
+                    if newpath is None:
                         context.update({'error':"Dossier kolekti non trouvé dans l'archive"})
                         raise ReleaseZipException
-                    
+                    else:
+                        path = newpath
+                logger.debug(path)
                 if not self.exists(path + "/sources"):
                     context.update({'error':"Dossier sources non trouvé dans l'archive"})
                     raise ReleaseZipException
@@ -623,6 +650,10 @@ class ReleaseZipView(kolektiMixin, View):
                 
             except ReleaseZipException:
                 logger.exception('Invalid Zip structure')
+                return self.render_to_response(context)
+            except convert06.ConvertException, e:
+                logger.exception('Unable to convert master')
+                context.update({'error':e.msg})
                 return self.render_to_response(context)
             except:
                 logger.exception('could not unzip')

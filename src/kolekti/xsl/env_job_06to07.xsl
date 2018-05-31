@@ -50,6 +50,14 @@
       <label><xsl:value-of select="@name"/></label>
       <filename><xsl:value-of select="ext:translate_jobstring(//profile[1]/label/text(), //profile[1]/criterias)"/></filename>
       <publication>
+        <xsl:if test="starts-with(@name, 'princexml')">
+          <script name="filterpivot">
+            <parameters>
+              <parameter name="filter" value="filter_prince"/>
+            </parameters>
+          </script>
+        </xsl:if>
+        
         <script>
           <xsl:copy-of select="@name"/>
           <xsl:apply-templates select="parameters"/>
