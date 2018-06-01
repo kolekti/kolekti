@@ -1985,22 +1985,23 @@ class SyncView(kolektiMixin, View):
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
             commitmsg = "unspecified"
+            
         if action == "conflict":
             resolve = request.POST.get('resolve')
             files = request.POST.getlist('fileselect',[])
             if resolve == "local":
                 sync.update(files)
-                for file in files:
-                    if self.exists(file+'.mine'):
-                        self.copyFile(file+'.mine', file)
-                    else:
-                        raise Exception('impossible de trouver la version locale')
+                for sfile in files:
+                    if self.exists(sfile+'.mine'):
+                        self.copyFile(sfile+'.mine', sfile)
+                        self.delete_resource(sfile+'.mine', sync=False)
                     try:
-                        sync.resolved(file)
+                        sync.resolved(sfile)
                     except:
                         logger.exception('error while resolving conflict [use local]')
                         
                 sync.commit(files, commitmsg)
+                
             if resolve == "remote":
                 try:
                     sync.revert(files)

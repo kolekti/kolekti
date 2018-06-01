@@ -608,11 +608,17 @@ class kolektiBase(object):
         except:
             logger.exception('Search index unavailable')
 
-    def delete_resource(self, path):
-        try:
-            self.syncMgr.delete_resource(path)
-        except:
-            logger.exception('Synchro unavailable')
+    def delete_resource(self, path, sync = True):
+        if sync:
+            try:
+                self.syncMgr.delete_resource(path)
+            except:
+                logger.exception('Synchro unavailable')
+                if os.path.isdir(self.__makepath(path)):
+                    shutil.rmtree(self.__makepath(path))
+                else:
+                    os.unlink(self.__makepath(path))
+        else:
             if os.path.isdir(self.__makepath(path)):
                 shutil.rmtree(self.__makepath(path))
             else:
