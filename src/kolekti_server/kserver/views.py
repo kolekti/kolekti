@@ -1969,10 +1969,14 @@ class SyncView(kolektiMixin, View):
         try:
             from kolekti.synchro import SynchroManager
             sync = SynchroManager(self.request.kolekti_projectpath)
+            statuses = sync.statuses(recurse=False)
+            root_statuses = [statuses[i]['__self']['kolekti_status'] for i in statuses.keys()]
             context.update({
                     "history": sync.history(),
-                    "changes": sync.statuses(),
+                    "changes": statuses,
+                    "root_statuses":root_statuses,
                     })
+            logger.debug('render')
         except ExcSyncNoSync:
             logger.exception("Synchro unavailable")
             context.update({'status':'nosync'})
@@ -2031,7 +2035,18 @@ class SyncView(kolektiMixin, View):
                 sync.revert(files)
             
         return self.get(request)
-                    
+
+class SyncStatusTreeView(View):
+    def get(self, request):
+        try:
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(self.request.kolekti_projectpath)
+            state = sync.statuses()
+            return HttpResponse(json.dumps(state),content_type="application/json")
+        except:
+            logger.exception("Unable to get sync tree")
+            return HttpResponse(json.dumps({'revision':{'status':'E'}}),content_type="application/json")
+    
 class SyncRevisionView(kolektiMixin, View):
     template_name = "synchro/revision.html"
     def get(self, request, rev):

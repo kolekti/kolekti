@@ -77,6 +77,7 @@ urlpatterns = [
     url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
     url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
     url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
+    url(r'^sync/tree$', SyncStatusTreeView.as_view(), name='syncstatustree'),
 ]
 
 if os.sys.platform[:3] == "win":

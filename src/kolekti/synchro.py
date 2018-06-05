@@ -17,6 +17,32 @@ LOCAL_ENCODING=sys.getfilesystemencoding()
 
 from kolekti.exceptions import *
 
+statuses_modified = [
+    pysvn.wc_status_kind.deleted,
+    pysvn.wc_status_kind.added,
+    pysvn.wc_status_kind.modified,
+    pysvn.wc_status_kind.unversioned,
+]            
+    
+statuses_absent = [
+    pysvn.wc_status_kind.missing,
+]
+
+statuses_normal = [
+    pysvn.wc_status_kind.none,
+    pysvn.wc_status_kind.normal,
+]
+            
+statuses_other = [
+    pysvn.wc_status_kind.replaced,
+    pysvn.wc_status_kind.merged,
+    pysvn.wc_status_kind.conflicted,
+    pysvn.wc_status_kind.ignored,
+    pysvn.wc_status_kind.obstructed,
+    pysvn.wc_status_kind.external,
+    pysvn.wc_status_kind.incomplete,
+]
+
 
 def initLocale():
     # init the locale
@@ -42,32 +68,148 @@ def initLocale():
 initLocale()
 
 
-class SvnClient(object):
-    statuses_modified = [
-        pysvn.wc_status_kind.deleted,
-        pysvn.wc_status_kind.added,
-        pysvn.wc_status_kind.modified,
-        pysvn.wc_status_kind.unversioned,
-    ]            
+class StatusTree(dict):
+    def add_path_item(self, path, item):
+        node = self
+        for pathstep in path.split('/'):
+            if not node.has_key(pathstep):
+                node.update({pathstep:{}})
+            node = node[pathstep]
+        node.update({'__self':item})
 
-    statuses_absent = [
-        pysvn.wc_status_kind.missing,
-    ]
+    def display(self, node = None, depth = 0):        
+        if node is None:
+            node = self
+        try:
+            c = ('-'*depth) + node['__self']['path'].split('/')[-1]
+            nbs = 100 - len(c)
+            logger.debug(c + (' '*nbs) + node['__self']['kolekti_status'])
+        except:
+            logger.exception("display")
+            pass
+        for child in node.keys():
+            if child == '__self':
+                continue
+            self.display(node = node[child], depth = depth + 1)
 
-    statuses_normal = [
-        pysvn.wc_status_kind.none,
-        pysvn.wc_status_kind.normal,
-    ]
+    def update_statuses(self, node = None):
+        if node is None:
+            node = self
+        if len(node.keys()) == 1 and '__self' in node.keys() :
+            children_statuses = []
+        else:
+            children_statuses = [self.update_statuses(node = node[child]) for child in node.keys() if not child=='__self']
+        status = self._update_node_status(node, children_statuses)
+        try:
+            node['__self'].update({'kolekti_status':status})
+        except KeyError:
+            pass
+        return status
+
+    def _update_node_status(self, node, children_statuses = []):
+        kolekti_status = None
+        try:
+            wstatus = node['__self']['wstatus']
+            rstatus = node['__self']['rstatus']
+            wpropstatus = node['__self']['wpropstatus']
+            rpropstatus = node['__self']['rpropstatus']
+            node['__self'].update ({
+                "wstatus" : str(wstatus),
+                "rstatus" : str(rstatus),
+                "wpropstatus" : str(wpropstatus),
+                "rpropstatus" : str(rpropstatus),
+                })
+        except KeyError:
+            return ''
+
+        if rstatus in statuses_modified:
+            if wstatus == pysvn.wc_status_kind.added:
+                kolekti_status='conflict'                
+            elif wstatus == pysvn.wc_status_kind.unversioned:
+                kolekti_status='conflict'
+            elif wstatus in statuses_modified:
+                if (rstatus == pysvn.wc_status_kind.deleted) and (wstatus == pysvn.wc_status_kind.deleted or wstatus == pysvn.wc_status_kind.unversioned):
+                    kolekti_status='update'
+                elif rstatus == pysvn.wc_status_kind.deleted:
+                    kolekti_status='conflict'
+                else:
+                    if self.merge_dryrun(status.path):
+                        kolekti_status='merge'
+                    else:
+                        kolekti_status='conflict'
+                            
+            elif wstatus in statuses_absent:
+                kolekti_status='update'
+                    
+            elif wstatus in statuses_normal:
+                kolekti_status='update'
+                    
+            else:
+                kolekti_status='error'
+                    
+        elif rstatus in statuses_normal:
+            if wstatus in statuses_absent:
+                kolekti_status='update'
+            elif wstatus in statuses_modified:
+                kolekti_status = 'commit'
+            elif wstatus in statuses_normal:
+                kolekti_status = 'ok'
+                    
+            else:
+                kolekti_status='error'
+        else:
+            kolekti_status='error'
             
-    statuses_other = [
-        pysvn.wc_status_kind.replaced,
-        pysvn.wc_status_kind.merged,
-        pysvn.wc_status_kind.conflicted,
-        pysvn.wc_status_kind.ignored,
-        pysvn.wc_status_kind.obstructed,
-        pysvn.wc_status_kind.external,
-        pysvn.wc_status_kind.incomplete,
-        ]
+        # properties
+        
+        if wpropstatus in statuses_modified:
+            if rpropstatus in statuses_modified:
+                kolekti_status='conflict'
+            else:
+                kolekti_status = 'commit'
+        else:
+            if rpropstatus in statuses_modified:
+                kolekti_status='update'
+
+        if 'conflict' in children_statuses:
+            kolekti_status = "conflict"
+        elif 'error' in  children_statuses:
+            kolekti_status = "error"
+        elif 'update' in children_statuses:
+            if kolekti_status == 'commit':
+                kolekti_status = "conflict"
+            else:
+                kolekti_status = 'update'
+        elif 'commit' in children_statuses:
+            if kolekti_status == 'update':
+                kolekti_status = "conflict"
+            else:
+                kolekti_status = 'commit'
+                
+        return kolekti_status
+
+
+    def merge_dryrun(self, path):
+        notifications = []
+        def callback_notification_merge(arg):
+            notifications.append(arg)
+            
+
+        merge_client = pysvn.Client()
+        merge_client.callback_notify = callback_notification_merge
+        info = merge_client.info(path)
+        rurl = info.get('url')
+        workrev = info.commit_revision
+        headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
+
+        merge_client.merge(path, workrev, path, headrev, path, recurse = False, dry_run=True)
+        for notif in notifications:
+            if notif.get('content_state',None) == pysvn.wc_notify_state.merged:
+                return True
+        return False
+
+            
+class SvnClient(object):
     
     def __init__(self, username=None, password=None, accept_cert=False):
         self._client = pysvn.Client()
@@ -102,6 +244,15 @@ class SvnClient(object):
             raise ExcSyncRequestSSL
             
         self._client.callback_ssl_server_trust_prompt = callback_accept_cert
+
+        def callback_conflict_resolver(arg):
+            logger.debug(arg)
+            conflict_choice = "mine_full"
+            save_merged = None
+            merge_file = None
+            return conflict_choice, merge_file, save_merged
+        
+        self._client.callback_conflict_resolver = callback_conflict_resolver
         
 class SynchroManager(SvnClient):
     def __init__(self, base, username = None):
@@ -195,8 +346,39 @@ class SynchroManager(SvnClient):
         return [dict(item) for item in rev_summ], rev_info, diff_text
 
 
-        
     def statuses(self, path="", recurse = True):
+        res = StatusTree()
+        statuses = self._client.status(self.__makepath(path),
+                                       recurse = recurse,
+                                       get_all = True,
+                                       update = True)
+
+        for status in statuses:
+            item_path = self._localpath(status.path)
+            item = {"path":self._localpath(status.path),
+                    "ospath":status.path,
+                    "basename":os.path.basename(status.path),
+                    "rstatus":status.repos_text_status,
+                    "wstatus":status.text_status,
+                    "rpropstatus":status.repos_prop_status,
+                    "wpropstatus":status.prop_status,
+                    }
+            if status.entry is not None:
+                item.update({"kind":str(status.entry.kind),
+                             "author":status.entry.commit_author})
+            else:
+                item.update({"kind":"none"})
+                
+            if status.text_status == pysvn.wc_status_kind.ignored:
+                continue
+            res.add_path_item(item_path[1:], item)
+            
+        res.update_statuses()
+#        logger.debug("display")
+#        res.display()
+        return res
+        
+    def statuses2(self, path="", recurse = True):
         res = {'ok': [], 'merge':[], 'conflict':[], 'update':[], 'error':[], 'commit':[],'unversioned':[]}
         statuses = self._client.status(self.__makepath(path),
                                        recurse = recurse,
@@ -211,24 +393,29 @@ class SynchroManager(SvnClient):
                     "rpropstatus":str(status.repos_prop_status),
                     "wpropstatus":str(status.prop_status),
                     }
-
+                
+            if '/sources/en/topics/foo' in self._localpath(status.path):
+                logger.debug(self._localpath(status.path))
+                logger.debug(dict(status))
+                
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
                              "author":status.entry.commit_author})
             else:
                 item.update({"kind":"none"})
+                
             if status.text_status == pysvn.wc_status_kind.ignored:
                 pass
 
             elif status.text_status == pysvn.wc_status_kind.unversioned and status.repos_text_status == pysvn.wc_status_kind.none:
                 res['unversioned'].append(item)
 
-            elif status.repos_text_status in self.statuses_modified:
+            elif status.repos_text_status in statuses_modified:
                 if status.text_status == pysvn.wc_status_kind.added:
                     res['conflict'].append(item)
                 elif status.text_status == pysvn.wc_status_kind.unversioned:
                     res['conflict'].append(item)
-                elif status.text_status in self.statuses_modified:
+                elif status.text_status in statuses_modified:
                     if (status.repos_text_status == pysvn.wc_status_kind.deleted) and (status.text_status == pysvn.wc_status_kind.deleted or status.text_status == pysvn.wc_status_kind.unversioned):
                         res['update'].append(item)
                     elif status.repos_text_status == pysvn.wc_status_kind.deleted:
@@ -239,21 +426,21 @@ class SynchroManager(SvnClient):
                         else:
                             res['conflict'].append(item)
                             
-                elif status.text_status in self.statuses_absent:
+                elif status.text_status in statuses_absent:
                     res['update'].append(item)
                     
-                elif status.text_status in self.statuses_normal:
+                elif status.text_status in statuses_normal:
                     res['update'].append(item)
                     
                 else:
                     res['error'].append(item)
                     
-            elif status.repos_text_status in self.statuses_normal:
-                if status.text_status in self.statuses_absent:
+            elif status.repos_text_status in statuses_normal:
+                if status.text_status in statuses_absent:
                     res['update'].append(item)
-                elif status.text_status in self.statuses_modified:
+                elif status.text_status in statuses_modified:
                     res['commit'].append(item)
-                elif status.text_status in self.statuses_normal:
+                elif status.text_status in statuses_normal:
                     res['ok'].append(item)
                     
                 else:
@@ -262,13 +449,13 @@ class SynchroManager(SvnClient):
                 res['error'].append(item)
             
             
-            if status.prop_status in self.statuses_modified:
-                if status.repos_prop_status in self.statuses_modified:
+            if status.prop_status in statuses_modified:
+                if status.repos_prop_status in statuses_modified:
                     res['conflict'].append(item)
                 else:
                     res['commit'].append(item)
             else:
-                if status.repos_prop_status in self.statuses_modified:
+                if status.repos_prop_status in statuses_modified:
                     res['update'].append(item)
         return res
 
