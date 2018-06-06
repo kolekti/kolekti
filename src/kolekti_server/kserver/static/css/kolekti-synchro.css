@@ -1,0 +1,24 @@
+li.sync_node_disabled {
+    font-weight: normal;
+}
+
+li.sync_node_disabled>ul>li.sync_node_disabled {
+    display:none;    
+}
+
+.sync_hidden {
+    display:none;
+}
+
+.sync_tree {
+    font-weight: bold;
+}
+
+.sync_tree li {
+    list-style-type:none;
+    
+}
+
+.sync_tree ul {
+    padding-left:10px;
+}
