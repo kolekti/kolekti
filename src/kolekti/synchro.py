@@ -99,14 +99,33 @@ class StatusTree(dict):
             children_statuses = []
         else:
             children_statuses = [self.update_statuses(node = node[child]) for child in node.keys() if not child=='__self']
-        status = self._update_node_status(node, children_statuses)
+        status = self._node_status(node, children_statuses)
+        
+        inherited_status = "ok"
+        
+        if 'conflict' in children_statuses:
+            inherited_status = "conflict"
+        elif 'error' in  children_statuses:
+            inherited_status = "error"
+        elif 'update' in children_statuses:
+            if status == 'commit':
+                inherited_status = "conflict"
+            else:
+                inherited_status = 'update'
+        elif 'commit' in children_statuses:
+            if status == 'update':
+                inherited_status = "conflict"
+            else:
+                inherited_status = 'commit'
+                
+
         try:
-            node['__self'].update({'kolekti_status':status})
+            node['__self'].update({'kolekti_status':status,'kolekti_inherited_status':inherited_status})
         except KeyError:
             pass
-        return status
+        return inherited_status
 
-    def _update_node_status(self, node, children_statuses = []):
+    def _node_status(self, node, children_statuses = []):
         kolekti_status = None
         try:
             wstatus = node['__self']['wstatus']
@@ -170,21 +189,6 @@ class StatusTree(dict):
         else:
             if rpropstatus in statuses_modified:
                 kolekti_status='update'
-
-        if 'conflict' in children_statuses:
-            kolekti_status = "conflict"
-        elif 'error' in  children_statuses:
-            kolekti_status = "error"
-        elif 'update' in children_statuses:
-            if kolekti_status == 'commit':
-                kolekti_status = "conflict"
-            else:
-                kolekti_status = 'update'
-        elif 'commit' in children_statuses:
-            if kolekti_status == 'update':
-                kolekti_status = "conflict"
-            else:
-                kolekti_status = 'commit'
                 
         return kolekti_status
 

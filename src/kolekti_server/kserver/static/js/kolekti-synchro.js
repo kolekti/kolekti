@@ -11,6 +11,8 @@ $(document).ready(function() {
                return;
             item = $('<li>')
             dirlist.append(item)
+            var toggle  = $('<span class="toggle"><i class="glyphicon glyphicon-chevron-right open"></i><i class="glyphicon glyphicon-chevron-down close"></i></span>')
+            item.append(toggle)
             var checkbox = $('<input type="checkbox" class="sync_check"/>')
             checkbox.addClass('sync_check_'+value.__self.kolekti_status)
             item.append(checkbox)
@@ -24,19 +26,50 @@ $(document).ready(function() {
         
     }
 
+    var znodes = function(statuses, status) {
+        var nodes = []
+        $.each(statuses, function(name, value) {
+            if (name == "__self")
+                return;
+            var node_status = value.__self.kolekti_status
+            var node_inherited_status = value.__self.kolekti_inherited_status
+            var children = znodes(value, status)
+            var node = {"name":name,
+                        "open":(node_inherited_status == status)?true:false,
+                        "checked":(node_status == status)?true:false,
+                        "chkDisabled":(node_inherited_status == status)?false:true
+                       }
+            if (children.length)
+                node.children = children
+            nodes.push(node)
+        });
+        return nodes;
+    }
+    
     var setup_tree = function(root, status) {
         root.find('li').each(function() {
             if ($(this).data('status') != status) {
-                $(this).addClass('sync_hidden')
+                $(this).addClass('sync_node_disabled')
+                $(this).find('input.sync_check')
+                  .attr('disabled','yes')
+                $(this).children('.toggle').find('.open')
+                  .addClass('sync-hidden')
+            } else {
+                $(this).children('.toggle').find('.close')
+                  .addClass('sync-hidden')
+                $(this).children('input.sync_check')
+                  .attr('checked','yes')
+                
             }
         })
     }
-    
+
     $.get('/sync/tree')
         .done(function(data) {
-
+            console.log('data loaded')
+            console.log(data)
             main_status = $.map(data, function(dir) {
-                return dir.__self.kolekti_status
+                return dir.__self.kolekti_inherited_status
             })
             var status;
             if ($.inArray('conflict', main_status)) {
@@ -60,9 +93,19 @@ $(document).ready(function() {
                 $('.sync_ok').removeClass('sync_hidden')
             }
             $('.sync_loading').addClass('sync_hidden')
-            var div = $("<div>") 
-            populate_tree(div, data)
-            setup_tree(div, status)
+            var div = $("<div>")
+            var setting = {
+                check: {
+                    enable: true,
+                    chkStyle: "checkbox",
+                    chkboxType: { "Y": "s", "N": "s" }
+               } 
+            };
+            var tree = $('.sync_' + status +' .sync_tree')
+            console.log(znodes(data, status));
+            zTreeObj = $.fn.zTree.init(tree, setting, znodes(data, status));
+//           populate_tree(div, data)
+//            setup_tree(div, status)
             $('.sync_' + status +' .sync_tree').append(div)
         })
 
