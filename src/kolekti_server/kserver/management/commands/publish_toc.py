@@ -22,6 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('project', type=str)
         parser.add_argument('toc', type=str)
         parser.add_argument('job', type=str)
+        parser.add_argument('-a', '--all', action='store_true')
         
     def handle(self, *args, **options):
         logging.debug(options)
@@ -30,11 +31,12 @@ class Command(BaseCommand):
         project = options['project']
         toc = options['toc']
         job = options['job']
+        allprofiles = options['all']
         projectpath = os.path.join(settings.KOLEKTI_BASE, user, project)
         
         lang = self._get_source_lang(projectpath)
   
-        self._publish_toc(projectpath, toc, job, lang)
+        self._publish_toc(projectpath, toc, job, lang, allprofiles)
 
         self.stdout.write("done.")
 
@@ -42,7 +44,7 @@ class Command(BaseCommand):
         xset = ET.parse(os.path.join(projectpath, 'kolekti', 'settings.xml'))
         return xset.getroot().get('sourcelang')
         
-    def _publish_toc(self, projectpath, toc, job, lang):
+    def _publish_toc(self, projectpath, toc, job, lang, allprofiles=False):
 
         tocpath = "/sources/" + lang + "/tocs/" + toc + ".html"
         jobpath = "/kolekti/publication-parameters/" + job + ".xml"
@@ -50,8 +52,12 @@ class Command(BaseCommand):
         from kolekti import publish
         try:
             p = publish.DraftPublisher(projectpath, lang=lang, cleanup=False)
-
-            for event in p.publish_draft(tocpath, jobpath):
+            fsjob = os.path.join(projectpath, jobpath[1:])
+            xjob = ET.parse(fsjob)
+            if  allprofiles:
+                for profile in xjob.xpath("/job/profiles/profile"):
+                    profile.set('enabled','1')
+            for event in p.publish_draft(tocpath, xjob):
                 if event['event'] == "job":
                     self.stderr.write('Publishing Job %s'%event['label'])
                 if event['event'] == "profile":
@@ -64,7 +70,7 @@ class Command(BaseCommand):
                 if event['event'] == "error":
                     self.stderr.write(' [E] %s\n%s'%(event['msg'], event['stacktrace']) )
                 if event['event'] == "warning":
-                    self.stderr.write(' [W] %s\n%s'%(msg) )
+                    self.stderr.write(' [W] %s\n%s'%(event['msg'], event['stacktrace']) )
 
             self.stderr.write("Publication complete")
         except:
