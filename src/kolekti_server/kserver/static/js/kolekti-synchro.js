@@ -33,11 +33,17 @@ $(document).ready(function() {
                 return;
             var node_status = value.__self.kolekti_status
             var node_inherited_status = value.__self.kolekti_inherited_status
+            var node_detail_status =
+                "L" + value.__self.kolekti_details_status
             var children = znodes(value, status)
+            
             var node = {"name":name,
                         "open":(node_inherited_status == status)?true:false,
-                        "checked":(node_status == status)?true:false,
-                        "chkDisabled":(node_inherited_status == status)?false:true
+                        "checked":(node_inherited_status == status)?true:false,
+                        "chkDisabled":(node_inherited_status == status)?false:true,
+                        "status":node_status,
+                        "hstatus":node_inherited_status
+                        "dstatus":node_deatil_status,
                        }
             if (children.length)
                 node.children = children
@@ -93,20 +99,43 @@ $(document).ready(function() {
                 $('.sync_ok').removeClass('sync_hidden')
             }
             $('.sync_loading').addClass('sync_hidden')
-            var div = $("<div>")
+
+            
+            var myOnExpand = function(event, treeId, treeNode) {
+                console.log('expand')
+                console.log(treeNode)
+                
+            };
+            
+            var myOnClick = function(event, treeId, treeNode) {
+                console.log('click')
+                console.log(treeNode)
+                
+            };
+            var myOnNodeCreated = function(event, treeId, treeNode) {
+                $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
+                $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
+                
+            };
+            
             var setting = {
                 check: {
                     enable: true,
                     chkStyle: "checkbox",
                     chkboxType: { "Y": "s", "N": "s" }
-               } 
+                },
+                callback: {
+                    onExpand: myOnExpand,
+                    onClick: myOnClick,
+                    onNodeCreated:myOnNodeCreated
+                }
+
             };
+
+            
             var tree = $('.sync_' + status +' .sync_tree')
-            console.log(znodes(data, status));
+            tree.addClass('active')
             zTreeObj = $.fn.zTree.init(tree, setting, znodes(data, status));
-//           populate_tree(div, data)
-//            setup_tree(div, status)
-            $('.sync_' + status +' .sync_tree').append(div)
         })
 
     

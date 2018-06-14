@@ -101,7 +101,6 @@ class StatusTree(dict):
             children_statuses = [self.update_statuses(node = node[child]) for child in node.keys() if not child=='__self']
         status = self._node_status(node, children_statuses)
         
-        inherited_status = "ok"
         
         if 'conflict' in children_statuses:
             inherited_status = "conflict"
@@ -117,12 +116,15 @@ class StatusTree(dict):
                 inherited_status = "conflict"
             else:
                 inherited_status = 'commit'
-                
+        else:
+            inherited_status = status
+            
 
         try:
             node['__self'].update({'kolekti_status':status,'kolekti_inherited_status':inherited_status})
         except KeyError:
             pass
+        
         return inherited_status
 
     def _node_status(self, node, children_statuses = []):

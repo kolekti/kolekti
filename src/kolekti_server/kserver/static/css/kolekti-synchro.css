@@ -10,8 +10,24 @@ li.sync_node_disabled>ul>li.sync_node_disabled {
     display:none;
 }
 
-.sync_tree {
+.sync_tree span{
     font-weight: bold;
+}
+
+.sync_tree span.hstatus-ok{
+    font-weight: normal;
+}
+
+.sync_tree span.hstatus-conflict{
+    color:#CC0000;
+}
+
+.sync_tree span.hstatus-commit{
+    color:#00CC00;
+}
+
+.sync_tree span.hstatus-update{
+    color:#0000CC;
 }
 
 .sync_tree li {
