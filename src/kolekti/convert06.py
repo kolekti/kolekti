@@ -13,22 +13,39 @@ import logging
 import shutil
 
 logger = logging.getLogger(__name__)
-
+print __name__
 from kolekti.variables import OdsToXML
 
 class ConvertException(Exception):
     pass
     
 class ConvertMixin(object):
+    e2 = re.compile(r'_([A-Z]+)_')
     def topic_ref(self, topic06, args):
         topic = topic06.replace('@modules/','')
-        topic07 = "/sources/%s/topics/%s"%(args.lang,topic.replace('.xht','.html') )
+        topic07 = "/sources/%s/topics/%s"%(args.get('lang'),topic.replace('.xht','.html') )
         return topic07 
 
-
+    def image_criteria_repl(self, src, criteria):
+        def repl(matchobj):
+            try:
+                return criteria[matchobj.group(1)]
+            except KeyError:
+                return matchobj.group(0)
+        return self.e2.sub(repl, src)
+    
+    def image_criteria(self, src, profiles):
+        m = self.e2.findall(src)
+        if len(m)==0:
+            yield src
+        else:
+            for pname, criteria in profiles.iteritems():
+                yield self.image_criteria_repl(src, criteria)
+        return
+                          
 class XSLExtensions(ConvertMixin):
     e = re.compile(r'\[var (\w+):(\w+)\]')
-
+    
     def __init__(self, *args, **kwargs):
         if kwargs.has_key('args'):
             self.args = kwargs.get('args')
@@ -37,8 +54,15 @@ class XSLExtensions(ConvertMixin):
         return unicode(args[0].replace(" ","_"))
     
     def translate(self, _, *args):
-        return "FIXME "+args[0] 
+        return args[0] 
 
+    def getarg(self, _, *args):
+        argname = args[0] 
+        try:
+            return self.args[argname]
+        except:
+            return "FIXME"
+        
     def topictranslate(self, _, *args):
         srcref = args[0][0]
         return self.topic_ref(srcref, self.args)
@@ -51,7 +75,7 @@ class XSLExtensions(ConvertMixin):
             var.set("class",':'.join(r.groups()))
             return [var]
         else:
-            return 'FIXME ' + titlestr
+            return [titlestr]
         
     def translate_jobstring(self, _, *args):
         thestr = args[0][0]
@@ -83,6 +107,22 @@ class XSLExtensions(ConvertMixin):
         else:
             return 'FIXME ' + titlestr
 
+    def img_path(self, _, *args):
+        imgpath = self.e2.sub(r'{\1}', args[0])
+        pathparts = imgpath.split('/')
+        return '/' + '/'.join(['sources', self.args.get('lang'), 'pictures'] + pathparts[4:])
+        
+    def link_path(self, _, *args):
+        linkpath = args[0]
+        if linkpath[0] == "#":
+            return linkpath
+        if linkpath[:7] == "http://" or linkpath[:8] == "https://":
+            return linkpath
+        logger.debug(linkpath)
+        linkpath = linkpath.replace('.xht','.html')
+        pathparts = linkpath.split('/')
+        return '/' + '/'.join(['sources', self.args.get('lang'), 'topics'] + pathparts[4:])
+        
 class Converter(ConvertMixin):
     def __init__(self, lang, source_project):
         self.lang = lang
@@ -94,7 +134,6 @@ class Converter(ConvertMixin):
         extclass = XSLExtensions
         exts = [n for n in dir(extclass) if not(n.startswith('_'))]
         extensions = ET.Extension(XSLExtensions(args=args),exts,ns="kolekti:migrate")
-        logger.debug(self._appdir)
         
         return ET.XSLT(ET.parse(os.path.join(self._appdir,'xsl',name)), extensions = extensions)
 
@@ -105,33 +144,59 @@ class Converter(ConvertMixin):
             xdst = xsl(xsrc, **xsl_args)
             #ET.tounicode(xsl(toc),pretty_print=True).encode('utf-8')
         except ET.XSLTApplyError:
-            logging.exception(str(xsl.error_log))
+            for err in xsl.error_log:
+                logging.exception(unicode(err).encode('utf-8'))
             
         with open(outfile,'w') as ofile:
             ofile.write(str(xdst))
             
         return xdst
-
-    def convert_topic_assets(self, srcfile):
-        xsrc = ET.parse(srcfile)
-        for img in xsrc.xpath('//html:img', namespaces={'html':"http://www.w3.org/1999/xhtml"}):
-            logger.debug('image %s',img.get('src'))
     
+    def convert_topic_assets(self, srcfile, args):
+        xsrc = ET.parse(srcfile, parser = ET.XMLParser(load_dtd=True))
+        for img in xsrc.xpath('//html:img', namespaces={'html':"http://www.w3.org/1999/xhtml"}):
+            
+#            logger.debug('image %s',img.get('src'))
+            for ic in self.image_criteria(img.get('src'), args['profiles']):
+                parts = ic.split('/')
+                srcimg = args.get('source_project') + '/'.join(parts[3:])
+                destimg = args.get('target_project') + 'sources/' + args.get('lang') + '/pictures/' + '/'.join(parts[4:]) 
+                self.makedirs(os.path.dirname(destimg))
+#                logger.debug("copy " + srcimg + " to " + destimg)
+                try:
+                    shutil.copy(srcimg, destimg)
+                except:
+                    logger.exception('could not copy image')
+     
+                                             
+            
+            
     def convert_toc_topics(self, toc, args):
-        logger.debug('Converting topics')
+        logger.info('Converting topics')
         xsrc = ET.parse(toc)
         for topic in xsrc.xpath('//t:module', namespaces={'t':'kolekti:trames'}):
             topic06 = topic.get('resid')
-            srcfile = os.path.join(args.source_project, topic06[1:])
+#            logger.info(topic06)
+            if topic06[:8] == 'kolekti:':
+                continue
+
+            srcfile = os.path.join(self.source_project, topic06[1:])
             topic07 = self.topic_ref(topic06, args)[1:]
             dstfile = os.path.join(
-                args.target_project,
+                args['target_project'],
                 topic07
                 )
-            self.apply_xsl('topic_06to07.xsl',  srcfile, dstfile, args)
-            logger.debug('topic %s',dstfile)
-            self.convert_topic_assets(srcfile)
-        
+            dstdir = os.path.dirname(dstfile)
+            self.makedirs(dstdir)
+            self.apply_xsl(
+                'topic_06to07.xsl',
+                srcfile,
+                dstfile,
+                args,
+                parser = ET.XMLParser(load_dtd=True))
+#            logger.debug('topic %s',dstfile)
+            self.convert_topic_assets(srcfile, args)
+            
 
     def makedirs(self, path):
         if not os.path.exists(path):
@@ -180,11 +245,11 @@ class Converter(ConvertMixin):
                 )
             
             scriptsdef = ET.parse(os.path.join(self._appdir, 'pubscripts.xml'))
-            logger.debug(xjob)
+#            logger.debug(xjob)
             
             for script in xjob.xpath('/job/scripts//script'):
                 scriptname = script.get('name')
-                logger.debug(scriptname)
+#                logger.debug(scriptname)
                 scriptdef = scriptsdef.xpath('/scripts/pubscript[@id="%s"]'%scriptname)
                 if len(scriptdef) == 0:
                     continue
@@ -201,12 +266,12 @@ class Converter(ConvertMixin):
                         
                 for p in scriptdef[0].xpath('parameters/parameter[@type="filelist"]'):
                     paramname = p.get('name')
-                    logger.debug(paramname)
+#                    logger.debug(paramname)
 
                     pval = script.xpath('parameters/parameter[@name = "%s"]'%paramname)
                     if len(pval):
                         paramvalue = p.get('dir') + "/" + pval[0].get('value') + "." + p.get('ext')
-                        logger.debug(paramvalue)
+#                        logger.debug(paramvalue)
                         
                         if not os.path.exists(os.path.join(releasepath, p.get('dir'), paramvalue)):
                             if os.path.exists(os.path.join(project_path, paramvalue)):
@@ -220,8 +285,7 @@ class Converter(ConvertMixin):
                 if f[:7] == "medias/" and f[-1]!= '/':
                     myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'pictures'))
                     newpdir = os.path.dirname(os.path.join(releasepath, 'sources', lang, 'pictures',f[7:]))
-                    if not os.path.exists(newpdir):
-                        os.makedirs(newpdir)
+                    self.makedirs(newpdir)
                     shutil.move(
                         os.path.join(releasepath, 'sources', lang, 'pictures',f),
                         os.path.join(releasepath, 'sources', lang, 'pictures',f[7:])
@@ -238,36 +302,78 @@ class Converter(ConvertMixin):
         
     def convert_topic(self, args):
         intopic = os.path.join(
-            args.source_project,
+            self.source_project,
             "modules",
-            args.topic
+            args.get('topic')
             )
     
         outtopic = os.path.join(
-            args.target_project,
+            args.get('target_project'),
             "sources",
-            args.lang,
+            args.get('lang'),
             "topics",
-            self.topic_ref(args.topic, args),
+            self.topic_ref(args.get('topic'), args),
             )
-        self.apply_xsl('topic_06to07.xsl', intopic, outtopic, args)
+        self.apply_xsl('topic_06to07.xsl', intopic, outtopic)
             
-    def convert_toc(self, args):
+    def convert_toc(self, args):        
         intoc = os.path.join(
-            args.source_project,
+            self.source_project,
             "trames",
-            args.toc)
-
-        outtoc = os.path.join(
-            args.target_project,
+            args['toc'])
+        
+        self.makedirs(os.path.join(
+            args['target_project'],
             "sources",
-            args.lang,
+            args['lang'],
+            "tocs"))
+            
+        outtoc = os.path.join(
+            args['target_project'],
+            "sources",
+            args['lang'],
             "tocs",
-            args.toc,
+            args['toc'].replace('.xml', '.html'),
             )
                         
         self.apply_xsl('toc_06to07.xsl', intoc, outtoc, args)
-        if args.recurse:
+        if args['recurse']:
             self.convert_toc_topics(intoc, args)
         return outtoc
+        
+    def convert_job(self, args):        
+        injob = os.path.join(
+            self.source_project,
+            "configuration",
+            "orders",
+            args['job'] + '.xml')
+        
+        self.makedirs(os.path.join(
+            args['target_project'],
+            "kolekti",
+            "publication-parameters"))
+
+            
+        outjob = os.path.join(
+            args['target_project'],
+            "kolekti",
+            "publication-parameters",
+            args['job'] + '.xml'
+            )
+                        
+        self.apply_xsl('job_06to07.xsl', injob, outjob, args)
+        
+        if args['recurse']:
+            xjob = ET.parse(injob)
+            profiles = {}
+            for p in xjob.xpath('/order/profiles/profile'):
+                pname = p.find('label').text
+                crits = dict([(c.get('code'),c.get('value')) for c in p.findall('criterias/criteria')])
+                profiles.update({pname:crits})
+            toc = xjob.xpath("string(/order/trame/@value)")
+            args.update({
+                'toc':toc[8:],
+                'profiles': profiles})
+            self.convert_toc(args)
+        return outjob
         

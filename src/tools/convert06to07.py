@@ -12,7 +12,7 @@ import argparse
 from zipfile import ZipFile
 import logging
 import shutil
-logger = logging.getLogger('convert')
+logger = logging.getLogger('kolekti.convert06')
 #from kolekti.publish_utils import PublisherExtensions
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -24,15 +24,14 @@ except ImportError:
     print "ERROR : Unable to find kolekti sources, set your PYTHONPATH varible to kolekti src path"
     sys.exit(1)
     
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 # add formatter to ch
 ch.setFormatter(formatter)
 
 
 logger.addHandler(ch)
-        
-        
+               
         
         
 if __name__ == "__main__":
@@ -43,6 +42,15 @@ if __name__ == "__main__":
     
     subparsers = parser.add_subparsers(title='object to convert')
 
+    parser_job = subparsers.add_parser('job', help="convert job")
+    
+    defaults={'cmd':'job', 'ext':'.xml'}
+    
+    parser_job.set_defaults(**defaults)
+    parser_job.add_argument('job', help="kolekti 06 orders to convert")
+    parser_job.add_argument('-r', '--recurse', action='store_true', help="Recusrse into tocs/topics")    
+
+    
     parser_toc = subparsers.add_parser('toc', help="convert trame")
     
     defaults={'cmd':'toc', 'ext':'.html'}
@@ -64,18 +72,21 @@ if __name__ == "__main__":
     parser_env.set_defaults(**defaults)
     
     args = parser.parse_args()
-
+    
+    converter = convert06.Converter(args.lang, args.source_project)
+    
+    if args.cmd == 'job':
+        out = converter.convert_job(args.__dict__)
+        logger.info('successfully converted job %s', out)
+        
     if args.cmd == 'toc':
-        converter = convert06.Converter(args.lang, args.source_project)
         out = converter.convert_toc(args.__dict__)
         logger.info('successfully converted toc %s', out)
         
     if args.cmd == 'topic':
-        converter = convert06.Converter(args.lang, args.source_project)
         converter.convert_topic(args.__dict__)
         
     if args.cmd == 'enveloppe':
-        converter = convert06.Converter(args.lang, args.source_project)
         converter.convert_enveloppe(args.__dict__)
 
 
