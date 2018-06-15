@@ -52,7 +52,15 @@
       <xsl:apply-templates/>
     </var>
   </xsl:template>
-  
+
+  <xsl:template match="t:module[@resid='kolekti://INDEX']">
+    <a rel="kolekti:index"/>>
+  </xsl:template>
+
+    <xsl:template match="t:module[@resid='kolekti://TDM']">
+      <a rel="kolekti:toc"/>>
+    </xsl:template>
+      
   <xsl:template match="t:module">
     <a href="{f:topictranslate(@resid)}" rel="kolekti:topic"/>
   </xsl:template>
