@@ -1570,9 +1570,12 @@ class BrowserView(kolektiMixin, View):
         return entry
             
     def get(self,request):
+        context = self.get_context_data()
         try:
-            context = self.get_context_data()
             path = request.GET.get('path','/')
+            if not self.exists(path):
+                return elf.render_to_response({'error':"does not exists"})
+            
             mode = request.GET.get('mode','select')
 
             files = filter(self.__browserfilter, self.get_directory(path))
@@ -1593,12 +1596,13 @@ class BrowserView(kolektiMixin, View):
             context.update({'project':self.request.kolekti_userproject.project.directory})
             context.update({'id':'browser_%i'%random.randint(1, 10000)})
             response = self.render_to_response(context)
-            add_never_cache_headers(response)
-            return response
         except:
-            import traceback
-            print traceback.format_exc()
-
+            logger.exception('unable to get directory')
+            context={'error':True}
+            response = self.render_to_response(context)
+        add_never_cache_headers(response)
+        return response
+            
 class BrowserReleasesView(BrowserView):
     template_name = "browser/releases.html"
     def get_directory(self, path):

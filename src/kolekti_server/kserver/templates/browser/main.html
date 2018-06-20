@@ -1,3 +1,9 @@
+{% if error %}
+<div class="alert alert-warning">
+  <h2>Quelque chose d'inattendu s'est produit</h2>
+  <p>Une erreur s'est produite au cours de cette opération, merci de contacter votre support technique pour y remédier.</p>
+</div>
+{% else %}
 <div class="browser" id="{{ id }}">
   <div class="row">
     <div class="col-sm-12 col-md-12">
@@ -110,3 +116,4 @@
   </div>
   </div>
 </div>
+{% endif %}
