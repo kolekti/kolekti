@@ -444,8 +444,12 @@ class Publisher(PublisherMixin, kolektiBase):
             
     # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
-        for med in assembly.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
-            ref = med.get('src')
+        for med in assembly.xpath('//h:img[@src]|//h:embed[@src]|//h:a[@class="resource"][starts-with(@href, "/sources")]', namespaces=self.nsmap):
+            if med.tag == "{%(h)s}a"%self.nsmap:
+                ref = med.get('href')
+            else:
+                ref = med.get('src')
+
             ref = self.substitute_criteria(ref, profile)
             if ref[0] == '/':
                 ref = ref[1:]

@@ -104,6 +104,11 @@
           <xsl:value-of select="@href" />
         </xsl:when>
         
+        <!-- lien vers resource -->
+        <xsl:when test="@class='resource'">
+          <xsl:value-of select="@href" />
+        </xsl:when>
+        
         <!-- lien interne au topic -->
         <xsl:when test="starts-with(@href, '#')">
           <xsl:text>#</xsl:text>
@@ -114,12 +119,12 @@
 
         <!-- lien absolu (/sources/[lg]/topics/... -->
         <xsl:when test="starts-with($tmod, '/')">
-	  <xsl:variable name="ref" select="$tmod" />
+	      <xsl:variable name="ref" select="$tmod" />
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and not(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>
@@ -134,7 +139,7 @@
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and starts-with(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>

@@ -107,7 +107,12 @@
     <!-- calcul du nouveau lien -->
     <xsl:variable name="href">
       <xsl:choose>
-
+        
+        <!-- lien vers resource -->
+        <xsl:when test="@class='resource'">
+          <xsl:value-of select="@href" />
+        </xsl:when>
+        
         <!-- lien externe -->
         <xsl:when test="starts-with(@href,'http://') or starts-with(@href,'https://')">
           <xsl:value-of select="@href" />
@@ -128,7 +133,7 @@
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and not(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>
@@ -143,7 +148,7 @@
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and not(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>

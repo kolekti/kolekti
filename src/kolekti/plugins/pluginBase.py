@@ -66,8 +66,11 @@ class plugin(PublisherMixin,kolektiBase):
                                                 system_path = False,
                                                 resdir = self.process_path(''),
                                                 **kwargs)
-    
-        except:
+        except ET.XSLTApplyError:
+            for err in xsl.error_log:
+                logger.exception(unicode(err).encode('utf-8'))
+            raise
+        except IOError:
             xsl = super(plugin,self).get_xsl(xslfile,
                                             extclass = self.__ext,
                                             xsldir = os.path.join(self._plugindir,'xsl'),
@@ -264,9 +267,11 @@ class plugin(PublisherMixin,kolektiBase):
 
     def copymedias(self):
         # copy media from assembly space source to publication directory
-        for med in self.pivot.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
-
-            ref = med.get('src')
+        for med in self.pivot.xpath('//h:img[@src]|//h:embed[@src]|//h:a[@class="resource"][starts-with(@href, "/sources")]', namespaces=self.nsmap):
+            if med.tag == "{%(h)s}a"%self.nsmap:
+                ref = med.get('href')
+            else:
+                ref = med.get('src')
             ref = self.substitute_criteria(ref, self.profile)
             try:
                 refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
@@ -281,7 +286,7 @@ class plugin(PublisherMixin,kolektiBase):
                 logger.debug('unable to copy media')
                 import traceback
                 logger.debug(traceback.format_exc())
-
+            
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
         ass_libdir = '/'.join([self.assembly_dir,'kolekti','publication-templates',label,'lib'])

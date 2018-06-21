@@ -61,6 +61,11 @@
         <xsl:when test="starts-with(@href,'http://') or starts-with(@href,'https://')">
           <xsl:apply-templates select="@*" />
         </xsl:when>
+
+        <!-- lien vers resource -->
+        <xsl:when test="@class='resource'">
+          <xsl:apply-templates select="@*" />
+        </xsl:when>
         
         <!-- lien interne a l'assemblage -->
         <xsl:when test="starts-with(@href, '#')">
