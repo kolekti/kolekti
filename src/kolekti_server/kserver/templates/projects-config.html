@@ -44,6 +44,7 @@
 	  <button class="btn btn-default lang_add" type="button">Ajouter</button>
 	</span>
       </div><!-- /input-group -->
+      {% if has_release %}
       <hr>
       <h5>Langues des versions (traductions)</h5>
       {{ lang }}
@@ -70,6 +71,7 @@
 	  <button class="btn btn-default lang_add" type="button">Ajouter</button>
 	</span>
       </div><!-- /input-group -->
+      {% endif %}
     </div>
   </div>
 </div>

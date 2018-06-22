@@ -164,6 +164,7 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
             return ([l.text for l in self._project_settings.xpath('/settings/languages/lang')],
                     [l.text for l in self._project_settings.xpath('/settings/releases/lang')],
                     self._project_settings.xpath('string(/settings/@sourcelang)'))
+        
         except IOError:
             return ['en'],['en','fr','de'],'en'
         except AttributeError:
@@ -178,13 +179,17 @@ class kolektiMixin(LoginRequiredMixin, TemplateResponseMixin, kolektiBase):
         if self.request.kolekti_userproject is not None:
             up = self.request.kolekti_userproject
             languages, release_languages, default_srclang = self.project_langs()
+            logger.debug(release_languages)
+            logger.debug(languages)
             project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory)
             try:
                 from kolekti.synchro import SynchroManager
                 synchro = SynchroManager(project_path)
                 projecturl = synchro.geturl()
+                context.update({"has_sync":True})
                 context.update({"svn_url":self.process_svn_url(projecturl)})
             except ExcSyncNoSync:
+                context.update({"has_sync":False})
                 context.update({"svn_url":"local"})
 
             context.update({
@@ -437,11 +442,11 @@ class ProjectsConfigView(kolektiMixin, View):
         settings = self.parse('/kolekti/settings.xml')
         
         context = self.get_context_data({
-            "active_project" :self.request.kolekti_userproject.project.name,
-            "srclangs" :[l.text for l in settings.xpath('/settings/languages/lang')],
-            "releaselangs" :[l.text for l in settings.xpath('/settings/releases/lang')],
-            "default_srclang":settings.xpath('string(/settings/@sourcelang)'),
-            "active_srclang":self.request.kolekti_userproject.srclang
+#            "active_project" :self.request.kolekti_userproject.project.name,
+#            "srclangs" :[l.text for l in settings.xpath('/settings/languages/lang')],
+#            "releaselangs" :[l.text for l in settings.xpath('/settings/releases/lang')],
+#            "default_srclang":settings.xpath('string(/settings/@sourcelang)'),
+#            "active_srclang":self.request.kolekti_userproject.srclang
             })
             
         return self.render_to_response(context)
