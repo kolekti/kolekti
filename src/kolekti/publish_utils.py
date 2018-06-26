@@ -13,6 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import json
+import unidecode
 from lxml import etree as ET
 
 from common import kolektiBase, XSLExtensions, LOCAL_ENCODING
@@ -182,6 +183,12 @@ class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
         path = args[0]
         return path.upper()
 
+    def sortable_string(self, _, *args):
+        the_string = args[0]
+        norm_string = unidecode.unidecode(the_string).upper()
+        logger.debug("norm string %s -> %s"%(the_string, norm_string))        
+        return norm_string
+    
 class ReleasePublisherExtensions(PublisherExtensions):
     def __init__(self, *args, **kwargs):
         if kwargs.has_key('release'):

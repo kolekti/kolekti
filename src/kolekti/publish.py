@@ -340,7 +340,7 @@ class Publisher(PublisherMixin, kolektiBase):
 
             # make index
             if assembly.xpath("//h:div[@class='INDEX']", namespaces=self.nsmap):
-                s = self.get_xsl('index')
+                s = self.get_xsl('index', self.getPublisherExtensions(), profile = profile, lang=self._publang)
                 assembly = s(assembly)
                 self.log_xsl(s.error_log)
 

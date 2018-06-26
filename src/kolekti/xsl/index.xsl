@@ -26,7 +26,8 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
   xmlns:html="http://www.w3.org/1999/xhtml" 
   xmlns="http://www.w3.org/1999/xhtml" 
-  exclude-result-prefixes="html"
+  xmlns:ext="kolekti:extensions:functions:publication" 
+  exclude-result-prefixes="html ext"
   version="1.0">
 
   <!-- this key contains all index marks -->
@@ -78,7 +79,7 @@
   <!-- process body in index -->
   <xsl:template match="html:body" mode="index">
     <xsl:apply-templates select="//html:ins[@class='index']|//html:span[@rel='index']" mode="alphaindex">
-      <xsl:sort select="&key;"  lang="fr"/>
+      <xsl:sort select="ext:sortable_string(&key;)"/>
     </xsl:apply-templates>
   </xsl:template>
 
@@ -96,7 +97,7 @@
       <!-- handle all entries with this letter -->
       <div class="alphaindex lettergroup">
 	<xsl:apply-templates select="key('indexmarks','')[substring(&mark;,1,1)=$letter]" mode="alphaindexletter">
-	  <xsl:sort select="&mark;" lang="fr"/>
+      <xsl:sort select="ext:sortable_string(&mark;)"/>
 	</xsl:apply-templates>
       </div>
     </xsl:if>
@@ -129,7 +130,7 @@
               <!-- traite les sous entrées -->
 	      <xsl:apply-templates select="key('indexmarks','')[starts-with(&key;,concat($prefix,':'))]" mode="alphaindexlvl">
 		<xsl:with-param name="prefix" select="$prefix"/>
-		<xsl:sort select="&mark;" lang="fr"/>
+        <xsl:sort select="ext:sortable_string(&mark;)"/>
 	      </xsl:apply-templates>
 	    </xsl:when>
 	  </xsl:choose>
@@ -147,7 +148,7 @@
 	  <xsl:if test="key('indexmarks','')[starts-with(&key;,concat($libel,':'))]">
 	    <xsl:apply-templates select="key('indexmarks','')[starts-with(&key;,concat($libel,':'))]" mode="alphaindexlvl">
 	      <xsl:with-param name="prefix" select="$libel"/>
-	      <xsl:sort select="&mark;" lang="fr"/>
+          <xsl:sort select="ext:sortable_string(&mark;)"/>
 	    </xsl:apply-templates>
 	  </xsl:if>
 	</xsl:otherwise>
@@ -185,7 +186,7 @@
 	      <xsl:apply-templates select="key('indexmarks','')[starts-with(&key;,concat($prefix,':',$subprefix,':'))]" mode="alphaindexlvl">
 		<xsl:with-param name="prefix" select="concat($prefix,':',$subprefix)"/>
 		<xsl:with-param name="level" select="1 + $level"/>
-		<xsl:sort select="&mark;" lang="fr"/>
+        <xsl:sort select="ext:sortable_string(&mark;)"/>
 	      </xsl:apply-templates>
 	    </xsl:when>
 	  </xsl:choose>
@@ -204,7 +205,7 @@
 	    <xsl:apply-templates select="key('indexmarks','')[starts-with(&key;,concat($libel,':'))]" mode="alphaindexlvl">
 	      <xsl:with-param name="prefix" select="$libel"/>
               <xsl:with-param name="level" select="$level + 1"/>    
-	      <xsl:sort select="&mark;" lang="fr"/>
+        <xsl:sort select="ext:sortable_string(&mark;)"/>
 	    </xsl:apply-templates>
 	  </xsl:if>
 
