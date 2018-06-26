@@ -49,6 +49,7 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="id">
+        <xsl:text>topic_</xsl:text>
         <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'][1])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@id"/>
@@ -61,6 +62,7 @@
   <xsl:template match="html:div[@class='topic']">
     <xsl:copy>
       <xsl:attribute name="id">
+        <xsl:text>topic_</xsl:text>
         <xsl:value-of select="generate-id()"/>
       </xsl:attribute>
       <xsl:apply-templates select="node()|@*"/>
@@ -112,7 +114,8 @@
         <!-- lien interne au topic -->
         <xsl:when test="starts-with(@href, '#')">
           <xsl:text>#</xsl:text>
-          <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
+          <xsl:text>topic_</xsl:text>
+          <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'][1])"/>
           <xsl:text>_</xsl:text>
           <xsl:value-of select="substring-after(@href,'#')"/>
         </xsl:when>
@@ -120,6 +123,7 @@
         <!-- lien absolu (/sources/[lg]/topics/... -->
         <xsl:when test="starts-with($tmod, '/')">
 	      <xsl:variable name="ref" select="$tmod" />
+          <xsl:text>topic_</xsl:text>
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
@@ -179,7 +183,8 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="name">
-        <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
+        <xsl:text>topic_</xsl:text>
+        <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'][1])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@name"/>
       </xsl:attribute>
