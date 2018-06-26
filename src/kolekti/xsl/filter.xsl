@@ -46,6 +46,12 @@
 
 <!-- templates de remplacement des prédicats dans les chemins d'images -->
 
+  <xsl:template match="html:a[@class='resource']/@href">
+    <xsl:attribute name="href">
+      <xsl:value-of select="kfp:replace_criteria(string(.))" />
+    </xsl:attribute>
+  </xsl:template>
+
   <xsl:template match="html:img/@src|html:embed/@src">
     <xsl:attribute name="src">
       <xsl:value-of select="kfp:replace_criteria(string(.))" />
