@@ -1579,7 +1579,7 @@ class BrowserView(kolektiMixin, View):
         try:
             path = request.GET.get('path','/')
             if not self.exists(path):
-                return elf.render_to_response({'error':"does not exists"})
+                return self.render_to_response({'error':"does not exists"})
             
             mode = request.GET.get('mode','select')
 
