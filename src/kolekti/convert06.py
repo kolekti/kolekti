@@ -278,9 +278,10 @@ class Converter(ConvertMixin):
                                 self.makedirs(os.path.join(releasepath, p.get('dir')))
                                 shutil.copy(os.path.join(project_path, paramvalue), os.path.join(releasepath, p.get('dir')))
                                 if p.get('ext') == "css":
-                                    paramparts = p.get('dir') + "/" + pval[0].get('value') + ".parts" 
-                                    shutil.copytree(os.path.join(project_path, paramparts), os.path.join(releasepath,paramparts))                              
-                            
+                                    paramparts = p.get('dir') + "/" + pval[0].get('value') + ".parts"
+                                    if os.path.exists(os.path.join(project_path, paramparts)):
+                                        shutil.copytree(os.path.join(project_path, paramparts), os.path.join(releasepath,paramparts))
+                                        
             for f in  myzip.namelist():
                 if f[:7] == "medias/" and f[-1]!= '/':
                     myzip.extract(f, os.path.join(releasepath, 'sources', lang, 'pictures'))
