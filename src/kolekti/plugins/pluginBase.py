@@ -28,7 +28,7 @@ import platform
 
 
 from lxml import etree as ET
-from kolekti.common import kolektiBase
+from kolekti.common import kolektiBase, release_root_dirs
 from kolekti.publish_utils import PublisherMixin, PublisherExtensions, PublishException
 
 class PluginsExtensions(PublisherExtensions):
@@ -66,8 +66,11 @@ class plugin(PublisherMixin,kolektiBase):
                                                 system_path = False,
                                                 resdir = self.process_path(''),
                                                 **kwargs)
-    
-        except:
+        except ET.XSLTApplyError:
+            for err in xsl.error_log:
+                logger.exception(unicode(err).encode('utf-8'))
+            raise
+        except IOError:
             xsl = super(plugin,self).get_xsl(xslfile,
                                             extclass = self.__ext,
                                             xsldir = os.path.join(self._plugindir,'xsl'),
@@ -202,7 +205,7 @@ class plugin(PublisherMixin,kolektiBase):
         if self.release is None:
             return path
         else:
-            return '/releases/' + self.release + '/' +  path
+            return '/'+ self.release_root_dir +'/' + self.release + '/' +  path
     
     def __call__(self, scriptdef, profile, assembly_dir, inputs):
         self.scriptname = scriptdef.get('name')
@@ -211,10 +214,10 @@ class plugin(PublisherMixin,kolektiBase):
         # check if execute in release or not
         self.release = None
         adparts = assembly_dir[1:].split('/')
-#        logger.debug("adparts: %s ", str(adparts))
-        if len(adparts) == 2 and adparts[0] == "releases":
+        logger.debug("adparts: %s ", str(adparts))
+        if len(adparts) == 2 and adparts[0] in release_root_dirs:
             self.release = adparts[1]
-
+            self.release_root_dir = adparts[0]
         # get context    
         self.scriptdef = scriptdef
         self.profile = profile
@@ -264,9 +267,11 @@ class plugin(PublisherMixin,kolektiBase):
 
     def copymedias(self):
         # copy media from assembly space source to publication directory
-        for med in self.pivot.xpath('//h:img[@src]|//h:embed[@src]', namespaces=self.nsmap):
-
-            ref = med.get('src')
+        for med in self.pivot.xpath('//h:img[@src]|//h:embed[@src]|//h:a[@class="resource"][starts-with(@href, "/sources")]', namespaces=self.nsmap):
+            if med.tag == "{%(h)s}a"%self.nsmap:
+                ref = med.get('href')
+            else:
+                ref = med.get('src')
             ref = self.substitute_criteria(ref, self.profile)
             try:
                 refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
@@ -281,7 +286,7 @@ class plugin(PublisherMixin,kolektiBase):
                 logger.debug('unable to copy media')
                 import traceback
                 logger.debug(traceback.format_exc())
-
+            
         # copy plugin lib from assembly space to publication directory
         label = self.scriptdef.get('name')
         ass_libdir = '/'.join([self.assembly_dir,'kolekti','publication-templates',label,'lib'])

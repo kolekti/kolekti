@@ -137,7 +137,7 @@ class plugin(pluginBase.plugin):
                         if name == zipname:
                             continue
                         rt=root[len(top) + 1:]
-                        zippy.write(str(os.path.join(root, name)),arcname=str(os.path.join(rt, name)))
+                        zippy.write(str(os.path.join(root, name).encode('utf-8')),arcname=str(os.path.join(rt, name).encode('utf-8')))
 
             res.append({'type':"zip", "label":zipname, "url": "%s/%s"%(self.publication_dir,zipname)})
                 #yield(self.publisher.view.publink('Zip', self.label, '%s/%s' %(linkurl, zipname)))

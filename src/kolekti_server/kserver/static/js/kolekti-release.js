@@ -1,39 +1,36 @@
 $(document).ready( function () {
 
     $('.btn-lang').click(function() {
-	var lang = $(this).data('lang')
-	var release = $('#main').data('release')
-	window.location.href = "/releases/detail/?release="+release+"&lang="+lang;
+	    var lang = $(this).data('lang')
+	    var release = $('#main').data('release')
+	    window.location.href = Urls.kolekti_release_lang_details(kolekti.project, release, lang)
     })
-    
+                   
 /*
-
-Initialize ck editor for assembly editing 
-Defines events for languages and release state in toolbar
-
-*/
-    
-/*
-    var editor = CKEDITOR.replace( 'editor1', {
-	autoGrow_onStartup : true,
-	height:"600px",
-	contentsCss : '/criteria.css',
-	extraPlugins : 'codemirror,textselection,conditions',
-	extraAllowedContent : 'var ins span *(*)',
-	entities : false,
-	filebrowserBrowseUrl: '/browse/ckbrowser',
-	filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
-	filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
-//	filebrowserUploadUrl: '/browse/ckupload',
+  
+  Initialize ck editor for assembly editing 
+  Defines events for languages and release state in toolbar
+  
+  var editor = CKEDITOR.replace( 'editor1', {
+  autoGrow_onStartup : true,
+  height:"600px",
+  contentsCss : '/criteria.css',
+  extraPlugins : 'codemirror,textselection,conditions',
+  extraAllowedContent : 'var ins span *(*)',
+  entities : false,
+  filebrowserBrowseUrl: '/browse/ckbrowser',
+  filebrowserImageBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/pictures/',
+  filebrowserLinkBrowseUrl: '/browse/ckbrowser?path=/sources/'+kolekti.lang+'/topics/',
+  //	filebrowserUploadUrl: '/browse/ckupload',
 //	filebrowserImageUploadUrl: '/browse/ckupload?type=Images',
-	
-	toolbar_Full : [
-	    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
-	    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },
-	    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ], items: [ 'Find', 'Replace', 'SelectAll', 'Scayt' ] },
-	    { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
-	    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-	    { name: 'about', items: [ 'About' ] },
+
+toolbar_Full : [
+{ name: 'document',    groups: [ 'mode', 'document', 'doctools' ], items: [ 'Save', 'Preview', 'Source', 'Print' ] },
+{ name: 'clipboard',   groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo' ] },
+{ name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ], items: [ 'Find', 'Replace', 'SelectAll', 'Scayt' ] },
+{ name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
+{ name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+{ name: 'about', items: [ 'About' ] },
 	    '/',
 	    { name: 'tools', items: [ 'ShowBlocks' ] },
 	    { name: 'styles', items: [ 'Format' ] },
@@ -89,8 +86,6 @@ Defines events for languages and release state in toolbar
             e.message = 'le document a été modifié, voulez vous réélement quitter sans enregistrer ?';
 	}
     });
-*/
-/*
 
 	if (savestate) {
 	    if(! confirm('')) {
@@ -98,47 +93,47 @@ Defines events for languages and release state in toolbar
 	    
 	return "ko";
     });
-*/
+
     
     var enable_save = function() {
-	$('#btn_save').removeClass('disabled');
-	$('#btn_save').removeClass('btn-default');
-	$('#btn_save').removeClass('hidden');
-	$('#btn_save').addClass('btn-warning');
+	    $('#btn_save').removeClass('disabled');
+	    $('#btn_save').removeClass('btn-default');
+	    $('#btn_save').removeClass('hidden');
+	    $('#btn_save').addClass('btn-warning');
     };
 
     $(window).on('beforeunload', function(e) {
-	if($('#btn_save').hasClass('btn-warning')) {
+	    if($('#btn_save').hasClass('btn-warning')) {
             return 'Version non enregistrée';
-	}
+	    }
     });
 
-
+*/
     
-    // Kolekti Release toolbar
-
+  // Kolekti Release toolbar
+                   
     $('.nav-tabs .active .state.lead ').on('click', function() {
-	var tab = $(this).closest('a');
-	has_focus = tab.hasClass('focus');
-	$.ajax({
-	    url:"/releases/focus/",
-	    method:'POST',
-	    data:$.param({
-		'release': $('#main').data('release'),
-		'lang'   : $('#main').data('lang'),
-		'state'  : !has_focus
-	    })
-	}).done(function(data) {
-	    if (data.status='OK')
-	    {
-		if (has_focus)
-		    tab.removeClass('focus');
-		else
-		    tab.addClass('focus');
-	    }
-	});
+	    var tab = $(this).closest('a');
+	    has_focus = tab.hasClass('focus');
+	    $.ajax({
+	        url:"/releases/focus/",
+	        method:'POST',
+	        data:$.param({
+		        'release': $('#main').data('release'),
+		        'lang'   : $('#main').data('lang'),
+		        'state'  : !has_focus
+	        })
+	    }).done(function(data) {
+	        if (data.status='OK')
+	        {
+		        if (has_focus)
+		            tab.removeClass('focus');
+		        else
+		            tab.addClass('focus');
+	        }
+	    });
     })
-
+    
     //chagement d'état
     
     $('.release-state').on('click', function() {
@@ -290,7 +285,7 @@ Defines events for languages and release state in toolbar
     var load_assembly = function() {
         var release = $('#main').data('release');
         var lang = $('#main').data('lang');
-	    $.get(Urls.kolekti_release_assembly(kolekti.project, release, lang))
+	    $.get(Urls.kolekti_release_lang_assembly(kolekti.project, release, lang))
 	        .done(function(data) {
 	            $('#content_pane').html(data)
 	        })
@@ -302,7 +297,7 @@ Defines events for languages and release state in toolbar
     var load_publications = function() {
 	    var release = $('#main').data('release');
         var lang = $('#main').data('lang');
-        $.get(Urls.kolekti_release_publications(kolekti.project, release, lang))
+        $.get(Urls.kolekti_release_lang_publications(kolekti.project, release, lang))
 	        .done(function(data) {
 	            $('#release_publications').html(data)
 	        })
@@ -314,13 +309,13 @@ Defines events for languages and release state in toolbar
     $('#suppr_lang').on('click', function() {
 	    var release = $('#main').data('release')
 	    var lang = get_publish_languages(false)[0]
-	    var url= Urls.kolekti_release_delete(kolekti.project, release, lang)
+	    var url= Urls.kolekti_release_lang_delete(kolekti.project, release, lang)
 	    if(confirm('Voulez vous réellement supprimer cette langue ?'))
 	        $.ajax({
 		        url:url,
 		        type:'POST',
 	        }).done(function(data) {
-		        window.location.href = Urls.kolekti_release_details(kolekti.project, release, lang)
+		        window.location.href = Urls.kolekti_release_lang_details(kolekti.project, release, lang)
 	        })
     });
     
@@ -332,7 +327,7 @@ $('.btn_publish').on('click', function() {
 	var alllang = ($(this).attr('id') == "btn_publish_all")
 	var lang = get_publish_languages(alllang)[0];
 //	var lang = get_publish_languages(false)[0]
-	var url = Urls.kolekti_release_publish(kolekti.project, release, lang)
+	var url = Urls.kolekti_release_lang_publish(kolekti.project, release, lang)
 
 	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
 	$('.main-modal .modal-title').html('Publication');
@@ -441,7 +436,7 @@ $('.btn_publish').on('click', function() {
     var do_valid_actions = function() {
 	    var alllang = ($(this).attr('id') == "btn_publish_all")
 	    var lang= get_publish_languages(alllang);
-	    var url= Urls.kolekti_release_validate(kolekti.project, release, lang)
+	    var url= Urls.kolekti_release_lang_validate(kolekti.project, release, lang)
 
 	    $('.main-modal .modal-body').html('<div id="pubresult"></div>');
 	    $('.main-modal .modal-title').html('Validation');

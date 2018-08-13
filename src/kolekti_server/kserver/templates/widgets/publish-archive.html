@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-xs-12">
 
-	  <form method="POST" action="{% url 'releasearchive' %}" class="upload_form" enctype="multipart/form-data">
+	  <form method="POST" action="{% url 'kolekti_release_archive_form' project=project %}" class="upload_form" enctype="multipart/form-data">
 		<div class="input-group">
 <!--		  <label style="font-weight:100">Archive zip</label>-->
 		  <input type="file" id="dl_archive" placeholder="" name="upload_file"/>

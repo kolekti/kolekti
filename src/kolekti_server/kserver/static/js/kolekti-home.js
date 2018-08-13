@@ -373,12 +373,12 @@ $(document).ready(function() {
     var widgets_definitions = {
         'search': { 'title':'Recherche',
                     'content':function() {
-                        return widget_loader('/widgets/search/')
+                        return widget_loader(Urls.kolekti_widget_search(kolekti.project))
                     }
                   },
         'publish_archive': { 'title':'Publier une version archivée',
                     'content':function() {
-                        return widget_loader('/widgets/publish_archive/')
+                        return widget_loader(Urls.kolekti_widget_publish_archive(kolekti.project))
                     }
                   },
 	'recent':{'title':'Vos modifications',

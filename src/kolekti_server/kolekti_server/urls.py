@@ -120,6 +120,7 @@ urls = [
          
         
         url(r'^releases/$', ReleaseListView.as_view(), name='kolekti_releases'),
+        url(r'^releases/archive$', ReleaseArchiveView.as_view(),name="kolekti_release_archive_form"),
         url(r'^releases/(?P<release>[^/\?]+)/', include([
             url(r'^publish/$', ReleasePublishView.as_view(),name='kolekti_release_publish'),
             url(r'^archive', ReleaseArchiveView.as_view(),name="kolekti_release_archive"),

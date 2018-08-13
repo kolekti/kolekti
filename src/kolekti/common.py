@@ -55,6 +55,8 @@ objpathes = {
         }
     }
 
+release_root_dirs =  ["releases","tmp"]
+    
 class KolektiVariableValueError(Exception):
     pass
 

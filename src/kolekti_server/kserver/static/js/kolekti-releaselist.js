@@ -23,7 +23,7 @@ $(document).ready(function() {
 	        function(path) {
                 console.log(path);
                 var release_path = path.replace('/releases/','')
-		        document.location.href = Urls.kolekti_release_detail(kolekti.project, release_path, kolekti.lang)
+		        document.location.href = Urls.kolekti_release_lang_detail(kolekti.project, release_path, kolekti.lang)
 		        
                 /*
 		          $.get('/releases/detail/',{'path':path})

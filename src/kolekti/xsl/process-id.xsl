@@ -62,6 +62,7 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="id">
+        <xsl:text>topic</xsl:text>
         <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'][1])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@id"/>
@@ -74,6 +75,7 @@
   <xsl:template match="html:div[@class='topic']">
     <xsl:copy>
       <xsl:attribute name="id">
+        <xsl:text>topic</xsl:text>
         <xsl:value-of select="generate-id()"/>
       </xsl:attribute>
       <xsl:apply-templates select="node()|@*"/>
@@ -107,7 +109,12 @@
     <!-- calcul du nouveau lien -->
     <xsl:variable name="href">
       <xsl:choose>
-
+        
+        <!-- lien vers resource -->
+        <xsl:when test="@class='resource'">
+          <xsl:value-of select="@href" />
+        </xsl:when>
+        
         <!-- lien externe -->
         <xsl:when test="starts-with(@href,'http://') or starts-with(@href,'https://')">
           <xsl:value-of select="@href" />
@@ -116,6 +123,7 @@
         <!-- lien interne au topic -->
         <xsl:when test="starts-with(@href, '#')">
           <xsl:text>#</xsl:text>
+          <xsl:text>topic</xsl:text>
           <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
           <xsl:text>_</xsl:text>
           <xsl:value-of select="substring-after(@href,'#')"/>
@@ -127,8 +135,9 @@
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
+            <xsl:text>topic</xsl:text>
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and not(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>
@@ -142,8 +151,9 @@
           <xsl:variable name="refid" select="generate-id(key('modref',string($ref)))"/>
           <xsl:text>#</xsl:text>
           <xsl:if test="$refid!=''">
+            <xsl:text>topic</xsl:text>
             <xsl:value-of select="$refid"/>
-            <xsl:if test="contains(@href,'#')">
+            <xsl:if test="contains(@href,'#') and not(@href='#')">
               <xsl:text>_</xsl:text>
               <xsl:value-of select="substring-after(@href,'#')"/>
             </xsl:if>
@@ -179,6 +189,7 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="name">
+        <xsl:text>topic</xsl:text>
         <xsl:value-of select="generate-id(ancestor::html:div[@class='topic'])"/>
         <xsl:text>_</xsl:text>
         <xsl:value-of select="@name"/>

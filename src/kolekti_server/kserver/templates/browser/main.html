@@ -1,12 +1,7 @@
-{% if status == "error" %}
-<div class="browser" id="{{ id }}">
-  <div class="row">
-    <div class="col-sm-12 col-md-12">
-      <div class="alert alert-warning" role="alert">
-        {{ msg }}
-      </div>
-    </div>
-  </div>
+{% if error %}
+<div class="alert alert-warning">
+  <h2>Quelque chose d'inattendu s'est produit</h2>
+  <p>Une erreur s'est produite au cours de cette opération, merci de contacter votre support technique pour y remédier.</p>
 </div>
 {% else %}
 <div class="browser" id="{{ id }}">
@@ -70,7 +65,7 @@
     </thead>
     <tbody>
       {% for f in files %}
-      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="{% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
+      <tr  data-sort-name="{{ f.name }}" data-name="{{ f.name }}" data-sort-date="d{{ f.date|date:'U' }}" class="sortableitem {% if not f.type == 'text/directory' %}file{% else %}dir{% endif %}">
 	<td class="kolekti-browser-icon"><i class="fa {{ f.icon }}"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td class="kolekti-browser-name">

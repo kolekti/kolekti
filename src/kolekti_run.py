@@ -110,7 +110,8 @@ def main():
     
     # variables file conversion xml->ods 
     parser_varods = subparsers.add_parser('varods', help="convert variables from xml to ods")
-    parser_varods.add_argument('varfile', action='store')
+    parser_varods.add_argument('odsfile', help="ods file", action='store')
+    parser_varods.add_argument('varpath', help="location of variable file in project", action='store')
     parser_varods.add_argument('-l','--lines', help="produces lines-oriented ods", action = 'store_false' )
     defaults=config.get("varods",{})
     defaults.update({'cmd':'varods'})
@@ -118,8 +119,9 @@ def main():
     
     # variables file conversion ods->xml 
     parser_varxml = subparsers.add_parser('varxml', help="convert variables from ods to xml")
-    parser_varxml.add_argument('varfile', action='store')
-    parser_varxml.add_argument('-l','--lines', help="produces lines-oriented ods", action = 'store_false' )
+    parser_varxml.add_argument('odsfile', help="ods file", action='store')
+    parser_varxml.add_argument('varpath', help="location of variable file in project", action='store')
+    parser_varxml.add_argument('-l','--lines', help="produces xml variable file", action = 'store_false' )
     defaults=config.get("varxml",{})
     defaults.update({'cmd':'varxml'})
     parser_varxml.set_defaults(**defaults)
@@ -277,12 +279,12 @@ def main():
     if args.cmd == 'varods':
         from kolekti import variables
         c = variables.XMLToOds(basepath)
-        c.convert(args.varfile)
+        c.convert(args.odsfile, args.varpath)
 
     if args.cmd == 'varxml':
         from kolekti import variables
         c = variables.OdsToXML(basepath)
-        c.convert(args.varfile)
+        c.convert(args.odsfile, args.varpath )
 
 
     if args.cmd == 'index':

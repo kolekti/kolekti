@@ -87,7 +87,7 @@
 	      <a href="#{@id}"><xsl:apply-templates  mode="titletoc"/></a>
 	    </xsl:when>
 	    <xsl:otherwise>
-	      <a href="#{generate-id()}"><xsl:apply-templates  mode="titletoc"/></a>
+	      <a href="#toc{generate-id()}"><xsl:apply-templates  mode="titletoc"/></a>
 	    </xsl:otherwise>
       </xsl:choose>
     </p>
@@ -103,6 +103,7 @@
       <xsl:copy-of select="@*"/>
       <xsl:if test="not(@id)">
         <xsl:attribute name="id">
+          <xsl:text>toc</xsl:text>
           <xsl:value-of select="generate-id()"/>
         </xsl:attribute>
       </xsl:if>

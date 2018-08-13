@@ -68,14 +68,14 @@
   
   <xsl:template match="span[@class='title_num']"/>
 
-  <xsl:template match="img[starts-with(@src, '/projects/Echosens/medias/')]">
+  <xsl:template match="img[starts-with(@src, '/projects/')][contains(@src, '/medias/')]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="src">
         <xsl:text>/sources/</xsl:text>
         <xsl:value-of select="$lang"/>
         <xsl:text>/pictures/</xsl:text>
-        <xsl:value-of select="substring-after(@src, '/projects/Echosens/medias/')"/>
+        <xsl:value-of select="substring-after(@src, '/medias/')"/>
       </xsl:attribute>
       <xsl:apply-templates select="node()"/>
     </xsl:copy>

@@ -6,6 +6,7 @@
 import pluginBase
 import WebHelp5
 import filterpivot
+import html
 import serializepdf
 import princexml_nbpage
 import logging
