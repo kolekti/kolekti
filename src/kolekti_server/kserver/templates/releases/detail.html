@@ -89,17 +89,18 @@
 	  <div class="row">
 	    <div class="col-sm-12 col-md-12">
 	      <h5>Exporter</h5>
-          {% if srclang and  srclang == lang %}
-          <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
-		Assemblage source [{{lang}}]
-          </a>
-	      {% else %}
-	      <a href="{{ release_path }}/sources/{{ srclang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
+          {% with '/releases/'|add:release|add:'/sources/'|add:srclang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
+
+          <a href="{% url 'kolekti_project_static' project=project path=asmpath  %}" download="{{ assembly_name }}_asm.html">
+            {% endwith %}
 		Assemblage source [{{srclang}}]
 	      </a>
+          {% if not srclang or not  srclang == relang  %}
 	      <br>
-	      <a href="{{ release_path }}/sources/{{ lang }}/assembly/{{ assembly_name }}_asm.html" download="{{ assembly_name }}_asm.html">
-		Assemblage traduit [{{lang}}]
+          {% with '/releases/'|add:release|add:'/sources/'|add:relang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
+          <a href="{% url 'kolekti_project_static' project=project path=asmpath %}" download="{{ assembly_name }}_asm.html">
+            {% endwith %}
+		Assemblage traduit [{{relang}}]
 	      </a>
 	      {% endif %}
 	      
@@ -108,7 +109,7 @@
 	      <h5>Importer</h5>
 	      <form method="POST" class="upload_form" enctype="multipart/form-data">
 		    <div class="input-group">
-		      <label style="font-weight:100">Assemblage [{{lang}}]
+		      <label style="font-weight:100">Assemblage [{{relang}}]
 		        <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
 		        
 		    </div>
@@ -170,7 +171,7 @@
 
 
 {% block content %}
-    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ lang }}"
+    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ relang }}"
 	 {% if validactions %}
 	 data-valid-actions="yes"
 	 {% endif %}
@@ -179,9 +180,9 @@
 
 	{% for rlang, state,focus in langstates %}
 	
-	<li role="presentation"class="{% if rlang == lang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
+	<li role="presentation"class="{% if rlang == relang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
 	 
-	  <a href=" {% if rlang != lang %}/releases/detail/?release={{release_path}}&lang={{ rlang }}{% endif %}#"
+	  <a href=" {% if rlang != relang %}{% url "kolekti_release_lang_detail" project=project release=release lang=rlang %}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
@@ -207,28 +208,30 @@
 
       <div class="tab-content ">
 	{% for rlang, state, focus in langstates %}
-	{% if rlang == lang %}
-	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == lang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
+	{% if rlang == relang %}
+	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == relang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
 	  {% if state == "unknown" %}
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
-	      <form action="/releases/copy/" method="POST">
-		<div class="form-group">
-		  <p><strong>Cette version n'existe pas en langue <em> {{ rlang }}</em></strong></p>
-		  <div class="form-group">
-		    <label for="release_copy_from_lang">Sélectionnez la langue source à partir de laquelle doit être crée la version <em>{{ rlang }}</em> : </label>
-		    <select name="release_copy_from_lang">
-		      {% for mrlang, mstate, focus in langstates %}
-		      {% if mstate != 'unknown' %} 
-		      <option value="{{ mrlang }}">{{ mrlang }}</option>
-		      {% endif %}
-		      {% endfor %}
-		    </select>
-		  </div>
-		  <input type="hidden" name="release_lang" value="{{ rlang }}"/>
-		  <input type="hidden" name="release" value="{{ release_path }}/{{assembly_name}}"/>
-		<button type="submit" class="btn btn-default">Créer</button>
-		</div>
+	      <form action="{% url 'kolekti_release_lang_copy' project=project release=release lang=rlang %}" method="POST">
+            {% csrf_token %}
+                          
+		    <div class="form-group">
+		      <p><strong>Cette version n'existe pas en langue <em> {{ rlang }}</em></strong></p>
+		      <div class="form-group">
+		        <label for="release_copy_from_lang">Sélectionnez la langue source à partir de laquelle doit être crée la version <em>{{ rlang }}</em> : </label>
+		        <select name="release_copy_from_lang">
+		          {% for mrlang, mstate, focus in langstates %}
+		          {% if mstate != 'unknown' %} 
+		          <option value="{{ mrlang }}">{{ mrlang }}</option>
+		          {% endif %}
+		          {% endfor %}
+		        </select>
+		      </div>
+		      <input type="hidden" name="release_lang" value="{{ rlang }}"/>
+		      <input type="hidden" name="release" value="{{ release_path }}/{{assembly_name}}"/>
+		      <button type="submit" class="btn btn-default">Créer</button>
+		    </div>
 	      </form>
 	    </div>
 	  </div>
@@ -272,7 +275,7 @@
 		<!--
 		<div class="checkbox">
 		  <label>
-		    <input type="checkbox" id="focus_{{ lang }}"/>Focus
+		    <input type="checkbox" id="focus_{{ relang }}"/>Focus
 		  </label>
 		</div>
 		-->

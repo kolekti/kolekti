@@ -156,7 +156,7 @@
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
-	  <a href="{% url 'releasearchive' %}?release=/releases/{{f.name }}_{{ fi.name }}" class="btn btn-default btn-xs" title="Archiver"><i class="fa fa-download"></i></a>
+	  <a href="{% url 'kolekti_release_archive' project=project release=f.name|add:'_'|add:fi.name %}" class="btn btn-default btn-xs" title="Archiver"><i class="fa fa-download"></i></a>
 	  {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name|add:'_'|add:fi.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
       {% endcomment %}

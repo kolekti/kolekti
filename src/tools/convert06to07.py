@@ -9,7 +9,6 @@ import os
 import re
 from lxml import etree as ET
 import argparse
-from zipfile import ZipFile
 import logging
 import shutil
 logger = logging.getLogger('kolekti.convert06')

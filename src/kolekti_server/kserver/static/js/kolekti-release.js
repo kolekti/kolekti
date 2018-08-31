@@ -3,7 +3,7 @@ $(document).ready( function () {
     $('.btn-lang').click(function() {
 	    var lang = $(this).data('lang')
 	    var release = $('#main').data('release')
-	    window.location.href = Urls.kolekti_release_lang_details(kolekti.project, release, lang)
+	    window.location.href = Urls.kolekti_release_lang_detail(kolekti.project, release, lang)
     })
                    
 /*
@@ -137,55 +137,55 @@ toolbar_Full : [
     //chagement d'état
     
     $('.release-state').on('click', function() {
-	var lang = $(this).closest('ul').data('target-lang');
-	var oldstate = $('.btn-lang-menu-'+lang).data('state')
-	var newstate = $(this).data('state')
-	var labelstate = $(this).find('span').html()
-	$('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
-	enable_save()
-	$('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
-	$('.btn-lang-menu-'+lang).data('state',newstate);
-	$('.btn-lang-menu-'+lang+' .state').html(labelstate);
+	    var lang = $(this).closest('ul').data('target-lang');
+	    var oldstate = $('.btn-lang-menu-'+lang).data('state')
+	    var newstate = $(this).data('state')
+	    var labelstate = $(this).find('span').html()
+	    $('.btn-lang-menu-'+lang).removeClass('btn-lang-menu-'+oldstate)
+	    enable_save()
+	    $('.btn-lang-menu-'+lang).addClass('btn-lang-menu-'+newstate)
+	    $('.btn-lang-menu-'+lang).data('state',newstate);
+	    $('.btn-lang-menu-'+lang+' .state').html(labelstate);
+        
+	    $('#main').data('state', newstate)
+	    $('#main').attr('data-state', newstate)
 
-	$('#main').data('state', newstate)
-	$('#main').attr('data-state', newstate)
-
-	$('#release_tabs .active .state-picto').removeClass('state_'+oldstate);
-	$('#release_tabs .active .state-picto').addClass('state_'+newstate);
+	    $('#release_tabs .active .state-picto').removeClass('state_'+oldstate);
+	    $('#release_tabs .active .state-picto').addClass('state_'+newstate);
     });
 	
     $('#btn_assembly').on('click', function() {
-	$('#preview').parent().addClass('hidden');
+	    $('#preview').parent().addClass('hidden');
 	$('.btn-release-pane').removeClass('active')
-	$(this).addClass('active')
-	$('.release-panel-part').addClass('hidden')
-	$('#content_pane').removeClass('hidden')
+	    $(this).addClass('active')
+	    $('.release-panel-part').addClass('hidden')
+	    $('#content_pane').removeClass('hidden')
     })
 
     $('#btn_illust').on('click', function() {
-	$('.btn-release-pane').removeClass('active')
-	$(this).addClass('active')
-	$('.release-panel-part').addClass('hidden')
-	$('#illust_pane').removeClass('hidden')
-	kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures',
-			 'parent':"#illust_pane",
-			 'title':" ",
-			 'titleparent':".title",
-			 'mode':"selectonly",
-			 'modal':"no",
-			 'drop_files':true,
-			 'os_actions':'yes',
-			 'create_actions':'yes',
-			 'create_builder':upload_image_builder_builder()
-			})
-	    .select(
-		function(path) {
-		    $.get(Urls.kolekti_picture_details(kolekti.project, path))
-			.done(
-			    function(data) {
-				$('#preview').html([
-				    $('<h4>',{'html':displayname(path)}),
-				    data
+	    $('.btn-release-pane').removeClass('active')
+	    $(this).addClass('active')
+	    $('.release-panel-part').addClass('hidden')
+	    $('#illust_pane').removeClass('hidden')
+	    kolekti_browser({'root':'/releases/' + $('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures/',
+			             'parent':"#illust_pane",
+			             'title':" ",
+			             'titleparent':".title",
+			             'mode':"selectonly",
+			             'modal':"no",
+			             'drop_files':true,
+			             'os_actions':'yes',
+			             'create_actions':'yes',
+			             'create_builder':upload_image_builder_builder()
+			            })
+	        .select(
+		        function(path) {
+		            $.get(Urls.kolekti_picture_details(kolekti.project, path))
+			            .done(
+			                function(data) {
+				                $('#preview').html([
+				                    $('<h4>',{'html':displayname(path)}),
+				                    data
 				]);
 				$('#preview img').attr('src',path);
 				$('#preview').parent().removeClass('hidden');
@@ -202,8 +202,10 @@ toolbar_Full : [
 	    $(this).addClass('active')
 	    $('.release-panel-part').addClass('hidden')
         
-	$('#variables_pane').removeClass('hidden')
-	    kolekti_browser({'root':$('#main').data('release')+'/sources/'+$('#main').data('lang')+'/variables',
+	    $('#variables_pane').removeClass('hidden')
+        var release = $('#main').data('release');
+        var relang = $('#main').data('lang');
+	    kolekti_browser({'root':'/releases/' +$('#main').data('release')+'/sources/'+ relang +'/variables/',
 		                 'parent':"#variables_pane",
 		                 'title':" ",
 		                 'titleparent':".title",
@@ -215,7 +217,10 @@ toolbar_Full : [
 		                })
 	        .select(
 			    function(path) {
-		            window.location.href = "/variables/detail/?path="+path;
+                    console.log('variable select')
+                    //                    Urls.kolekti_variable(kolekti.project, path)
+                    console.log(Urls.kolekti_variable(kolekti.project + '/releases/' + release, relang, path));
+		            window.location.href = Urls.kolekti_variable(kolekti.project + '/releases/' + release, relang, path);
                 
 	            })
 	        .create(upload_varfile)
@@ -223,14 +228,14 @@ toolbar_Full : [
     })
 
     var do_save = function() {
-	$.ajax({
-	    url:"/releases/state/",
-	    method:'POST',
-	    data:$.param({
-		'release': $('#main').data('release'),
-		'state' :  $('#main').data('state'),
-		'lang'  :  $('#main').data('lang')
-	    })
+	    $.ajax({
+	        url:"/releases/state/",
+	        method:'POST',
+	        data:$.param({
+		        'release': $('#main').data('release'),
+		        'state' :  $('#main').data('state'),
+		        'lang'  :  $('#main').data('lang')
+	        })
 	}).done(function(data) {
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
@@ -310,13 +315,14 @@ toolbar_Full : [
 	    var release = $('#main').data('release')
 	    var lang = get_publish_languages(false)[0]
 	    var url= Urls.kolekti_release_lang_delete(kolekti.project, release, lang)
-	    if(confirm('Voulez vous réellement supprimer cette langue ?'))
+	    if(confirm('Voulez vous réellement supprimer cette langue ?')) {
 	        $.ajax({
 		        url:url,
 		        type:'POST',
 	        }).done(function(data) {
-		        window.location.href = Urls.kolekti_release_lang_details(kolekti.project, release, lang)
+		        window.location.href = Urls.kolekti_release_lang_detail(kolekti.project, release, lang)
 	        })
+        }
     });
     
     // publication button
@@ -427,7 +433,6 @@ $('.btn_publish').on('click', function() {
 	]
 	);
 	$('.main-modal .modal').on('hidden.bs.modal', function (e) {
-		console.log('hide modal');
 	});
 	$('.main-modal .modal').modal({backdrop: "static"})
 	

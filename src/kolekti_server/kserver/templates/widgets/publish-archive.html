@@ -3,6 +3,8 @@
     <div class="col-xs-12">
 
 	  <form method="POST" action="{% url 'kolekti_release_archive_form' project=project %}" class="upload_form" enctype="multipart/form-data">
+        {% csrf_token %}
+
 		<div class="input-group">
 <!--		  <label style="font-weight:100">Archive zip</label>-->
 		  <input type="file" id="dl_archive" placeholder="" name="upload_file"/>

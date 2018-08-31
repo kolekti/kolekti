@@ -18,7 +18,7 @@
 <script src="{% static 'js/kolekti-variables-edit-'|add:method|add:'.js'" %}"></script>
 {% endblock %}
 
-{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable_details' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
+{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
 
 {% block content %}
 <div id="main">

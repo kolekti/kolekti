@@ -2,15 +2,13 @@ $(document).ready(function() {
 
     var create_template = function(browser, folder, update_function) {
         var filename = $(browser).find('#new_name').val();
-	    $.post('/templates/create/',
-	           {
-		           'templatepath': folder + "/" + filename
-	           })
-	        .done(
-		        function(templatepath) {
-		            update_function()
-		        }
-	        )
+	    $.post(
+            Urls.kolekti_topic_template_edit(kolekti.project, kolekti.lang, folder + "/" + filename)
+        ).done(
+		    function(templatepath) {
+		        update_function()
+		    }
+	    )
     };
 
     
@@ -25,8 +23,8 @@ $(document).ready(function() {
 		    })
 		  .select(
 		      function(path) {
-                  var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/topics/','')
-		          var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, tocpath)
+                  var topicpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/templates/','')
+		          var url= Urls.kolekti_topic_template_edit(kolekti.project, kolekti.lang, topicpath)
 			      window.open(url);
 		      }
 		  )

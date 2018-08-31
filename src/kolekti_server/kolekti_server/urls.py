@@ -85,8 +85,8 @@ urls = [
             url(r'^templates/$', TopicTemplateListView.as_view(),name='kolekti_templates'),
             
             url(r'^templates/(?P<template_path>.+)/', include([
-                url(r'^edit/$', TopicTemplateEditorView.as_view(),name='kolekti_topic_editor'),
-                url(r'^create/$', TopicTemplateCreateView.as_view(),name='kolekti_topic_create'),
+                url(r'^edit$', TopicTemplateEditorView.as_view(),name='kolekti_topic_template_edit'),
+                url(r'^create$', TopicTemplateCreateView.as_view(),name='kolekti_topic_template_create'),
 #                url(r'^topics/templates/$', TopicTemplatesView.as_view(),name='kolekti_topic_templates'),
 #                url(r'^topics/templates/(?P<topic_template_path>.+)/', TopicTemplatesView.as_view(),name='kolekti_topic_templates_path'),
             ])),
@@ -125,13 +125,14 @@ urls = [
             url(r'^publish/$', ReleasePublishView.as_view(),name='kolekti_release_publish'),
             url(r'^archive', ReleaseArchiveView.as_view(),name="kolekti_release_archive"),
             url(r'^states/$', ReleaseStatesView.as_view(), name='kolekti_release_states'),
-            url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_lang_delete'),
+            url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_delete'),
                             
             url(r'^(?P<lang>[^/\?]+)/', include([
                 url(r'^detail/$', ReleaseLangDetailsView.as_view(), name='kolekti_release_lang_detail'),
                 url(r'^state/$', ReleaseLangStateView.as_view(), name='kolekti_release_lang_state'),
                 url(r'^focus/$', ReleaseLangFocusView.as_view(), name='kolekti_release_lang_focus'),
                 url(r'^copy/$', ReleaseLangCopyView.as_view(), name='kolekti_release_lang_copy'),
+                url(r'^delete/$', ReleaseLangDeleteView.as_view(), name='kolekti_release_lang_delete'),
                 url(r'^publish/$', ReleaseLangPublishView.as_view(),name='kolekti_release_lang_publish'),
                 url(r'^validate/$', ReleaseLangValidateView.as_view(),name='kolekti_release_lang_validate'),
                 url(r'^assembly/$', ReleaseLangAssemblyView.as_view(),name='kolekti_release_lang_assembly'),

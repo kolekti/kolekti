@@ -401,13 +401,13 @@ class kolektiBase(object):
                     yield callback(varfile, t)
                     
 
-    def copy_release(self, path, assembly_name, srclang, dstlang):
+    def copy_release(self, release, srclang, dstlang):
         # copy images & variables
         #srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
         #for subdir in srcsubdirs:
         
-        srcpath = '%s/sources/%s'%(path, srclang)
-        dstpath = '%s/sources/%s'%(path, dstlang)
+        srcpath = '/releases/%s/sources/%s'%(release, srclang)
+        dstpath = '/releases/%s/sources/%s'%(release, dstlang)
 
         self.copyDirs(srcpath,dstpath)            
         try:
@@ -417,12 +417,13 @@ class kolektiBase(object):
 
         # copy assembly / change language in references to images
         # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
-        assembly_path = '/'.join([path,'sources',dstlang,'assembly',assembly_name+'_asm.html'])
+        assembly_path = '/'.join([dstpath, 'assembly', release+'_asm.html'])
         try:
-            refdir = "/".join([path,'sources',dstlang,'assembly'])
+            refdir = "/".join([dstpath,'assembly'])
             self.makedirs(refdir)
         except OSError:
             logger.debug('makedir failed')
+            
         # self.copy_resource(src_assembly_path, assembly_path)
         xassembly = self.parse( assembly_path)
         self.update_assembly_lang(xassembly, dstlang)

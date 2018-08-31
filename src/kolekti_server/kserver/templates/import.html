@@ -30,7 +30,7 @@
       <div id="collapsePL" class="panel-collapse collapse in">
 	<div class="panel-body">
 	  Choissez le modèle de module à utiliser pour créer le modèle de fichier tableur
-	  <form action="/import/template/" method="GET" class="form-horizontal">
+	  <form action="{% url 'kolekti_import_template' project=project lang=lang %}" method="GET" class="form-horizontal">
 	     <div class="form-group">
 	       {% for template in templates %}
 		<div class="checkbox">

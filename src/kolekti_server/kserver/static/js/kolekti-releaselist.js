@@ -52,7 +52,8 @@ $(document).ready(function() {
 				                    "html":[
                                         $('<a>',{
                                             "title":label_state[v],
-					                        "href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
+					                        "href":Urls.kolekti_release_lang_detail(kolekti.project, releasepath, i),
+//					                        "href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
 					                        "html":i
 				                        })
                                         ,$('<span>',{

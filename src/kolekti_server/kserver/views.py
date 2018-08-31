@@ -430,8 +430,8 @@ class ReleaseLangPublicationsListJsonView(kolektiMixin, View):
 class ReleaseZipException(Exception):
     pass
     
-class ReleaseArchiveView(kolektiMixin, View):
-    def get(self, request):
+class ReleaseArchiveView(kolektiMixin, TemplateView):
+    def get(self, request, project):
         release = request.GET.get('release')
         releasename = release.split('/')[-1]
         now = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
@@ -451,47 +451,47 @@ class ReleaseArchiveView(kolektiMixin, View):
     template_name = 'releases/publish-archive.html'
 
 
-    def post(self, request):
+    def post(self, request, project):
         form = UploadFileForm(request.POST, request.FILES)
-        context, kolekti = self.get_context_data()
+        context, kolekti = self.get_context_data({'project':project})
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
             path = '/tmp'
-            if self.exists(path):
-                self.rmtree(path)
-            self.makedirs(path)
+            if kolekti.exists(path):
+                kolekti.rmtree(path)
+            kolekti.makedirs(path)
             zippath = path +'/'+ uploaded_file.name
-            self.write_chunks(uploaded_file.chunks, zippath, mode = "wb", sync=False)
+            kolekti.write_chunks(uploaded_file.chunks, zippath, mode = "wb", sync=False)
             try:
-                logger.debug(self.getOsPath(zippath))
-                with ZipFile(self.getOsPath(zippath)) as zippy:
+                logger.debug(kolekti.getOsPath(zippath))
+                with ZipFile(kolekti.getOsPath(zippath)) as zippy:
                     for f in zippy.namelist():
-                        zippy.extract(f, self.getOsPath(path))
+                        zippy.extract(f, kolekti.getOsPath(path))
                         
-                if not self.exists(path + "/kolekti"):
+                if not kolekti.exists(path + "/kolekti"):
                     newpath = None
-                    if self.exists(path + "/config/config.xml"):
-                        lang = self.read(path +'/lang').strip()
-                        converter = convert06.Converter(lang, self.getOsPath(path))
+                    if kolekti.exists(path + "/config/config.xml"):
+                        lang = kolekti.read(path +'/lang').strip()
+                        converter = convert06.Converter(lang, kolekti.getOsPath(path))
                         releasename = converter.convert_enveloppe({
-                            'enveloppe': self.getOsPath(zippath),
-                            'target_project':self.getOsPath('/')
+                            'enveloppe': kolekti.getOsPath(zippath),
+                            'target_project':kolekti.getOsPath('/')
                             }, 'tmp')
                         newpath = "/tmp/" + releasename
 
                     else:
-                        for f in self.list_directory(path):
-                            if self.exists(path + "/" + f + "/kolekti"):
+                        for f in kolekti.list_directory(path):
+                            if kolekti.exists(path + "/" + f + "/kolekti"):
                                 newpath = "/tmp/"+f
                                 break;
                         
-                            if self.exists(path + "/" + f + "/config/config"):
+                            if kolekti.exists(path + "/" + f + "/config/config"):
                                 newpath = "/tmp/"+f
-                                lang = self.read(newpath +'/lang').strip()
-                                converter = convert06.Converter(lang, self.getOsPath(path))
+                                lang = kolekti.read(newpath +'/lang').strip()
+                                converter = convert06.Converter(lang, kolekti.getOsPath(path))
                                 converter.convert_enveloppe({
-                                    'enveloppe': self.getOsPath(zippath),
-                                    'target_project':self.getOsPath('/')
+                                    'enveloppe': kolekti.getOsPath(zippath),
+                                    'target_project': kolekti.getOsPath('/')
                                     }, "tmp/"+f)
                             break;
 
@@ -500,13 +500,13 @@ class ReleaseArchiveView(kolektiMixin, View):
                         raise ReleaseZipException
                     else:
                         path = newpath
-                logger.debug(path)
-                if not self.exists(path + "/sources"):
+
+                if not kolekti.exists(path + "/sources"):
                     context.update({'error':"Dossier sources non trouvé dans l'archive"})
                     raise ReleaseZipException
                     
                 release_name = None
-                for f in self.list_directory(path + '/kolekti/publication-parameters'):
+                for f in kolekti.list_directory(path + '/kolekti/publication-parameters'):
                     if f[-8:] == '_asm.xml':
                         release_name = f[:-8]
                         break
@@ -516,22 +516,22 @@ class ReleaseArchiveView(kolektiMixin, View):
                     raise ReleaseZipException
                 
                 if not (path == '/tmp/' + release_name):
-                    self.makedirs('/tmp/' + release_name)
-                    self.move_resource(path + '/kolekti', '/tmp/' + release_name)
-                    self.move_resource(path + '/sources', '/tmp/' + release_name)
+                    kolekti.makedirs('/tmp/' + release_name)
+                    kolekti.move_resource(path + '/kolekti', '/tmp/' + release_name)
+                    kolekti.move_resource(path + '/sources', '/tmp/' + release_name)
                     path = '/tmp/'+release_name
                 
                 try:
-                    pp = self.parse(path + '/kolekti/publication-parameters/' +release_name + "_asm.xml")
+                    pp = kolekti.parse(path + '/kolekti/publication-parameters/' +release_name + "_asm.xml")
                 except:
                     context.update({'error':"Paramètres de publication non valides"})
                     raise ReleaseZipException
                     
                 langs = []
-                for ll in self.list_directory(path + "/sources"):
+                for ll in kolekti.list_directory(path + "/sources"):
                     if ll == "share":
                         continue
-                    if self.exists(path + "/sources/" + ll + "/assembly/" + release_name + "_asm.html"):
+                    if kolekti.exists(path + "/sources/" + ll + "/assembly/" + release_name + "_asm.html"):
                         langs.append(ll)
                 if len(langs) == 0:
                     context.update({'error':"Aucun assemblage trouvé dans l'archive"})
@@ -784,15 +784,23 @@ class ReleaseStatesView(kolektiMixin, TemplateView):
         return HttpResponse(json.dumps(states),content_type="application/json")
 
 class ReleaseDeleteView(kolektiMixin, View):
-    def post(self, request, project, release,lang):
+    def post(self, request, project, release):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            release = request.POST.get('release')
-            lang = request.POST.get('lang')
-            self.delete_resource('%s/sources/%s'%(release, lang))
+            kolekti.delete_resource('/release/%s'%(release,))
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             logger.exception("Could not delete release")
+            return HttpResponse(status=500)
+            
+class ReleaseLangDeleteView(kolektiMixin, View):
+    def post(self, request, project, release, lang):
+        context, kolekti = self.get_context_data({'project': project})
+        try:
+            kolekti.delete_resource('/releases/%s/sources/%s'%(release, lang))
+            return HttpResponse(json.dumps("ok"),content_type="text/javascript")
+        except:
+            logger.exception("Could not delete release lang")
             return HttpResponse(status=500)
             
     
@@ -842,11 +850,11 @@ class ReleaseLangCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project})
+        dstlang = lang
         try:
-            dstlang = request.POST.get('target_lang')
-
+            srclang = request.POST.get('release_copy_from_lang')
             #            return StreamingHttpResponse(
-            for copiedfiles in self.copy_release(path, release, lang, dstlang):
+            for copiedfiles in kolekti.copy_release(release, srclang, dstlang):
                 pass
             assembly = "/".join(['/releases', release , "sources" , dstlang , "assembly" , release+'_asm.html'])
 
@@ -857,10 +865,13 @@ class ReleaseLangCopyView(kolektiMixin, TemplateView):
             # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
 
         except:
-            import traceback
-            print traceback.format_exc()
-    #    return HttpResponse("ok")
-        return HttpResponseRedirect('/releases/detail/?release=%s&lang=%s'%(path,dstlang))
+            logger.exception('could not copy source release')
+    
+        return HttpResponseRedirect(reverse('kolekti_release_lang_detail', kwargs={
+            'project':project,
+            'release':release,
+            'lang':dstlang
+            }))
     
 class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
@@ -872,8 +883,8 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
             xsl = kolekti.get_xsl('django_assembly_edit')
             content = ''.join([str(xsl(t, path="'/releases/%s'"%release)) for t in body])
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.exception('could get release assembly')
+            
         return HttpResponse(content)
     
 
@@ -916,9 +927,12 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         release = context.get('release')
         langstate = None
         sync = self.get_sync_manager(kolekti)
-        release_languages = context.get('releaselangs',[]) 
+        _, release_languages, default_srclang  = self.project_langs(kolekti)
+#        release_languages = context.get('releaselangs',[]) 
         for lang in release_languages:
-            tr_assembly_path = '/'.join(['','releases',release,"source",lang,"assembly",release+'_asm.html'])
+            tr_assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+'_asm.html'])
+            logger.debug(kolekti.path_exists(tr_assembly_path))
+            logger.debug(tr_assembly_path)
             if kolekti.path_exists(tr_assembly_path):
                 if (sync is not None):
                     states.append(sync.propget('release_state',tr_assembly_path))
@@ -933,11 +947,15 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
                 focus.append(False)
-        context.update({'langstate':langstate,'langstates':zip(release_languages,states,focus)})
+        logger.debug(release_languages)
+        logger.debug(states)
+        logger.debug(focus)
+        context.update({'langstates':zip(release_languages,states,focus)})
         return context, kolekti
     
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
+        logger.debug(context)
         assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
         assembly_meta = {}
         try:
@@ -984,7 +1002,8 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             'release_path':release,
             'assembly_name':release,
             'assembly_meta':assembly_meta,
-            'lang':lang,
+            'relang':lang,
+            'lang':'en',
             'srclang':srclang,
             'validactions':self.__has_valid_actions(kolekti, release)
         })
@@ -1380,7 +1399,7 @@ class ImportView(kolektiMixin, TemplateView):
         tpls = kolekti.get_directory(root = "/sources/"+lang+"/templates")
         tnames = [t['name'] for t in tpls]
         
-        context, kolekti = self.get_context_data({'templates':tnames})
+        context.update({'templates':tnames})
         return self.render_to_response(context)
 
     def post(self, request, project, lang):
@@ -1421,8 +1440,8 @@ class ImportTemplateView(kolektiMixin, TemplateView):
         template = request.GET.get('template')
         filename = "import_template.ods"
         odsfile = StringIO()
-        tplter = Templater(kolekti.syspath)
-        tplter.generate("/sources/"+self.request.kolekti_userproject.srclang+"/templates/"+template, odsfile)
+        tplter = Templater(kolekti.syspath(), lang=lang)
+        tplter.generate("/sources/" + lang + "/templates/" + template, odsfile)
         response = HttpResponse(odsfile.getvalue(),                            
                                 content_type="application/vnd.oasis.opendocument.spreadsheet")
         response['Content-Disposition']='attachement; filename="%s"'%filename
@@ -1670,7 +1689,7 @@ class BrowserView(kolektiMixin, TemplateView):
         try:
             path = request.GET.get('path','/')
             if not kolekti.exists(path):
-                return self.render_to_response({'error':"does not exists"})
+                return self.render_to_response({'error':"does not exists %s"%path})
             
             mode = request.GET.get('mode','select')
             try:
@@ -1904,6 +1923,11 @@ class TopicTemplateCreateView(kolektiMixin, View):
 
 class TopicTemplateEditorView(TopicEditorView):
     ttdir = "templates"
+    def get(self, request, project, lang, template_path):
+        return super(TopicTemplateEditorView, self).get(request, project, lang, template_path)
+
+    def post(self,request, project, lang, template_path):
+        return super(TopicTemplateEditorView, self).post(request, project, lang, template_path)
 
 class TocUsecasesView(kolektiMixin, View):
     def get(self, request):
