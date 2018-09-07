@@ -603,6 +603,8 @@ class kolektiBase(object):
             self.syncMgr.copy_resource(src, dest)
         except:
             logger.debug('Synchro unavailable')
+            logger.debug(self.__makepath(src))
+            logger.debug(self.__makepath(dest))
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
@@ -733,6 +735,11 @@ class kolektiBase(object):
             criteria_dict.update({'LANG':[l.text for l in self.project_settings.xpath('/settings/releases/lang')]})
         return criteria_dict
 
+    def source_langs(self):
+        return sorted([l.text for l in self.project_settings.xpath('/settings/languages/lang')])
+
+    def release_langs(self):
+        return sorted([l.text for l in self.project_settings.xpath('/settings/releases/lang')])
 
     def substitute_criteria(self, string, profile, extra={}):
         try:

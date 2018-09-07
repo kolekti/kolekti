@@ -371,8 +371,8 @@ var kolekti_browser = function(args) {
 					                        }).on('focusout',function(e){
 						                        $.post(Urls.kolekti_browser_copy(kolekti.project), 
 						                               {
-                                                           'path': path + "/" + srcname,
-						                                   'to': path + "/" + $(this).val()
+                                                           'from': path + srcname,
+						                                   'to': path + $(this).val()
 						                               })
 						                            .done(function(data) {
 							                            // console.log(data)

@@ -23,7 +23,11 @@
     {% endblock %}	      
 
 {% block menu %}
-{% if langstate != "unknown" %}
+
+{% for rlang, state, focus in langstates %}
+{% if rlang == relang %}
+{% if state != "unknown" %}
+
 <div class="row">
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
@@ -166,7 +170,8 @@
     
     <div id="release_publications">
     </div>
-    
+{% endif %}
+{% endfor %}    
 {% endblock %}
 
 

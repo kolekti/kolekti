@@ -86,14 +86,14 @@ toolbar_Full : [
             e.message = 'le document a été modifié, voulez vous réélement quitter sans enregistrer ?';
 	}
     });
-
+    
 	if (savestate) {
-	    if(! confirm('')) {
-		return "
-	    
+	if(! confirm('')) {
+	return "
+	
 	return "ko";
     });
-
+*/
     
     var enable_save = function() {
 	    $('#btn_save').removeClass('disabled');
@@ -108,7 +108,7 @@ toolbar_Full : [
 	    }
     });
 
-*/
+
     
   // Kolekti Release toolbar
                    
@@ -228,13 +228,15 @@ toolbar_Full : [
     })
 
     var do_save = function() {
+        var release = $('#main').data('release');
+		var state = $('#main').data('state');
+		var lang = $('#main').data('lang');
+
 	    $.ajax({
-	        url:"/releases/state/",
+	        url:Urls.kolekti_release_lang_state(kolekti.project, release, lang),
 	        method:'POST',
 	        data:$.param({
-		        'release': $('#main').data('release'),
-		        'state' :  $('#main').data('state'),
-		        'lang'  :  $('#main').data('lang')
+		        'state' :  $('#main').data('state')
 	        })
 	}).done(function(data) {
 	    $('#btn_save').addClass('disabled');
@@ -335,9 +337,9 @@ $('.btn_publish').on('click', function() {
 //	var lang = get_publish_languages(false)[0]
 	var url = Urls.kolekti_release_lang_publish(kolekti.project, release, lang)
 
-	$('.main-modal .modal-body').html('<div id="pubresult"></div>');
-	$('.main-modal .modal-title').html('Publication');
-	$('.main-modal .modal-footer').html(
+	$('#main_modal .modal-body').html('<div id="pubresult"></div>');
+	$('#main_modal .modal-title').html('Publication');
+	$('#main_modal .modal-footer').html(
 	    $('<button>', {
 		'class':'btn btn-default',
 		'type':'button',
@@ -347,8 +349,8 @@ $('.btn_publish').on('click', function() {
 		 $('.modal').modal('hide')
 	     })
 	);
-	$('.main-modal .modal-footer').hide();
-	$('.main-modal .modal').modal({backdrop: "static"});
+	$('#main_modal .modal-footer').hide();
+	$('#main_modal .modal').modal({backdrop: "static"});
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Publication de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>').appendTo($('#pubresult'));
 	//params = get_publish_params(job)
 
@@ -402,7 +404,7 @@ $('.btn_publish').on('click', function() {
 	}).always(function() {
 	    $('#pub_progress').remove();
 	    $('#pub_end').show();
-	    $('.main-modal .modal-footer').show();
+	    $('#main_modal .modal-footer').show();
 	    load_publications();
 	});
     })
@@ -410,9 +412,9 @@ $('.btn_publish').on('click', function() {
 
     // validation actions
     var confirm_valid_actions = function() {
-	$('.main-modal .modal-body').html('<div>Des actions sont requises pour la validation de cette langue, voulez vous les effectuer ?</div>');
-	$('.main-modal .modal-title').html('Validation');
-	$('.main-modal .modal-footer').html([
+	$('#main_modal .modal-body').html('<div>Des actions sont requises pour la validation de cette langue, voulez vous les effectuer ?</div>');
+	$('#main_modal .modal-title').html('Validation');
+	$('#main_modal .modal-footer').html([
 	    $('<button>', {
 		'class':'btn btn-default',
 		'type':'button',
@@ -428,13 +430,13 @@ $('.btn_publish').on('click', function() {
 		'html':'Annuler'
 	    }
 	     ).on('click',function() {
-		 $('.main-modal .modal').modal('hide')
+		 $('#main_modal .modal').modal('hide')
 	     })
 	]
 	);
-	$('.main-modal .modal').on('hidden.bs.modal', function (e) {
+	$('#main_modal .modal').on('hidden.bs.modal', function (e) {
 	});
-	$('.main-modal .modal').modal({backdrop: "static"})
+	$('#main_modal .modal').modal({backdrop: "static"})
 	
     }
     
@@ -443,21 +445,21 @@ $('.btn_publish').on('click', function() {
 	    var lang= get_publish_languages(alllang);
 	    var url= Urls.kolekti_release_lang_validate(kolekti.project, release, lang)
 
-	    $('.main-modal .modal-body').html('<div id="pubresult"></div>');
-	    $('.main-modal .modal-title').html('Validation');
-	    $('.main-modal .modal-footer').html(
+	    $('#main_modal .modal-body').html('<div id="pubresult"></div>');
+	    $('#main_modal .modal-title').html('Validation');
+	    $('#main_modal .modal-footer').html(
 	        $('<button>', {
 		        'class':'btn btn-default',
 		        'type':'button',
 		        'html':'Fermer'
 	        }
 	         ).on('click',function() {
-		         $('.main-modal .modal').modal('hide')
+		         $('#main_modal .modal').modal('hide')
 	         })
 	    );
 
-	$('.main-modal .modal-footer button').hide();
-	$('.main-modal .modal').modal({backdrop: "static"});
+	$('#main_modal .modal-footer button').hide();
+	$('#main_modal .modal').modal({backdrop: "static"});
 	$('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Validation de la version</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Actions de validation en cours</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Actions de validation effectuées</div></div></div>').appendTo($('#pubresult'));
 	
 	//params = get_publish_params(job)
@@ -511,7 +513,7 @@ $('.btn_publish').on('click', function() {
 	}).always(function() {
 	    $('#pub_progress').remove();
 	    $('#pub_end').show();
-	    $('.main-modal .modal-footer button').show();
+	    $('#main_modal .modal-footer button').show();
 	    
 	});
     }

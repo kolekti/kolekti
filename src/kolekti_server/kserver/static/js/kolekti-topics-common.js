@@ -65,7 +65,7 @@ var create_topic = function(browser, folder, update_function) {
     
 
 $(document).ready(function() {
-	var url= Urls.kolekti_templates(kolekti.project, kolekti.lang)
+	var url= Urls.kolekti_templates_json(kolekti.project, kolekti.lang)
     $.get(url)
 	.success(function(data) {
 	    topic_templates = data;

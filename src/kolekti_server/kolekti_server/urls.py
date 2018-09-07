@@ -83,6 +83,7 @@ urls = [
             ])),
            
             url(r'^templates/$', TopicTemplateListView.as_view(),name='kolekti_templates'),
+            url(r'^templates/json/$', TopicTemplatesView.as_view(),name='kolekti_templates_json'),
             
             url(r'^templates/(?P<template_path>.+)/', include([
                 url(r'^edit$', TopicTemplateEditorView.as_view(),name='kolekti_topic_template_edit'),

@@ -124,7 +124,9 @@
           {% endif %}
           
 	      <div class="btn-group  pull-right" role="group">
-		{% block infobuttons %}
+		    {% block infobuttons %}
+            
+        {% comment %}
 		<div class="btn-group" role="group">
 		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
 		    Projet {{ active_project_name }} ({{ active_srclang }})
@@ -138,7 +140,10 @@
 		    <li role="presentation" class="divider"></li>
 		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
 		  </ul>
+          
 		</div>
+        {% endcomment %}
+
 	      </div>
 	      {% block infobuttons_lang %}
 	      {% comment %}

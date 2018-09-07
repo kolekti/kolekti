@@ -20,32 +20,39 @@
 	  <h4>Projets disponibles</h4>
 	</div>
 	-->
+    <div class="row">
     {% for user_project in user_projects %}
-  <div class="panel panel-default list-group">
+    <div class="col-sm-12 col-md-4">
+      <div class="panel panel-default list-group">
     
-    <div class="panel-heading">
+        <div class="panel-heading">
 
-      <strong>{{ user_project.project.name }}</strong> 
-      <span class="label label-info pull-right">
-	{% ifequal project.status  "svn" %}
-	partagé
-	{% else %}
-	local
-	{% endifequal %}
-      </span>
+          <strong>{{ user_project.project.name }}</strong> 
+          <span class="label label-info pull-right">
+	        {% ifequal project.status  "svn" %}
+	        partagé
+	        {% else %}
+	        local
+	        {% endifequal %}
+          </span>
+        </div>
+        
+        <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project_name %}in{% endif %}">
+          <div class="panel-body">
+            
+
+	      </div>
+          <div class="panel-footer">
+            <span class="pull-right">
+              <a href="{% url 'kolekti_project_home' project=user_project.project.directory %}" class="link-enter-project">Accéder au projet <i class="fa fa-arrow-circle-right"></i></a>
+            </span>
+            <br/>
+          </div>      
+        </div>
+      </div>
     </div>
-  
-    <div id="collapse_{{ project.id }}" class="sublinks collapse {% if project.name == active_project_name %}in{% endif %}">
-      <div class="panel-body">
-	<p>url du dépot SVN : {{ user_project.project.url }}</p>
-
-	<a href="{% url 'kolekti_project_home' project=user_project.project.directory %}">Page d'accueil du projet</a>
-
-	<hr/>
-      </div>      
-    </div>
-  </div>
     {% endfor %}
+  </div>
 </div>
 {% endif %}
 {% endblock %}

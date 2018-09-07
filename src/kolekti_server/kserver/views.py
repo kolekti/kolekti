@@ -262,12 +262,12 @@ class kolektiMixin(LoginRequiredMixin):
         self.request.kolekti_userproject.srclang = language
         self.request.kolekti_userproject.save()
 
-    def format_iterator(self, sourceiter):
+    def format_iterator(self, sourceiter, project):
         template = get_template('publication-iterator.html')
         nbchunck = 0
         for chunck in sourceiter:
             nbchunck += 1
-            chunck.update({'id':nbchunck})
+            chunck.update({'id':nbchunck,'project':project})
             yield template.render(chunck)
         
 
@@ -682,7 +682,7 @@ class TocPublishView(kolektiMixin, TemplateView):
             
             p = publish.DraftPublisher(kolekti.syspath(), lang=lang)
             toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])
-            return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_project_path, xjob, pubtitle)), content_type="text/html")
+            return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_project_path, xjob, pubtitle), project), content_type="text/html")
         
         except:
             import traceback
@@ -726,7 +726,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
             if not (release_prev_index is None):
                 xjob.getroot().set('releaseprevindex',release_prev_index)
             toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])                        
-            return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti, lang, toc_project_path, xjob)))
+            return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti, lang, toc_project_path, xjob), project))
         except:
             import traceback
             print traceback.format_exc()
@@ -881,7 +881,7 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
             xassembly = kolekti.parse(assembly_path.replace('{LANG}', lang))
             body = xassembly.xpath('/html:html/html:body/*', **ns)
             xsl = kolekti.get_xsl('django_assembly_edit')
-            content = ''.join([str(xsl(t, path="'/releases/%s'"%release)) for t in body])
+            content = ''.join([str(xsl(t, path="'/%s/releases/%s'"%(project, release))) for t in body])
         except:
             logger.exception('could get release assembly')
             
@@ -1057,7 +1057,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         langs = request.POST.get('langs')
         try: 
             p = publish.ReleasePublisher(release, kolekti.syspath(), langs=[lang])
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm")), content_type="text/html")
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
 
         except:
             import traceback
@@ -1073,8 +1073,8 @@ class ReleaseLangPublishView(kolektiMixin, TemplateView):
     def post (self, request, project, release, lang):        
         context, kolekti = self.get_context_data({'project':project})
         try:
-            p = publish.ReleasePublisher(release, kolekti.syspath(), langs=[lang])
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm")), content_type="text/html")
+            p = publish.ReleasePublisher('/releases/'+release, kolekti.syspath(), langs=[lang])
+            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
 
         except:
             import traceback
@@ -1094,7 +1094,7 @@ class ReleaseLangValidateView(kolektiMixin, View):
 #        xjob = kolekti.parse(jobpath)
         try:
             p = publish.ReleasePublisher(release_path, kolekti.syspath(), langs=[lang])
-            return StreamingHttpResponse(self.format_iterator(p.validate_release()), content_type="text/html")
+            return StreamingHttpResponse(self.format_iterator(p.validate_release(), project), content_type="text/html")
 
         except:
             import traceback
@@ -1656,8 +1656,8 @@ class BrowserCopyView(kolektiMixin, View):
         context, kolekti = self.get_context_data({'project': project})
         src = request.POST.get('from','/')
         dest = request.POST.get('to','/')
-        self.copy_resource(src, dest)
-        return HttpResponse(json.dumps(kolekti.path_exists(path)),content_type="application/json")
+        kolekti.copy_resource(src, dest)
+        return HttpResponse(json.dumps(kolekti.path_exists(dest)),content_type="application/json")
 
 
 class BrowserDeleteView(kolektiMixin, View):
@@ -1710,11 +1710,19 @@ class BrowserView(kolektiMixin, TemplateView):
     
             pathsteps = []
             startpath = ""
+            endpath = ""
             for step in path.split("/")[1:-1]:
+                pathspec = {'parentpath':startpath}
+                endpath = endpath + "/" + step
+                if startpath == '/sources':
+                    pathspec.update({'langs': kolekti.release_langs()})
+                    endpath = ""
                 startpath = startpath + "/" + step
-                pathsteps.append({'label':step, 'path': startpath})
-
+                pathspec.update({'label':step, 'path': startpath})
+                pathsteps.append(pathspec)
+#            logger.debug(pathsteps)
             context.update({'pathsteps':pathsteps})
+            context.update({'endpath':endpath})
             context.update({'mode':mode})
             context.update({'path':path})
 #            context.update({'project':self.request.kolekti_userproject.project.directory})

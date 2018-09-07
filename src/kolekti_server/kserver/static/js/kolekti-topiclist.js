@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var path = $('.browserparent').data('browserpath')
     
-    kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics',
+    kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics/',
                      'path': path,
 		             'parent':".browserparent",
 		             'buttonsparent':".buttons",
