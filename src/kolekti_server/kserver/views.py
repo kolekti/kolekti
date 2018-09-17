@@ -1977,9 +1977,15 @@ class SyncView(kolektiMixin, View):
                     "root_statuses":root_statuses,
                     })
             logger.debug('render')
+            
         except ExcSyncNoSync:
             logger.exception("Synchro unavailable")
             context.update({'status':'nosync'})
+            
+        except :
+            logger.exception("Error in synchro")
+            context.update({'status':'error'})
+            
         return self.render_to_response(context)
 
     def post(self, request):

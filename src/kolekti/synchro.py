@@ -360,6 +360,9 @@ class SynchroManager(SvnClient):
                                        update = True)
 
         for status in statuses:
+            if status.text_status == pysvn.wc_status_kind.ignored:
+                continue
+            
             item_path = self._localpath(status.path)
             item = {"path":self._localpath(status.path),
                     "ospath":status.path,
@@ -375,8 +378,6 @@ class SynchroManager(SvnClient):
             else:
                 item.update({"kind":"none"})
                 
-            if status.text_status == pysvn.wc_status_kind.ignored:
-                continue
             res.add_path_item(item_path[1:], item)
             
         res.update_statuses()
@@ -399,10 +400,6 @@ class SynchroManager(SvnClient):
                     "rpropstatus":str(status.repos_prop_status),
                     "wpropstatus":str(status.prop_status),
                     }
-                
-            if '/sources/en/topics/foo' in self._localpath(status.path):
-                logger.debug(self._localpath(status.path))
-                logger.debug(dict(status))
                 
             if status.entry is not None:
                 item.update({"kind":str(status.entry.kind),
