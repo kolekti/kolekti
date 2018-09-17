@@ -1,0 +1,3 @@
+[submodule "src/kolekti_server/kserver/static/zTree_v3"]
+	path = src/kolekti_server/kserver/static/zTree_v3
+	url = https://github.com/zTree/zTree_v3.git

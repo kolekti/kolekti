@@ -152,7 +152,7 @@ urls = [
                 url(r'^revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='kolekti_sync_revision'),
                 url(r'^add$', SyncAddView.as_view(), name='kolekti_sync_add'),
                 url(r'^remove$', SyncRemoveView.as_view(), name='kolekti_sync_remove'),
-
+                url(r'^tree$', SyncStatusTreeView.as_view(), name='kolekti_sync_tree'),
             ])),
             url(r'browse/', include([        
                 url(r'^$', BrowserView.as_view(),name='kolekti_browser'),    
@@ -184,12 +184,37 @@ urls = [
     
 # <<<<<<< HEAD
     
+<<<<<<< HEAD
 # urls.extend([
 # =======
 #    url(r'^templates/$', TopicTemplateListView.as_view(),name="templatelist"),
 #    url(r'^templates/create/$', TopicTemplateCreateView.as_view(),name="templatecreate"),
     
 #    url(r'^topics/meta.json', TopicMetaJsonView.as_view(),name="topic_meta_json"),
+=======
+    url(r'^variables/$', VariablesListView.as_view(), name='variablelist'),
+    url(r'^variables/upload$', VariablesUploadView.as_view(), name='variableupload'),
+    url(r'^variables/create/$', VariablesCreateView.as_view(), name='variablecreate'),
+    url(r'^variables/detail/$', VariablesDetailsView.as_view(), name='variabledetails'),
+    url(r'^variables/editvar/$', VariablesEditvarView.as_view(), name='variableeditval'),
+    url(r'^variables/editcol/$', VariablesEditcolView.as_view(), name='variableeditcol'),
+    url(r'^variables/ods$', VariablesODSView.as_view(), name='variableods'),
+
+    url(r'^images/$', ImagesListView.as_view(), name='imagelist'),
+    url(r'^images/upload$', ImagesUploadView.as_view(), name='imageupload'),
+    url(r'^images/details$', ImagesDetailsView.as_view(), name='imagedetails'),
+
+    url(r'^sync/$', SyncView.as_view(), name='sync'),
+    url(r'^sync/diff$', SyncDiffView.as_view(), name='syncdiff'),
+    url(r'^sync/status$', SyncStatusView.as_view(), name='syncstatus'),
+    url(r'^sync/remotestatus$', SyncRemoteStatusView.as_view(), name='syncremotestatus'),
+    url(r'^sync/resstatus$', SyncResStatusView.as_view(), name='syncresstatus'),
+    url(r'^sync/revision/(?P<rev>\d+)/$', SyncRevisionView.as_view(), name='syncrev'),
+    url(r'^sync/add$', SyncAddView.as_view(), name='syncadd'),
+    url(r'^sync/remove$', SyncRemoveView.as_view(), name='syncremove'),
+    url(r'^sync/tree$', SyncStatusTreeView.as_view(), name='syncstatustree'),
+]
+>>>>>>> master-sync
 
 #    url(r'^publications/list.json', PublicationsListJsonView.as_view(),name="publications_list_json"),
 #    url(r'^publications/zip/$', PublicationsZipView.as_view(),name="publications_zip"),

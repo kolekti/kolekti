@@ -1979,14 +1979,25 @@ class SyncView(kolektiMixin, TemplateView):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         try:
-            sync = self.get_sync_manager(kolekti)
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(self.request.kolekti_projectpath)
+            statuses = sync.statuses(recurse=False)
+            root_statuses = [statuses[i]['__self']['kolekti_status'] for i in statuses.keys()]
             context.update({
                     "history": sync.history(),
-                    "changes": sync.statuses(),
+                    "changes": statuses,
+                    "root_statuses":root_statuses,
                     })
+            logger.debug('render')
+            
         except ExcSyncNoSync:
             logger.exception("Synchro unavailable")
             context.update({'status':'nosync'})
+            
+        except :
+            logger.exception("Error in synchro")
+            context.update({'status':'error'})
+            
         return self.render_to_response(context)
 
     def post(self, request, project):
@@ -1996,6 +2007,7 @@ class SyncView(kolektiMixin, TemplateView):
         commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
         if len(commitmsg) == 0:
             commitmsg = "unspecified"
+            
         if action == "conflict":
             resolve = request.POST.get('resolve')
             files = request.POST.getlist('fileselect',[])
@@ -2004,6 +2016,7 @@ class SyncView(kolektiMixin, TemplateView):
                 for cfile in files:
                     if kolekti.exists(cfile+'.mine'):
                         kolekti.copyFile(cfile+'.mine', cfile)
+                        self.delete_resource(cfile+'.mine', sync=False)
                     else:
                         raise Exception('impossible de trouver la version locale')
                     try:
@@ -2012,6 +2025,7 @@ class SyncView(kolektiMixin, TemplateView):
                         logger.exception('error while resolving conflict [use local]')
                         
                 sync.commit(files, commitmsg)
+                
             if resolve == "remote":
                 try:
                     sync.revert(files)
@@ -2041,7 +2055,18 @@ class SyncView(kolektiMixin, TemplateView):
                 sync.revert(files)
             
         return self.get(request)
-                    
+
+class SyncStatusTreeView(View):
+    def get(self, request):
+        try:
+            from kolekti.synchro import SynchroManager
+            sync = SynchroManager(self.request.kolekti_projectpath)
+            state = sync.statuses()
+            return HttpResponse(json.dumps(state),content_type="application/json")
+        except:
+            logger.exception("Unable to get sync tree")
+            return HttpResponse(json.dumps({'revision':{'status':'E'}}),content_type="application/json")
+    
 class SyncRevisionView(kolektiMixin, TemplateView):
     template_name = "synchro/revision.html"
     def get(self, request, project, rev):

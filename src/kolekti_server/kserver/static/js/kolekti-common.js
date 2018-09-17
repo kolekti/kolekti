@@ -55,64 +55,63 @@ $(function() {
     var pendingstatusrequest = false;
     
     var updatestatus = function(e) {
-        return
-	if (pendingstatusrequest)
-	    return
+	    if (pendingstatusrequest)
+	        return
 	
-	var cached_status = sessionStorage.getItem('kolektistatus');
-	var now = new Date()
-	if(cached_status != null) {
-	    cached_status = JSON.parse(cached_status);
-	    if (cached_status['project'] == kolekti.project) {
-		if(cached_status['time'] > (now.getTime() - 60000)){
-		    $('#revnum').html(cached_status['revnum'])
-		    setstatus(cached_status['status'])
-		    return;
-		}
-	    }
-	}
-	$('#btn_rev>span span.circle').hide()
-	$('#btn_rev>span span.spinner').show()
-	$('#btn_rev>span').removeClass('strong')
-	$('#btn_rev').removeClass('btn-success btn-warning btn-danger btn-info')
-	$('#btn_rev').addClass('btn-default')
-	
-	pendingstatusrequest = true;
-        var url = Urls.kolekti_sync_status(kolekti.project)
-	$.get(url).done(function(data){
+	    var cached_status = sessionStorage.getItem('kolektistatus');
 	    var now = new Date()
-	    cached_status = {
-		'project':kolekti.project,
-		'time':now.getTime()
+	    if(cached_status != null) {
+	        cached_status = JSON.parse(cached_status);
+	        if (cached_status['project'] == kolekti.project) {
+		        if(cached_status['time'] > (now.getTime() - 60000)){
+		            $('#revnum').html(cached_status['revnum'])
+		            setstatus(cached_status['status'])
+		            return;
+		        }
+	        }
 	    }
-	    cached_status['status'] = data;
-	    setstatus(data)
-	    sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
-	}).always(function() {
-	    pendingstatusrequest = false;
-	})
+        pendingstatusrequest = true;
+        
+	    $('#btn_rev>span span.circle').hide()
+	    $('#btn_rev>span span.spinner').show()
+	    $('#btn_rev>span').removeClass('strong')
+	    $('#btn_rev').removeClass('btn-success btn-warning btn-danger btn-info')
+	    $('#btn_rev').addClass('btn-default')
+	    
+        var url = Urls.kolekti_sync_status(kolekti.project)
+	    $.get(url).done(function(data){
+	        var now = new Date()
+	        cached_status = {
+		        'project':kolekti.project,
+		        'time':now.getTime()
+	        }
+	        cached_status['status'] = data;
+	        setstatus(data)
+	        sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
+	    }).always(function() {
+	        pendingstatusrequest = false;
+	    })
     }
     
     var pendingrevnumrequest = false;
+    
     var updaterevnum = function(e) {
-        return
 	if(pendingrevnumrequest)
 	    return
         var url = Urls.kolekti_sync_remote_status(kolekti.project)
 	    $.get(url).done(function(data){
 	        if (data.revision)
 	            $('#revnum').html(data.revision.number);
-
 	    })
     }
     
     $(window).focus(function(){
-	updatestatus();
-	updaterevnum();
+	    updatestatus();
+	    updaterevnum();
     });
     $(window).on('kolektibrowserchange',function(){
-	updatestatus();
-	updaterevnum();
+	    updatestatus();
+	    updaterevnum();
     });
     updatestatus();
     updaterevnum();

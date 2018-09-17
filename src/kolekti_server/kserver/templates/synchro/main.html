@@ -1,5 +1,16 @@
 {% extends "synchro/synchro.html" %}
+{% load static %}
 
+{% block extracss %}
+<link rel="stylesheet" type="text/css" href="{% static "css/kolekti-synchro.css" %}"/>
+<link rel="stylesheet" type="text/css" href="{% static "zTree_v3/css/zTreeStyle/zTreeStyle.css" %}"/>
+{% endblock %}
+
+{% block extrascripts2 %}
+<script type="text/javascript" src="{% static "zTree_v3/js/jquery.ztree.core.min.js" %}"></script>
+<script type="text/javascript" src="{% static "zTree_v3/js/jquery.ztree.excheck.min.js" %}"></script>
+<script type="text/javascript" src="{% static "zTree_v3/js/jquery.ztree.exhide.min.js" %}"></script>
+{% endblock %}
 
 {% block operation %}
 
@@ -9,8 +20,10 @@
   <p>La synchronisation n'est pas disponible</p>
 </div>
 
-{% elif changes.conflict|length or changes.error|length %}
 
+{% else %}
+
+<div class="sync_conflict sync_hidden">
 <div class="alert alert-warning">
   <h3>
 	<strong>Attention</strong> : les mêmes fichiers ont été modifiés par vous et par les autres rédacteurs
@@ -27,27 +40,7 @@
 	    <hr>
 	    <div class="form-group">
 	      <div class="col-sm-12">
-		    {% if changes.error|length %}
-		    {% for e in changes.error %}
-		    <div class="checkbox">
-		      <label>
-		        <input class="selectentry entry-conflict" data-path="{{ e.path }}" data-basename="{{ e.basename }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		        {{ e.path }}
-		      </label>
-		      <br>
-		    </div>
-		    {% endfor %}
-		    {% else %}
-		    {% for e in changes.conflict %}
-		    <div class="checkbox">
-		      <label>
-		        <input class="selectentry entrey-conflit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		        {{ e.path }} 
-		      </label>
-		      <br>
-		    </div>
-		    {% endfor %}
-		    {% endif %}
+            <div class="sync_tree ztree"></div>
 	      </div>
 	    </div>
 	    <div class="form-group">
@@ -83,9 +76,11 @@
     <button type="submit" class="btn btn-warning btn-block  btn-action-synchro">Valider</button>
   </form>
 </div>
-     
-{% elif changes.merge|length %}
-     
+</div>     
+
+
+
+<div class="sync_merge sync_hidden">
 <div class="alert alert-warning">
   <form class="form-horizontal" method="POST">
 	<input  type="hidden" name="action" value="merge"/>
@@ -105,15 +100,7 @@
 	      </div>
 	      <div class="form-group">
 	        <div class="col-sm-12">
-		      {% for e in changes.merge %}
-		      <div class="checkbox">
-		        <label>
-		          <input class="selectentry entry-merge" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" checked="checked"/>
-		          {{ e.path }} 
-		        </label>
-		        <br>
-		      </div>
-		      {% endfor %}
+              <div class="sync_tree ztree"></div>
 	        </div>
 	      </div>
 	      <div class="form-group">
@@ -151,9 +138,10 @@
     <button id="dosynchro"  type="submit"  class="btn btn-info btn-warning btn-action-synchro">Valider</button>
   </form>
 </div>
+</div>
 
-{% elif changes.update|length %}
-     
+
+<div class="sync_update sync_hidden">
 <div class="alert alert-info">
   <form class="form-horizontal" method="POST">
 	<input  type="hidden" name="action" value="update"/>
@@ -161,24 +149,17 @@
     <div class="panel panel-default">
 	  <div class="panel-collapse collapse in" id="collapseSynchro">
 	   <div class="panel-body">
-	     <ul>
-	       
-	       {% for e in changes.update %}
-	       <li>{{ e.path }}
-		     {% comment %}
-		     {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}		   {% endcomment %}
-	       </li>
-	       {% endfor %}
-	     </ul>
+         <div id="sync_tree ztree"></div>
 	   </div>
 	  </div>
     </div>
     <button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
   </form>
 </div>
+</div>
 
-{% elif changes.commit|length  %}
 
+<div class="sync_commit sync_hidden">
 <div class="alert alert-info">
   <form class="form-horizontal" method="POST">
 	<input  type="hidden" name="action" value="commit"/>
@@ -187,24 +168,7 @@
 	  <div class="panel-body">
 	    <div class="form-group">
 	      <div class="col-sm-12">
-		    {% for e in changes.commit %}
-	       	<div class="checkbox">
-		      <label title="{{e.wstatus}}">
-		        <input class="selectentry entry-commit" data-path="{{ e.path }}" type="checkbox" value="{{e.path}}" name="fileselect" />
-		        {% if e.wstatus == 'deleted' %}
-		        <s>{{ e.path }}</s>
-		        {% else %}
-		        {{ e.path }}
-		        {% endif %}
-		        {% if e.wstatus == 'added' %} (ajout){% endif %}
-		      </label>
-
-		      {% comment %}
-		      {% if e.kind == "file" %}<span class="pull-right"><a title="[R:{{e.rstatus}} W:{{e.wstatus}}]" href="/sync/diff?file={{e.path}}" target="diff">diff</a></span>{% endif %}
-		      {% endcomment %}
-              
-		    </div>
-		    {% endfor %}
+            <div class="sync_tree ztree"></div>
 	      </div>
 	    </div>
         
@@ -243,9 +207,8 @@
 	<button type="submit"  class="btn btn-info btn-block  btn-action-synchro">Valider</button>
   </form>
 </div>
-
+</div>
 {% endif %}
-
 {% endblock %}
 
 
@@ -253,28 +216,28 @@
 
 {% if svn_url == "local" %}
 
-{% elif changes.conflict|length or changes.merge|length or  changes.update|length or changes.commit|length  %}
+{% elif "conflict"  in root_statuses or "merge"  in root_statuses or  "update"  in root_statuses or "commit"  in root_statuses  %}
 <h3>Étape(s) suivante(s)</h3>
 <ul>
   
-  {% if changes.conflict|length %}
-  {% if changes.merge|length %}
+  {% if "conflict" in root_statuses %}
+  {% if "merge" in root_statuses %}
   <li>Fusion des modifications concurrentes
     <p>{{ changes.merge|length }} fichiers ont été modifiés par un autre rédacteur et par vous depuis la dernière synchronisation, cette étape fusionne les fichiers modifiés.</p>
   </li>
   {% endif %}
   {% endif %}
   
-  {% if changes.conflict|length or changes.merge|length %}
-  {% if changes.update|length %}
+  {% if "conflict" in root_statuses or "merge" in root_statuses %}
+  {% if "update" in root_statuses %}
   <li>Récupération en local des fichiers modifiés sur le serveur externe
     <p>{{ changes.update|length }} fichiers ont été modifiés par un autre rédacteur depuis la dernière synchronisation.</p>
   </li>
   {% endif %}
   {% endif %}
   
-  {% if changes.conflict|length or changes.merge|length or  changes.update|length %}
-  {% if changes.commit|length  %}
+  {% if "conflict" in root_statuses or "merge" in root_statuses or  "update" in root_statuses %}
+  {% if "commit" in root_statuses  %}
   <li>Envoi de mes modifications vers les autres rédacteurs
     <p>{{ changes.commit|length }} fichiers ont été modifiés par vous.</p>
   </li>
@@ -282,11 +245,19 @@
   {% endif %}
 </ul>
 
-{% else %}
-<div class="alert alert-success">
-  <strong>Le projet est synchronisé</strong>
-</div>
 {% endif %}
-  
+
+<div class="sync_ok sync_hidden">
+  <div class="alert alert-success">
+    <strong>Le projet est synchronisé.</strong>
+  </div>
+</div>
+
+<div class="sync_loading">
+  <div class="alert alert-info">
+    <i class='fa fa-refresh fa-spin'></i>
+    <strong>Calcul de l'état de la synchronisation...</strong>
+  </div>
+</div>
 
 {% endblock %}
