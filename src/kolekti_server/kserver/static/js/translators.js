@@ -2,6 +2,7 @@
 
 
 var update_documents = function(project, release, lang, container, statecell, status ) {
+    var time = new Date().getTime();
 	$.getJSON('/translator/'+project+'/documents/?release=/releases/'+release + "&lang=" + lang)
 	    .success(function(data) {
 //		    console.log(data)
@@ -27,7 +28,7 @@ var update_documents = function(project, release, lang, container, statecell, st
                 if (docs[2]) {
                     var certif_url = "/translator/"+project+'/'+release+'/'+lang + "/certificate/upload/";
                     doclink = [$('<a>',{
-					    'href':'/translator/' + project +'/'+ docs[1],
+					    'href':'/translator/' + project +'/'+ docs[1] +"?time=" + time,
                         'title':docs[0],
 					    "target":"_documents",
 					    'html':$('<i>',{'class':'fa fa-file-' + docs[4] + '-o'})
