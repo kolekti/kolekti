@@ -14,20 +14,28 @@ li.sync_node_disabled>ul>li.sync_node_disabled {
     font-weight: bold;
 }
 
+.sync_tree span.status-ok,
 .sync_tree span.hstatus-ok{
     font-weight: normal;
 }
 
-.sync_tree span.hstatus-conflict{
-    color:#CC0000;
-}
-
+.sync_tree span.status-commit,
 .sync_tree span.hstatus-commit{
     color:#00CC00;
 }
 
+.sync_tree span.status-update,
 .sync_tree span.hstatus-update{
     color:#0000CC;
+}
+
+.sync_tree span.status-merge,
+.sync_tree span.hstatus-merge{
+    color:#AA00AA;
+}
+.sync_tree span.status-conflict,
+.sync_tree span.hstatus-conflict{
+    color:#CC0000;
 }
 
 .sync_tree li {
@@ -37,4 +45,8 @@ li.sync_node_disabled>ul>li.sync_node_disabled {
 
 .sync_tree ul {
     padding-left:10px;
+}
+
+.hidenodes li.listitem-hiddable {
+    display:none;
 }

@@ -71,10 +71,11 @@ initLocale()
 class StatusTree(dict):
     def add_path_item(self, path, item):
         node = self
-        for pathstep in path.split('/'):
-            if not node.has_key(pathstep):
-                node.update({pathstep:{}})
-            node = node[pathstep]
+        if path != "":
+            for pathstep in path.split('/'):
+                if not node.has_key(pathstep):
+                    node.update({pathstep:{}})
+                node = node[pathstep]
         node.update({'__self':item})
 
     def display(self, node = None, depth = 0):        
@@ -102,10 +103,12 @@ class StatusTree(dict):
         status = self._node_status(node, children_statuses)
         
         
-        if 'conflict' in children_statuses:
-            inherited_status = "conflict"
-        elif 'error' in  children_statuses:
+        if 'error' in  children_statuses:
             inherited_status = "error"
+        elif 'conflict' in children_statuses:
+            inherited_status = "conflict"
+        elif 'merge' in children_statuses:
+            inherited_status = "merge"
         elif 'update' in children_statuses:
             if status == 'commit':
                 inherited_status = "conflict"
@@ -150,11 +153,11 @@ class StatusTree(dict):
                 kolekti_status='conflict'
             elif wstatus in statuses_modified:
                 if (rstatus == pysvn.wc_status_kind.deleted) and (wstatus == pysvn.wc_status_kind.deleted or wstatus == pysvn.wc_status_kind.unversioned):
-                    kolekti_status='update'
+                    kolekti_status='conflict'
                 elif rstatus == pysvn.wc_status_kind.deleted:
                     kolekti_status='conflict'
                 else:
-                    if self.merge_dryrun(status.path):
+                    if self.merge_dryrun(node['__self']['ospath']):
                         kolekti_status='merge'
                     else:
                         kolekti_status='conflict'
@@ -280,7 +283,9 @@ class SynchroManager(SvnClient):
         return os.path.join(self._base, *pathparts)
 
     def _localpath(self, ospath):
-        lp = ospath.replace(self._base,'')
+        if ospath == self._base or ospath + "/" == self._base:
+            return ""
+        lp = ospath.replace(self._base, '')
         return '/'.join(lp.split(os.path.sep))        
     
     def geturl(self):
@@ -292,8 +297,6 @@ class SynchroManager(SvnClient):
         except pysvn.ClientError:
             return ['No history available']
 
-
-        
     def rev_number(self):
         try:
             h = self._client.log(self._base, limit = 1)
@@ -301,21 +304,21 @@ class SynchroManager(SvnClient):
             return '??'
         return {"revision":{"number":h[0].revision.number}}
     
-    
     def rev_state(self):
         #headrev = self._client.info(self._base)
         headrev = max([t[1].rev.number for t in self._client.info2(self._base)])
         statuses = self.statuses()
+        s = statuses['__self']['kolekti_inherited_status']        
         status = "N"
-        if len(statuses['error']):
+        if s == 'error':
             status = "E"
-        if len(statuses['conflict']):
+        if s == 'conflict':
             status = "C"
-        if len(statuses['merge']):
+        if s == 'merge':
             status = "M"
-        if len(statuses['commit']):
+        if s == 'commit':
             status = "*"
-        if len(statuses['update']):
+        if s == 'update':
             status = "U"
             
         return {"revision":{"number":headrev,"status":status}}
@@ -376,7 +379,7 @@ class SynchroManager(SvnClient):
                 continue
             
             item_path = self._localpath(status.path)
-            item = {"path":self._localpath(status.path),
+            item = {"path":item_path,
                     "ospath":status.path,
                     "basename":os.path.basename(status.path),
                     "rstatus":status.repos_text_status,
@@ -390,7 +393,7 @@ class SynchroManager(SvnClient):
             else:
                 item.update({"kind":"none"})
                 
-            res.add_path_item(item_path[1:], item)
+            res.add_path_item(item_path, item)
             
         res.update_statuses()
 #        logger.debug("display")

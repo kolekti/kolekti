@@ -1977,16 +1977,15 @@ class SearchView(kolektiMixin, TemplateView):
 class SyncView(kolektiMixin, TemplateView):
     template_name = "synchro/main.html"
     def get(self, request, project):
-        context, kolekti = self.get_context_data({'project':project})
         try:
-            from kolekti.synchro import SynchroManager
-            sync = SynchroManager(self.request.kolekti_projectpath)
-            statuses = sync.statuses(recurse=False)
-            root_statuses = [statuses[i]['__self']['kolekti_status'] for i in statuses.keys()]
+            context, kolekti = self.get_context_data({'project':project})
+            sync = self.get_sync_manager(kolekti)
+            statuses = sync.statuses(recurse = False)
+#            root_statuses = [statuses[i]['__self']['kolekti_status'] for i in statuses.keys()]
             context.update({
                     "history": sync.history(),
                     "changes": statuses,
-                    "root_statuses":root_statuses,
+#                    "root_statuses":root_statuses,
                     })
             logger.debug('render')
             
@@ -2056,16 +2055,16 @@ class SyncView(kolektiMixin, TemplateView):
             
         return self.get(request)
 
-class SyncStatusTreeView(View):
-    def get(self, request):
+class SyncStatusTreeView(kolektiMixin, View):
+    def get(self, request, project):
         try:
-            from kolekti.synchro import SynchroManager
-            sync = SynchroManager(self.request.kolekti_projectpath)
+            context, kolekti = self.get_context_data({'project':project})
+            sync = self.get_sync_manager(kolekti)
             state = sync.statuses()
             return HttpResponse(json.dumps(state),content_type="application/json")
         except:
             logger.exception("Unable to get sync tree")
-            return HttpResponse(json.dumps({'revision':{'status':'E'}}),content_type="application/json")
+            return HttpResponse(json.dumps({'status':'E', 'stacktrace':traceback.format_exc()}), content_type="application/json", status=403)
     
 class SyncRevisionView(kolektiMixin, TemplateView):
     template_name = "synchro/revision.html"
@@ -2118,7 +2117,9 @@ class SyncRemoteStatusView(kolektiMixin, View):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         try:
-            return HttpResponse(json.dumps(self._syncnumber),content_type="application/json")
+            sync = self.get_sync_manager(kolekti)
+            syncnum = dict(sync.rev_number())
+            return HttpResponse(json.dumps(syncnum),content_type="application/json")
         except:
             logger.exception("Unable to get project remote sync status")
             return HttpResponse(json.dumps({'revision':{'number':'!'}}),content_type="application/json")

@@ -1,30 +1,58 @@
+var translations = {
+    'dir' : 'dossier',
+    'file': 'fichier'
+}
 
 $(document).ready(function() {
-
-    var populate_tree = function(root, statuses) {
-        if (!root.length)
-            return
-        var dirlist = $('<ul>')
-        root.append(dirlist)
-        $.each(statuses, function(name, value) {
-            if (name == "__self")
-               return;
-            item = $('<li>')
-            dirlist.append(item)
-            var toggle  = $('<span class="toggle"><i class="glyphicon glyphicon-chevron-right open"></i><i class="glyphicon glyphicon-chevron-down close"></i></span>')
-            item.append(toggle)
-            var checkbox = $('<input type="checkbox" class="sync_check"/>')
-            checkbox.addClass('sync_check_'+value.__self.kolekti_status)
-            item.append(checkbox)
-            var name = $('<span class="sync_name">'+name+'</span>')
-            item.append(name)
-            item.attr('title', value.__self.path)
-            item.attr('data-status', value.__self.kolekti_status)
-            item.attr('data-kind', value.__self.kind)
-            populate_tree(item, value)
-        })
+    
+    var myOnExpand = function(event, treeId, treeNode) {
+        console.log('expand')
+        console.log(treeNode)
         
-    }
+    };
+            
+    var myOnCheck = function(event, treeId, treeNode) {
+        console.log('check')
+        console.log(treeNode)        
+        console.log(event)        
+        check_action()
+    };
+            
+    var myOnClick = function(event, treeId, treeNode) {
+        console.log('click')
+        console.log(treeNode)
+        if (treeNode.status == treestatus) {
+            $('#syncdetails .sync-det-type').html(translations[treeNode.ktype])
+            $('#syncdetails .sync-det-name').html(treeNode.name)
+            $('#syncdetails .sync-det-wstatus').html(treeNode.kwstatus)
+            $('#syncdetails .sync-det-rstatus').html(treeNode.krstatus)
+            $('#syncdetails').show()
+        } else {
+            $('#syncdetails').hide()
+        }
+    };
+    var myOnNodeCreated = function(event, treeId, treeNode) {
+        $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
+        $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
+        var treestatus = $('#'  + treeNode.tId+ '_span').closest('.ztree').data('status')
+        if (treeNode.hstatus != treestatus && treeNode.status != treestatus)
+            $('#'  + treeNode.tId+ '_span').closest('li').addClass('listitem-hiddable')
+    };
+            
+    var setting = {
+        check: {
+            enable: true,
+            chkStyle: "checkbox",
+            chkboxType: { "Y": "s", "N": "s" }
+        },
+        callback: {
+            onExpand: myOnExpand,
+            onClick: myOnClick,
+            onNodeCreated:myOnNodeCreated,
+            onCheck:myOnCheck
+            
+        }
+    };
 
     var znodes = function(statuses, status) {
         var nodes = []
@@ -36,14 +64,17 @@ $(document).ready(function() {
             var node_detail_status =
                 "L" + value.__self.kolekti_details_status
             var children = znodes(value, status)
-            
             var node = {"name":name,
+                        "kpath":value.__self.path,
+                        "ktype":value.__self.kind,
+                        "krstatus":value.__self.rstatus,
+                        "kwstatus":value.__self.wstatus,
                         "open":(node_inherited_status == status)?true:false,
-                        "checked":(node_inherited_status == status)?true:false,
-                        "chkDisabled":(node_inherited_status == status)?false:true,
+                        "checked":(node_status == status)?true:false,
+                        "chkDisabled":(node_status == status)?false:true,
                         "status":node_status,
-                        "hstatus":node_inherited_status
-                        "dstatus":node_deatil_status,
+                        "hstatus":node_inherited_status,
+                        "dstatus":node_detail_status,
                        }
             if (children.length)
                 node.children = children
@@ -52,31 +83,21 @@ $(document).ready(function() {
         return nodes;
     }
     
-    var setup_tree = function(root, status) {
-        root.find('li').each(function() {
-            if ($(this).data('status') != status) {
-                $(this).addClass('sync_node_disabled')
-                $(this).find('input.sync_check')
-                  .attr('disabled','yes')
-                $(this).children('.toggle').find('.open')
-                  .addClass('sync-hidden')
-            } else {
-                $(this).children('.toggle').find('.close')
-                  .addClass('sync-hidden')
-                $(this).children('input.sync_check')
-                  .attr('checked','yes')
-                
-            }
-        })
-    }
-
-    $.get('/sync/tree')
+    $('#syncdetails').hide()
+    $('#sync_error').hide()
+    var treedata;
+    var treestatus;
+    
+    $.get(Urls.kolekti_sync_tree(kolekti.project))
         .done(function(data) {
+            treedata = data
             console.log('data loaded')
-            console.log(data)
-            main_status = $.map(data, function(dir) {
-                return dir.__self.kolekti_inherited_status
+            main_status = $.map(data, function(dir, x) {
+                if (x != '__self')
+                    return dir.__self.kolekti_inherited_status
             })
+            console.log(main_status)
+            
             var status;
             if ($.inArray('conflict', main_status)) {
                 status = "conflict";
@@ -98,78 +119,56 @@ $(document).ready(function() {
                 status = "ok"
                 $('.sync_ok').removeClass('sync_hidden')
             }
-            $('.sync_loading').addClass('sync_hidden')
-
-            
-            var myOnExpand = function(event, treeId, treeNode) {
-                console.log('expand')
-                console.log(treeNode)
-                
-            };
-            
-            var myOnClick = function(event, treeId, treeNode) {
-                console.log('click')
-                console.log(treeNode)
-                
-            };
-            var myOnNodeCreated = function(event, treeId, treeNode) {
-                $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
-                $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
-                
-            };
-            
-            var setting = {
-                check: {
-                    enable: true,
-                    chkStyle: "checkbox",
-                    chkboxType: { "Y": "s", "N": "s" }
-                },
-                callback: {
-                    onExpand: myOnExpand,
-                    onClick: myOnClick,
-                    onNodeCreated:myOnNodeCreated
-                }
-
-            };
-
+            $('#sync_loading').addClass('sync_hidden')
+            treestatus = status;
             
             var tree = $('.sync_' + status +' .sync_tree')
             tree.addClass('active')
+            tree.data('status', status)
             zTreeObj = $.fn.zTree.init(tree, setting, znodes(data, status));
+            check_action()
+
+        })
+        .fail(function(response) {
+            var data = response.responseJSON
+            console.log('fail', data)
+            $('#sync_error').show()
+            $('#sync_loading').addClass('sync_hidden')
+            $('#sync_error_details').html(data.stacktrace)
         })
 
-    
-    $('#selectall').change(function() {
-	    $('.selectentry').prop('checked',$(this).prop('checked'))
-	check_action()
+        
+    $('#displayall').change(function() {
+        console.log('change')
+        var state = $(this).get(0).checked
+        console.log(state)
+        var tree = $('.ztree')
+        if (!state) tree.addClass('hidenodes')
+        else tree.removeClass('hidenodes')
     });
     
     var check_action = function(e) {
-	if ($('.selectentry').length) {
-	    var map = $('.selectentry').filter(function() { return $(this).prop('checked')})
-	    if(map.length == 0) 
-		$('.btn-action-synchro').addClass('disabled')
+        console.log('check', $('.checkbox_true_full').length)
+	    if ($('.checkbox_true_full').length) 
+		    $('.btn-action-synchro').removeClass('disabled')
 	    else
-		$('.btn-action-synchro').removeClass('disabled')
-	}
+		    $('.btn-action-synchro').addClass('disabled');
+	
     };
 		  
-    $('body').on('change','.selectentry',check_action);
-    check_action()
-
 		  
     $('body').on('change','select',function(e) {
-	var val = $(this).val();
-	if (val == "local" || val == "merge" || val == "commit") {
-	    $("#commitmsg").show();
-	} else {
-	    $("#commitmsg").hide();
-	}
+	    var val = $(this).val();
+	    if (val == "local" || val == "merge" || val == "commit") {
+	        $("#commitmsg").show();
+	    } else {
+	        $("#commitmsg").hide();
+	    }
     });
     
     $('form').on('submit', function() {
-	console.log("submit form");
-	$('#modal_processing').modal('show')
+	    console.log("submit form");
+	    $('#modal_processing').modal('show')
     })
 		  
     /*		 

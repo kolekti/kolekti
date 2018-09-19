@@ -1,54 +1,57 @@
 $(function() {
-
+    
     // sets revision number
     
     $('#btn_rev').click(function(e) {
-	var url = Urls.kolekti_sync(kolekti.project);
-	window.location.href = url;
+	    var url = Urls.kolekti_sync(kolekti.project);
+	    window.location.href = url;
     })
-
+    
     var setstatus = function(data) {
 	    var color="default";
-	// console.log(data.revision.status);
-	if (!data.hasOwnProperty('revision')) {
-	    $('#btn_rev').removeClass('btn-default')
-	    $('#btn_rev').addClass('btn-danger')
-	    $('#btn_rev>span').addClass('strong')
-	    $('#btn_rev').attr('title', 'impossible de contacter le serveur')
-	    return
-	}
-	switch(data.revision.status) {
+        
+	    if (!data.hasOwnProperty('revision')) {
+	        $('#btn_rev').removeClass('btn-default')
+	        $('#btn_rev').addClass('btn-danger')
+	        $('#btn_rev>span').addClass('strong')
+	        $('#btn_rev').attr('title', 'impossible de contacter le serveur')
+	        return
+	    };
+        
+        $('#revnum').html(data.revision.revnum)
+        
+	    switch(data.revision.status) {
 	    case '*':
-		color="warning"
-		$('#btn_rev').attr('title', gettext('vos modifications locales n\'ont pas été synchronisées'))
-		break;
+		    color="warning"
+		    $('#btn_rev').attr('title', gettext('vos modifications locales n\'ont pas été synchronisées'))
+		    break;
 	    case 'N':
-		color="default"
-		$('#btn_rev').attr('title', gettext('le projet est synchronisé'))
-		break;
+		    color="default"
+		    $('#btn_rev').attr('title', gettext('le projet est synchronisé'))
+		    break;
 	    case 'E':
-		color="danger"
-		$('#btn_rev').attr('title', gettext('une erreur est survenue'))
-		break;
+		    color="danger"
+		    $('#btn_rev').attr('title', gettext('une erreur est survenue'))
+		    break;
 	    case 'C':
-		color="danger"
-		$('#btn_rev').attr('title', gettext('le projet est en conflit'))
-		break;
+		    color="danger"
+		    $('#btn_rev').attr('title', gettext('le projet est en conflit'))
+		    break;
 	    case 'M':
-		color="warning"
-		$('#btn_rev').attr('title', gettext('des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles'))
-		break;
+		    color="warning"
+		    $('#btn_rev').attr('title', gettext('des modifications locales n\'ont pas été synchronisées, des mises à jour sont disponibles'))
+		    break;
 	    case 'U':
-		color="warning"
-		$('#btn_rev').attr('title', gettext('mise a jour disponible'))
-		break;
+		    color="warning"
+		    $('#btn_rev').attr('title', gettext('mise a jour disponible'))
+		    break;
 	    }
 	    $('#btn_rev>span span.spinner').hide()
 	    if (color != 'default') {
-		$('#btn_rev').removeClass('btn-default')
-		$('#btn_rev').addClass('btn-'+color)
-		$('#btn_rev>span').addClass('strong')
-		$('#btn_rev>span span.circle').show()
+		    $('#btn_rev').removeClass('btn-default')
+		    $('#btn_rev').addClass('btn-'+color)
+		    $('#btn_rev>span').addClass('strong')
+		    $('#btn_rev>span span.circle').show()
 	    }
     }
 
@@ -63,9 +66,9 @@ $(function() {
 	    if(cached_status != null) {
 	        cached_status = JSON.parse(cached_status);
 	        if (cached_status['project'] == kolekti.project) {
-		        if(cached_status['time'] > (now.getTime() - 60000)){
-		            $('#revnum').html(cached_status['revnum'])
+		        if(cached_status['time'] > (now.getTime() - 10000)){
 		            setstatus(cached_status['status'])
+                    console.log('cached')
 		            return;
 		        }
 	        }
@@ -86,6 +89,7 @@ $(function() {
 		        'time':now.getTime()
 	        }
 	        cached_status['status'] = data;
+	        cached_status['revnum'] = data.revision.revnum;
 	        setstatus(data)
 	        sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
 	    }).always(function() {
