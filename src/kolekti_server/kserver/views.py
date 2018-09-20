@@ -643,17 +643,9 @@ class TocUsecasesView(kolektiMixin, View):
                         result[path]=[toc]
         return HttpResponse(json.dumps(result), content_type="application/json")
 
-    
-# class PublicationView(kolektiMixin, TemplateView):
-#     template_name = "publication.html"
-#     def __init__(self, *args, **kwargs):
-#         super(PublicationView, self).__init__(*args, **kwargs)
 
-#     @classmethod
-#     def as_view(cls, **initkwargs):
-#         view = super(PublicationView, cls).as_view(**initkwargs)
-#         return condition(etag_func=None)(view)
-    
+
+        
 class TocPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post(self, request, project, lang, toc_path):
@@ -1113,8 +1105,6 @@ class TopicTemplateListView(kolektiMixin, TemplateView):
 
 class PicturesListView(kolektiMixin, TemplateView):
     template_name = "illustrations/list.html"
-
-
 
 class PictureUploadView(kolektiMixin, TemplateView):
     def post(self, request, project):
@@ -1937,21 +1927,6 @@ class TopicTemplateEditorView(TopicEditorView):
     def post(self,request, project, lang, template_path):
         return super(TopicTemplateEditorView, self).post(request, project, lang, template_path)
 
-class TocUsecasesView(kolektiMixin, View):
-    def get(self, request):
-        pathes = request.GET.getlist('pathes[]',[])
-        context={}
-        for toc in self.itertocs:
-            xtoc=self.parse(toc)
-            for path in pathes:
-                if len(xtoc.xpath('//html:a[@href="%s"]'%path,namespaces={'html':'http://www.w3.org/1999/xhtml'})):
-                    try:
-                        context[path].append(toc)
-                    except:
-                        context[path]=[toc]
-        return HttpResponse(json.dumps(context),content_type="application/json")
-
-
 class SearchFormView(kolektiMixin, TemplateView):
     template_name = "search/form.html"
     def get(self, request):
@@ -2030,6 +2005,7 @@ class SyncView(kolektiMixin, TemplateView):
                     sync.revert(files)
                 except:
                     logger.exception('impossible to revert')
+                    return self.get(request, project)
                 sync.update(files)
 
         elif action == "merge":
@@ -2053,7 +2029,7 @@ class SyncView(kolektiMixin, TemplateView):
             else:
                 sync.revert(files)
             
-        return self.get(request)
+        return self.get(request, project)
 
 class SyncStatusTreeView(kolektiMixin, View):
     def get(self, request, project):
@@ -2081,8 +2057,6 @@ class SyncRevisionView(kolektiMixin, TemplateView):
             })
         
         return self.render_to_response(context)
-
-
 
 
 class SyncDiffView(kolektiMixin, TemplateView):

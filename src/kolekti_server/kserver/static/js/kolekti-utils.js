@@ -447,54 +447,52 @@ var kolekti_browser = function(args) {
 	        $.get(Urls.kolekti_sync_res_status(kolekti.project),
                   {'path':path})
 		        .done(function(data) {
+                    $(parent).data('statuses', data)
 		            var rows =  $(parent).find('tr[data-name]')
-		            $.each(data, function(status,listentry) {                
-			            $.each(listentry, function(i,entry) {
-			                if (entry.kind != 'dir')				
-			                    $.each(rows, function(ri,row) {
-				                    if ($(row).data('name') == entry.basename) {
-				                        var cell = $(row).find('.kolekti-browser-sync');
-				                        switch(status) {
-				                        case 'unversioned':
-					                        icon = $('<i>',{
-					                            'class':"fa fa-question-circle text-"+kolekti_bootstrap_status[status]
-					                        })
-				                            
-					                        break;
-				                        case 'update':
-				                        case 'commit':
-					                        icon = $('<i>',{
-					                            'class':"fa fa-info-circle text-"+kolekti_bootstrap_status[status]
-					                        })
-					                        break;
-				                        case 'merge':
-				                        case 'conflict':
-				                        case 'error':
-					                        icon = $('<i>',{
-					                            'class':"fa fa-exclamation-circle text-"+kolekti_bootstrap_status[status]
-					                        })
-					                        break;
-				                        default:
-					                        icon = $('<i>',{
-					                            'class':"fa fa-check text-"+kolekti_bootstrap_status[status]
-					                        })
-				                        }
-			                            
-				                        cell.html($('<span>',{
-                                            //					'href':"#",
-					                        'class':status,
-					                        'data-status':status,
-					                        'data-rstatus':entry.rstatus,
-					                        'data-wstatus':entry.wstatus,
-					                        'html':icon,
-					                        'role':"button",
-					                        "data-trigger":"focus",
-					                        'tabindex':ri
-				                        }))
-				                    }
-			                    });
-			            });
-		            });
+                    $.each(rows, function(ri,row) {
+                        var entry = data[$(row).data('name')].__self
+                        status = entry.kolekti_status
+			            if (entry.kind != 'dir') {
+				            var cell = $(row).find('.kolekti-browser-sync');
+				            switch(status) {
+				            case 'unversioned':
+					            icon = $('<i>',{
+					                'class':"fa fa-question-circle text-"+kolekti_bootstrap_status[status]
+					            })
+				                
+					            break;
+				            case 'update':
+				            case 'commit':
+					            icon = $('<i>',{
+					                'class':"fa fa-info-circle text-"+kolekti_bootstrap_status[status]
+					            })
+					            break;
+				            case 'merge':
+				            case 'conflict':
+				            case 'error':
+					            icon = $('<i>',{
+					                'class':"fa fa-exclamation-circle text-"+kolekti_bootstrap_status[status]
+					            })
+					            break;
+				            default:
+					            icon = $('<i>',{
+					                'class':"fa fa-check text-"+kolekti_bootstrap_status[status]
+					            })
+				            }
+			                
+				            cell.html($('<span>',{
+                                //					'href':"#",
+					            'class':status,
+					            'data-status':status,
+					            'data-rstatus':entry.rstatus,
+					            'data-wstatus':entry.wstatus,
+					            'html':icon,
+					            'role':"button",
+					            "data-trigger":"focus",
+					            'tabindex':ri
+				            }))
+				        }
+			        });
 		            
 		            var sync_popover = $('.kolekti-browser-sync span').popover({
 			            'content':function(){

@@ -32,10 +32,13 @@ urls = [
     url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog, name='javascript-catalog'),
     url(r'^staticdev/admin/(?P<path>.*)$', staticView),
     url(r'^staticdev/(?P<path>.*)$', staticView, {'document_root' : 'kserver/static'}),
+
+    url(r'^translator/', include('translators.urls')),
     
     url(r'^(?P<project>[^/\?]+)/', include([
         url(r'^$', ProjectHomeView.as_view(), name='kolekti_project_home'),
-        
+
+            
         url(r'^kolekti/', include([
             url(r'^settings/$', SettingsView.as_view(), name='kolekti_settings'),
             url(r'^settings.json$', SettingsJsonView.as_view(), name='kolekti_settings_json'),

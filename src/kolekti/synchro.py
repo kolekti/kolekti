@@ -21,7 +21,6 @@ statuses_modified = [
     pysvn.wc_status_kind.deleted,
     pysvn.wc_status_kind.added,
     pysvn.wc_status_kind.modified,
-    pysvn.wc_status_kind.unversioned,
 ]            
     
 statuses_absent = [
@@ -31,13 +30,14 @@ statuses_absent = [
 statuses_normal = [
     pysvn.wc_status_kind.none,
     pysvn.wc_status_kind.normal,
+    pysvn.wc_status_kind.unversioned,
+    pysvn.wc_status_kind.ignored,
 ]
             
 statuses_other = [
     pysvn.wc_status_kind.replaced,
     pysvn.wc_status_kind.merged,
     pysvn.wc_status_kind.conflicted,
-    pysvn.wc_status_kind.ignored,
     pysvn.wc_status_kind.obstructed,
     pysvn.wc_status_kind.external,
     pysvn.wc_status_kind.incomplete,
@@ -259,12 +259,15 @@ class SvnClient(object):
         self._client.callback_ssl_server_trust_prompt = callback_accept_cert
 
         def callback_conflict_resolver(arg):
-            logger.debug(arg)
-            conflict_choice = "mine_full"
-            save_merged = None
-            merge_file = None
-            return conflict_choice, merge_file, save_merged
-        
+            try:
+                logger.debug(arg)
+                conflict_choice = "mine_full"
+                save_merged = None
+                merge_file = None
+                return conflict_choice, merge_file, save_merged
+            except:
+                logger.exception('callback confilct resolver')
+                
         self._client.callback_conflict_resolver = callback_conflict_resolver
         
 class SynchroManager(SvnClient):
@@ -379,6 +382,7 @@ class SynchroManager(SvnClient):
                 continue
             
             item_path = self._localpath(status.path)
+
             item = {"path":item_path,
                     "ospath":status.path,
                     "basename":os.path.basename(status.path),
@@ -392,8 +396,11 @@ class SynchroManager(SvnClient):
                              "author":status.entry.commit_author})
             else:
                 item.update({"kind":"none"})
-                
-            res.add_path_item(item_path, item)
+            if path == "":
+                relative_path = item_path
+            else:
+                relative_path = item_path[len(path)-1:]
+            res.add_path_item(relative_path, item)
             
         res.update_statuses()
 #        logger.debug("display")

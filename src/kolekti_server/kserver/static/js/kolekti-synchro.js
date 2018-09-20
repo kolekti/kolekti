@@ -1,6 +1,19 @@
 var translations = {
     'dir' : 'dossier',
-    'file': 'fichier'
+    'file': 'fichier',
+    'modified' : 'modifié',
+    'deleted': 'supprimé',
+    'added' : 'nouveau',
+    'unversionned': 'non versionné',
+    'missing':'absent',
+    'normal' : 'inchangé',
+    'replaced':'remplacé',
+    'merged':'fusionné',
+    'conflicted':'en conflit',
+    'ignored':'ignoré',
+    'obstructed':'recouvert',
+    'external':'externe',
+    'incomplete':'incomplet'
 }
 
 $(document).ready(function() {
@@ -12,20 +25,15 @@ $(document).ready(function() {
     };
             
     var myOnCheck = function(event, treeId, treeNode) {
-        console.log('check')
-        console.log(treeNode)        
-        console.log(event)        
-        check_action()
+        check_action(treeNode.checked?1:0)
     };
             
     var myOnClick = function(event, treeId, treeNode) {
-        console.log('click')
-        console.log(treeNode)
         if (treeNode.status == treestatus) {
             $('#syncdetails .sync-det-type').html(translations[treeNode.ktype])
             $('#syncdetails .sync-det-name').html(treeNode.name)
-            $('#syncdetails .sync-det-wstatus').html(treeNode.kwstatus)
-            $('#syncdetails .sync-det-rstatus').html(treeNode.krstatus)
+            $('#syncdetails .sync-det-wstatus').html(translations[treeNode.kwstatus])
+            $('#syncdetails .sync-det-rstatus').html(translations[treeNode.krstatus])
             $('#syncdetails').show()
         } else {
             $('#syncdetails').hide()
@@ -35,8 +43,11 @@ $(document).ready(function() {
         $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
         $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
         var treestatus = $('#'  + treeNode.tId+ '_span').closest('.ztree').data('status')
-        if (treeNode.hstatus != treestatus && treeNode.status != treestatus)
+        if (treeNode.hstatus != treestatus && treeNode.status != treestatus) {
             $('#'  + treeNode.tId+ '_span').closest('li').addClass('listitem-hiddable')
+        }
+        $('#'  + treeNode.tId+ '_span').closest('li').data('kpath', treeNode.kpath)
+        
     };
             
     var setting = {
@@ -84,34 +95,36 @@ $(document).ready(function() {
     }
     
     $('#syncdetails').hide()
-    $('#sync_error').hide()
-    var treedata;
     var treestatus;
     
     $.get(Urls.kolekti_sync_tree(kolekti.project))
         .done(function(data) {
-            treedata = data
-            console.log('data loaded')
-            main_status = $.map(data, function(dir, x) {
+            var main_status = data.__self.kolekti_inherited_status;
+            console.log(main_status)
+            
+/*            main_status = $.map(data, function(dir, x) {
                 if (x != '__self')
                     return dir.__self.kolekti_inherited_status
             })
-            console.log(main_status)
-            
+*/            
             var status;
-            if ($.inArray('conflict', main_status)) {
+            if (main_status == 'error'){
+                status = "error";
+                $('.sync_error').removeClass('sync_hidden')
+            }
+            else if (main_status == 'conflict'){
                 status = "conflict";
                 $('.sync_conflict').removeClass('sync_hidden')
             }
-            else if ($.inArray('merge' , main_status)) {
+            else if (main_status == 'merge' ){
                 status = "merge"
                 $('.sync_merge').removeClass('sync_hidden')
             }
-            else if ($.inArray('commit', main_status)) {
+            else if (main_status == 'commit'){
                 status = "commit"
                 $('.sync_commit').removeClass('sync_hidden')
             }
-            else if ($.inArray('update', main_status)) {
+            else if (main_status == 'update'){
                 status = "update"
                 $('.sync_update').removeClass('sync_hidden')
             }
@@ -119,37 +132,39 @@ $(document).ready(function() {
                 status = "ok"
                 $('.sync_ok').removeClass('sync_hidden')
             }
+            
             $('#sync_loading').addClass('sync_hidden')
             treestatus = status;
-            
-            var tree = $('.sync_' + status +' .sync_tree')
-            tree.addClass('active')
-            tree.data('status', status)
-            zTreeObj = $.fn.zTree.init(tree, setting, znodes(data, status));
-            check_action()
-
+            if (status != "error"){ 
+                var tree = $('.sync_' + status +' .sync_tree')
+                tree.addClass('active')
+                tree.data('status', status)
+                $('.ztree').addClass('hidenodes')
+                zTreeObj = $.fn.zTree.init(tree, setting, znodes(data, status));
+                check_action(0)
+            } else {
+                $('#sync_error').removeClass('sync_hidden')
+                $('#sync_loading').addClass('sync_hidden')
+                $('#sync_error_details').html("Contactez le support technique de kolekti");
+            }                
         })
         .fail(function(response) {
             var data = response.responseJSON
-            console.log('fail', data)
-            $('#sync_error').show()
+            $('#sync_error').removeClass('sync_hidden')
             $('#sync_loading').addClass('sync_hidden')
             $('#sync_error_details').html(data.stacktrace)
         })
 
         
-    $('#displayall').change(function() {
-        console.log('change')
+    $('.displayall').change(function() {
         var state = $(this).get(0).checked
-        console.log(state)
         var tree = $('.ztree')
         if (!state) tree.addClass('hidenodes')
         else tree.removeClass('hidenodes')
     });
     
-    var check_action = function(e) {
-        console.log('check', $('.checkbox_true_full').length)
-	    if ($('.checkbox_true_full').length) 
+    var check_action = function(supp) {
+	    if ($('.checkbox_true_full').length + supp) 
 		    $('.btn-action-synchro').removeClass('disabled')
 	    else
 		    $('.btn-action-synchro').addClass('disabled');
@@ -168,6 +183,12 @@ $(document).ready(function() {
     
     $('form').on('submit', function() {
 	    console.log("submit form");
+        var path, form = $(this);
+        $('.checkbox_true_full').each(function(e,i) {
+            console.log('checkbox')
+            path =  $(i).closest('li').data('kpath')
+            form.append('<input type="hidden" name="fileselect" value="' + path + '">');
+        });
 	    $('#modal_processing').modal('show')
     })
 		  
