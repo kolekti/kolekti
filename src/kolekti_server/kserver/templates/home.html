@@ -29,10 +29,10 @@
 
           <strong>{{ user_project.project.name }}</strong> 
           <span class="label label-info pull-right">
-	        {% ifequal project.status  "svn" %}
+	        {% ifequal user_project.project.status  "svn" %}
 	        partagé
 	        {% else %}
-	        local
+	        personnel
 	        {% endifequal %}
           </span>
         </div>

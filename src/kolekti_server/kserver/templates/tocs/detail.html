@@ -105,7 +105,7 @@
 	    </ul>
 	  </span>
 	  
-	  <a id="editjoblink" href="/settings/job?path={{ toc_meta.kolekti_jobpath }}" title="Éditer le fichier"
+	  <a id="editjoblink" href="{% url 'kolekti_job_edit' project=project job_path=toc_meta.kolekti_job|add:".xml" %}" title="Éditer le fichier"
 	     {% if not toc_meta.kolekti_job %}class="hidden"{% endif %}>
 	    <span class="glyphicon glyphicon-cog"> </span></a>
 

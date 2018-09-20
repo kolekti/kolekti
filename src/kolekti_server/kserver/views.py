@@ -2150,15 +2150,16 @@ class ProjectHistoryView(kolektiMixin, View):
         except:
             logger.exception("Unable to get project history")
 
-class AboutView(kolektiMixin, View):
+class AboutView(kolektiMixin, TemplateView):
     template_name = "about.html"
 
-class ChangelogView(kolektiMixin, View):
+class ChangelogView(kolektiMixin, TemplateView):
     template_name = "changelog.html"
     def get(self, request):
-        context = self.get_context_data()
+        context, kolekti = self.get_context_data()
         changelog = ""
-        with open(os.path.join(os.path.dirname(self._appdir), 'changelog')) as f:
+        appdir=os.path.dirname(os.path.dirname(os.path.realpath( __file__ )))
+        with open(os.path.join(os.path.dirname(appdir), 'changelog')) as f:
             for changelogline in f.readlines():
                 changelog += self.process(changelogline)
         context.update({'log':changelog})

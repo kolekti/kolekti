@@ -74,7 +74,7 @@ class KolektiSaasMiddleware(KolektiSaasMixin):
         return None
 
 
-class SaasProjectsView(KolektiSaasMixin, kolektiMixin, View):
+class SaasProjectsView(KolektiSaasMixin, kolektiMixin, TemplateView):
     template_name = "welcome.html"
 
         
@@ -153,7 +153,7 @@ class SaasProjectsLanguageView(SaasProjectsView):
 
 
     
-class UserProfileView(kolektiMixin, View):
+class UserProfileView(kolektiMixin, TemplateView):
     template_name = "registration/profile.html"
     def get(self, request):
         try:
@@ -168,8 +168,7 @@ class UserProfileView(kolektiMixin, View):
         })
         
         form = UserProfileForm(profile_dict)
-        context = self.get_context_data()
-        context.update({
+        context, kolekti = self.get_context_data({
             "form" : form
             })
         return self.render_to_response(context)
