@@ -1831,7 +1831,6 @@ class TopicTemplatesView(kolektiMixin, View):
         return HttpResponse(json.dumps(tnames),content_type="application/json")
 
 class TopicTemplateCreateView(kolektiMixin, View):
-    template_name = "home.html"
     def post(self, request):
         try:
             templatepath = request.POST.get('templatepath')
