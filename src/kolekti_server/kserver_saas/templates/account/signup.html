@@ -2,20 +2,15 @@
 
 {% load bootstrap %}
 {% load i18n %}
+{% load static %}
 
 {% block head_title %}{% trans "Signup" %}{% endblock %}
 
 {% block content %}
-      <div class="panel panel-default">
-	<div class="panel-heading">
-	  <h4 class="panel-title">
-	    {% trans "Sign Up" %}
-	  </h4>
-	</div>
-	
+<div class="panel panel-default">	
 	<div class="panel-body"> 
-
-	  <p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+      <img class="registration-banner-img img-responsive" style="text-align:center" src="{% static "img/kolekti_banner.png"%}"/>
+      <h3 style="text-align:center; margin: 30px 0;">{% trans "Testez gratuitement" %}</h3>
 
 	  <form role="form" class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
 	    {% csrf_token %}
@@ -23,7 +18,8 @@
 	    {% if redirect_field_value %}
 	    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
 	    {% endif %}
-	    <button class="btn btn-primary" type="submit">{% trans "Sign Up" %} &raquo;</button>
+        
+	    <button class="pull-right btn btn-primary" type="submit">{% trans "Valider" %} &raquo;</button>
 	  </form>
 	</div>
       </div>
