@@ -30,7 +30,7 @@ urls = [
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog, name='javascript-catalog'),
-    url(r'^staticdev/admin/(?P<path>.*)$', staticView),
+    url(r'^staticdev/admin/(?P<path>.*)$', staticView, {'document_root' : '/usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin'}),
     url(r'^staticdev/(?P<path>.*)$', staticView, {'document_root' : 'kserver/static'}),
 
     url(r'^translator/', include('translators.urls')),

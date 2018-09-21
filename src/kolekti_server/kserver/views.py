@@ -107,36 +107,26 @@ class kolektiMixin(LoginRequiredMixin):
             context = {}
         kolekti = None
         if 'project' in data.keys():
-            project = data['project']
             try:
-                if settings.KOLEKTI_MULTIUSER:
-                    userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
-                    project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
-                else:
-                    userproject = UserProject.objects.get(project__directory = project)
-                    project_path = os.path.join(settings.KOLEKTI_BASE, project)
-                    
+                project = data['project']
+                userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
+                context.update({
+                    'user_project' : userproject
+                })
+                project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
+                kolekti = kolektiBase(project_path)
+                
             except UserProject.DoesNotExist:
                 raise Http404
             
-            if 'lang' in data.keys():
-                userproject.srclang = data['lang']
-                userproject.save()
-            else:
-                context.update({'lang':userproject.srclang})
 
-            context.update({
-                'user_project' : userproject
-            })
 
-            kolekti = kolektiBase(project_path)
             
-        if settings.KOLEKTI_MULTIUSER:
-            userprojects = UserProject.objects.filter(user = self.request.user)
-        else:
-            userprojects = UserProject.objects.all()
-                
-        context.update({'user_projects': userprojects,})
+        userprojects = UserProject.objects.filter(user = self.request.user)
+        context.update({'user_projects': userprojects,
+                        'user_groups': self.request.user.groups.all()
+                        })
+        
         context.update(data)
         return context, kolekti
 
@@ -185,18 +175,6 @@ class kolektiMixin(LoginRequiredMixin):
             
         return sorted(projects, key=lambda p: p.get('name').lower())
 
-
-    # TODO
-    def project_langs(self, kolekti):
-        try:
-            return ([l.text for l in kolekti.project_settings.xpath('/settings/languages/lang')],
-                    [l.text for l in kolekti.project_settings.xpath('/settings/releases/lang')],
-                    kolekti.project_settings.xpath('string(/settings/@sourcelang)'))
-        except IOError:
-            return ['en'],['en','fr','de'],'en'
-        except AttributeError:
-            return ['en'],['en','fr','de'],'en'
-
     def get_sync_manager(self, kolekti):
         from kolekti.synchro import SynchroManager
         sync = SynchroManager(kolekti.syspath(''))
@@ -205,9 +183,6 @@ class kolektiMixin(LoginRequiredMixin):
     def localname(self,e):
         return re.sub('\{[^\}]+\}','',e.tag)
     
-    def get_tocs(self):
-        return self.itertocs
-
     def get_jobs(self, kolekti):
         res = []
         for job in kolekti.iterjobs:
@@ -233,34 +208,6 @@ class kolektiMixin(LoginRequiredMixin):
                         })
             res.append(job)
         return sorted(res, key = lambda j: j['name'])
-
-    def project_activate(self,userproject):
-        # TO BE REMOVED
-        if settings.KOLEKTI_MULTIUSER:
-            self.request.user.userprofile.activeproject = userproject
-            self.request.user.userprofile.save()
-            self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, userproject.project.directory)
-        else:
-            userprofile = UserProfile.objects.get()
-            userprofile.activeproject = userproject
-            userprofile.save()
-            self.request.kolekti_projectpath = os.path.join(settings.KOLEKTI_BASE, userproject.project.directory)        
-        self.request.kolekti_userproject = userproject
-        self.set_project(self.request.kolekti_projectpath)
-        try:
-            languages, rlang, defaultlang = self.project_langs()
-            if not self.request.kolekti_userproject.srclang in languages:
-                self.request.kolekti_userproject.srclang = defaultlang
-                self.request.kolekti_userproject.save()
-        except:
-            self.request.kolekti_userproject.srclang='en'
-            self.request.kolekti_userproject.save()
-
-       
-    def language_activate(self,language):
-        # get userdir
-        self.request.kolekti_userproject.srclang = language
-        self.request.kolekti_userproject.save()
 
     def format_iterator(self, sourceiter, project):
         template = get_template('publication-iterator.html')
@@ -295,17 +242,6 @@ class ProjectHomeView(kolektiMixin, TemplateView):
 
 class ProjectsView(kolektiMixin, TemplateView):
     template_name = "projects.html"
-    def get(self, request, require_svn_auth=False, project_folder="", project_url="", error = None):
-        context, kolekti = self.get_context_data({
-                    "require_svn_auth":require_svn_auth,
-                    "projectfolder":project_folder,
-                    "projecturl":project_url,
-                    "error":error,
-                    })
-        
-        if hasattr(self,'_project_starters'):
-            context.update({'project_starters':self._project_starters(request.user)})
-        return self.render_to_response(context)
 
     def post(self, request):
         # create new project
@@ -314,7 +250,7 @@ class ProjectsView(kolektiMixin, TemplateView):
         username = request.POST.get('username',None)
         password = request.POST.get('password',None)
         from kolekti.synchro import SVNProjectManager
-        sync = SVNProjectManager(settings.KOLEKTI_BASE,username,password)
+        sync = SVNProjectManager(settings.KOLEKTI_BASE,username)
 
         if project_url=="":
         # create local project
@@ -2005,7 +1941,7 @@ class SyncView(kolektiMixin, TemplateView):
                     sync.revert(files)
                 except:
                     logger.exception('impossible to revert')
-                    return self.get(request, project)
+                    return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))
                 sync.update(files)
 
         elif action == "merge":
@@ -2028,8 +1964,7 @@ class SyncView(kolektiMixin, TemplateView):
                 sync.commit(files,commitmsg)
             else:
                 sync.revert(files)
-            
-        return self.get(request, project)
+        return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))            
 
 class SyncStatusTreeView(kolektiMixin, View):
     def get(self, request, project):
