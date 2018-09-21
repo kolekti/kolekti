@@ -1,0 +1,12 @@
+{% load account %}{% user_display user as user_display %}{% load i18n %}{% autoescape off %}{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}
+
+Bonjour,
+
+Vous recevez ce message car vous avez donné cette adresse lors de votre enregistrement sur {{ site_domain }}, avec le nom d'utilisateur {{ user_display }}.
+
+Pour confirmer votre inscription, merci de cliquer sur le lien suivant :  {{ activate_url }}
+
+{% endblocktrans %}{% endautoescape %}
+{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Nous vous remercions d'utiliser Kolekti !
+
+{{ site_domain }}{% endblocktrans %}
