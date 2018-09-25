@@ -83,7 +83,7 @@ class kolektiBase(object):
             self.set_project(path)
 
     def get_project_config(self, path):
-        conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()        
+        conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
         if conf.get('version', None) == "1.0":
             return conf
         if conf.get('version', None) == "0.7":

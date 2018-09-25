@@ -240,7 +240,6 @@ class ProjectHomeView(kolektiMixin, TemplateView):
     template_name = "project_home.html"
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
-        logger.debug(context)
         return self.render_to_response(context)
 
 
@@ -1064,16 +1063,16 @@ class PictureDetailsView(kolektiMixin, TemplateView):
     template_name = "illustrations/details.html"
     def get(self, request, project, lang, picture_path):
         context, kolekti = self.get_context_data({'project':project, 'lang':lang})
-        name = picture_path.rsplit('/',1)[1]
-        logger.debug(picture_path)
-        ospath = kolekti.syspath('/sources/' + lang + '/pictures/' + picture_path)
+        name = picture_path.rsplit('/',1)[-1]
+        project_path =  '/sources/' + lang + '/pictures/' + picture_path
+        ospath = kolekti.syspath(project_path)
         logger.debug(ospath)
         try:
             im = Image.open(ospath)
             context.update({
                 'fileweight':"%.2f"%(float(os.path.getsize(ospath)) / 1024),
                 'name':name,
-                'path':picture_path,
+                'path':'/' + project + project_path,
                 'format':im.format,
                 'mode':im.mode,
                 'size':im.size,

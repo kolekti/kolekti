@@ -686,7 +686,7 @@ var kolekti_browser = function(args) {
 			            'html':[gettext("Déplacer / renommer"),
 				                $('<p><strong>' +
                                   gettext("Attention") +
-                                  '</strong>' +
+                                  '</strong> ' +
                                   gettext("Si vous déplacez ou renommez cette ressource, les liens et références seront cassés !") +
                                   "</p>"),
 				                $('<button>', {
