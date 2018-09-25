@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    
     var path = $('.browserparent').data('browserpath')
     
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/topics/',
@@ -13,8 +14,9 @@ $(document).ready(function() {
 		            })
 		.select(
 		    function(path) {
-                var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/topics/','')
-		        var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, tocpath)
+                var lang = path.split('/')[3]
+                var topic_path = path.split('/').splice(5). join('/')
+		        var url= Urls.kolekti_topic_edit(kolekti.project, lang, topic_path)
 			    window.open(url)
 		    }
 		)

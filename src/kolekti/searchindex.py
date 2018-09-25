@@ -63,8 +63,7 @@ class IndexManager(SearchUtils):
     def __init__(self, projectspath, projectdir):
         super(IndexManager, self).__init__(projectspath, projectdir)
         settings = ET.parse(os.path.join(projectspath, projectdir, 'kolekti', 'settings.xml'))
-        self._sourcelangs = [l.text for l in settings.xpath('/settings/languages/lang')]
-        self._publangs = [l.text for l in settings.xpath('/settings/releases/lang')]
+        self._langs = [l.text for l in settings.xpath('/settings/languages/lang')]
 
         indexpath = os.path.join(projectspath, '.index', projectdir)
         if os.path.exists(indexpath):
@@ -144,7 +143,7 @@ class IndexManager(SearchUtils):
                 self.indexresource(writer, assembly, 'assembly')
                 
     def itertopics(self):
-        for lang in self._sourcelangs:
+        for lang in self._langs:
             logger.debug(os.path.join(self._base, 'sources', lang, 'topics'))
             top = os.path.join(self._base, 'sources', lang, 'topics')
             for root, dirs, files in os.walk(top):
@@ -153,7 +152,7 @@ class IndexManager(SearchUtils):
                         yield root[len(self._base):] + '/' +  f
 
     def itervariables(self):
-        for lang in self._sourcelangs + ['share']:
+        for lang in self._langs + ['share']:
             for root, dirs, files in os.walk(os.path.join(self._base, 'sources', lang, 'variables')):
                 for f in files:
                     if os.path.splitext(f)[1] == ".xml":
@@ -162,7 +161,7 @@ class IndexManager(SearchUtils):
     
     def iterassemblies(self):
         for release in os.listdir(os.path.join(self._base,'releases')):
-            for lang in self._publangs:
+            for lang in self._langs:
                 if os.path.exists(os.path.join(self._base,'releases',release,'sources', lang, 'assemblies', release + '_asm.html')):
                     yield '/'.join(['releases', release,'sources', lang, 'assemblies', release + '_asm.html'])
 

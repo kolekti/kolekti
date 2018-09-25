@@ -52,7 +52,7 @@ class TranslatorsSharedMixin(kolektiBase):
         try:
             project_settings = ET.parse(os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project, 'kolekti','settings.xml'))
             return ([l.text for l in project_settings.xpath('/settings/languages/lang')],
-                    [l.text for l in project_settings.xpath('/settings/releases/lang')],
+                    [l.text for l in project_settings.xpath('/settings/languages/lang')],
                     project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'

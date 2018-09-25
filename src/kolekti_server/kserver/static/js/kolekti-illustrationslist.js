@@ -18,20 +18,21 @@ $(document).ready(function() {
     console.log(path)
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/pictures',
                      'path':path,
-		     'parent':".browser",
-		     'title':" ",
-		     'titleparent':".title",
-		     'mode':"selectonly",
-		     'modal':"no",
-		     'os_actions':'yes',
-		     'drop_files':'yes',
-		     'create_actions':'yes',
-		     'create_builder':upload_image_builder_builder()
-		    })
+		             'parent':".browser",
+		             'title':" ",
+		             'titleparent':".title",
+		             'mode':"selectonly",
+		             'modal':"no",
+		             'os_actions':'yes',
+		             'drop_files':'yes',
+		             'create_actions':'yes',
+		             'create_builder':upload_image_builder_builder()
+		            })
 	.select(
 	    function(path) {
-                var picturepath = path.replace('/' + kolekti.project + '/sources/'+ kolekti.lang + '/pictures/','')
-                var url = Urls.kolekti_picture_details(kolekti.project, kolekti.lang, picturepath)
+            var lang = path.split('/')[3]
+            var pic_path = path.split('/').splice(5). join('/')
+            var url = Urls.kolekti_picture_details(kolekti.project, lang, pic_path)
 		$.get(url)
 		    .done(
 			function(data) {

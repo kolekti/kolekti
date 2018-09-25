@@ -3,11 +3,15 @@ progressHandlingFunction = function(){}
 
 var create_varfile = function(browser, folder, update_function) {
     var filename = $(browser).find('#new_name').val();
-    var path = folder + "/" + filename;
+    var path = folder + filename;
+    console.log(path)
+    var lang = path.split('/')[2]
+    var variable_path = path.split('/').splice(4). join('/')
+    
     $.post(
-	    Urls.kolekti_variable_create(kolekti.project, kolekti.lang, path)
+	    Urls.kolekti_variable_create(kolekti.project, lang, variable_path)
     ).done(
-	    function(topicpath) {
+	    function() {
 		    update_function()
 	    }
 	)

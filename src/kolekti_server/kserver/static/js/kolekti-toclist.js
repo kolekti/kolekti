@@ -1,10 +1,16 @@
 $(document).ready(function() {
+    console.log('toclist')
     var create_toc = function(browser, folder, update_function) {
-	var filename = $('#new_name').val();
-	$.post(Urls.kolekti_toc_create(folder + "/" + filename))
-	    .success(
-		update_function()
-	    )
+	    var filename = $('#new_name').val();
+        console.log('craate')
+        console.log(folder)
+        var lang = folder.split('/')[2]
+        var toc_folder = folder.split('/').splice(4). join('/')
+	    $.post(Urls.kolekti_toc_create(kolekti.project, lang, toc_folder + "/" + filename))
+	        .success(function() {
+                console.log('create done')
+		        update_function()
+            })
     };
 
     var create_builder = function(e, path) {
@@ -33,9 +39,10 @@ $(document).ready(function() {
 		            })
 	    .select(
 	        function(path) {
-                console.log(path)
-                var tocpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/tocs/','')
-		        document.location.href = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath)
+                var lang = path.split('/')[3]
+                var toc_path = path.split('/').splice(5). join('/')
+                console.log(lang, toc_path)
+		        document.location.href = Urls.kolekti_toc_edit(kolekti.project, lang, toc_path)
 	        })
 	    .create(create_toc)
 });

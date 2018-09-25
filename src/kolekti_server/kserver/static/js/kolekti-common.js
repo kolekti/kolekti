@@ -68,7 +68,7 @@ $(function() {
 	        if (cached_status['project'] == kolekti.project) {
 		        if(cached_status['time'] > (now.getTime() - 10000)){
 		            setstatus(cached_status['status'])
-                    console.log('cached')
+//                    console.log('cached')
 		            return;
 		        }
 	        }
@@ -128,13 +128,13 @@ $(function() {
     // history
 
     $('.btn-back').on('click', function() {
-	window.history.back();
+	    window.history.back();
     })
 	
     // menu selection filter
 
     $('body').on('click',".input-filter-menu", function(e) {
-	e.stopPropagation()
+	    e.stopPropagation()
     });
 
     // filterable menus

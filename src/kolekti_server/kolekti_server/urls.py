@@ -98,13 +98,14 @@ urls = [
             url(r'^variables/', include([
                 url(r'^$', VariablesListView.as_view(), name='kolekti_variables'),
                 url(r'^(?P<variable_path>.+)/', include([
-                    url(r'^$', VariablesDetailsView.as_view(), name='kolekti_variable'),
+                    url(r'^edit$', VariablesDetailsView.as_view(), name='kolekti_variable'),
                     url(r'^create$', VariablesCreateView.as_view(), name='kolekti_variable_create'),
                     url(r'^upload$', VariablesUploadView.as_view(), name='kolekti_variable_upload'),
 #                    url(r'^detail$', VariablesDetailsView.as_view(), name='kolekti_variable_details'),
                     url(r'^editvar$', VariablesEditvarView.as_view(), name='kolekti_variable_editval'),
                     url(r'^editcol$', VariablesEditcolView.as_view(), name='kolekti_variable_editcol'),
                     url(r'^ods$', VariablesODSView.as_view(), name='kolekti_variable_ods'),
+                    url(r'^$', VariablesListView.as_view(), name='kolekti_variables_browse'),
                 ])),
             ])),
         
@@ -113,6 +114,7 @@ urls = [
                 url(r'^upload$', PictureUploadView.as_view(), name='kolekti_picture_upload'),
                 url(r'^(?P<picture_path>.+)/', include([
                     url(r'^details$', PictureDetailsView.as_view(), name='kolekti_picture_details'),
+                    url(r'^$', PicturesListView.as_view(), name='kolekti_pictures_browse'),
                 ])),
             ])),
             

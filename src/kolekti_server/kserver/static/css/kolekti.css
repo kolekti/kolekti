@@ -126,6 +126,8 @@ a[data-toggle=collapse] small
 }
 .section>.panel-heading h6 {
 }
+a.pathstep-menu:active,
+a.pathstep-menu,
 a.pathstep:active,
 a.pathstep {
 color:black;

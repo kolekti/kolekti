@@ -293,6 +293,17 @@ var kolekti_browser = function(args) {
     
     params['mode']=mode;
 
+
+    var get_folder_path = function() {
+	    return $(parent).data('folder_path')
+    }
+    
+    var set_folder_path = function(path) {
+	    $(parent).data('folder_path', path)
+    }
+
+    set_folder_path(path)
+    
     var get_browser_value = function() {
 	    var path;
 	    if (editable_path)
@@ -313,9 +324,12 @@ var kolekti_browser = function(args) {
     }
 
     var update = function() {
-        console.log( 'browser update ',path)
-	    params['path'] = path
-	    $(parent).data('path',path)
+
+        console.log( 'browser update ',get_folder_path())
+        
+        params['path'] = get_folder_path()
+        //	    $(parent).data('path',path)
+
 	    $.get(url, params, function(data) {
 	        $(parent).html([
 		        data,
@@ -334,7 +348,7 @@ var kolekti_browser = function(args) {
                     $(parent).find('.kolekti-browser-create-actions .newfile').hide()
                 }
                 else
-		            create_builder($(parent).find('.newfile_collapse form'), path)
+		            create_builder($(parent).find('.newfile_collapse form'), get_folder_path())
 	        }
 
 	        if (!os_actions) 
@@ -345,7 +359,7 @@ var kolekti_browser = function(args) {
 			            var item = $(this).closest('tr').data('name');
 			            if (window.confirm(interpolate(gettext("Voulez vous vraiment supprimer %s ?"), [item]))) {
 			                $.post(Urls.kolekti_browser_delete(kolekti.project),
-                                   {'path': path + "/" + item})
+                                   {'path': get_folder_path() + "/" + item})
 				                .done(function(data) {
 				                    closure_remove(item);
 				                    update();
@@ -371,8 +385,8 @@ var kolekti_browser = function(args) {
 					                        }).on('focusout',function(e){
 						                        $.post(Urls.kolekti_browser_copy(kolekti.project), 
 						                               {
-                                                           'from': path + srcname,
-						                                   'to': path + $(this).val()
+                                                           'from': get_folder_path() + srcname,
+						                                   'to': get_folder_path() + $(this).val()
 						                               })
 						                            .done(function(data) {
 							                            // console.log(data)
@@ -402,7 +416,7 @@ var kolekti_browser = function(args) {
 				                var name = $(this).closest('tr').data('name')
 				                $(this).remove()
 				                if (name != $(this).val())
-				                    browser_move_dialog(name, path, value)
+				                    browser_move_dialog(name, get_folder_path(), value)
                                 /*
 				                  $.post('/browse/move',
 					              {'from':path + "/" + $(this).closest('tr').data('name'),
@@ -425,8 +439,8 @@ var kolekti_browser = function(args) {
 		            $(parent).find('.kolekti-action-move').click(function(e){
 			            $.post(Urls.kolekti_browser_move(kolekti.project),
 			                   {
-                                   'from': path + $(this).closest('tr').data('name'),
-				                   'to': path + $(this).data('dir')
+                                   'from': get_folder_path() + $(this).closest('tr').data('name'),
+				                   'to': get_folder_path() + $(this).data('dir')
 			                   })
 			                .done(function(data) {
 				                // console.log(data)
@@ -442,10 +456,11 @@ var kolekti_browser = function(args) {
 		        });
 	        } // end os actions 
 	        
-	        set_browser_value(path + '/');
-            console.log('kolekti browser res status ' + path)
+//	        set_browser_value(path + '/');
+            
+            console.log('res status', get_folder_path())
 	        $.get(Urls.kolekti_sync_res_status(kolekti.project),
-                  {'path':path})
+                  {'path':get_folder_path()})
 		        .done(function(data) {
                     $(parent).data('statuses', data)
 		            var rows =  $(parent).find('tr[data-name]')
@@ -579,7 +594,6 @@ var kolekti_browser = function(args) {
 			            'placement':"left",
 			            'html':true
 		            }); // end popover definition
-		            // console.log(data)
 		        })
 
 
@@ -597,13 +611,13 @@ var kolekti_browser = function(args) {
 		        accept:"tr.file",
 		        hoverClass: "ui-state-hover",
 		        drop: function( event, ui ) {
-		            browser_move_dialog($(ui.draggable).data('name'), path +  $(this).data('name') + '/', null)
+		            browser_move_dialog($(ui.draggable).data('name'), get_folder_path() +  $(this).data('name') + '/', null)
 		        }	    
 	        })
 
 	        $(parent).find('.pathstep').each(function(i,e) {
 		        var newpath = $(this).data("path");
-		        if (newpath.length >= root.length) {
+		        if (newpath.split('/').length >= root.split('/').length - 1) {
 		            $(this).droppable({
 			            accept:"tr.file",
 			            hoverClass: "ui-state-hover",
@@ -688,7 +702,7 @@ var kolekti_browser = function(args) {
 				                    $(this).closest('.alert-body').html()
 				                    $.post(Urls.kolekti_browser_move(kolekti.project), 
                                            {
-                                               'from':path + filename,
+                                               'from':get_folder_path() + filename,
 					                           'to':newpath + newfilename
                                            })
 					                    .done(update)
@@ -713,7 +727,7 @@ var kolekti_browser = function(args) {
     }
     
     var browser_alert = function(msg) {
-	    console.log('browser-alert')
+        //	    console.log('browser-alert')
 	    $('.browser-alert').remove();
 	    $(parent).find('.browser').prepend(
 	        $('  <div>', {
@@ -758,7 +772,7 @@ var kolekti_browser = function(args) {
 	        return return_functions;
 	    },
 	    'setup':function(f) {
-	        console.log("register setup")
+            //	        console.log("register setup")
 	        resfuncs['setup']=f;
 	        return return_functions;
 	    },
@@ -767,24 +781,25 @@ var kolekti_browser = function(args) {
     // calls register callback functions
 
     var closure_select = function(e) {
-	    console.log(get_browser_value())
+        //	    console.log(get_browser_value())
 	    resfuncs['select'].length && e.preventDefault() 
 	    resfuncs['select'] && resfuncs['select'](get_browser_value());
     };	
     var closure_create = function() {
-	    resfuncs['create'] && resfuncs['create']($(parent), path, update);
+	    console.log('closure create', get_folder_path())
+	    resfuncs['create'] && resfuncs['create']($(parent), get_folder_path(), update);
     };
     var closure_remove = function(e) {
-	    resfuncs['remove'] && resfuncs['remove'](e, path);
+	    resfuncs['remove'] && resfuncs['remove'](e, get_folder_path());
     };
     var promise_setup_file = function(e) {
 	    var f = $(e).data('name'); 
-	    resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, path, f);
+	    resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, get_folder_path(), f);
     };
     var promise_setup = function() {
-	    console.log(resfuncs.setup)
-	    console.log(resfuncs['setup'])
-	    resfuncs['setup'] && resfuncs['setup']($(parent), path);
+	    // console.log(resfuncs.setup)
+	    // console.log(resfuncs['setup'])
+	    resfuncs['setup'] && resfuncs['setup']($(parent), get_folder_path());
     };
 
 
@@ -793,13 +808,14 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.filelink', function(e) {
 	    if ($(this).data('mimetype') == "text/directory") {
 	        e.preventDefault();
-            console.log(path)
-	        path = path + $(this).html()+ '/';
+	        var path = get_folder_path() + $(this).html()+ '/';
 	        if (update_url) {
-                var url = Urls['kolekti_project_static'](kolekti.project,  path.substr(1))
+                var url = Urls.kolekti_project_static(kolekti.project,  path.substr(1))
 		        window.history.pushState([path], document.title, url)
             }
+            set_folder_path(path);
 	        update();
+            
 	    } else {
 	        if ($(this).attr('href') != "#") {
 		        set_browser_value($(this).attr('href'))
@@ -816,13 +832,13 @@ var kolekti_browser = function(args) {
 
     $(parent).on('click', '.pathstep', function(e) {
 	    e.preventDefault();
-	    var newpath = $(this).data("path");
-	    if (newpath.length >= root.length) {
-	        path = newpath + '/' ;
+	    var newpath = $(this).data("path") + "/";
+		if (newpath.split('/').length >= root.split('/').length) {
 	        if (update_url) {
-                var url = Urls['kolekti_project_static'](kolekti.project, path.substr(1))
-		        window.history.pushState([path],document.title, url)
+                var url = Urls['kolekti_project_static'](kolekti.project, newpath.substr(1))
+		        window.history.pushState([newpath],document.title, url)
             }
+	        set_folder_path(newpath);
 	        update();
 	    }
     })
@@ -850,14 +866,15 @@ var kolekti_browser = function(args) {
     $(parent).on('click', '.create-folder', function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-	    folderpath = path + $(parent).find(".foldername").val();
+	    folderpath = get_folder_path() + $(parent).find(".foldername").val();
 	    $.post(Urls.kolekti_browser_mkdir(kolekti.project),{'path':folderpath})
             .done(function(data) {
-                path = folderpath + '/';
+                var path = folderpath + '/';
 	            if (update_url) {
-                    var url = Urls.kolekti_project_static(kolekti.project, folderpath.substring(1))
-		            window.history.pushState(folderpath, document.title, url + '/')
+                    var url = Urls.kolekti_project_static(kolekti.project, path.substring(1))
+		            window.history.pushState(path, document.title, url + '/')
                 }
+                set_folder_path(path);               
 	            update();
 	        })
     })
@@ -1015,7 +1032,7 @@ var kolekti_browser = function(args) {
 		            pic.mime = picinfo[0];
 		            pic.file = picinfo[1];
 		            pic.name = f.name;
-		            pic.path = path;
+		            pic.path = get_folder_path(path);
 		            $.ajax({
 			            type: 'POST',
 			            url: Urls.kolekti_browser_upload(kolekti.project),
@@ -1042,7 +1059,7 @@ var kolekti_browser = function(args) {
 	    $.ajax({
 	        type: 'POST',
 	        url: Urls.kolekti_sync_add(kolekti.project),
-	        data: {"path": path + "/" + $(this).closest('tr').data('name')}
+	        data: {"path": get_foder_path() + $(this).closest('tr').data('name')}
 	    }).done(update)
 	    
     })
@@ -1051,7 +1068,7 @@ var kolekti_browser = function(args) {
 	    $.ajax({
 	        type: 'POST',
 	        url: Urls.kolekti_sync_remove(kolekti.project),
-	        data: {"path": path + "/" + $(this).closest('tr').data('name')}
+	        data: {"path": get_folder_path()+ $(this).closest('tr').data('name')}
 	    }).done(update)
 	    
     })
@@ -1060,15 +1077,15 @@ var kolekti_browser = function(args) {
     if (update_url) {
 	    var currentState = window.history.state;
 	    if(currentState && currentState.path) {
-	        path = currentState.path
+	        set_folder_path(currentState.path)
 	    }
         
 	    window.onpopstate = function(event) {
 	        if(event.state && event.state.path) {
-		        path = event.state.path;
-		        update();
+		        set_folder_path(event.state.path)
+		        update()
 	        } else {
-		        path = root;
+                set_folder_path(root + '/')
 		        update()
 	        }
 	        

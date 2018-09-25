@@ -23,8 +23,9 @@ $(document).ready(function() {
 		    })
 		  .select(
 		      function(path) {
-                  var topicpath = path.replace('/' + kolekti.project + '/sources/'+kolekti.lang+'/templates/','')
-		          var url= Urls.kolekti_topic_template_edit(kolekti.project, kolekti.lang, topicpath)
+                  var lang = path.split('/')[3]
+                  var template_path = path.split('/').splice(5). join('/')
+		          var url= Urls.kolekti_topic_template_edit(kolekti.project, kolekti.lang, template_path)
 			      window.open(url);
 		      }
 		  )

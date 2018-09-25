@@ -109,18 +109,21 @@ class kolektiMixin(LoginRequiredMixin):
         if 'project' in data.keys():
             try:
                 project = data['project']
-                userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
-                context.update({
-                    'user_project' : userproject
-                })
                 project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
                 kolekti = kolektiBase(project_path)
+                userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
+                context.update({
+                    'user_project' : userproject,
+                    'default_lang' : kolekti.project_default_language(),
+                })
+
+                if not 'lang' in data.keys():
+                    context.update({
+                        'lang' : kolekti.project_default_language()
+                    })
                 
             except UserProject.DoesNotExist:
                 raise Http404
-            
-
-
             
         userprojects = UserProject.objects.filter(user = self.request.user)
         context.update({'user_projects': userprojects,
@@ -237,6 +240,7 @@ class ProjectHomeView(kolektiMixin, TemplateView):
     template_name = "project_home.html"
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
+        logger.debug(context)
         return self.render_to_response(context)
 
 
@@ -295,14 +299,14 @@ class ProjectLanguagesView(ProjectsView):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         context.update({
-            "source_langs" :[l.text for l in settings.xpath('/settings/languages/lang')],
-            "release_langs" :[l.text for l in settings.xpath('/settings/releases/lang')],
-            "default_srclang":settings.xpath('string(/settings/@sourcelang)'),
+            "languages"   :kolekti.project_languages(),
+            "default_lang":kolekti.project_default_language()
             })
         return self.render_to_response(context)
 
     def post(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
+        
         settings = kolekti.parse('/kolekti/settings.xml').getroot()
         srclangs = request.POST.getlist('sources[]',[])
         rellangs = request.POST.getlist('releases[]',[])
@@ -505,7 +509,7 @@ class TocEditView(kolektiMixin, TemplateView):
     template_name = "tocs/detail.html"
 
     def get(self, request, project, lang, toc_path):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         toc_file = toc_path.split('/')[-1]
         toc_display = os.path.splitext(toc_file)[0]
         toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
@@ -538,7 +542,7 @@ class TocEditView(kolektiMixin, TemplateView):
     
     def post(self, request, project, lang, toc_path):
         try:
-            context, kolekti = self.get_context_data({'project':project})
+            context, kolekti = self.get_context_data({'project':project, 'lang':lang})
             xtoc = kolekti.parse_string(request.body)
             toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
             xtoc_save = kolekti.get_xsl('django_toc_save')
@@ -552,7 +556,7 @@ class TocEditView(kolektiMixin, TemplateView):
 
 class TocCreateView(kolektiMixin, View):
     def post(self, request, project, lang, toc_path):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         toc_path_project = '/'.join(['/sources', lang, 'tocs', toc_path])
         tocpath = self.set_extension(toc_path_project, ".html")
         toc = kolekti.parse_html_string("""<?xml version="1.0"?>
@@ -587,7 +591,7 @@ class TocPublishView(kolektiMixin, TemplateView):
     def post(self, request, project, lang, toc_path):
         try:
             logger.debug('publish')
-            context, kolekti = self.get_context_data({'project': project})
+            context, kolekti = self.get_context_data({'project': project, 'lang':lang})
             jobpath = request.POST.get('job')
             pubdir  = request.POST.get('pubdir')
             pubtitle= request.POST.get('pubtitle')
@@ -623,7 +627,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
     template_name = "publication.html"                                                                              
     def post(self, request, project, lang, toc_path):
         logger.debug('create release')
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         jobpath = request.POST.get('job')
         release_name  = request.POST.get('release_name')
         release_index  = request.POST.get('release_index')
@@ -689,7 +693,7 @@ class ReleaseListView(kolektiMixin, TemplateView):
 class ReleaseStatesView(kolektiMixin, TemplateView):
     def get(self, request, project, release):
         context, kolekti = self.get_context_data({'project':project})
-        languages, release_languages, default_srclang = self.project_langs(kolekti)
+        release_languages = kolekti.project_languages()
         states = []
         for lang in release_languages:
             asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
@@ -723,7 +727,7 @@ class ReleaseDeleteView(kolektiMixin, View):
             
 class ReleaseLangDeleteView(kolektiMixin, View):
     def post(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             kolekti.delete_resource('/releases/%s/sources/%s'%(release, lang))
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
@@ -734,7 +738,7 @@ class ReleaseLangDeleteView(kolektiMixin, View):
     
 class ReleaseLangStateView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         sync = self.get_sync_manager(kolekti)
 
         if sync is None:
@@ -744,7 +748,7 @@ class ReleaseLangStateView(kolektiMixin, TemplateView):
         return HttpResponse(state)
 
     def post(self,request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         sync = self.get_sync_manager(kolekti)
 
         try:
@@ -759,7 +763,7 @@ class ReleaseLangStateView(kolektiMixin, TemplateView):
                     
 class ReleaseLangFocusView(kolektiMixin, TemplateView):
     def post(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             state = request.POST.get('state')
             try:
@@ -777,7 +781,7 @@ class ReleaseLangFocusView(kolektiMixin, TemplateView):
 class ReleaseLangCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
     def post(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         dstlang = lang
         try:
             srclang = request.POST.get('release_copy_from_lang')
@@ -803,7 +807,7 @@ class ReleaseLangCopyView(kolektiMixin, TemplateView):
     
 class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
             xassembly = kolekti.parse(assembly_path.replace('{LANG}', lang))
@@ -836,6 +840,7 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({
             'project': project,
+            'lang':lang ,
             'publications':self.__release_publications(lang, release)
         })
         return self.render_to_response(context)
@@ -855,8 +860,8 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         release = context.get('release')
         langstate = None
         sync = self.get_sync_manager(kolekti)
-        _, release_languages, default_srclang  = self.project_langs(kolekti)
-#        release_languages = context.get('releaselangs',[]) 
+        release_languages = kolekti.project_languages()
+        default_srclang = kolekti.project_default_language()
         for lang in release_languages:
             tr_assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+'_asm.html'])
             logger.debug(kolekti.path_exists(tr_assembly_path))
@@ -896,10 +901,10 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         except ET.XMLSyntaxError, e:
             context, kolekti = self.get_context_data({
                 'project':project,
+                'lang':lang,                
                 'success':False,
                 'release_path':release_path,
                 'assembly_name':assembly_name,
-                'lang':lang,
                 'error':e,
             })
             return self.render_to_response(context)
@@ -908,10 +913,11 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             sync = self.get_sync_manager(kolekti)
             srclang = sync.propget('release_srclang', assembly_path)
         except:
-            srclang = kolekti.project_srclang
+            srclang = kolekti.project_default_language()
 
         if srclang is None:
-            srclang = self.project_langs(kolekti)[2]        
+            srclang = kolekti.project_default_language()
+            
         parameters = kolekti.parse('/'.join(['/releases',release,"kolekti","publication-parameters",release+"_asm.xml"]))
         profiles = []
         for profile in parameters.xpath('/job/profiles/profile[@enabled="1"]'):
@@ -938,7 +944,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
 
         assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
@@ -948,9 +954,9 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         except ET.XMLSyntaxError, e:
             context, kolekti = self.get_context_data({
                 'project':project,
+                'lang':lang,
                 'release_path':release_path,
                 'assembly_name':assembly_name,
-                'lang':lang,
                 'error':e,
             })
             return self.render_to_response(context)
@@ -999,7 +1005,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
 class ReleaseLangPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release, lang):        
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         try:
             p = publish.ReleasePublisher('/releases/'+release, kolekti.syspath(), langs=[lang])
             return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
@@ -1015,7 +1021,7 @@ class ReleaseLangPublishView(kolektiMixin, TemplateView):
 
 class ReleaseLangValidateView(kolektiMixin, View):
     def post (self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project,'lang':lang})
 
 #        jobpath = release + '/kolekti/publication-parameters/' + assembly + '.xml'
 #        print jobpath
@@ -1057,7 +1063,7 @@ class PictureUploadView(kolektiMixin, TemplateView):
 class PictureDetailsView(kolektiMixin, TemplateView):
     template_name = "illustrations/details.html"
     def get(self, request, project, lang, picture_path):
-        context, kolekti = self.get_context_data({'project':project})
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         name = picture_path.rsplit('/',1)[1]
         logger.debug(picture_path)
         ospath = kolekti.syspath('/sources/' + lang + '/pictures/' + picture_path)
@@ -1094,9 +1100,9 @@ class VariablesMixin(kolektiMixin, TemplateView):
         except AttributeError:
             return ""
         
-    def variable_details(self, kolekti, path, include_values = None):
+    def variable_details(self, kolekti, project, lang, path, include_values = None):
         name = path.rsplit('/',1)[1]
-        xmlvar = kolekti.parse(path)
+        xmlvar = kolekti.parse('/sources/%s/variables/%s'%(lang, path))
         crits = [c.text[1:] for c in xmlvar.xpath('/variables/critlist/crit')]
         variables = xmlvar.xpath('/variables/variable/@code')
         values = xmlvar.xpath('/variables/variable[1]/value')
@@ -1115,8 +1121,10 @@ class VariablesMixin(kolektiMixin, TemplateView):
             vardata.update({"values": [[self.getval(v) for v in var.xpath('value') ] for var in xmlvar.xpath('/variables/variable')]})
             
         context, kolekti = self.get_context_data({
-            'name':name,
-            'path':path,
+            'project': project,
+            'lang': lang,
+            'name': name,
+            'path': '/sources/%s/variables/%s'%(lang, path),
             'vardata' : json.dumps(vardata),
             })
         context.update(vardata)
@@ -1142,16 +1150,14 @@ class VariablesDetailsView(VariablesMixin):
     def get(self, request, project, lang, variable_path):
         context, kolekti = self.get_context_data({'project':project, 'lang':lang, 'variable_path':variable_path})
         try:
-            logger.debug(variable_path)
-            project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-            context.update(self.variable_details(kolekti, project_variable_path))
+            context.update(self.variable_details(kolekti, project, lang, variable_path))
             return self.render_to_response(context)
         except:
             logger.exception('unable to process variable file')
             raise
         
     def post(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             action = request.POST.get('action')
             path = request.POST.get('path')
@@ -1244,10 +1250,9 @@ class VariablesDetailsView(VariablesMixin):
 class VariablesEditvarView(VariablesMixin):
     template_name = "variables/editvar.html"
     def get(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         index = int(request.GET.get('index',1)) - 1
-        project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-        context.update(self.variable_details(kolekti, project_variable_path, True))
+        context.update(self.variable_details(kolekti, project, lang, variable_path, True))
         context.update({
             "variable_path":variable_path,
             "method":"line",
@@ -1259,11 +1264,11 @@ class VariablesEditvarView(VariablesMixin):
 class VariablesEditcolView(VariablesMixin):
     template_name = "variables/editvar.html"
     def get(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         path = request.GET.get('path')
         index = int(request.GET.get('index', 1)) - 1
         project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-        context.update(self.variable_details(kolekti, project_variable_path, True))
+        context.update(self.variable_details(kolekti, project, lang, variable_path, True))
         context.update({
             "variable_path":variable_path,                                          
             "method":"col",
@@ -1274,7 +1279,7 @@ class VariablesEditcolView(VariablesMixin):
     
 class VariablesUploadView(kolektiMixin, TemplateView):
     def post(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
@@ -1290,21 +1295,24 @@ class VariablesUploadView(kolektiMixin, TemplateView):
 
 class VariablesCreateView(kolektiMixin, TemplateView):
     def post(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
+            
             project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
             project_variable_path = self.set_extension(project_variable_path, ".xml")
+            logger .debug(project_variable_path)
             varx = kolekti.parse_string('<variables><critlist></critlist></variables>')
             kolekti.xwrite(varx, project_variable_path)
             return HttpResponse(json.dumps(kolekti.path_exists(project_variable_path)),content_type="application/json")
         except:
+            logger.exception('could not create variable file')
             import traceback
             print traceback.format_exc()
             return HttpResponse(status=500)
 
 class VariablesODSView(kolektiMixin, View):
     def get(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         path = request.GET.get('path')
         filename = path.rsplit('/',1)[1].replace('.xml','.ods')
         odsfile = StringIO()
@@ -1321,7 +1329,7 @@ class VariablesODSView(kolektiMixin, View):
 class ImportView(kolektiMixin, TemplateView):
     template_name = "import.html"
     def get(self, request, project, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         tpls = kolekti.get_directory(root = "/sources/"+lang+"/templates")
         tnames = [t['name'] for t in tpls]
         
@@ -1329,7 +1337,7 @@ class ImportView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
     def post(self, request, project, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
 
@@ -1362,7 +1370,7 @@ class ImportView(kolektiMixin, TemplateView):
             
 class ImportTemplateView(kolektiMixin, TemplateView):
     def get(self, request, project, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         template = request.GET.get('template')
         filename = "import_template.ods"
         odsfile = StringIO()
@@ -1408,11 +1416,10 @@ class SettingsJsonView(kolektiMixin, TemplateView):
             'kolektiversion' : self._kolektiversion
             })
         if request.kolekti_userproject is not None:
-            languages, release_languages, default_srclang = self.project_langs()
             context.update({
                 'srclangs' : languages,
-                'releaselangs' : release_languages,
-                'default_srclang':default_srclang,
+                'releaselangs' : kolekti.project_languages(),
+                'default_srclang': kolekti.project_default_language(),
                 'active_project_name' : self.request.kolekti_userproject.project.name,
                 'active_srclang' : self.request.kolekti_userproject.srclang,
             })
@@ -1615,7 +1622,7 @@ class BrowserView(kolektiMixin, TemplateView):
         try:
             path = request.GET.get('path','/')
             if not kolekti.exists(path):
-                return self.render_to_response({'error':"does not exists %s"%path})
+                return self.render_to_response({'error':"Le chemin %s n'existe pas"%path})
             
             mode = request.GET.get('mode','select')
             try:
@@ -1631,8 +1638,8 @@ class BrowserView(kolektiMixin, TemplateView):
                     })
                     context.update({'files':files})
             except OSError:
-                context.update({'status':'error'})
-                context.update({'msg':'%s does not exists'%path})
+                logger.exception('Browser:Error getting files')
+                context.update({'error':'%s does not exists'%path})
     
             pathsteps = []
             startpath = ""
@@ -1641,7 +1648,8 @@ class BrowserView(kolektiMixin, TemplateView):
                 pathspec = {'parentpath':startpath}
                 endpath = endpath + "/" + step
                 if startpath == '/sources':
-                    pathspec.update({'langs': kolekti.release_langs()})
+                    pathkind = path.split("/")[3]
+                    pathspec.update({'langs': kolekti.context_languages('/sources', pathkind)})
                     endpath = ""
                 startpath = startpath + "/" + step
                 pathspec.update({'label':step, 'path': startpath})
@@ -1657,7 +1665,8 @@ class BrowserView(kolektiMixin, TemplateView):
             
         except:
             logger.exception('unable to get directory')
-            context={'error':True}
+            import traceback
+            context={'error':True, 'stacktrace': traceback.format_exc() }
             response = self.render_to_response(context)
             
         add_never_cache_headers(response)
@@ -1772,7 +1781,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
     ttdir = "topics"
     
     def get(self, request, project, lang, topic_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
         topic = kolekti.read(topic_project_path)
         
@@ -1783,7 +1792,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
     def post(self,request, project, lang, topic_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
             topic = request.body
@@ -1799,7 +1808,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
 
 class TopicMetaJsonView(kolektiMixin, View):
     def get(self, request, project, lang, topic_path):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         xtopic = kolekti.parse(path.replace('{LANG}', lang))
         metaelts = xtopic.xpath('/h:html/h:head/h:meta[@name][@content]', namespaces={'h':'http://www.w3.org/1999/xhtml'})
         meta = [{'name':m.get('name'),'content':m.get('content')} for m in metaelts]
@@ -1807,7 +1816,7 @@ class TopicMetaJsonView(kolektiMixin, View):
     
 class TopicCreateView(kolektiMixin, View):
     def post(self, request, project, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             model_path = '/sources/'+ lang + "/templates/" + request.POST.get('model')
             topic_path = self.set_extension(topic_path, ".html")
@@ -1822,7 +1831,7 @@ class TopicCreateView(kolektiMixin, View):
     
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request, project, lang):
-        context, kolekti = self.get_context_data({'project': project})
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             tpls = kolekti.get_directory(root = "/sources/"+lang+"/templates")
             tnames = [t['name'] for t in tpls]

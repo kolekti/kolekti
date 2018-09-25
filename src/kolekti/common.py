@@ -81,7 +81,21 @@ class kolektiBase(object):
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
         if path is not None:
             self.set_project(path)
-                
+
+    def get_project_config(self, path):
+        conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()        
+        if conf.get('version', None) == "1.0":
+            return conf
+        if conf.get('version', None) == "0.7":
+            sourcelang = conf.get('sourcelang','en')
+            if len(conf.xpath('languages/lang[text() = "%s"]'%sourcelang)) == 0:
+                ET.SubElement(conf.find('languages'), 'lang').text = sourcelang
+            for lang in conf.xpath('releases/lang'):
+                if len(conf.xpath('languages/lang[text() = "%s"]'%lang.text)) == 0:
+                    ET.SubElement(conf.find('languages'), 'lang').text = lang.text
+            return conf
+        raise
+        
     def set_project(self, path, username=None):
             
         if os.sys.platform[:3] == "win":
@@ -96,30 +110,16 @@ class kolektiBase(object):
 
         projectdir = os.path.basename(self._path[:-1])
         projectspath = os.path.dirname(self._path[:-1])
-
-        try:
-            self.project_settings = conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
-            # logger.debug("project config")
-            # logger.debug(ET.tostring(conf))
-            self._config = {
-                "project":conf.get('project',projectdir),
-                "sourcelang":conf.get('sourcelang'),
-                "version":conf.get('version'),
-                "languages":[l.text for l in conf.xpath('/settings/languages/lang')],
-                "projectdir":projectdir,
-                }
+        self.project_settings = conf = self.get_project_config(path)
+        
+        self._config = {
+            "project":conf.get('project',projectdir),
+            "sourcelang":conf.get('sourcelang'),
+            "version":conf.get('version'),
+            "languages":[l.text for l in conf.xpath('/settings/languages/lang')],
+            "projectdir":projectdir,
+            }
             
-        except:
-            # logger.debug("default config")
-            self._config = {
-                "project":"Kolekti",
-                "sourcelang":'en',
-                "version":"0.7",
-                "languages":["en","fr"],
-                "projectdir":projectdir,
-                }
-            import traceback
-            logger.debug(traceback.format_exc() )
         self._version = self._config['version']
         self._kolektiversion = self._app_config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logger.debug("kolekti v%s"%self._version)
@@ -458,8 +458,6 @@ class kolektiBase(object):
         except IndexError:
             pass
 
-
-
                                         
     def copy_release_with_iterator(self, path, assembly_name, srclang, dstlang):
         def copy_callback(respath, restype):
@@ -738,14 +736,21 @@ class kolektiBase(object):
         for c in criteria:
             criteria_dict.update({c.get('code'):[v.text for v in c]})
         if include_lang:
-            criteria_dict.update({'LANG':[l.text for l in self.project_settings.xpath('/settings/releases/lang')]})
+            criteria_dict.update({'LANG':[l.text for l in self.project_settings.xpath('/settings/languages/lang')]})
         return criteria_dict
 
-    def source_langs(self):
+    def project_languages(self):
         return sorted([l.text for l in self.project_settings.xpath('/settings/languages/lang')])
 
-    def release_langs(self):
-        return sorted([l.text for l in self.project_settings.xpath('/settings/releases/lang')])
+    def project_default_language(self):
+        return self.project_settings.xpath('string(/settings/@sourcelang)')
+
+    def context_languages(self, path, kind):
+        for lang in (self.project_languages() + ['share']):
+            if self.exists('/'.join([path, lang, kind])):
+                yield lang
+                               
+
 
     def substitute_criteria(self, string, profile, extra={}):
         try:

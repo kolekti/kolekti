@@ -1132,7 +1132,7 @@ class ReleaseTranslation(Publisher):
         self._release_dir = release_dir
         super(ReleasePublisher, self).__init__(*args, **kwargs)
         if self._publangs is None:
-            self._publangs = self.project_settings.xpath("/settings/releases/lang/text()")
+            self._publangs = self.project_settings.xpath("/settings/languages/lang/text()")
         self._cleanup = False
         
     def getPublisherExtensions(self):        
@@ -1150,7 +1150,7 @@ class ReleasePublisher(Publisher):
         self._release_dir = release_dir
         super(ReleasePublisher, self).__init__(*args, **kwargs)
         if self._publangs is None:
-            self._publangs = self.project_settings.xpath("/settings/releases/lang/text()")
+            self._publangs = self.project_settings.xpath("/settings/languages/lang/text()")
         self._cleanup = False
         
     def getPublisherExtensions(self):        

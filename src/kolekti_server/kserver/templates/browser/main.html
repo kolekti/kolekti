@@ -2,7 +2,10 @@
 <div class="alert alert-warning">
   <h2>Quelque chose d'inattendu s'est produit</h2>
   <p>Une erreur s'est produite au cours de cette opération, merci de contacter votre support technique pour y remédier.</p>
-  <pre>{{ error}}</pre>
+  <p class="text-danger">{{ error }}</p>
+  {% if stacktrace %}
+  <pre>{{ stacktrace }}</pre>
+  {% endif %}
 </div>
 {% else %}
 <div class="browser" id="{{ id }}">
@@ -33,21 +36,27 @@
       <span class="btn-group">
 	    {% for step in pathsteps %}
         /
-        <a class="pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#">{{ step.label }}</a>
         
         {% if step.langs %}
         <span class="dropdown">
-          <a id="dLabel" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="pathstep-menu {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ step.label }}
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" aria-labelledby="dLabel">
-        {% for lang in step.langs %}
-        <li>
+            {% for lang in step.langs %}
+            
+            <li
+               {% if lang == step.label %}  class="active" {% endif %}
+               >
           <a class="pathstep" data-path="{{ step.parentpath }}/{{ lang }}{{endpath}}" href="#">{{ lang }}</a>
         </li>
         {% endfor %}
           </ul>
-          </span>
+        </span>
+        {% else %}
+        <a class="pathstep {% if forloop.last %}disabled{% endif %}" data-path="{{ step.path }}" href="#">{{ step.label }}</a>
+                
 	    {% endif %}
         {% endfor %}
       </span>
