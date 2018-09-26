@@ -430,7 +430,7 @@ $(document).ready( function () {
 		params['release_name'] = $('#release_name').val().replace('/','_')
 		params['release_index'] = $('#release_index').val().replace('/','_')
 		params['pubdir'] = params['release_name'] + '_' +params['release_index'];
-		var assembly = "/releases/"+ params['pubdir'] +"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html'
+		    var assembly = Urls.kolekti_project_static(kolekti.project, "/releases/"+ params['pubdir'] +"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html')
 		$.get(assembly)
 		    .success(function() {
 			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
@@ -455,6 +455,7 @@ $(document).ready( function () {
 	    }
 	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
 	    streamedTransport(streamcallback);
+
 	    $.ajax({
 		url:url,
 		type:'POST',

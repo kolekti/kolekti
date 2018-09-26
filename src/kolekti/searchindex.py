@@ -40,9 +40,9 @@ class SearchUtils(object):
         return u"",self.read(path).decode(LOCAL_ENCODING)
     
     def xhtml_extract(self, path):
-        logger.debug(path)
+#        logger.debug(path)
         xtopic = self.parse_html(path)
-        logger.debug(xtopic)
+#        logger.debug(xtopic)
         try:
             title = unicode(xtopic.xpath("/html/head/title/text()",namespaces={'h':htmlns})[0])
         except IndexError:
@@ -81,7 +81,7 @@ class IndexManager(SearchUtils):
 
         
     def indexresource(self, writer, path, restype):
-        logger.debug('indexing %s', path)
+#        logger.debug('indexing %s', path)
         try:
             if restype in ['directory',None]:
                 return
@@ -92,10 +92,10 @@ class IndexManager(SearchUtils):
             else:
                 ext = self.extract(path)
         except:
-            logger.warning('could not parse resource')
+#            logger.warning('could not parse resource')
             return
         title, content = ext
-        logger.debug(title)
+#        logger.debug(title)
 #        logger.debug(content)
         
         writer.add_document(path = path.decode('utf-8'),
@@ -144,7 +144,7 @@ class IndexManager(SearchUtils):
                 
     def itertopics(self):
         for lang in self._langs:
-            logger.debug(os.path.join(self._base, 'sources', lang, 'topics'))
+#            logger.debug(os.path.join(self._base, 'sources', lang, 'topics'))
             top = os.path.join(self._base, 'sources', lang, 'topics')
             for root, dirs, files in os.walk(top):
                 for f in files:
@@ -167,11 +167,11 @@ class IndexManager(SearchUtils):
 
 
     def post_save(self, path):
-        logger.debug("post save index")
+#        logger.debug("post save index")
         if path[:8] == "/drafts/":
             return
         restype = self.guess_restype(path)
-        logger.debug("index %s %s"%(restype, path))
+#        logger.debug("index %s %s"%(restype, path))
         with self.ix.writer() as writer:
             self.indexresource(writer, path, restype)
 

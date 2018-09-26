@@ -101,27 +101,27 @@ class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
         modid = args[0]
         path = self.process_path(modid)
         upath = self.getUrlPath(path)
-        logger.debug("get topic %s -> %s"%(modid,upath))
+#        logger.debug("get topic %s -> %s"%(modid,upath))
         return upath
 
     def gettopic2(self, _, *args):
         modid = args[0]
         path = self.process_path(modid)
-        logger.debug("get topic path %s -> %s"%(modid,path))
+#        logger.debug("get topic path %s -> %s"%(modid,path))
         return path
 
     def criteria(self, _, *args):
-        logger.debug('xslt ext criteria')
+ #       logger.debug('xslt ext criteria')
         criteria = self._profile.xpath("criteria/criterion|/job/criteria/criterion")
         criteria.append(ET.XML('<criterion code="LANG" value="%s"/>'%(self._publang)))
         return criteria
 
     def criteria_definitions(self, _, *args):
-        logger.debug('xslt ext criteria_definitions')
+#        logger.debug('xslt ext criteria_definitions')
         return self.project_settings.xpath("/settings/criteria/criterion")
 
     def lang(self, _, *args):
-        logger.debug('lang criteria_definitions')
+ #       logger.debug('lang criteria_definitions')
         return self._publang
     
     def normpath(self, _, *args):
@@ -186,7 +186,7 @@ class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
     def sortable_string(self, _, *args):
         the_string = args[0]
         norm_string = unidecode.unidecode(the_string).upper()
-        logger.debug("norm string %s -> %s"%(the_string, norm_string))        
+#        logger.debug("norm string %s -> %s"%(the_string, norm_string))        
         return norm_string
     
 class ReleasePublisherExtensions(PublisherExtensions):

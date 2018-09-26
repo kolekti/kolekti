@@ -216,6 +216,7 @@ class kolektiMixin(LoginRequiredMixin):
         template = get_template('publication-iterator.html')
         nbchunck = 0
         for chunck in sourceiter:
+            logger.debug(chunck)
             nbchunck += 1
             chunck.update({'id':nbchunck,'project':project})
             yield template.render(chunck)
@@ -633,12 +634,10 @@ class TocReleaseView(kolektiMixin, TemplateView):
         pubdir  = "%s_%s"%(release_name, release_index)
         profiles = request.POST.getlist('profiles[]',[])
         scripts = request.POST.getlist('scripts[]',[])
-        context={}
         xjob = kolekti.parse(jobpath)
         
         try:
             for jprofile in xjob.xpath('/job/profiles/profile'):
-                print ET.tostring(jprofile)
                 if not jprofile.find('label').text in profiles:
                     jprofile.getparent().remove(jprofile)
                 else:
@@ -658,11 +657,10 @@ class TocReleaseView(kolektiMixin, TemplateView):
             toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])                        
             return StreamingHttpResponse(self.format_iterator(self.release_iter(kolekti, lang, toc_project_path, xjob), project))
         except:
+            logger.exception('Error when creating release')
             import traceback
-            print traceback.format_exc()
             context.update({'success':False})
             context.update({'stacktrace':traceback.format_exc()})
-            
             return self.render_to_response(context)
 
     def release_iter(self, kolekti, lang, tocpath, xjob):
@@ -672,7 +670,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
         yield {
             'event':'release',
             'ref':release_dir,
-            'releasedir':pp[0]['releasedir'],
+            'release':pp[0]['releasedir'],
             'time':pp[0]['datetime'],
             'lang':lang,
         }
@@ -680,7 +678,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
             r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
         else:
             logger.debug('no sync manager to set assembly property')
-        p = publish.ReleasePublisher(release_dir, projectpath, langs=[lang])
+        p = publish.ReleasePublisher(release_dir, kolekti.syspath(), langs=[lang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
 

@@ -27,8 +27,8 @@
 
   <h4><em>Version</em></h4>
   <ul class="result">
-    <li><a href="{% url 'kolekti_release_details' project release lang %} " target="_blank">{{ ref }}</a></li>
-    <li>Assemblage : <a href="'% url kolekti_project_static {{ref}}/sources/{{ lang }}/assembly/{{ releasedir }}_asm.html" target="_blank">{{ releasedir }}_asm.html</a> [{{ lang }}]</li>
+    <li><a href="{% url 'kolekti_release_lang_detail' project release lang %} " target="_blank">{{ ref }}</a></li>
+    <li>Assemblage : <a href="'% url kolekti_project_static {{ref}}/sources/{{ lang }}/assembly/{{ release }}_asm.html" target="_blank">{{ release }}_asm.html</a> [{{ lang }}]</li>
   </ul>
   
   {% elif event == "warning" %}
