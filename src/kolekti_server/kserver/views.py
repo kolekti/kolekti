@@ -1615,7 +1615,10 @@ class BrowserView(kolektiMixin, TemplateView):
         if entry.get('type','') == 'text/directory':
             pass
         return entry
-            
+
+    def get_directory(self, kolekti, path):
+        return kolekti.get_directory(path)
+    
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
         try:
@@ -1625,7 +1628,7 @@ class BrowserView(kolektiMixin, TemplateView):
             
             mode = request.GET.get('mode','select')
             try:
-                files = filter(self.__browserfilter, kolekti.get_directory(path))
+                files = filter(self.__browserfilter, self.get_directory(kolekti, path))
             
                 for f in files:
                     fpath =  path[1:] + f.get('name')
@@ -1673,19 +1676,17 @@ class BrowserView(kolektiMixin, TemplateView):
             
 class BrowserReleasesView(BrowserView):
     template_name = "browser/releases.html"
-    def get_directory(self, path):
+    def get_directory(self, kolekti, path):
         try:
             releases = {}
-            res = []
-            for assembly, date in self.get_release_assemblies(path):
+            logger.debug(kolekti)
+            for assembly, date in kolekti.get_release_assemblies(path):
                 item = {'name':assembly,
-                        'project':projectdir,
                         'type':"text/xml",
                         'date':date}
-                res.append(item)
                 try:
                     found = False
-                    mf = json.loads(self.read('/'.join([path, assembly, 'release_info.json'])))
+                    mf = json.loads(kolekti.read('/'.join([path, assembly, 'release_info.json'])))
                     releasename = mf.get('releasename')
                     releaseindex = mf.get('releaseindex')
                     
@@ -1703,14 +1704,14 @@ class BrowserReleasesView(BrowserView):
                         found = True
                 except:
                     releases[assembly]=item
-                    # logger.exception('release list error')
-            # logger.debug(releases)
+#                    logger.exception('release list error')
+#            logger.debug(releases)
             return releases.values()
 #            return res
         except:
             logger.exception('release list error')
-            return super(BrowserReleasesView, self).get_directory(path)
-                      
+            return super(BrowserReleasesView, self).get_directory(kolekti, path)
+        
             
 class BrowserCKView(kolektiMixin, TemplateView):
     template_name = "browser/browser.html"
