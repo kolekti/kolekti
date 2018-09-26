@@ -1,5 +1,7 @@
 $(function() {
-    
+    if (typeof kolekti === 'undefined') {
+        return
+    }
     // sets revision number
     
     $('#btn_rev').click(function(e) {

@@ -4,7 +4,7 @@ progressHandlingFunction = function(){}
 var create_varfile = function(browser, folder, update_function) {
     var filename = $(browser).find('#new_name').val();
     var path = folder + filename;
-    console.log(path)
+//    console.log(path)
     var lang = path.split('/')[2]
     var variable_path = path.split('/').splice(4). join('/')
     
@@ -43,8 +43,8 @@ var upload_varfile = function(e) {
 //	    update_function()
 	},
         error: errorHandler = function(jqXHR,textStatus,errorThrown) {
-	    console.log(textStatus);
-	    console.log(errorThrown);
+//	    console.log(textStatus);
+//	    console.log(errorThrown);
             alert("Erreur lors du transfert");
         },
         // Form data
@@ -79,10 +79,14 @@ var upload_variable_builder_builder = function() {
 };
 
 
-var setup_varfile = function(browser, file_element, dir, filename){
+var setup_varfile = function(browser, file_element, path, filename){
+//    console.log(path.split('/'), filename)
+    var lang = path.split('/')[2]
+    var variable_path = path.split('/').splice(4).join('/') + filename
+
     $(file_element).find('.kolekti-browser-item-action').append(
 	[
-	$('<a>', {'href':"/variables/ods?path="+dir+'/'+filename,
+	    $('<a>', {'href':Urls.kolekti_variable_ods(kolekti.project, lang, variable_path),
 		  'title':'générer fichier ods',
 		  'class':'btn btn-xs btn-default',
 		  'html':[
@@ -95,7 +99,7 @@ var setup_varfile = function(browser, file_element, dir, filename){
 	    "&nbsp;",
 	    $('<a>', {'href':"#",
 		      'title':'dépposer fichier ods',
-		      'data-path':dir+'/'+filename,
+		      'data-path':path + filename,
 		      'class':'btn btn-xs btn-default upload-varfile',
 		      'html':[
 			  $('<span>', {'class':"glyphicon glyphicon-import",

@@ -62,6 +62,7 @@ $(document).ready( function () {
 	      }
 	      headers= {'METADATA':meta.join(';')}
 	    */
+        
 	    $.ajax({
 		url:window.location.pathname+window.location.search,
 		type:'POST',
@@ -72,7 +73,11 @@ $(document).ready( function () {
 		if (data.status == 'ok') {
 		    savestate = 0;
 		    event.editor.commands.save.disable();
-		    kolekti_recent(displayname(decodeURI(window.location.search)),'module',window.location.pathname+window.location.search);
+            console.log(window.location.pathname)
+            var steps = window.location.pathname.split('/')
+            var filename = steps[steps.length - 2]
+		    kolekti_recent(filename,'module',window.location.pathname);
+            
 		} else {
 		    $('#error_msg').html(data.msg);
 		    $('#error_modal').modal({

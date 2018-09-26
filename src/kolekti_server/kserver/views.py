@@ -370,17 +370,16 @@ class ReleaseZipException(Exception):
     pass
     
 class ReleaseArchiveView(kolektiMixin, TemplateView):
-    def get(self, request, project):
-        release = request.GET.get('release')
-        releasename = release.split('/')[-1]
+    def get(self, request, project, release):
+        context, kolekti = self.get_context_data({'project':project})
         now = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
         meta = ET.XML('<meta/>')
         ET.SubElement(meta, 'zipdate').text = now
         ET.SubElement(meta, 'ziptime').text = str(time.time())
-        ET.SubElement(meta, 'project').text = self.request.kolekti_userproject.project.directory
+        ET.SubElement(meta, 'project').text = project
         try:
-            response = HttpResponse(self.zip_release_full(release, meta), content_type="application/zip")#, meta = meta.getroot())
-            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(releasename, now)
+            response = HttpResponse(kolekti.zip_release_full('/releases/'+release, meta), content_type="application/zip")#, meta = meta.getroot())
+            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(release, now)
             add_never_cache_headers(response)
             return response
         except:
@@ -402,7 +401,7 @@ class ReleaseArchiveView(kolektiMixin, TemplateView):
             zippath = path +'/'+ uploaded_file.name
             kolekti.write_chunks(uploaded_file.chunks, zippath, mode = "wb", sync=False)
             try:
-                logger.debug(kolekti.getOsPath(zippath))
+#                logger.debug(kolekti.getOsPath(zippath))
                 with ZipFile(kolekti.getOsPath(zippath)) as zippy:
                     for f in zippy.namelist():
                         zippy.extract(f, kolekti.getOsPath(path))
@@ -681,7 +680,7 @@ class TocReleaseView(kolektiMixin, TemplateView):
             r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
         else:
             logger.debug('no sync manager to set assembly property')
-        p = publish.ReleasePublisher(release_dir, projectpath, langs=[self.request.kolekti_userproject.srclang])
+        p = publish.ReleasePublisher(release_dir, projectpath, langs=[lang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
 
@@ -863,8 +862,8 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         default_srclang = kolekti.project_default_language()
         for lang in release_languages:
             tr_assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+'_asm.html'])
-            logger.debug(kolekti.path_exists(tr_assembly_path))
-            logger.debug(tr_assembly_path)
+#            logger.debug(kolekti.path_exists(tr_assembly_path))
+#            logger.debug(tr_assembly_path)
             if kolekti.path_exists(tr_assembly_path):
                 if (sync is not None):
                     states.append(sync.propget('release_state',tr_assembly_path))
@@ -879,15 +878,15 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
                 focus.append(False)
-        logger.debug(release_languages)
-        logger.debug(states)
-        logger.debug(focus)
+#        logger.debug(release_languages)
+#        logger.debug(states)
+#        logger.debug(focus)
         context.update({'langstates':zip(release_languages,states,focus)})
         return context, kolekti
     
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
-        logger.debug(context)
+#        logger.debug(context)
         assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
         assembly_meta = {}
         try:
@@ -987,9 +986,11 @@ class ReleasePublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release):        
         context, kolekti = self.get_context_data({'project':project})
-        langs = request.POST.get('langs')
-        try: 
-            p = publish.ReleasePublisher(release, kolekti.syspath(), langs=[lang])
+        langs = request.POST.getlist('langs[]')
+        prefix = request.POST.get('prefix', '/releases/')
+        try:
+            logger.debug(langs)
+            p = publish.ReleasePublisher(prefix + release, kolekti.syspath(), langs=langs)
             return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
 
         except:
@@ -1100,7 +1101,7 @@ class VariablesMixin(kolektiMixin, TemplateView):
             return ""
         
     def variable_details(self, kolekti, project, lang, path, include_values = None):
-        name = path.rsplit('/',1)[1]
+        name = path.rsplit('/',1)[-1]
         xmlvar = kolekti.parse('/sources/%s/variables/%s'%(lang, path))
         crits = [c.text[1:] for c in xmlvar.xpath('/variables/critlist/crit')]
         variables = xmlvar.xpath('/variables/variable/@code')
@@ -1312,11 +1313,10 @@ class VariablesCreateView(kolektiMixin, TemplateView):
 class VariablesODSView(kolektiMixin, View):
     def get(self, request, project, lang, variable_path):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
-        path = request.GET.get('path')
-        filename = path.rsplit('/',1)[1].replace('.xml','.ods')
+        filename = variable_path.rsplit('/',1)[-1].replace('.xml','.ods')
         odsfile = StringIO()
         converter = XMLToOds(kolekti.syspath())
-        converter.convert(odsfile, path)
+        converter.convert(odsfile, '/sources/' + lang + '/variables/' + variable_path)
         response = HttpResponse(odsfile.getvalue(),
                                 content_type="application/vnd.oasis.opendocument.spreadsheet")
         response['Content-Disposition']='attachement; filename="%s"'%filename
@@ -1991,6 +1991,7 @@ class SyncRevisionView(kolektiMixin, TemplateView):
         sync = self.get_sync_manager(kolekti)
         revsumm, revinfo, difftext = sync.revision_info(rev)
         context, kolekti = self.get_context_data({
+            "project":project,
             "history": sync.history(),
             'revsumm':revsumm,
             'revinfo':revinfo,

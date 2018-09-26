@@ -4,10 +4,10 @@
 <div>
   {% for commit in history %}
 <div class="list-group">
-  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item">
+  <a href="{% url kolekti_sync_revision rev=commit.revision.number %}" class="list-group-item">
     <span class="badge">{{commit.revision.number}}</span> par {{commit.author}}, le {{commit.date|print_timestamp}}
   </a>
-  <a href="/sync/revision/{{commit.revision.number}}/" class="list-group-item list-group-item-info">
+  <a href="{% url kolekti_sync_revision rev=commit.revision.number %}" class="list-group-item list-group-item-info">
     {{commit.message}}
   </a>
 </div>
@@ -25,7 +25,7 @@
     </p>
     <p class="msg">{{commit.message}}</p>
     <p class="link">  
-      <a href="/sync/revision/{{commit.revision.number}}/">détails</a>
+      <a href="{% url 'kolekti_sync_revision' project=project rev=commit.revision.number %}">détails</a>
     </p>
 </div>
 {% endfor %}

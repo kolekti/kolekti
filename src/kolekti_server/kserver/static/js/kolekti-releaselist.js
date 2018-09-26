@@ -36,7 +36,6 @@ $(document).ready(function() {
     
     
 	    .setup(function(){
-	        console.log('browser loaded');	    
 	        $('.kolekti-browser-release-state').each(function() {
 		        var releasepath = $(this).closest('tr').data('name')
 		        var statecell = $(this)

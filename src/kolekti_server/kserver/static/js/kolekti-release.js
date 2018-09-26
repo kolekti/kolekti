@@ -242,7 +242,9 @@ toolbar_Full : [
 	    $('#btn_save').addClass('disabled');
 	    $('#btn_save').addClass('btn-default');
 	    $('#btn_save').removeClass('btn-warning');
-	    kolekti_recent(displayname($('#main').data('release')), 'version', '/releases/detail/?release=' + $('#main').data('release') + '&lang=' + $('#main').data('lang'))
+	    kolekti_recent(displayname($('#main').data('release')),
+                       'version',
+                       Urls.kolekti_release_lang_detail(kolekti.project, $('#main').data('release'), $('#main').data('lang')))
 	});
     }
     

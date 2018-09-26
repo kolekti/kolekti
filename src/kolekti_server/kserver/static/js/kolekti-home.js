@@ -298,14 +298,12 @@ $(document).ready(function() {
 				$('<span>',{
 				    'class':'author pull-right',
 				    'html':formatTime(filepath.time)
-				    
 				})
 			    ]
 			    })
 			    
 			]}))
 		}
-		
 	    });
 	};
 	return wdiv;
