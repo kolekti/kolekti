@@ -465,6 +465,7 @@ var kolekti_browser = function(args) {
                     $(parent).data('statuses', data)
 		            var rows =  $(parent).find('tr[data-name]')
                     $.each(rows, function(ri,row) {
+                        console.log($(row).data('name'))
                         var entry = data[$(row).data('name')].__self
                         status = entry.kolekti_status
 			            if (entry.kind != 'dir') {
@@ -778,19 +779,26 @@ var kolekti_browser = function(args) {
 	    },
     };
 
+    var error_callback = function(msg) {
+        $(parent + ' .newfile_collapse.in').collapse('hide');
+        $(parent + ' .newfolder_collapse.in').collapse('hide');
+        $(parent + ' .error_collapse').collapse('show')
+        $(parent + ' .error_collapse .panel-body').html(msg)
+    }
+    
     // calls register callback functions
 
     var closure_select = function(e) {
         //	    console.log(get_browser_value())
 	    resfuncs['select'].length && e.preventDefault() 
-	    resfuncs['select'] && resfuncs['select'](get_browser_value());
+	    resfuncs['select'] && resfuncs['select'](get_browser_value(), error_callback);
     };	
     var closure_create = function() {
 //	    console.log('closure create', get_folder_path())
-	    resfuncs['create'] && resfuncs['create']($(parent), get_folder_path(), update);
+	    resfuncs['create'] && resfuncs['create']($(parent), get_folder_path(), update, error_callback);
     };
     var closure_remove = function(e) {
-	    resfuncs['remove'] && resfuncs['remove'](e, get_folder_path());
+	    resfuncs['remove'] && resfuncs['remove'](e, get_folder_path(), error_callback);
     };
     var promise_setup_file = function(e) {
 	    var f = $(e).data('name'); 
@@ -847,10 +855,12 @@ var kolekti_browser = function(args) {
 
     $(parent).on('click', '.newfolder', function(e){
 	    $(parent + ' .newfile_collapse.in').collapse('hide');
+        $(parent + ' .error_collapse.in').collapse('hide');
     });
 
     $(parent).on('click', '.newfile', function(e){
 	    $(parent + ' .newfolder_collapse.in').collapse('hide');
+        $(parent + ' .error_collapse.in').collapse('hide');
     });
 
     $(parent).on('shown.bs.collapse', '.newfile_collapse', function () {
@@ -884,7 +894,13 @@ var kolekti_browser = function(args) {
 	    e.stopImmediatePropagation();
 	    closure_create();
     })
-
+    
+    $(parent).on('keyup', '.panel-heading input[type=text]', function (e) {
+        if(e.keyCode == 13) {
+            $(this).closest('form').find('button.create_action').trigger( "click" );
+        }
+    })
+    
 
     // Validate modal / browser
 

@@ -60,21 +60,30 @@
 	    {% endif %}
         {% endfor %}
       </span>
-
+      
       <div class="panel panel-info collapse newfolder_collapse" id="newfolder_collapse{{ id }}" role="tabpanel">
-	<div class="panel-heading">
-	  <form>
-	  Nouveau dossier : <input type="text" class="form-control foldername"/>
-	  <button class="btn btn-default btn-xs create-folder">ok</button>
-	  </form>
-	</div>
+	    <div class="panel-heading">
+	      <form>
+	        Nouveau dossier : <input type="text" class="form-control foldername"/>
+	        <button class="btn btn-default btn-xs create-action create-folder">ok</button>
+	      </form>
+	    </div>
       </div>
       <div class="panel panel-info collapse newfile_collapse" id="newfile_collapse{{ id }}" role="tabpanel">
-	<div class="panel-heading">
-	  <form>
-	    <button class="btn btn-default btn-xs create-file">ok</button>
-	  </form>
-	</div>
+	    <div class="panel-heading">
+	      <form>
+	        <button class="btn btn-default btn-xs create-action create-file">ok</button>
+	      </form>
+	    </div>
+      </div>
+      <div class="panel panel-danger collapse error_collapse" id="error_collapse{{ id }}" role="tabpanel">
+	    <div class="panel-heading">
+          <h4>Une erreur est survenue</h4>
+        </div>
+        <div class="panel-body">
+          
+        </div>
+	    </div>
       </div>
     </div>
   </div>

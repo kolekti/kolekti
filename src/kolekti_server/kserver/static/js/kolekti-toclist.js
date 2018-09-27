@@ -2,11 +2,9 @@ $(document).ready(function() {
     console.log('toclist')
     var create_toc = function(browser, folder, update_function) {
 	    var filename = $('#new_name').val();
-        console.log('craate')
-        console.log(folder)
         var lang = folder.split('/')[2]
         var toc_folder = folder.split('/').splice(4). join('/')
-	    $.post(Urls.kolekti_toc_create(kolekti.project, lang, toc_folder + "/" + filename))
+	    $.post(Urls.kolekti_toc_create(kolekti.project, lang, toc_folder + filename))
 	        .success(function() {
                 console.log('create done')
 		        update_function()

@@ -564,7 +564,7 @@ class TocCreateView(kolektiMixin, View):
   <body></body>
 </html>""")
         kolekti.xwrite(toc, tocpath)
-        return HttpResponse(json.dumps(self.path_exists(tocpath)),content_type="application/json")
+        return HttpResponse(json.dumps(kolekti.path_exists(tocpath)),content_type="application/json")
 
 
 class TocUsecasesView(kolektiMixin, View):
@@ -1813,17 +1813,24 @@ class TopicMetaJsonView(kolektiMixin, View):
         return HttpResponse(json.dumps(meta), content_type="application/json")
     
 class TopicCreateView(kolektiMixin, View):
-    def post(self, request, project, lang):
+    def post(self, request, project, lang, topic_path):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             model_path = '/sources/'+ lang + "/templates/" + request.POST.get('model')
             topic_path = self.set_extension(topic_path, ".html")
             topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
-            topic = kolekti.parse(model_path)
+            topic = kolekti.parse_html(model_path)
             kolekti.xwrite(topic, topic_project_path)
+        except XMLSyntaxError:
+            logger.exception("Create topic error")
+            import traceback
+            return HttpResponse(json.dumps({'path':topic_path, 'error':traceback.format_exc()}), status = 500, content_type="application/json")
         except:
             logger.exception("Create topic error")
-        return HttpResponse(json.dumps(topicpath), content_type="application/json")
+            import traceback
+            return HttpResponse(json.dumps({'path':topic_path, 'error':traceback.format_exc()}), status = 500, content_type="application/json")
+        
+        return HttpResponse(json.dumps(topic_path), content_type="application/json")
 
 
     

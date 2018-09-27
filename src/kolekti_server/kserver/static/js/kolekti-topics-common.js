@@ -1,19 +1,25 @@
 
 var topic_templates = ['default.xht'];
 
-var create_topic = function(browser, folder, update_function) {
+var create_topic = function(browser, folder, update_function, error_function) {
     var filename = $(browser).find('#new_name').val();
-    
-	$.post('/topics/create/',
+    var lang = folder.split('/')[2]
+    var topic_folder = folder.split('/').splice(4). join('/')
+
+	$.post(Urls.kolekti_topic_create(kolekti.project, lang, topic_folder + filename),
 	       {
-		   'model': $('.label-tpl').data('tpl'),
-		   'topicpath': folder + "/" + filename
+		   'model': $('.label-tpl').data('tpl')
 	       })
 	    .done(
-		function(topicpath) {
-		    update_function()
-		}
-	    )
+		    function(topicpath) {
+		        update_function()
+		    })
+        .fail(
+		    function(data) {
+                console.log('error')
+                console.log(data)
+                error_function(data.responseJSON.error)
+		    })
     };
     
 		  
