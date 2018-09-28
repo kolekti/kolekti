@@ -760,6 +760,33 @@ $(document).ready( function () {
 	check_empty();
     });
 
+
+    var attribute_translate_value = function(elt, attr, value) {
+        if (elt == 'img' && attr == 'src') 
+            return "/" + kolekti.project + value
+        if (elt == 'a' && attr == 'href' && value.substr(0,9) == "/sources/") 
+            return "/" + kolekti.project + value
+        return value
+    }
+    
+    var process_topic_elt = function(e) {
+//        console.log('in', e, e.nodeType)
+        if (e.nodeType != 1)
+            return e.nodeValue
+        
+        var je = $('<' + e.localName+ '>')
+        $.each(e.attributes, function(i,a) {
+            console.log('attr',i,a.name,a.nodeValue)
+            je.attr(a.name, attribute_translate_value(e.localName, a.localName, a.nodeValue))
+        })
+        $.each(e.childNodes, function(i,c) {
+//            console.log('has', c)
+            je.append(process_topic_elt(c))
+        });
+//        console.log('out', je)
+        return je
+        
+    }
     
     var create_topic_obj = function(path, id, topic) {
 
@@ -809,7 +836,7 @@ $(document).ready( function () {
 			'id':"collapse_"+id,
 			'html':$('<div>',{ 
 			    'class':"topiccontent",
-			    'html':$(topic).find('body').children()
+			    'html':$.map($(topic).find('body').children(), process_topic_elt)
 			}),
 		    })
 		]
@@ -1240,6 +1267,7 @@ $(document).ready( function () {
 			    usecases(topic_obj);
 			    $(refcomp).detach();
 			} catch (err) {
+                console.log(err)
 			    // was not XML
 			    var id = Math.round(new Date().getTime() + (Math.random() * 100));
 			    var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");
