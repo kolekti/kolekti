@@ -231,6 +231,23 @@ class HomeView(kolektiMixin, TemplateView):
     template_name = "home.html"
     def get(self, request):
         context, kolekti = self.get_context_data()
+        projects = context['user_projects']
+        for project in projects:
+            project_dir = project.project.directory
+            project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project_dir)
+            if os.path.exists(os.path.join(project_path, '.svn')):
+                try:
+                    from kolekti.synchro import SynchroManager
+                    synchro = SynchroManager(project_path)
+                    projecturl = synchro.geturl()
+                    
+                    project.extra = {"status":"svn", "url":self.process_svn_url(projecturl)}
+                except ExcSyncNoSync:
+                    project.extra = {"status":"local"}
+
+            else:
+                project.extra = {'status':'local'}
+                                  
         try:
             request.user.groups.get(name=u'translator')
             return HttpResponseRedirect(reverse('translators_home')) 

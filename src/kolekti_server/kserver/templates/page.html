@@ -38,9 +38,10 @@
 	</div>
 	<div class="collapse navbar-collapse" id="navbar">
 	  <ul class="nav navbar-nav">
-            <li {% block current_home %}{% endblock %}><a href="{% url 'kolekti_home' %}"><i class="fa fa-home fa-3"></i></a></li>
-            {% if project %}
-            <li {% block current_project_home %}{% endblock %}><a href="{% url 'kolekti_project_home' project=project%}">{{ user_project.project.name }}</i></a></li>
+        <li {% block current_home %}{% endblock %}><a class="kolekti-home" href="{% url 'kolekti_home' %}"><i class="fa fa-home fa-3"></i></a></li>
+        
+        {% if project %}
+        <li {% block current_project_home %}{% endblock %}><a href="{% url 'kolekti_project_home' project=project%}"><i class="fa fa-home fa-3"></i> {{ user_project.project.name }}</a></li>
 	    <li {% block current_trames %}{% endblock %}><a href="{% url 'kolekti_tocs' project=project lang=default_lang %}">Trames</a></li>
 	    <li {% block current_topics %}{% endblock %}><a href="{% url 'kolekti_topics' project=project lang=default_lang %}">Modules</a></li>
 	    <li {% block current_images %}{% endblock %}><a href="{% url 'kolekti_pictures' project=project lang=default_lang %}">Images</a></li>

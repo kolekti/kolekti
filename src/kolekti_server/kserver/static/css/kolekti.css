@@ -143,6 +143,7 @@ label {
 }
 
 
+
 /* current menubar item */
 
 
@@ -160,6 +161,9 @@ label {
     font-weight:bold;
 }
 
+.kolekti-home {
+    background-image()
+}
 
 /* project info bar */
 

@@ -127,12 +127,12 @@ class kolektiBase(object):
         try:
             self.syncMgr = SynchroManager(self._path, username)
         except ExcSyncNoSync:
-            logger.exception('could not set SyncManager')
             self.syncMgr = None
         try:
             self.indexMgr = IndexManager(projectspath, projectdir)
         except:
-            logger.exception('Search index could not be loaded')
+            self.indexMgr = None
+
 
 
     @property
@@ -140,7 +140,6 @@ class kolektiBase(object):
         try:
             return self.syncMgr.rev_number()
         except:
-            logger.exception('error getting sync number')
             return "?"
             
     @property
@@ -589,24 +588,21 @@ class kolektiBase(object):
         try:
             self.syncMgr.move_resource(src, dest)
         except:
-            logger.info('Synchro unavailable')
             shutil.move(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.move_resource(src, dest)
         except:
-            logger.exception('Search index unavailable')
+            pass
         
     def copy_resource(self, src, dest):
         try:
             self.syncMgr.copy_resource(src, dest)
         except:
-            logger.debug('Synchro unavailable')
-            logger.debug(self.__makepath(src))
-            logger.debug(self.__makepath(dest))
             shutil.copy(self.__makepath(src), self.__makepath(dest))
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
+            pass
             logger.exception('Search index unavailable')
 
     def delete_resource(self, path, sync = True):
@@ -614,7 +610,6 @@ class kolektiBase(object):
             try:
                 self.syncMgr.delete_resource(path)
             except:
-                logger.exception('Synchro unavailable')
                 if os.path.isdir(self.__makepath(path)):
                     shutil.rmtree(self.__makepath(path))
                 else:
@@ -627,17 +622,19 @@ class kolektiBase(object):
         try:
             self.indexMgr.delete_resource(path)
         except:
-            logger.debug('Search index unavailable')
+            pass
 
     def post_save(self, path):
         try:
             self.syncMgr.post_save(path)
         except:
-            logger.debug('Synchro unavailable')
+            pass
+#            logger.debug('Synchro unavailable')
         try:
             self.indexMgr.post_save(path)
         except:
-            logger.exception('Search index unavailable')
+            pass
+#            logger.exception('Search index unavailable')
 
     def makedirs(self, path, sync = False):
         ospath = self.__makepath(path)

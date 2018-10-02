@@ -22,7 +22,7 @@
           
         <strong>{{ user_project.project.name }}</strong> 
         <span class="label label-info pull-right">
-	      {% ifequal user_project.project.status  "svn" %}
+	      {% ifequal user_project.extra.status  "svn" %}
 	      partagé
 	      {% else %}
 	      personnel

@@ -277,7 +277,7 @@ class SynchroManager(SvnClient):
         try:
             self._info = self._client.info(base)
         except pysvn.ClientError:
-            logger.exception('unable to setup sync client')
+            #logger.exception('unable to setup sync client')
             raise ExcSyncNoSync
 
     def __makepath(self, path):
