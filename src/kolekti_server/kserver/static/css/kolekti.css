@@ -152,6 +152,15 @@ label {
     font-weight:bold;
 }
 
+.navbar-inverse .navbar-nav>li>a>i {
+    font-size:120%;
+    color: #F0F0F0;
+}
+
+.navbar-inverse .navbar-nav>li>a .project-name {
+    font-weight:normal;
+}
+
 .menu-current {
     background-color:#225BAA;
 }
@@ -161,10 +170,26 @@ label {
     font-weight:bold;
 }
 
+
 .kolekti-home {
-    background-image()
+    background-color: white !IMPORTANT;;
+    border-radius: 26px !IMPORTANT;
+    border-width:1px;
+    border-color: #225BAA;
+    border-style:solid;
+    width:52px;
+    height:52px;
+    padding:0;
+    margin:6px 10px -6px 0 ;
+    
 }
 
+
+.kolekti-home img {
+    max-height:24px;
+    margin-top: -8px;
+    margin-left: 2px;
+}
 /* project info bar */
 
 #navbar2 {
