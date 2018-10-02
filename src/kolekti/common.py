@@ -52,6 +52,16 @@ objpathes = {
         "templates" : "kolekti/publication-templates",
         "jobs" : "kolekti/publication-parameters",
         "profiles" : "kolekti/profiles",
+        },
+    "1.0":{
+        "topics" : "sources/{LANG}",
+        "tocs"  : "sources/{LANG}/tocs",
+        "sources"  : "sources/{LANG}",
+        "publications" : "publications",
+        "variables" : "sources/{LANG}/variables",
+        "templates" : "kolekti/publication-templates",
+        "jobs" : "kolekti/publication-parameters",
+        "profiles" : "kolekti/profiles",
         }
     }
 
