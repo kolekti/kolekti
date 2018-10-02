@@ -93,8 +93,14 @@ class kolektiBase(object):
             for lang in conf.xpath('releases/lang'):
                 if len(conf.xpath('languages/lang[text() = "%s"]'%lang.text)) == 0:
                     ET.SubElement(conf.find('languages'), 'lang').text = lang.text
+            for lang in conf.xpath('languages/lang'):
+                lang.set('label', lang.text)
+            conf.set('version', "1.0")
             return conf
         raise
+    
+    def write_project_config(self):
+        self.xwrite(self.project_settings, '/kolekti/settings.xml')
         
     def set_project(self, path, username=None):
             
@@ -738,6 +744,9 @@ class kolektiBase(object):
 
     def project_languages(self):
         return sorted([l.text for l in self.project_settings.xpath('/settings/languages/lang')])
+    
+    def project_languages_labels(self):
+        return sorted([{"code":l.text, "label":l.get('label',l.text)} for l in self.project_settings.xpath('/settings/languages/lang')], key = lambda f: f['code'])
 
     def project_default_language(self):
         return self.project_settings.xpath('string(/settings/@sourcelang)')

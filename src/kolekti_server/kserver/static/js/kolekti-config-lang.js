@@ -26,54 +26,64 @@ $(document).ready(function() {
     // save action
     
     $('#btn_save').on('click', function() {
-	$.ajax({
-	    url:'/projects/config',
-	    type:'POST',
-	    dataType: 'json',
-	    data:data()
-	}).success(function(data) {
-	    disable_save()
-	});
+	    var url = Urls.kolekti_languages_edit(kolekti.project)
+        console.log(url)
+	    $.post(url, data())
+            .done(function(data) {
+	            disable_save()
+	        });
     })
 
     // language menus
     
-    $(document).on('click','.lang_del',function() {
-	if (! $(this).closest('.btn-lang').find('a.btn').hasClass('btn-info')) {
-	    $(this).closest('.btn-lang').remove()
-	    enable_save()
-	}
+    $(document).on('click','.lang-del',function() {
+	    if (!($(this).closest('.lang').data('defaut') == 'yes')) {
+	        $(this).closest('.lang').remove()
+	        enable_save()
+	    } else {
+            alert('foo')
+        }
     })
+    
     $(document).on('click','.lang_add',function() {
-	var new_lang = $(this).closest('.btn-lang-group').find('input').val()
-	var langs =  $(this).closest('.btn-lang-group').find('.lang').map( function() { return $(this).html()}) 
-	if($.inArray(new_lang,langs) < 0) {
-	    var $lang = $(this).closest('.btn-lang-group').find('.btn-group.hidden').last()
-	    var $new = $lang.clone()
-	    $new.insertBefore($lang)
-	    $new.removeClass('hidden')
-	    $new.addClass('btn-lang')
-	    $new.find('.lang').html(new_lang)
-	    enable_save()
-	    $(this).closest('.btn-lang-group').find('input').val('')
-	    $(this).closest('.btn-lang-group').find('input').focus()
-	}
+	    var new_label = $(this).closest('tr').find('input.klabel').val()
+	    var new_code = $(this).closest('tr').find('input.kcode').val()
+        if (!(new_label.length && new_code.length)) {
+            alert('Entrez une langue et un code')
+            return
+        }
+        
+	    var langs =  $(this).closest('.table').find('.lang-code').map( function() { return $(this).html()}) 
+	    if($.inArray(new_code,langs) < 0) {
+	        var $lang = $(this).closest('.table').find('tbody tr').last()
+	        var $new = $lang.clone()
+	        $new.insertAfter($lang)
+	        $new.find('.lang-code').html(new_code)
+	        $new.find('.lang-label').html(new_label)
+	        enable_save()
+	        $(this).closest('.tr').find('input').val('')
+	        $(this).closest('.tr').find('input').first().focus()
+	    } else {
+            alert('Ce code existe déjà')
+            return
+        }
     })
     
     $(document).on('click','.lang_default',function() {
-	$(this).closest('.btn-lang-group').find('li.disabled').removeClass('disabled')
-	$(this).closest('.btn-lang-group').find('a.btn-info').removeClass('btn-info')
-	$(this).closest('.btn-lang').find('li').addClass('disabled')
-	$(this).closest('.btn-lang').find('a.btn').addClass('btn-info')
-	enable_save()
+	    $(this).closest('table').find('.lang').data('default', null)
+	    $(this).closest('table').find('.lang-del').removeClass('disabled')
+        $(this).closest('.lang').data('default', 'yes')
+	    $(this).closest('.lang').find('.lang-del').addClass('disabled')
+	    enable_save()
     })
 
 
     var data = function() {
-	return {
-	    'sources':$.makeArray($('#edit_langs').find('.btn-lang .lang').map( function() { return $(this).html()})),
-	    'default_source':$('#edit_langs').find('a.btn-info .lang').html(),
-	    'releases':$.makeArray($('#release_langs').find('.btn-lang .lang').map( function() { return $(this).html()}))
-	}
+	    return {
+	        'sources':$.makeArray($(document).find('.lang').map( function() {
+                return $(this).find('.lang-code').html() + ':' + $(this).find('.lang-label').html()
+                })),
+	        'default_source':$(document).find('.lang').filter(function(i,e){return $(e).data('default') == 'yes'}).find('.lang-code').html()
+	    }
     }
 })

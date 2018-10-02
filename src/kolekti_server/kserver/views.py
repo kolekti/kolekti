@@ -142,7 +142,7 @@ class kolektiMixin(LoginRequiredMixin):
         remotepath = "http://%s/svn/"%(settings.HOSTNAME,)
         return url.replace(localpath, remotepath)
     
-    def projects(self):
+    def projects_OLD(self):
         """List projects available for user"""
         projects = []
 #        logger.debug(self.request.user.username)
@@ -315,8 +315,9 @@ class ProjectLanguagesView(ProjectsView):
     template_name = "project-languages.html"
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
+        
         context.update({
-            "languages"   :kolekti.project_languages(),
+            "languages"   :kolekti.project_languages_labels(),
             "default_lang":kolekti.project_default_language()
             })
         return self.render_to_response(context)
@@ -324,32 +325,25 @@ class ProjectLanguagesView(ProjectsView):
     def post(self, request, project):
         context, kolekti = self.get_context_data({'project':project})
         
-        settings = kolekti.parse('/kolekti/settings.xml').getroot()
-        srclangs = request.POST.getlist('sources[]',[])
-        rellangs = request.POST.getlist('releases[]',[])
-        settings.set('sourcelang', request.POST.get('default_source','en'))
-        xlangs = settings.find('languages')
+        project_settings = kolekti.project_settings
+        langs = request.POST.getlist('sources[]',[])
+        project_settings.set('sourcelang', request.POST.get('default_source','en'))
+        xlangs = project_settings.find('languages')
         if xlangs is None:
-            xlangs = ET.SubElement(settings, 'languages')
+            xlangs = ET.SubElement(project_settings, 'languages')
         else:
             for l in xlangs:
                 xlangs.remove(l)
-        for l in srclangs:
+        for lang in langs:
             xl = ET.SubElement(xlangs,'lang')
-            xl.text = l
-    
-        xlangs = settings.find('releases')
-        if xlangs is None:
-            xlangs = ET.SubElement(settings, 'releases')
-        else:
-            for l in xlangs:
-                xlangs.remove(l)
-        for l in set(rellangs).union(set(srclangs)):
-            xl = ET.SubElement(xlangs,'lang')
-            xl.text = l
-            
-        kolekti.xwrite(settings,'/kolekti/settings.xml')
-        return HttpResponseRedirect(reverse('kolekti_project_languages', kwargs={'project': project}))
+            code, label = lang.split(':')
+            xl.text = code
+            xl.set('label', label)
+
+        kolekti.write_project_config()
+        
+        return HttpResponse('ok',content_type="text/plain")
+#        return HttpResponseRedirect(reverse('kolekti_languages_edit', kwargs={'project': project}))
 
         
 class PublicationsListJsonView(kolektiMixin, View):
@@ -1516,14 +1510,14 @@ class JobEditView(kolektiMixin, TemplateView):
 class CriteriaView(kolektiMixin, View):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
-        return HttpResponse(kolekti.read('/kolekti/settings.xml'),content_type="text/xml")
+        return HttpResponse(kolekti.project_settings, content_type="text/xml")
 
 class CriteriaCssView(kolektiMixin, TemplateView):
     template_name = "settings/criteria-css.html"
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            settings = kolekti.parse('/kolekti/settings.xml')
+            project_settings = kolekti.project_settings
             xsl = kolekti.get_xsl('django_criteria_css')
             #print xsl(settings)
             return HttpResponse(str(xsl(settings)), "text/css")
@@ -1548,9 +1542,8 @@ class CriteriaEditView(kolektiMixin, TemplateView):
 
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
-        settings = kolekti.parse('/kolekti/settings.xml')
         criteria = []
-        for xcriterion in settings.xpath('/settings/criteria/criterion'):
+        for xcriterion in kolekti.project_settings.xpath('/settings/criteria/criterion'):
             criteria.append(
                 {'code':xcriterion.get('code'),
                 'type':xcriterion.get('type'),
@@ -1562,7 +1555,7 @@ class CriteriaEditView(kolektiMixin, TemplateView):
     def post(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            settings = kolekti.parse('/kolekti/settings.xml')
+            settings = kolekti.project_settings
             xcriteria = kolekti.parse_string(request.body)
             xsettingscriteria=settings.xpath('/settings/criteria')[0]
             for xcriterion in xsettingscriteria:
@@ -1570,7 +1563,7 @@ class CriteriaEditView(kolektiMixin, TemplateView):
                 
             for xcriterion in xcriteria.xpath('/criteria/criterion'):
                 xsettingscriteria.append(xcriterion)
-            kolekti.xwrite(settings, '/kolekti/settings.xml')
+            kolekti.write_project_config()
             return HttpResponse('ok')
         except:
             logger.exception('criteria save failed')
