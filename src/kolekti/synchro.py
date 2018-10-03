@@ -551,6 +551,7 @@ class SynchroManager(SvnClient):
         osfiles = []
         for f in files:
             osfiles.append(self.__makepath(f))
+            logger.debug(self._client.status(self.__makepath(f)))
         self._client.revert(sorted(osfiles, key = len), recurse = True)
             
     def commit_all(self, log_message):

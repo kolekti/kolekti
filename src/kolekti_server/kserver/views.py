@@ -1934,61 +1934,65 @@ class SyncView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
     def post(self, request, project):
-        context, kolekti = self.get_context_data({'project':project})
-        sync = self.get_sync_manager(kolekti)
-        action = request.POST.get('action')
-        commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
-        if len(commitmsg) == 0:
-            commitmsg = "unspecified"
-            
-        if action == "conflict":
-            resolve = request.POST.get('resolve')
-            files = request.POST.getlist('fileselect',[])
-            if resolve == "local":
-                sync.update(files)
-                for cfile in files:
-                    if kolekti.exists(cfile+'.mine'):
-                        kolekti.copyFile(cfile+'.mine', cfile)
-                        self.delete_resource(cfile+'.mine', sync=False)
-                    else:
-                        raise Exception('impossible de trouver la version locale')
+        try:
+            context, kolekti = self.get_context_data({'project':project})
+            sync = self.get_sync_manager(kolekti)
+            action = request.POST.get('action')
+            commitmsg = request.POST.get('commitmsg',u"").encode('utf-8')
+            if len(commitmsg) == 0:
+                commitmsg = "unspecified"
+                
+            if action == "conflict":
+                resolve = request.POST.get('resolve')
+                files = request.POST.getlist('fileselect',[])
+                if resolve == "local":
+                    sync.update(files)
+                    for cfile in files:
+                        if kolekti.exists(cfile+'.mine'):
+                            kolekti.copyFile(cfile+'.mine', cfile)
+                            self.delete_resource(cfile+'.mine', sync=False)
+                        else:
+                            raise Exception('impossible de trouver la version locale')
+                        try:
+                            sync.resolved(cfile)
+                        except:
+                            logger.exception('error while resolving conflict [use local]')
+                            
+                    sync.commit(files, commitmsg)
+                
+                if resolve == "remote":
                     try:
-                        sync.resolved(cfile)
+                        sync.revert(files)
                     except:
-                        logger.exception('error while resolving conflict [use local]')
-                        
-                sync.commit(files, commitmsg)
-                
-            if resolve == "remote":
-                try:
+                        logger.exception('impossible to revert')
+                        return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))
+                    sync.update(files)
+
+            elif action == "merge":
+                resolve  = request.POST.get('resolve',None)
+                files = request.POST.getlist('fileselect',[])
+                if resolve =="merge":
+                    sync.update(files)
+                    sync.commit(files,commitmsg)
+                if resolve == "remote":
                     sync.revert(files)
-                except:
-                    logger.exception('impossible to revert')
-                    return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))
-                sync.update(files)
-
-        elif action == "merge":
-            resolve  = request.POST.get('resolve',None)
-            files = request.POST.getlist('fileselect',[])
-            if resolve =="merge":
-                sync.update(files)
-                sync.commit(files,commitmsg)
-            if resolve == "remote":
-                sync.revert(files)
                 
-        elif action == "update":
-            sync.update_all()
-            
-        elif action == "commit":
-            resolve = request.POST.get('resolve')
-            files = request.POST.getlist('fileselect',[])
-            if resolve == "commit":
+            elif action == "update":
                 sync.update_all()
-                sync.commit(files,commitmsg)
-            else:
-                sync.revert(files)
-        return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))            
-
+                
+            elif action == "commit":
+                resolve = request.POST.get('resolve')
+                files = request.POST.getlist('fileselect',[])
+                if resolve == "commit":
+                    sync.update_all()
+                    sync.commit(files,commitmsg)
+                else: # revert
+                    sync.revert(files)
+            return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))            
+        except:
+            logger.exception("Unable to get sync tree")
+            return HttpResponse(json.dumps({'status':'E', "action":action, 'stacktrace':traceback.format_exc()}), content_type="application/json", status=403)
+            
 class SyncStatusTreeView(kolektiMixin, View):
     def get(self, request, project):
         try:
