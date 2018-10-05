@@ -1,3 +1,4 @@
+var savestate = 0;
 $(document).ready( function () {
 
     
@@ -43,7 +44,7 @@ $(document).ready( function () {
 	
 	    //	customConfig: '/static/ckeditor_config_topic.js'});
 	
-	var savestate = 0;
+//	var savestate = 0;
 	
 	editor.on( 'instanceReady', function(event){ 					
 	    event.editor.execCommand( 'maximize'); 

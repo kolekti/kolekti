@@ -14,7 +14,7 @@
     <title>{{ title }}</title>
 
   </head>
-  <body>
+  <body data-project="{{ project }}">
     <form method="POST">
       <textarea name="editor1" id="editor1" rows="100" cols="80">
 	{{ body|safe }}
