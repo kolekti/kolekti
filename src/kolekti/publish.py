@@ -376,8 +376,10 @@ class Publisher(PublisherMixin, kolektiBase):
         # write pivot
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
-        #print pivot
         self.xwrite(pivot, pivfile, sync = False)
+        pivfile = pubdir + "/" + profile.find('label').text + ".xhtml"
+        self.xwrite(pivot, pivfile, sync = False)  
+
         return pivot
 
     # create settings.xml file in assembly directory
