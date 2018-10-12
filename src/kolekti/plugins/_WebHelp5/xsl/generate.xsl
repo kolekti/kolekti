@@ -108,7 +108,7 @@
     <xsl:value-of select="$filename" />
     <xsl:text>'] = '</xsl:text>
     <xsl:apply-templates mode="textcontent" select="node()[not(@class='topicinfo')]" />
-    <xsl:text>';</xsl:text>
+    <xsl:text>';&#13;&#10;</xsl:text>
   </xsl:template>
 
   <xsl:template match="text()" mode="textcontent">
@@ -908,6 +908,13 @@
        <xsl:text> </xsl:text>
        <xsl:call-template name="trquot">
          <xsl:with-param name="text" select='substring-after($text,"&#x0A;")' />
+       </xsl:call-template>
+     </xsl:when>
+     <xsl:when test='contains($text,"\")'>
+       <xsl:value-of select='substring-before($text,"\")' />
+       <xsl:text>\\u</xsl:text>
+       <xsl:call-template name="trquot">
+         <xsl:with-param name="text" select='substring-after($text,"\")' />
        </xsl:call-template>
      </xsl:when>
      <xsl:otherwise>
