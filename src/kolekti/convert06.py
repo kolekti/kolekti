@@ -80,7 +80,7 @@ class XSLExtensions(ConvertMixin):
     def translate_jobstring(self, _, *args):
         thestr = args[0][0]
         crits  = args[1][0]
-        critlist = crits.xpath('.//criteria/@code')
+        critlist = crits.xpath('.//criteria/@code') + ['LANG']
         for crit in critlist:
             e = re.compile(r'_%s_'%crit)
             thestr = re.sub(e, '{%s}'%crit, thestr)
