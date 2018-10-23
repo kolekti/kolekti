@@ -23,7 +23,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns:kfp="kolekti:extensions:functions:publication"
-  exclude-result-prefixes="htm kfp"
+  exclude-result-prefixes="html kfp"
   version="1.0">
 
   <xsl:output  method="xml"
