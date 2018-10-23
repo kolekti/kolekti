@@ -3,8 +3,8 @@
 {% block current_releases %}class="menu-current"{% endblock %}
 {% load statustags %}
 {% block extracss %}
-    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-releases.css" %}"></script>
-    <link rel="stylesheet" type="text/css"  href="/criteria.css"></script>
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-releases.css" %}"/>
+    <link rel="stylesheet" type="text/css"  href="{% url 'kolekti_criteria_css' project=project %}" />
 <!--    <script src="{% static "ckeditor/ckeditor.js" %}"></script> -->
 {% endblock %}
 
@@ -12,6 +12,7 @@
 <script src="{% static "js/kolekti-illustrationsutils.js" %}"></script>
 <script src="{% static "js/kolekti-variablesutils.js" %}"></script>
 <script src="{% static "js/kolekti-release.js" %}"></script>
+<script src="{% static "js/kolekti-compare.js" %}"></script>
 {% endblock %}
 
     {% block title %}
@@ -141,35 +142,66 @@
       </div>
       
       <div id="collapseRD" class="panel-collapse collapse  ">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-12 col-md-12">
-	      <h5>Profils</h5>
-	      {% for profile in releaseparams.profiles %}
-	      <strong>{{ profile.label }}</strong>
-	      <ul>
-		{% for criterion,value in profile.criteria.items %}
-		<li>{{criterion}}:{{value}}</li>
-		{% endfor %}
-	      </ul>
-	      {% endfor %}
-	    </div>
-	    <div class="col-sm-12 col-md-12">
-	      <h5>Sorties</h5>
-	      <ul>
-	      {% for script in releaseparams.scripts %}
-	      <li>{{ script }}</li>
-	      {% endfor %}
-	      </ul>
+	    <div class="panel-body">
+          <h5>
+	        <a data-toggle="collapse" href="#collapseProfils" class="collapsed">
+	          <small>
+	            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	            <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	          </small>
+	          Profils
+	        </a>
+          </h5>
+          <div class="collapse" id="collapseProfils">
+	        <div class="row">
+	          {% for profile in releaseparams.profiles %}
+	          <div class="col-sm-12 col-md-6">
+	            <h6>
+	              <a data-toggle="collapse" href="#collapseProfil{{ forloop.counter }}" class="collapsed">
+	                <small>
+	                  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	                  <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	                </small>
+                    {{ profile.label }}
+	              </a>
+                </h6>
+                
+                <div class="collapse" id="collapseProfil{{ forloop.counter }}">
+                  <ul>
+		            {% for criterion,value in profile.criteria.items %}
+		            <li>{{criterion}}:{{value}}</li>
+		            {% endfor %}
+	              </ul>
+                </div>
+	          </div>                
+	          {% endfor %}
+            </div>
+          </div>
+          
+	      <h5>
+	        <a data-toggle="collapse" href="#collapseSorties" class="collapsed">
+	          <small>
+	            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	            <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	          </small>
+              Sorties
+            </a>
+          </h5>
+          <div class="collapse" id="collapseSorties">
+	        <ul>
+	          {% for script in releaseparams.scripts %}
+	          <li>{{ script }}</li>
+	          {% endfor %}
+	        </ul>
+          </div>
 	    </div>
 
 	  </div>
 	</div>
-      </div>
-    </div>
     
     <div id="release_publications">
     </div>
+      
 {% endif %}
 {% endfor %}    
 {% endblock %}

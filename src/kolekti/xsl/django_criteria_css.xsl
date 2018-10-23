@@ -5,6 +5,26 @@
 
   <xsl:output  method="text" />
   <xsl:template match="/">
+    div.condition {
+     border: 1px solid blue;
+     margin: 2px 2px 2px 2px;
+     padding: 2px 2px 2px 2px;
+    }
+       
+    div.condition:before {
+     content : attr(data-condition);
+     color: red;
+     display:block;
+     font-size: 11px;
+     font-family: sans-serif;
+     font-style: normal;
+     font-weight:normal;
+     background-color: #F0F0F0;
+     border-bottom: 1px solid #D0D0D0;
+     padding: 1px;
+     margin:0;
+    }  
+    <!--
     *[class~="="] {
        border: 1px solid blue;
        margin: 2px 2px 2px 2px;
@@ -45,6 +65,7 @@
     tr[class~="="] td{
        border: 2px solid purple;
        }
+    -->
 <!--
     .=:before {
        color:blue

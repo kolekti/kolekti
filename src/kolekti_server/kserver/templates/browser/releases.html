@@ -56,7 +56,7 @@
 	<th style="width:50px"></th>
 	<th><a href="#" class="sortcol sortcol-name" data-sortcol="name">Nom <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
 	<th>Etat</th>
-	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th>
+{#	<th><a href="#" class="sortcol sortcol-date" data-sortcol="date">Date <span class="glyphicon glyphicon-arrow-down hidden"></span></a></th> #}
 	<th>Actions</th>
 	<th style="width:5%">Synchro</th>
        </tr>
@@ -96,9 +96,14 @@
 	<td></td>
 	{% endif %}
 	
+{% comment %}
 	<td class="kolekti-browser-date">{% if f.type == 'text/directory' %}{{ f.date|date:"d/m/Y H:i" }}{% endif %}</td>
+{% endcomment %}
 	<td class="kolekti-browser-item-action">
 	  {% if not f.indexes %}
+	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
+	    <i class="fa fa-pencil"></i>
+	  </button>
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
@@ -140,7 +145,7 @@
       {% for fi in f.indexes %}
       <tr  data-name="{{ f.name }}_{{ fi.name }}"
            data-sort-name="{{ f.name }}_{{ fi.name }}"
-           data-sort-date="d{{ fi.date }}"
+{#           data-sort-date="d{{ fi.date }}" #}
            class="release-index hidden">
 	<td class="kolekti-browser-icon"><i class="fa fa fa-suitcase"></i>
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
@@ -148,7 +153,7 @@
 	       href="/releases/{{f.name }}_{{ fi.name }}"
 					    data-mimetype="{{ f.type }}" class="filelink">{{ fi.name }}</a></td>
 	<td class="kolekti-browser-release-state"></td>
-	<td class="kolekti-browser-date">{{ fi.date|date:"d/m/Y H:i" }}</td>
+{#	<td class="kolekti-browser-date">{{ fi.date|date:"d/m/Y H:i" }}</td> #}
 	<td class="kolekti-browser-item-action">
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-pencil"></i>

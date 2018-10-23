@@ -17,7 +17,8 @@ $(document).ready(function() {
 		             'titleparent':".title",
 		             'mode':"selectonly",
 		             'modal':"no",
-		             'os_action_delete':'yes'
+		             'os_action_delete':'yes',
+                     'os_action_rename':'yes'
 		            })
 	    .select(
 	        function(path) {

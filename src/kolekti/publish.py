@@ -1106,11 +1106,17 @@ class Releaser(Publisher):
                 "content":events,
             })
             res.append(create_event)
+
+            # filter assembly with profiles
+            from release import Release
+            release = Release(self._base, release_dir)
+            release.apply_filters(self._publang)
+            
         except:
             logger.exception('could not create assembly')
         self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
         assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
-                   
+        
         return res
 
     # copies the job in release directory

@@ -309,7 +309,7 @@ $(document).ready( function () {
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
 	}).success(function(data) {
-        console.log(data)
+//        console.log(data)
         kolekti_status(data)
         if(data.status=="ok") {
 	        disable_save();
@@ -549,10 +549,14 @@ $(document).ready( function () {
     // diagnostic
 
     $('#btn_audit').on('click', function() {
-	kolekti_browser({'root':'/sources'})
-	    .select(function(path) {console.log(path)})
-	    .always(function() {console.log("after")})
-	;
+	    kolekti_browser({'root':'/sources'})
+	        .select(function(path) {
+                console.log(path)
+            })
+	        .always(function() {
+                console.log("after")
+            })
+	    ;
     });
 
 
@@ -776,7 +780,7 @@ $(document).ready( function () {
         
         var je = $('<' + e.localName+ '>')
         $.each(e.attributes, function(i,a) {
-            console.log('attr',i,a.name,a.nodeValue)
+//            console.log('attr',i,a.name,a.nodeValue)
             je.attr(a.name, attribute_translate_value(e.localName, a.localName, a.nodeValue))
         })
         $.each(e.childNodes, function(i,c) {
@@ -791,7 +795,7 @@ $(document).ready( function () {
     var create_topic_obj = function(path, id, topic) {
 
 	var topicfile = basename(path);
-
+        console.log('topicobj',topic)
 	var topic_obj = $('<div>', {
 	    'class':"topic",
 	    'data-kolekti-topic-rel':"kolekti:topic",
@@ -836,7 +840,7 @@ $(document).ready( function () {
 			'id':"collapse_"+id,
 			'html':$('<div>',{ 
 			    'class':"topiccontent",
-			    'html':$.map($(topic).find('body').children(), process_topic_elt)
+			    'html':$.map($(topic).children(), process_topic_elt)
 			}),
 		    })
 		]
@@ -1029,13 +1033,15 @@ $(document).ready( function () {
 	    $('#main_modal .modal-footer').off('click', '.browservalidate');
 
 	    var insert_topic = function(path) {
+            
             var url = path //Urls.kolekti_project_static(kolekti.project, path)
-            var project_path = '/' + path.split('/').slice(2).join('/');
+            var topic_path = '/' + path.split('/').slice(2).join('/');
+            var url = Urls.kolekti_topic_tocview(kolekti.project, topic_path)
 		    $.get(url).success(
 		        function(data){
 			        var topic = $.parseXML( data ),
 			            id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			            topic_obj = create_topic_obj(project_path, id, topic);
+			            topic_obj = create_topic_obj(topic_path, id, topic);
 			        if (isafter) { 
 			            refcomp.after(topic_obj);
 			        } else {
@@ -1252,21 +1258,28 @@ $(document).ready( function () {
     $("a[rel='kolekti:topic']").each(function(i,refcomp) {
 	    var path = $(this).data('kolekti-topic-url');
 	    var idtopic = $(this).data('kolekti-topic-id');
+        var topic_path = '/' + path.split('/').slice(4).join('/');
+        var lang = path.split('/')[2];
+        var url = Urls.kolekti_topic_tocview(kolekti.project, lang, topic_path)
+
 	    var topic;
-            url = Urls.kolekti_project_static(kolekti.project, path)
+//            url = Urls.kolekti_project_static(kolekti.project, path)
 	    $.get(url)
 		.done(
 		    function(data){
 			try {
 			    if (data instanceof Document)
-				topic = data;
+				    topic = data;
 			    else
-				topic = $.parseXML( data );
+				    topic = $.parseXML( data );
+                console.log(url)
 			    var topic_obj = create_topic_obj(path, idtopic, topic);
 			    $(refcomp).after(topic_obj)
 			    usecases(topic_obj);
 			    $(refcomp).detach();
 			} catch (err) {
+                console.log(data)
+                
                 console.log(err)
 			    // was not XML
 			    var id = Math.round(new Date().getTime() + (Math.random() * 100));

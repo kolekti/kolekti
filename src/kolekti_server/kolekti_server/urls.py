@@ -81,6 +81,7 @@ urls = [
             url(r'^topics/(?P<topic_path>.+)/', include([
                 url(r'^meta.json$', TopicMetaJsonView.as_view(),name='kolekti_topic_meta_json'),
                 url(r'^edit$', TopicEditorView.as_view(),name='kolekti_topic_edit'),
+                url(r'^tocview$', TopicTocView.as_view(),name='kolekti_topic_tocview'),
                 url(r'^create$', TopicCreateView.as_view(),name='kolekti_topic_create'),
                 url(r'^$', TopicsListView.as_view(), name='kolekti_topics_browse'),        
             ])),
@@ -146,6 +147,7 @@ urls = [
                 url(r'^publications.json$', ReleaseLangPublicationsListJsonView.as_view(),name='kolekti_release_lang_publications_list_json'),
             ])),
         ])),
+
         
         url(r'^api/', include([
             url(r'^sync/', include([        
@@ -177,6 +179,9 @@ urls = [
                 url(r'^releasepublications/$', WidgetReleasePublicationsListView.as_view(), name='kolekti_widget_release_publications_list'),
                 url(r'^search/$', WidgetSearchView.as_view(), name='kolekti_widget_search'),
                 url(r'^publish_archive/$', WidgetPublishArchiveView.as_view(), name='kolekti_widget_publish_archive'),
+            ])),
+            url(r'^diff/', include([        
+                url(r'^release-topic-source/$', CompareReleaseTopicSource.as_view(), name='kolekti_compare_topic_source'),
             ])),
             url(r'^history/$', ProjectHistoryView.as_view(), name='kolekti_project_history'),
             url(r'^publications.json$', PublicationsListJsonView.as_view(),name='kolekti_publications_list_json'),

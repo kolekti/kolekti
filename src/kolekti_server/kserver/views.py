@@ -1517,10 +1517,8 @@ class CriteriaCssView(kolektiMixin, TemplateView):
     def get(self, request, project):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            project_settings = kolekti.project_settings
-            xsl = kolekti.get_xsl('django_criteria_css')
-            #print xsl(settings)
-            return HttpResponse(str(xsl(settings)), "text/css")
+            xsl = kolekti.get_xsl('django_criteria_css')            
+            return HttpResponse(str(xsl(kolekti.project_settings)), "text/css")
         except:
             logger.exception('generate criteria css failed')
             return HttpResponse(status=500)
@@ -1588,8 +1586,10 @@ class BrowserMoveView(kolektiMixin, View):
         context, kolekti = self.get_context_data({'project': project})
         src = request.POST.get('from','/')
         dest = request.POST.get('to','/')
+        
         kolekti.move_resource(src, dest)
         return HttpResponse(json.dumps(kolekti.path_exists(dest)),content_type="text/plain")
+
 
 class BrowserCopyView(kolektiMixin, View):
     def post(self, request, project):
@@ -1843,6 +1843,18 @@ class TopicCreateView(kolektiMixin, View):
         return HttpResponse(json.dumps(topic_path), content_type="application/json")
 
 
+
+class TopicTocView(kolektiMixin, View):
+    def get(self, request, project, lang, topic_path):
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        topic_project_path = '/sources/%s/topics/%s'%(lang, topic_path)
+        topic = kolekti.read(topic_project_path)
+
+        xtopic = kolekti.parse(topic_project_path)
+        body = xtopic.xpath('/html:html/html:body/*', **ns)
+        xsl = kolekti.get_xsl('django_topic_toc')
+        content = str(xsl(xtopic, path="'/%s/sources/%s/topics/%s'"%(project, lang, topic_path)))
+        return HttpResponse(content,content_type="text/xml")
     
 class TopicTemplatesView(kolektiMixin, View):
     def get(self, request, project, lang):
@@ -2205,3 +2217,56 @@ class WidgetReleasePublicationsListView(kolektiMixin, View):
         })
         return HttpResponse(json.dumps(context),content_type="application/json")
 
+
+
+class CompareReleaseTopicSource(kolektiMixin, View):
+
+
+    def filter_release(self, tree, release, kolekti):
+        release = Release(kolekti.ospath('/'), release)
+        modified = False
+        for e in tree.xpath('.//*[contains(@class, "=")]'):
+            modified = release.apply_filters_element(elt, True) or modified
+        return modified
+    
+    def post(self, request, project):
+        try:
+            from xmldiff import formatting,main
+            context, kolekti = self.get_context_data({
+                'project':project
+                })
+            release = request.POST['release']
+            lang = request.POST['lang']
+            topic = request.POST['topic']
+
+            
+            xsl = kolekti.get_xsl('django_diff_topic')
+            xsl_result = kolekti.get_xsl('django_diff_topic_result')
+            
+            xtopic = kolekti.parse(topic)
+            assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
+            assembly_topic = assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
+
+            self.filter_release(assembly_topic, release, kolekti)
+            
+            tree1 = xsl(xtopic.xpath("/html:html/html:body", **ns)[0])
+            tree2 = xsl(assembly_topic)
+            
+            formatter = formatting.XMLFormatter(normalize=formatting.WS_BOTH)
+                        
+            diff = main.diff_trees(
+                tree1, tree2,
+                formatter=formatter,
+                diff_options={'F': 0.25, 'ratio_mode': 'accurate'})
+            logger.debug(diff)
+
+            xdiff = xsl_result(ET.XML(diff))
+            
+#            return HttpResponse(json.dumps(diff),content_type="application/json")
+            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
+        except:
+            logger.exception('could not calculate diff')
+            return HttpResponse(status=500)
+
+
+    

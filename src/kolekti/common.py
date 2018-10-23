@@ -207,11 +207,7 @@ class kolektiBase(object):
         # returns os absolute path from relative path
         pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
         res =  os.path.join(self._path, *pathparts)
-        # pathparts = [p for p in urllib2.url2pathname(path).split(os.path.sep) if p!='']
-        #logger.debug('makepath %s -> %s'%(path, os.path.join(self._path, *pathparts)))
-        #logger.debug(urllib2.url2pathname(path))
-        
-        return os.path.join(self._path, *pathparts)
+        return res
 
     def get_scripts_defs(self):
         defs = os.path.join(self._appdir, 'pubscripts.xml')

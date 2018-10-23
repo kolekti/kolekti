@@ -28,6 +28,8 @@
   <xsl:output  method="html" 
                indent="yes"/>
 
+  <xsl:include href="django_conditions.xsl"/> 
+  
   <xsl:template match="text()|@*">
     <xsl:copy/>
   </xsl:template>

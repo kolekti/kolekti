@@ -4,6 +4,10 @@ div.section>div> .panel-body {
     padding-left:50px;
 }
 
+#toc_root {
+    margin-bottom:250px;
+}
+
 .topiccontent {
     padding-right:60px;
     padding-left:15px;
