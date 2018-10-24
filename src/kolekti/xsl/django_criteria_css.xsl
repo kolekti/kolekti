@@ -5,12 +5,15 @@
 
   <xsl:output  method="text" />
   <xsl:template match="/">
-    div.condition {
+    .condition-left,
+    .condition {
      border: 1px solid blue;
      margin: 2px 2px 2px 2px;
      padding: 2px 2px 2px 2px;
-    }
-       
+     }
+
+    td.condition-left:before,
+    div.condition-left:before,
     div.condition:before {
      content : attr(data-condition);
      color: red;
@@ -23,7 +26,12 @@
      border-bottom: 1px solid #D0D0D0;
      padding: 1px;
      margin:0;
-    }  
+     }
+
+     td.condition-left {
+     position:relative;
+     margin-left: -30px;
+     }
     <!--
     *[class~="="] {
        border: 1px solid blue;

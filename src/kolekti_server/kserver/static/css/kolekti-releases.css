@@ -100,3 +100,16 @@
 li.active span .state.lead {
     color:#333;
 }
+
+
+
+/* diff */
+
+*[data-diff=insert] {
+    color:green;
+    text-decoration:underline;
+}
+*[data-diff=delete] {
+    color:red;
+    text-decoration:line-through;
+}

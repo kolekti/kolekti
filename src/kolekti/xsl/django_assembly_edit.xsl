@@ -28,13 +28,19 @@
   
   <xsl:output  method="xml" 
                indent="yes"
-	       omit-xml-declaration="yes"
+	           omit-xml-declaration="yes"
 	       />
-  <xsl:include href="django_conditions.xsl"/> 
-  <xsl:include href="django_variables.xsl"/>
-  
   <xsl:param name="path"/>
 
+  
+  <xsl:include href="django_variables.xsl"/>
+  <xsl:include href="django_conditions.xsl"/> 
+  <xsl:include href="django_tables.xsl"/>
+  <xsl:include href="django_identity.xsl"/>
+
+
+
+  
   <xsl:template name="basename">
     <xsl:param name="path"/>
     <xsl:choose>
@@ -50,16 +56,8 @@
   </xsl:template>
 
   
-  <xsl:template match="text()|@*">
-    <xsl:copy/>
-  </xsl:template>
 
-  <xsl:template match="*">
-    <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
-  </xsl:template>
-
+  
   <xsl:template match = "html:div[@class='topic']">    
     <xsl:copy>
       <xsl:apply-templates select="@class"/>
@@ -105,11 +103,6 @@
 
 
   
-  <xsl:template match="*[namespace-uri(self::*)='http://www.w3.org/1999/xhtml']">
-    <xsl:element name="{local-name()}" namespace="">
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:element>
-  </xsl:template>
   
   <xsl:template match="html:img/@src">
     <xsl:attribute name="src">
@@ -129,7 +122,7 @@
         <xsl:apply-templates select="html:h1"/>
       </div>
       <div class="panel-body">
-          <xsl:apply-templates select="html:div[@class='topic']"/>
+          <xsl:apply-templates select="html:div[@class='topic']|html:div[@class='section']"/>
       </div>
     </div>    
   </xsl:template>

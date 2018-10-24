@@ -1309,7 +1309,7 @@ class VariablesCreateView(kolektiMixin, TemplateView):
             
             project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
             project_variable_path = self.set_extension(project_variable_path, ".xml")
-            logger .debug(project_variable_path)
+            logger.debug(project_variable_path)
             varx = kolekti.parse_string('<variables><critlist></critlist></variables>')
             kolekti.xwrite(varx, project_variable_path)
             return HttpResponse(json.dumps(kolekti.path_exists(project_variable_path)),content_type="application/json")
@@ -2223,10 +2223,13 @@ class CompareReleaseTopicSource(kolektiMixin, View):
 
 
     def filter_release(self, tree, release, kolekti):
-        release = Release(kolekti.ospath('/'), release)
+        from kolekti.release import Release
+        release = Release(kolekti.syspath('/'), release)
         modified = False
-        for e in tree.xpath('.//*[contains(@class, "=")]'):
-            modified = release.apply_filters_element(elt, True) or modified
+        for elt in tree.xpath('.//*[contains(@class, "=")]'):
+            logger.debug(elt)
+            modified = release.apply_filters_element(elt, profile_filter=False, assembly_filter=True, setPI = True) or modified
+            logger.debug(modified)            
         return modified
     
     def post(self, request, project):
@@ -2246,23 +2249,30 @@ class CompareReleaseTopicSource(kolektiMixin, View):
             xtopic = kolekti.parse(topic)
             assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
             assembly_topic = assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
-
-            self.filter_release(assembly_topic, release, kolekti)
+            logger.debug("filter -------------------")
+            self.filter_release(xtopic, release, kolekti)
             
             tree1 = xsl(xtopic.xpath("/html:html/html:body", **ns)[0])
             tree2 = xsl(assembly_topic)
-            
+            logger.debug("tree 1 -------------------")
+            logger.debug(tree1)
+            logger.debug("tree 2 -------------------")
+            logger.debug(tree2)
+
+            logger.debug("diff   -------------------")
             formatter = formatting.XMLFormatter(normalize=formatting.WS_BOTH)
                         
             diff = main.diff_trees(
                 tree1, tree2,
                 formatter=formatter,
-                diff_options={'F': 0.25, 'ratio_mode': 'accurate'})
-            logger.debug(diff)
+                diff_options={'F': 0.5, 'ratio_mode': 'accurate'})
+#                diff_options={'F': 0.5, 'ratio_mode': 'fast'})
 
             xdiff = xsl_result(ET.XML(diff))
+#            logger.debug(xdiff)
             
 #            return HttpResponse(json.dumps(diff),content_type="application/json")
+#            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
             return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
         except:
             logger.exception('could not calculate diff')
