@@ -103,6 +103,7 @@ li.active span .state.lead {
 
 
 
+
 /* diff */
 
 *[data-diff=insert] {
@@ -112,4 +113,10 @@ li.active span .state.lead {
 *[data-diff=delete] {
     color:red;
     text-decoration:line-through;
+}
+
+.topicdiffsource {
+    border-left: 3px solid #D4C910;
+    padding-left:20px;
+    margin-left:5px;
 }

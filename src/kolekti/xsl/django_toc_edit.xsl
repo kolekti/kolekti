@@ -28,18 +28,11 @@
   <xsl:output  method="html" 
                indent="yes"/>
 
+  <xsl:include href="django_variables.xsl"/>
   <xsl:include href="django_conditions.xsl"/> 
+  <xsl:include href="django_tables.xsl"/>
+  <xsl:include href="django_identity.xsl"/>
   
-  <xsl:template match="text()|@*">
-    <xsl:copy/>
-  </xsl:template>
-
-  <xsl:template match="*">
-    <xsl:element name="{local-name()}">
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:element>
-  </xsl:template>
-
   <xsl:template match="/">
     <xsl:apply-templates select="html:html_/html:head"/>
     <xsl:apply-templates select="html:html/html:body/*"/>

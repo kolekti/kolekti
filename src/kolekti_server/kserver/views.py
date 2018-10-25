@@ -820,7 +820,12 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
             xassembly = kolekti.parse(assembly_path.replace('{LANG}', lang))
             body = xassembly.xpath('/html:html/html:body/*', **ns)
             xsl = kolekti.get_xsl('django_assembly_edit')
-            content = ''.join([str(xsl(t, path="'/%s/releases/%s'"%(project, release))) for t in body])
+            content = ''.join([str(xsl(
+                t,
+                path="'/%s/releases/%s'"%(project, release),
+                release ="'%s'"%release,
+                project ="'%s'"%project,
+                )) for t in body])
         except:
             logger.exception('could get release assembly')
             
@@ -2265,12 +2270,12 @@ class CompareReleaseTopicSource(kolektiMixin, View):
             diff = main.diff_trees(
                 tree1, tree2,
                 formatter=formatter,
-                diff_options={'F': 0.5, 'ratio_mode': 'accurate'})
+                diff_options={'F': 0.4, 'ratio_mode': 'accurate'})
 #                diff_options={'F': 0.5, 'ratio_mode': 'fast'})
 
-            xdiff = xsl_result(ET.XML(diff))
-#            logger.debug(xdiff)
-            
+            xdiff = xsl_result(ET.XML(diff),path="'/%s/releases/%s'"%(project, release))
+            logger.debug(diff)
+            logger.debug("done   -------------------")            
 #            return HttpResponse(json.dumps(diff),content_type="application/json")
 #            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
             return HttpResponse(ET.tostring(xdiff), content_type="text/xml")

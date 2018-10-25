@@ -37,6 +37,7 @@
   <xsl:include href="django_conditions.xsl"/> 
   <xsl:include href="django_tables.xsl"/>
   <xsl:include href="django_identity.xsl"/>
+  <xsl:include href="django_pictures.xsl"/>
 
 
 
@@ -88,8 +89,11 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
         <li><a href="#" class="compare_topic_source">Comparer avec le module source</a></li>
+        
         <li><a href="#" class="compare_topic_release">Comparer avec une version...</a></li>
-        <li><a href="#" class="assembly_topic">Modifier</a></li>
+        
+        <li><a href="#" class="assembly_topic">Modifier l'assemblage</a></li>
+        <li><a href="/{$project}{$topicsource}/edit" target="new" class="assembly_topic">Éditer le module source </a></li>
       </ul>
     </div>
     
@@ -103,13 +107,6 @@
 
 
   
-  
-  <xsl:template match="html:img/@src">
-    <xsl:attribute name="src">
-      <xsl:value-of select="$path"/>
-      <xsl:value-of select="."/>
-    </xsl:attribute>
-  </xsl:template>
       
 
   <xsl:template match="html:div[starts-with(@class,'TOC')]">

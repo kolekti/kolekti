@@ -13,11 +13,11 @@
      }
 
     td.condition-left:before,
+    span.condition:before,
     div.condition-left:before,
     div.condition:before {
      content : attr(data-condition);
      color: red;
-     display:block;
      font-size: 11px;
      font-family: sans-serif;
      font-style: normal;
@@ -27,11 +27,21 @@
      padding: 1px;
      margin:0;
      }
-
-     td.condition-left {
-     position:relative;
-     margin-left: -30px;
+     
+    div.condition-left:before,
+    div.condition:before {
+     display:block;
      }
+     
+     td.condition-placeholder ,
+     td.condition-left {
+     max-width:200px !IMPORTANT;
+     }
+    span.condition:before {
+     display:inline-block;
+     margin:0 5px 0 0 ;
+     }
+     
     <!--
     *[class~="="] {
        border: 1px solid blue;
