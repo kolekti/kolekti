@@ -98,7 +98,7 @@ $(document).ready(function() {
 			            "html":get_label(v)
 			        }).click(function() {
 			            $('#uc_'+i).data('codevalue',$(this).data('code'));
-			            $('#uc_'+i+" button").html(v+" <span class='caret'/>");
+			            $('#uc_'+i+" button").html(get_label(v)+" <span class='caret'/>");
 			            filter_view();
 			        })
 		        }).appendTo($('#uc_' + i + " ul"));
