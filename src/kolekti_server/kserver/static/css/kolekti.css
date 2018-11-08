@@ -299,3 +299,7 @@ label {
     width:96%;
 }
 
+/* config languages */
+input.lang_default {
+    height:18px;
+}
