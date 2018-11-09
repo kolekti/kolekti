@@ -447,6 +447,7 @@ class ProjectsConfigView(kolektiMixin, View):
 #            "releaselangs" :[l.text for l in settings.xpath('/settings/releases/lang')],
 #            "default_srclang":settings.xpath('string(/settings/@sourcelang)'),
 #            "active_srclang":self.request.kolekti_userproject.srclang
+             "has_release":len(settings.xpath('/settings/releases')) 
             })
             
         return self.render_to_response(context)
