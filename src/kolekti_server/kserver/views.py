@@ -2238,6 +2238,9 @@ class CompareReleaseTopicSource(kolektiMixin, View):
         return modified
     
     def post(self, request, project):
+        class ParseTopicException(Exception):
+            pass
+    
         try:
             from xmldiff import formatting,main
             context, kolekti = self.get_context_data({
@@ -2250,8 +2253,10 @@ class CompareReleaseTopicSource(kolektiMixin, View):
             
             xsl = kolekti.get_xsl('django_diff_topic')
             xsl_result = kolekti.get_xsl('django_diff_topic_result')
-            
-            xtopic = kolekti.parse(topic)
+            try:
+                xtopic = kolekti.parse(topic)
+            except:
+                raise ParseTopicException(topic)
             assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
             assembly_topic = assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
             logger.debug("filter -------------------")
@@ -2273,15 +2278,19 @@ class CompareReleaseTopicSource(kolektiMixin, View):
                 diff_options={'F': 0.4, 'ratio_mode': 'accurate'})
 #                diff_options={'F': 0.5, 'ratio_mode': 'fast'})
 
-            xdiff = xsl_result(ET.XML(diff),path="'/%s/releases/%s'"%(project, release))
+            xdiff = xsl_result(ET.XML(diff), path="'/%s/releases/%s'"%(project, release))
             logger.debug(diff)
             logger.debug("done   -------------------")            
 #            return HttpResponse(json.dumps(diff),content_type="application/json")
 #            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
             return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
-        except:
+        except ParseTopicException as reason:
+            logger.exception('could not calculate diff : parse topic failed %s', str(reason))
+            
+            return HttpResponse(json.dumps({'reason' : 'parsetopic', 'topic':str(reason), 'message':'Impossible de lire le module %s'%str(reason)}), content_type='application/json', status=403)
+        except Exception as reason:
             logger.exception('could not calculate diff')
-            return HttpResponse(status=500)
+            return HttpResponse(json.dumps({'reason' : 'unknown', "message":"could not calculate diff"}), content_type='application/json', status=500)
 
 
     

@@ -71,6 +71,12 @@
         </div>
         <div class="panel-body">
           <div class="row">
+            <div class="topicstatus alert alert-info col-md-12 hidden" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
+              <span class="content"></span>
+            </div>                        
             <div class="topiccontent col-md-12">
               <xsl:apply-templates select="*[not(@class='topicinfo')]"/>
             </div>
@@ -88,7 +94,11 @@
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
-        <li><a href="#" class="compare_topic_source">Comparer avec le module source</a></li>
+        
+        <li>
+          <xsl:if test="
+          <a href="#" class="compare_topic_source">Comparer avec le module source</a>
+        </li>
         
         <li><a href="#" class="compare_topic_release">Comparer avec une version...</a></li>
         
