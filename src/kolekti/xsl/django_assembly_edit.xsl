@@ -96,7 +96,6 @@
       <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
         
         <li>
-          <xsl:if test="
           <a href="#" class="compare_topic_source">Comparer avec le module source</a>
         </li>
         
