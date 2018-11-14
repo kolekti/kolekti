@@ -465,7 +465,7 @@ var kolekti_browser = function(args) {
                     $(parent).data('statuses', data)
 		            var rows =  $(parent).find('tr[data-name]')
                     $.each(rows, function(ri,row) {
-                        console.log($(row).data('name'))
+//                        console.log($(row).data('name'))
                         if (data[$(row).data('name')]) {
                             var entry = data[$(row).data('name')].__self
                             status = entry.kolekti_status
