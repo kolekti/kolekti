@@ -302,9 +302,10 @@ $(document).ready( function () {
     // save
 
     $('#btn_save').on('click', function() {
-	var path = $('#toc_root').data('kolekti-path');
+	    var path = $('#toc_root').data('kolekti-path');
+        var url = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path);
 	$.ajax({
-	    url:Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path),
+	    url:url,
 	    type:'POST',
 	    data:process_toc($('#toc_root')),
 	    contentType:'text/plain'
@@ -795,7 +796,7 @@ $(document).ready( function () {
     var create_topic_obj = function(path, id, topic) {
 
 	var topicfile = basename(path);
-        console.log('topicobj',topic)
+
 	var topic_obj = $('<div>', {
 	    'class':"topic",
 	    'data-kolekti-topic-rel':"kolekti:topic",
@@ -1039,9 +1040,9 @@ $(document).ready( function () {
             var url = Urls.kolekti_topic_tocview(kolekti.project, topic_path)
 		    $.get(url).success(
 		        function(data){
-			        var topic = $.parseXML( data ),
-			            id = Math.round(new Date().getTime() + (Math.random() * 100)),
-			            topic_obj = create_topic_obj(topic_path, id, topic);
+//			        var topic = $.parseXML( data ),
+			           var id = Math.round(new Date().getTime() + (Math.random() * 100)),
+			            topic_obj = create_topic_obj(topic_path, id);
 			        if (isafter) { 
 			            refcomp.after(topic_obj);
 			        } else {
