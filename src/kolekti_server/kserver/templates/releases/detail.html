@@ -330,10 +330,14 @@
 		            <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
 		              Assemblage
 		            </button>
-		            <button type="button" class="btn btn-default btn-release-pane" id="btn_illust">
+		            <button type="button" class="btn btn-default btn-release-pane
+                                                 {% if not has_pictures %} disabled {% endif %}
+                                                 " id="btn_illust">
 		              Images
 		            </button>
-		            <button type="button" class="btn btn-default btn-release-pane" id="btn_variables">
+		            <button type="button" class="btn btn-default btn-release-pane
+                                                 {% if not has_variables %} disabled {% endif %}
+                                                 " id="btn_variables">
 		              Variables
 		            </button>
 		          </div>
