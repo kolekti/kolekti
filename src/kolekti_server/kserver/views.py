@@ -903,6 +903,8 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
 #        logger.debug(context)
         assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
         assembly_meta = {}
+        variables_path = '/'.join(['','releases',release,"sources",lang,"variables"])
+        pictures_path = '/'.join(['','releases',release,"sources",lang,"pictures"])
         try:
             xassembly = kolekti.parse(assembly_path)
             for meta in xassembly.xpath("/h:html/h:head/h:meta",namespaces = {"h":"http://www.w3.org/1999/xhtml"}):
@@ -941,6 +943,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         for script in parameters.xpath('/job/scripts/script[@enabled="1"]'):
             scripts.append(script.find('label').text)
             #print self.get_assembly_edit(assembly_path)
+            
         context.update({
             'releasesinfo':kolekti.release_details(release, lang),
             'releaseparams':{'profiles':profiles, 'scripts':scripts},
@@ -951,8 +954,12 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             'relang':lang,
             'lang':'en',
             'srclang':srclang,
-            'validactions':self.__has_valid_actions(kolekti, release)
+            'validactions':self.__has_valid_actions(kolekti, release),
+            'has_variables':kolekti.exists(variables_path),
+            'has_pictures':kolekti.exists(pictures_path),
+            
         })
+        
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
@@ -2240,7 +2247,6 @@ class CompareReleaseTopicSource(kolektiMixin, View):
     def post(self, request, project):
         class ParseTopicException(Exception):
             pass
-    
         try:
             from xmldiff import formatting,main
             context, kolekti = self.get_context_data({
@@ -2271,7 +2277,6 @@ class CompareReleaseTopicSource(kolektiMixin, View):
 
             logger.debug("diff   -------------------")
             formatter = formatting.XMLFormatter(normalize=formatting.WS_BOTH)
-                        
             diff = main.diff_trees(
                 tree1, tree2,
                 formatter=formatter,
