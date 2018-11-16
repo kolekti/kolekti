@@ -1,4 +1,9 @@
 $(function() {
+
+    $('body').popover({
+        selector: '.btn-popover',
+        html:true
+    });
     
     var release = $('#main').data('release')
     var lang = $('#main').data('lang')
@@ -19,8 +24,10 @@ $(function() {
                 $(topicelt).find('.topiccontent').hide()
                 $(topicelt).find('.topicstatus').addClass('alert-info')
                 $(topicelt).find('.topicstatus').removeClass('alert-danger')
-                $(topicelt).find('.topicstatus .content').html("Comparaison avec le module source")
+                var nbdiff = $(topicelt).find('.topicdiffsource').data('diff-count')
+                $(topicelt).find('.topicstatus .content').html("Comparaison avec le module source (" + nbdiff + " différences)")
                 $(topicelt).find('.topicstatus').removeClass('hidden')
+                
               })
             .fail(function(data) {
                 var statuss = JSON.parse(data.responseText)
@@ -54,4 +61,5 @@ $(function() {
             'topic':  topicelt.data('topic-source')
         })
     })
+
 })

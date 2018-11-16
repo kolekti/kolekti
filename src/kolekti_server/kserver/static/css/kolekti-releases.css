@@ -102,9 +102,25 @@ li.active span .state.lead {
 }
 
 
-
+.topicdiffsource .popover {
+    min-width:520px;
+    
+}
 
 /* diff */
+
+ins.diff-insert,
+del.diff-del,
+span.DiffInsert,
+span.DiffDelete
+    {
+        background-color: #d9edf7;
+        text-decoration:none;
+    }
+
+i.diff-marker {
+    color:#bce8f1;
+}
 
 *[data-diff=insert] {
     color:green;
@@ -116,7 +132,48 @@ li.active span .state.lead {
 }
 
 .topicdiffsource {
-    border-left: 3px solid #D4C910;
+    border-left: 3px solid #bce8f1;
     padding-left:20px;
-    margin-left:5px;
+
+}
+
+.topicstatus.alert {
+    margin-bottom :0;
+}
+
+/* popopos*/
+.diff-source ins.diff-insert,
+.diff-source span.DiffInsert
+{
+    color: blue;
+}
+
+.diff-source del.diff-del,
+.diff-source span.DiffDelete
+{
+    color: #D0D0D0;
+}
+
+.diff-release ins.diff-insert,
+.diff-release span.DiffInsert
+ {
+     color: #D0D0D0;
+}
+
+.diff-release del.diff-del,
+.diff-release span.DiffDelete
+{
+    color: blue;
+}
+
+.diff-source ins.diff-insert,
+.diff-source span.DiffInsert,
+.diff-source del.diff-del,
+.diff-source span.DiffDelete,
+.diff-release ins.diff-insert,
+.diff-release span.DiffInsert,
+.diff-release del.diff-del,
+.diff-release span.DiffDelete
+{
+        background-color: inherit;
 }

@@ -14,7 +14,10 @@
     <title>{{ title }}</title>
 
   </head>
-  <body data-project="{{ project }}">
+  <body data-project="{{ project }}"{% if release %} data-release = "{{ release }}" data-topic-id="{{topic_id}}" class="release-topic-editor"{% endif %}>
+    {% if release %}
+    <div class="alert alert-info">Vous éditez le contenu de l'asseblage {{ release }}</div>
+    {% endif %}
     <form method="POST">
       <textarea name="editor1" id="editor1" rows="100" cols="80">
 	{{ body|safe }}

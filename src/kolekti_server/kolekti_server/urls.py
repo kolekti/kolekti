@@ -145,6 +145,9 @@ urls = [
                 url(r'^assembly/$', ReleaseLangAssemblyView.as_view(),name='kolekti_release_lang_assembly'),
                 url(r'^publications/*', ReleaseLangPublicationsView.as_view(),name='kolekti_release_lang_publications'),
                 url(r'^publications.json$', ReleaseLangPublicationsListJsonView.as_view(),name='kolekti_release_lang_publications_list_json'),
+
+                url(r'^edit/(?P<topic_id>[^/\?]+)/$', ReleaseLangEditTopicView.as_view(), name='kolekti_release_lang_edit_topic'),
+
             ])),
         ])),
 
