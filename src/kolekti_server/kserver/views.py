@@ -2231,8 +2231,65 @@ class WidgetReleasePublicationsListView(kolektiMixin, View):
 
 
 
-class CompareReleaseTopicSource(kolektiMixin, View):
+class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
+    template_name = "topics/edit-ckeditor.html"
+    ttdir = "releases"
+    
+    def get(self, request, project, release, lang, topic_id):
+        context, kolekti = self.get_context_data({
+            'project':project,
+            'lang':lang,
+            })
+        
+        xsl = kolekti.get_xsl('django_edit_topic_assembly')
+        
+        assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
 
+        topic = xsl(assembly, topic_id= "'%s'"%topic_id)
+
+        context.update({
+            "body":ET.tostring(topic),
+            "release":release,
+            "topic_id":topic_id,
+            "title": release,
+            })
+        return self.render_to_response(context)
+
+            
+    def post(self, request, project, release, lang, topic_id):
+        logger.debug('save topic assembly')
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        try:
+            topic = request.body
+            xtopic = kolekti.parse_string(topic)
+            assembly_path = '/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
+            assembly = kolekti.parse(assembly_path)
+
+            assembly_topic = assembly.xpath('//*[@id="%s"]'%topic_id)[0]
+            for e in assembly_topic:
+                if e.get('class') == 'topicinfo':
+                    continue
+                else:
+                    assembly_topic.remove(e)
+
+            saved_topic = xtopic.xpath('/html:html/html:body', **ns)[0]
+            for e in saved_topic:
+                assembly_topic.append(e)
+                
+            
+            kolekti.xwrite(assembly, assembly_path)
+            return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
+
+        except:
+            logger.exception('invalid topic structure')
+            import traceback
+            msg = traceback.format_exc().split('\n')[-2]
+            return HttpResponse(json.dumps({'status':'error', 'msg':msg}), content_type="application/json")
+
+            
+
+            
+class CompareReleaseTopicSource(kolektiMixin, View):
 
     def filter_release(self, tree, release, kolekti):
         from kolekti.release import Release

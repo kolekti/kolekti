@@ -62,6 +62,7 @@
   <xsl:template match = "html:div[@class='topic']">    
     <xsl:copy>
       <xsl:apply-templates select="@class"/>
+      <xsl:copy-of select="@id"/>
       <xsl:attribute name="data-topic-source">
         <xsl:value-of select="html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][text()='source']]/html:span[@class='infovalue']"/>
       </xsl:attribute>
@@ -101,8 +102,8 @@
         
         <li><a href="#" class="compare_topic_release">Comparer avec une version...</a></li>
         
-        <li><a href="#" class="assembly_topic">Modifier l'assemblage</a></li>
-        <li><a href="/{$project}{$topicsource}/edit" target="new" class="assembly_topic">Éditer le module source </a></li>
+        <li><a href="#" class="edit_topic_release">Modifier l'assemblage</a></li>
+        <li><a href="/{$project}{$topicsource}/edit" target="new" class="edit_topic_source">Éditer le module source </a></li>
       </ul>
     </div>
     

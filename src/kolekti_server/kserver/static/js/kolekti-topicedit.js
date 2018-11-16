@@ -63,9 +63,10 @@ $(document).ready( function () {
 	      }
 	      headers= {'METADATA':meta.join(';')}
 	    */
-        
+        var url = window.location.pathname + window.location.search
+        console.log('save edits', url)
 	    $.ajax({
-		url:window.location.pathname+window.location.search,
+		    url:url,
 		type:'POST',
 		//	    headers:headers,
 		data:event.editor.getData(),
@@ -112,7 +113,7 @@ $(document).ready( function () {
 	}
     });
 
-    $.getJSON("/kolekti/edition-stylesheets/templates.json")
+    $.getJSON(Urls.kolekti_project_static(kolekti.project,"kolekti/edition-stylesheets/templates.json"))
 	.done(function(data) {
 	    var buttons = $.map(data, function(item) { return item.name })
 	    make_editor(data, buttons)
