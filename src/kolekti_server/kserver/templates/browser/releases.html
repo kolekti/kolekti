@@ -74,7 +74,8 @@
 	  <i class="fa fa-suitcase"></i>
 	  {% endif %}
 	</td>
-<!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
+    <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
+    
 	<td class="kolekti-browser-name">
 	  <a
 	     {% if pathsteps.0.label == "sources" or pathsteps.0.label == "kolekti" %}
@@ -99,24 +100,32 @@
 {% comment %}
 	<td class="kolekti-browser-date">{% if f.type == 'text/directory' %}{{ f.date|date:"d/m/Y H:i" }}{% endif %}</td>
 {% endcomment %}
+
 	<td class="kolekti-browser-item-action">
+
 	  {% if not f.indexes %}
+	  <button class="btn btn-xs btn-default kolekti-action-update" title="Créer un nouvel indice">
+	    <i class="fa fa-plus-square"></i>
+	  </button>
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-pencil"></i>
 	  </button>
 	  <button class="btn btn-xs btn-default kolekti-action-remove" title="Supprimer">
 	    <i class="fa fa-trash-o"></i>
 	  </button>
+
       <a href="{% url 'kolekti_release_archive' project=project release=f.name %}" class="btn btn-default btn-xs" title="Archiver"><i class="fa fa-download"></i></a>
           {% comment %}
 	  <a href="{% url 'translators_release' project=project release=f.name %}" class="btn btn-default btn-xs"><i class="fa fa-cogs"></i></a>
           {% endcomment %}
 	  {% endif %}
+
 	  {% if not f.type == "text/directory" %}
 	  <button class="btn btn-xs btn-default kolekti-action-copy" title="Copier">
 	    <i class="fa fa-copy"></i>
 	  </button>
 	  {% endif %}
+
 	  {% if expertmode %}
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-edit"></i>
@@ -136,6 +145,7 @@
 		{% endfor %}
 	  </div>
 	  {% endif %}
+
 	</td>
 	<td class="kolekti-browser-sync"></td>
       </tr>
@@ -155,6 +165,9 @@
 	<td class="kolekti-browser-release-state"></td>
 {#	<td class="kolekti-browser-date">{{ fi.date|date:"d/m/Y H:i" }}</td> #}
 	<td class="kolekti-browser-item-action">
+	  <button class="btn btn-xs btn-default kolekti-action-update" title="Créer un nouvel indice">
+	    <i class="fa fa-plus-square"></i>
+	  </button>
 	  <button class="btn btn-xs btn-default kolekti-action-rename" title="Renommer">
 	    <i class="fa fa-pencil"></i>
 	  </button>

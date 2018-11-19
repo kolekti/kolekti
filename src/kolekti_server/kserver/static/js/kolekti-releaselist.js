@@ -86,5 +86,9 @@ $(document).ready(function() {
 	        }
 	    }
     });
-    
+
+
+    $('body').on('click', '.kolekti-action-update', function(e) {
+        $("#modal_release_update").modal()
+    })
 })
