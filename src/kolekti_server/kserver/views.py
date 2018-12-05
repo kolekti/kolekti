@@ -835,7 +835,7 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
 class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     template_name = "releases/publications.html"
     
-    def __release_publications(self, lang, release):
+    def __release_publications(self, kolekti, release, lang):
         publications = []
         try:
             mf = json.loads(self.read("/releases/" + release_path + "/manifest.json"))
@@ -852,9 +852,10 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({
             'project': project,
-            'lang':lang ,
-            'publications':self.__release_publications(lang, release)
-        })
+            'lang':lang
+            })
+        context.update({'publications':self.__release_publications(kolekti, release, lang)})
+
         return self.render_to_response(context)
                 
 class ReleaseLangDetailsView(kolektiMixin, TemplateView):
@@ -864,6 +865,36 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         xjob = kolekti.parse('/releases/' + release + '/kolekti/publication-parameters/'+ release +'_asm.xml')
         return len(xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')) > 0
 
+    def __release_indices_(self,  kolekti, release, lang):
+        current = release
+        try:
+            while True:
+                logger.debug('previous %s', str(current))
+                release_info = json.loads(kolekti.read('/releases/'+current+'/release_info.json'))
+                current = release_info['releaseprev']
+                if current is None:
+                    return               
+                yield current
+                
+        except IOError:
+            return
+
+    def __release_indices(self,  kolekti, release, lang):
+        release_info = json.loads(kolekti.read('/releases/'+ release +'/release_info.json'))
+        release_name = release_info['releasename']
+        for r in kolekti.list_directory('/releases'):
+            if r == release:
+                continue
+            try:
+                other_release_info = json.loads(kolekti.read('/releases/'+r+'/release_info.json'))
+                if other_release_info['releasename'] == release_name:
+                    a = '/releases/'+ r +'/sources/' + lang + "/assembly/" + r + "_asm.html"
+                    logger.debug(a)
+                    if kolekti.exists(a):
+                        yield r 
+            except IOError:
+                pass
+        return
     
     def get_context_data(self, data={}, **kwargs):
         context, kolekti = super(ReleaseLangDetailsView, self).get_context_data(data, **kwargs)
@@ -883,7 +914,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                     states.append(sync.propget('release_state',tr_assembly_path))
                 else:
                     states.append("local")
-
+                    
             else:
                 states.append("unknown")
             if lang == context.get('lang', default_srclang):
@@ -892,10 +923,17 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
                 focus.append(False)
-#        logger.debug(release_languages)
-#        logger.debug(states)
-#        logger.debug(focus)
-        context.update({'langstates':zip(release_languages,states,focus)})
+                #        logger.debug(release_languages)
+                #        logger.debug(states)
+                #        logger.debug(focus)
+        indices = list(self.__release_indices(kolekti, release, context.get('lang', default_srclang)))
+
+        context.update({
+            'langstate':langstate,
+            'langstates':zip(release_languages,states,focus),
+            'release_indices':sorted(indices)
+            })
+
         return context, kolekti
     
     def get(self, request, project, release, lang):
@@ -2300,6 +2338,8 @@ class CompareReleaseTopicSource(kolektiMixin, View):
             modified = release.apply_filters_element(elt, profile_filter=False, assembly_filter=True, setPI = True) or modified
             logger.debug(modified)            
         return modified
+
+    
     
     def post(self, request, project):
         class ParseTopicException(Exception):
@@ -2310,22 +2350,30 @@ class CompareReleaseTopicSource(kolektiMixin, View):
                 'project':project
                 })
             release = request.POST['release']
+            cmp_release = request.POST.get('cmprelease', None)
             lang = request.POST['lang']
             topic = request.POST['topic']
 
             
             xsl = kolekti.get_xsl('django_diff_topic')
             xsl_result = kolekti.get_xsl('django_diff_topic_result')
-            try:
-                xtopic = kolekti.parse(topic)
-            except:
-                raise ParseTopicException(topic)
+            if cmp_release is None:
+                try:
+                    xtopic = kolekti.parse(topic)
+                except:
+                    raise ParseTopicException(topic)
+                self.filter_release(xtopic, release, kolekti)
+                diff_topic = xtopic.xpath("/html:html/html:body", **ns)[0]
+                
+            else:
+                cmp_assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=cmp_release, l=lang))
+                diff_topic = cmp_assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
             assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
             assembly_topic = assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
             logger.debug("filter -------------------")
-            self.filter_release(xtopic, release, kolekti)
+
             
-            tree1 = xsl(xtopic.xpath("/html:html/html:body", **ns)[0])
+            tree1 = xsl(diff_topic)
             tree2 = xsl(assembly_topic)
             logger.debug("tree 1 -------------------")
             logger.debug(tree1)

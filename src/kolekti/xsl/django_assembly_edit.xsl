@@ -100,10 +100,8 @@
           <a href="#" class="compare_topic_source">Comparer avec le module source</a>
         </li>
         
-        <li><a href="#" class="compare_topic_release">Comparer avec une version...</a></li>
-        
         <li><a href="#" class="edit_topic_release">Modifier l'assemblage</a></li>
-        <li><a href="/{$project}{$topicsource}/edit" target="new" class="edit_topic_source">Éditer le module source </a></li>
+        <li><a href="/{$project}{$topicsource}/edit" target="new" class="edit_topic_source">Accéder au module source </a></li>
       </ul>
     </div>
     

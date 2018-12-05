@@ -7,25 +7,28 @@ $(function() {
     
     var release = $('#main').data('release')
     var lang = $('#main').data('lang')
-    
-    $(document).on('click','.compare_topic_source', function(ev) {
-        ev.preventDefault();
-//        ev.stopPropagation();
-        var topicelt = $(this).closest('.topic')
+    var status = $('#main').data('state')
+
+    var compare_topic = function (topicelt, cmp_release) {
+//        console.log(cmp_release)
         $.post(Urls.kolekti_compare_topic_source(kolekti.project), {
             'release': release,
+            'cmprelease': cmp_release,
             'lang': lang,
             'topic':  topicelt.data('topic-source')
         })
             .done(function(data, status, xhr) {                
-                console.log(data, xhr)
+//                console.log(data, xhr)
                 $(topicelt).find('.topicdiffsource').remove()
                 $(topicelt).find('.topiccontent').after($(xhr.responseText))
                 $(topicelt).find('.topiccontent').hide()
                 $(topicelt).find('.topicstatus').addClass('alert-info')
                 $(topicelt).find('.topicstatus').removeClass('alert-danger')
                 var nbdiff = $(topicelt).find('.topicdiffsource').data('diff-count')
-                $(topicelt).find('.topicstatus .content').html("Comparaison avec le module source (" + nbdiff + " différences)")
+                if (!cmp_release)
+                    $(topicelt).find('.topicstatus .content').html("Comparaison avec le module source (" + nbdiff + " différences)")
+                else
+                    $(topicelt).find('.topicstatus .content').html("Comparaison avec la version " + cmp_release +" (" + nbdiff + " différences)")
                 $(topicelt).find('.topicstatus').removeClass('hidden')
                 
               })
@@ -50,16 +53,41 @@ $(function() {
                     $(topicelt).find('.topicdiffsource').remove()
                 })
             })
-    })
+    }
 
-    $(document).on('click','.compare_topic_version', function(ev) {
+
+
+    $(document).on('click','.btn_compare_release_source', function(ev) {
+        if ($(this).closest('li').hasClass('disabled'))
+            return
         ev.preventDefault();
-        var topicelt = $(this).closest('.topic')
-        $.post(Urls.kolekti_compare_topic_version_usage(kolekti.project), {
-            'release': release,
-            'lang': lang,
-            'topic':  topicelt.data('topic-source')
+        $('.topic').each(function(){
+            compare_topic($(this))
         })
     })
+                   
+    $(document).on('click','.btn_compare_releases', function(ev) {
+        if ($(this).closest('li').hasClass('disabled'))
+            return
+        ev.preventDefault();
+        var release = $(this).data('release')
+        $('.topic').each(function(){
+            compare_topic($(this), release)
+        })
 
+    })
+                   
+    $(document).on('click','.compare_topic_source', function(ev) {
+        if ($(this).closest('li').hasClass('disabled'))
+            return
+        ev.preventDefault();
+//        ev.stopPropagation();
+        var topicelt = $(this).closest('.topic')
+        compare_topic(topicelt)
+    })
+
+    
+    if (status != "sourcelang") {
+        $('.btn_compare_release_source').addClass('disabled')
+    }
 })

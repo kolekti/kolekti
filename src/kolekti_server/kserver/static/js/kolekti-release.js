@@ -207,15 +207,20 @@ $(document).ready( function () {
     var load_assembly = function() {
         var release = $('#main').data('release');
         var lang = $('#main').data('lang');
+        var status = $('#main').data('state');
 	    $.get(Urls.kolekti_release_lang_assembly(kolekti.project, release, lang))
 	        .done(function(data) {
 	            $('#content_pane').html(data)
                 $('.topic').each(function() {
-                    console.log($(this).attr('id'))
                     if ($(this).attr('id')) {
                         $(this).find('.edit_topic_release').closest('li').removeClass('disabled')
                     } else {
                         $(this).find('.edit_topic_release').closest('li').addClass('disabled')
+                    }
+                    if (status == "sourcelang") {
+                        $(this).find('.compare_topic_source').closest('li').removeClass('disabled')
+                    } else {
+                        $(this).find('.compare_topic_source').closest('li').addClass('disabled')
                     }
                 })
 	        })

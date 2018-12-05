@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    {% if assembly_meta.kolekti_releasename and assembly_meta.kolekti_releaseindex %}
+    {% if assembly_meta.kolekti_releasename_ and assembly_meta.kolekti_releaseindex %}
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
@@ -79,55 +79,104 @@
 
     <div class="panel panel-default" id="panel_download">
       <div class="panel-heading">
-	<h4 class="panel-title">
-	  <a data-toggle="collapse" href="#collapsePL" class="collapsed">
-	    <small>
-	      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-	      <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
-	    </small>
-	    Télécharger
-	  </a>
-	</h4>
+	    <h4 class="panel-title">
+	      <a data-toggle="collapse" href="#collapsePL" class="collapsed">
+	        <small>
+	          <span class="glyphicon glyphicon-chevron-right" aria-hidden="false"></span>
+	          <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+	        </small>
+	        Télécharger
+	      </a>
+	    </h4>
       </div>
       
       <div id="collapsePL" class="panel-collapse collapse in ">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-12 col-md-12">
-	      <h5>Exporter</h5>
-          {% with '/releases/'|add:release|add:'/sources/'|add:srclang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
-
-          <a href="{% url 'kolekti_project_static' project=project path=asmpath  %}" download="{{ assembly_name }}_asm.html">
-            {% endwith %}
-		Assemblage source [{{srclang}}]
-	      </a>
-          {% if not srclang or not  srclang == relang  %}
-	      <br>
-          {% with '/releases/'|add:release|add:'/sources/'|add:relang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
-          <a href="{% url 'kolekti_project_static' project=project path=asmpath %}" download="{{ assembly_name }}_asm.html">
-            {% endwith %}
-		Assemblage traduit [{{relang}}]
-	      </a>
-	      {% endif %}
-	      
+	    <div class="panel-body">
+	      <div class="row">
+	        <div class="col-sm-12 col-md-12">
+	          <h5>Exporter</h5>
+              {% with '/releases/'|add:release|add:'/sources/'|add:srclang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
+              
+              <a href="{% url 'kolekti_project_static' project=project path=asmpath  %}" download="{{ assembly_name }}_asm.html">
+                {% endwith %}
+		        Assemblage source [{{srclang}}]
+	          </a>
+              {% if not srclang or not  srclang == relang  %}
+	          <br>
+              {% with '/releases/'|add:release|add:'/sources/'|add:relang|add:'/assembly/'|add:release|add:'_asm.html'  as asmpath %} 
+              <a href="{% url 'kolekti_project_static' project=project path=asmpath %}" download="{{ assembly_name }}_asm.html">
+                {% endwith %}
+		        Assemblage traduit [{{relang}}]
+	          </a>
+	          {% endif %}
+	          
+	        </div>
+	        <div class="col-sm-12 col-md-12">
+	          <h5>Importer</h5>
+	          <form method="POST" class="upload_form" enctype="multipart/form-data">
+		        <div class="input-group">
+		          <label style="font-weight:100">Assemblage [{{relang}}]
+		            <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
+		            
+		        </div>
+		        <button type="submit" class="btn btn-default btn-xs">Valider</button>
+	          </form>
+	        </div>
+	      </div>
 	    </div>
-	    <div class="col-sm-12 col-md-12">
-	      <h5>Importer</h5>
-	      <form method="POST" class="upload_form" enctype="multipart/form-data">
-		    <div class="input-group">
-		      <label style="font-weight:100">Assemblage [{{relang}}]
-		        <input type="file" id="dl_assembly" placeholder="" name="upload_file"/>
-		        
-		    </div>
-		    <button type="submit" class="btn btn-default btn-xs">Valider</button>
-	      </form>
-	    </div>
-	  </div>
-	</div>
       </div>
     </div>
     {% endif %}
 
+
+    <div class="panel panel-default" id="release_compare">
+      <div class="panel-heading">
+	    <h4 class="panel-title">
+	      <a data-toggle="collapse" href="#collapseRC" class="collapsed">
+	        <small>
+	          <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+	          <span class="glyphicon glyphicon-chevron-down" aria-hidden="false"></span>
+	        </small>
+	        Comparer
+	      </a>
+	    </h4>
+      </div>
+      
+      <div id="collapseRC" class="panel-collapse collapse  ">
+	    <div class="panel-body">
+          <div class="compare-param">
+            <p>Comparer l'assemblage affiché avec :</p>
+          
+            {% if assembly_meta.kolekti_releasename and assembly_meta.kolekti_releaseindex %}
+            {% with release_indices|length as nbindices %}
+	        <div class="input-group-btn">
+	          <button type="button" class="btn btn-default dropdown-toggle {% if not nbindices %}disabled{%endif%}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	            <span class="">Un autre indice de la même version</span>
+	            <span class="caret"></span>
+	          </button>
+              
+	          <ul class="dropdown-menu dropdown-menu-right">
+                {% for indice in release_indices %}
+	            <li><a id="btn_indice_{{ indice }}" data-release="{{ indice }}" class="btn_compare_releases" href="#">{{ indice }}</a></li>
+                {% endfor %}
+	          </ul>
+	        </div>
+            {% endwith %}
+            {% endif %}
+            <button type="button" class="btn btn-default btn_compare_release_source">Tous les modules source</button>
+          </div>
+          <div class="compare-current hidden">
+            <div class="panel panel-info">
+              <div class="panel-body">
+                <p>comparaison avec <span class="info_compare"></p>
+                <p><button type="button" class="btn btn-default">Arreter la comparaison </button></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
 
     <div class="panel panel-default" id="release_details">
       <div class="panel-heading">
@@ -209,14 +258,17 @@
 
 
 {% block content %}
-    <div id="main" class="release" data-release="{{release_path}}" data-lang="{{ relang }}"
+    <div id="main" class="release"
+         data-release="{{release_path}}"
+         data-lang="{{ relang }}"
+         data-state="{{ langstate }}"
 	 {% if validactions %}
 	 data-valid-actions="yes"
 	 {% endif %}
 	 >
       <ul class="nav nav-tabs" role="tablist" id="release_tabs">
 
-	{% for rlang, state,focus in langstates %}
+	{% for rlang, state, focus in langstates %}
 	
 	<li role="presentation"class="{% if rlang == relang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
 	 
