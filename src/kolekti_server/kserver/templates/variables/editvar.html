@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block current_tools %}menu-current{% endblock %}
+{% block current_tools %}{% if not release %}menu-current{% endif %}{% endblock %}
+{% block current_variables %}{% if not release %}class="menu-current"{% endif %}{% endblock %}
+{% block current_releases %}{% if release %}class="menu-current"{% endif %}{% endblock %}
+
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
@@ -18,7 +21,7 @@
 <script src="{% static 'js/kolekti-variables-edit-'|add:method|add:'.js'" %}"></script>
 {% endblock %}
 
-{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable' project=project lang=lang variable_path=variable_path %}">{{ name }}</a>{% endblock %}
+{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable' project=project lang=lang variable_path=path %}">{{ name }}</a>{% endblock %}
 
 {% block content %}
 <div id="main">

@@ -632,8 +632,51 @@ class TocPublishView(kolektiMixin, TemplateView):
             context.update({'success':False})
             context.update({'stacktrace':traceback.format_exc()})
             return self.render_to_response(context)
+
+class ReleaseMixin(object):
+    def release_iter(self, kolekti, lang, tocpath, xjob):
+        r = publish.Releaser(kolekti.syspath(), lang = lang)
+        pp = r.make_release(tocpath, xjob)
+        release_dir = pp[0]['assembly_dir'][:-1]
+        yield {
+            'event':'release',
+            'ref':release_dir,
+            'release':pp[0]['releasedir'],
+            'time':pp[0]['datetime'],
+            'lang':lang,
+        }
+        if r.syncMgr is not None :
+            r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+        else:
+            logger.debug('no sync manager to set assembly property')
+        p = publish.ReleasePublisher(release_dir, kolekti.syspath(), langs=[lang])
+        for e in p.publish_assembly(pp[0]['pubname']):
+            yield e
+
+    def release_statuses(self, kolekti, release):
+        release_languages = kolekti.project_languages()
+        states = []
+        for lang in release_languages:
+            asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
+            sync = self.get_sync_manager(kolekti)
+            state = sync.propget("release_state",asfilename)
+            asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
+            try:
+                state = sync.propget("release_state",asfilename)
+            except:
+                logger.exception('could not get release state')
+                state = None
+            if state is None:
+                if kolekti.exists(asfilename):
+                    states.append((lang, "local"))
+
+            if state == "source_lang":
+                states.insert(0,(lang, state))
+            else:
+                states.append((lang, state))
+        return states
         
-class TocReleaseView(kolektiMixin, TemplateView):
+class TocReleaseView(kolektiMixin, ReleaseMixin, TemplateView):
     template_name = "publication.html"                                                                              
     def post(self, request, project, lang, toc_path):
         logger.debug('create release')
@@ -674,59 +717,23 @@ class TocReleaseView(kolektiMixin, TemplateView):
             context.update({'stacktrace':traceback.format_exc()})
             return self.render_to_response(context)
 
-    def release_iter(self, kolekti, lang, tocpath, xjob):
-        r = publish.Releaser(kolekti.syspath(), lang = lang)
-        pp = r.make_release(tocpath, xjob)
-        release_dir = pp[0]['assembly_dir'][:-1]
-        yield {
-            'event':'release',
-            'ref':release_dir,
-            'release':pp[0]['releasedir'],
-            'time':pp[0]['datetime'],
-            'lang':lang,
-        }
-        if r.syncMgr is not None :
-            r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
-        else:
-            logger.debug('no sync manager to set assembly property')
-        p = publish.ReleasePublisher(release_dir, kolekti.syspath(), langs=[lang])
-        for e in p.publish_assembly(pp[0]['pubname']):
-            yield e
 
-    
+
+        
 class ReleaseListView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
 
-class ReleaseStatesView(kolektiMixin, TemplateView):
+class ReleaseStatesView(kolektiMixin, ReleaseMixin, TemplateView):
     def get(self, request, project, release):
         context, kolekti = self.get_context_data({'project':project})
-        release_languages = kolekti.project_languages()
-        states = []
-        for lang in release_languages:
-            asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
-            sync = self.get_sync_manager(kolekti)
-            state = sync.propget("release_state",asfilename)
-            asfilename = "/".join(['/releases',release,"sources",lang,"assembly",release+'_asm.html'])
-            try:
-                state = sync.propget("release_state",asfilename)
-            except:
-                logger.exception('could not get release state')
-                state = None
-            if state is None:
-                if kolekti.exists(asfilename):
-                    states.append((lang, "local"))
-
-            if state == "source_lang":
-                states.insert(0,(lang, state))
-            else:
-                states.append((lang, state))
+        states = self.release_statuses(kolekti, release)
         return HttpResponse(json.dumps(states),content_type="application/json")
 
 class ReleaseDeleteView(kolektiMixin, View):
     def post(self, request, project, release):
         context, kolekti = self.get_context_data({'project': project})
         try:
-            kolekti.delete_resource('/release/%s'%(release,))
+            kolekti.delete_resource('/releases/%s'%(release,))
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             logger.exception("Could not delete release")
@@ -811,7 +818,7 @@ class ReleaseLangCopyView(kolektiMixin, TemplateView):
             'release':release,
             'lang':dstlang
             }))
-    
+
 class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
@@ -1098,6 +1105,82 @@ class ReleaseLangValidateView(kolektiMixin, View):
 
             return self.render_to_response(context)
 
+
+class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
+    def post(self, request, project, release):
+        new_index = request.POST.get('index')
+        from_sources = (request.POST.get('from_sources', 'false') == "true")
+        logger.debug(from_sources)
+        context, kolekti = self.get_context_data({'project': project})
+        releaseinfo = json.loads(kolekti.read('/releases/'+release+'/release_info.json'))
+        majorname = releaseinfo.get('releasename')
+        old_index = releaseinfo.get('releaseindex')
+        
+        new_release = '%s_%s'%(majorname, new_index)
+        
+        if kolekti.exists('/releases/%s'%(new_release,)):
+            logger.warning("Already exists")
+            return HttpResponse(
+                json.dumps({'status':'E', "msg":'l´indice %s existe' }),
+                content_type="application/json",
+                status=403
+                )
+                    
+        tocpath = releaseinfo.get('toc')        
+        states = self.release_statuses(kolekti, release)
+       
+        for key, val in states:
+            logger.debug("state %s, %s",key, val)
+            if val == "sourcelang":
+                srclang = key
+        try:
+            if from_sources:
+                jobpath = '/releases/' + release + '/kolekti/publication-parameters/' + release + '_asm.xml'
+                xjob = kolekti.parse(jobpath)
+                rootjob = xjob.getroot()
+                rootjob.set('pubdir', new_release)
+                rootjob.set('releasename',majorname)
+                rootjob.set('releaseindex' , new_index)
+                rootjob.set('id', '%s_asm.xml'%(new_release,))
+                self.release_iter(kolekti, srclang, tocpath, xjob)
+                r = publish.Releaser(kolekti.syspath(), lang = srclang)
+                r.make_release(tocpath, xjob)
+            else:
+                kolekti.duplicate_release(majorname, old_index, new_index)
+                
+        except:
+            logger.exception("Could not update release")
+            return HttpResponse(status=500)
+
+        # initialise les langues
+        assembly = "/".join(['/releases', new_release , "sources" , srclang , "assembly" , new_release+'_asm.html'])
+        
+        sync = self.get_sync_manager(kolekti)
+        
+        sync.propset("release_state",'sourcelang', assembly)
+        
+        for key, val in states:
+            if val == "sourcelang":
+                continue
+            if val is None:
+                continue
+
+            dstlang = key
+
+            logger.debug("state %s, %s",key, val)
+            
+            for copiedfile in kolekti.copy_release(new_release, srclang, dstlang):
+                logger.debug(copiedfile)
+            assembly = "/".join(['/releases', new_release , "sources" , dstlang , "assembly" , new_release+'_asm.html'])
+
+            sync.propset("release_state",'edition', assembly)
+            sync.propset("release_srclang", srclang, assembly)
+            # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+
+        return HttpResponse(json.dumps("ok"), content_type="text/javascript")
+
+
+        
 class TopicsListView(kolektiMixin, TemplateView):
     template_name = "topics/list.html"
 
@@ -1147,21 +1230,23 @@ class PictureDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
+
+
+    
 class VariablesListView(kolektiMixin, TemplateView):
     template_name = "variables/list.html"
-
-
-class VariablesMixin(kolektiMixin, TemplateView):
-
+    
+class VariablesMixin(kolektiMixin):
     def getval(self, val):
         try:
             return val.find('content').text
         except AttributeError:
             return ""
         
-    def variable_details(self, kolekti, project, lang, path, include_values = None):
+    def variable_details(self, context, kolekti, release, lang, path, include_values = False):
         name = path.rsplit('/',1)[-1]
-        xmlvar = kolekti.parse('/sources/%s/variables/%s'%(lang, path))
+        variable_file = self.variables_file(release, lang, path) 
+        xmlvar = kolekti.parse(variable_file) #'/sources/%s/variables/%s'%(lang, path))
         crits = [c.text[1:] for c in xmlvar.xpath('/variables/critlist/crit')]
         variables = xmlvar.xpath('/variables/variable/@code')
         values = xmlvar.xpath('/variables/variable[1]/value')
@@ -1179,48 +1264,60 @@ class VariablesMixin(kolektiMixin, TemplateView):
         if include_values:
             vardata.update({"values": [[self.getval(v) for v in var.xpath('value') ] for var in xmlvar.xpath('/variables/variable')]})
             
-        context, kolekti = self.get_context_data({
-            'project': project,
+        context.update({
+            "release" : release,
             'lang': lang,
             'name': name,
-            'path': '/sources/%s/variables/%s'%(lang, path),
+            'path': path,
             'vardata' : json.dumps(vardata),
             })
         context.update(vardata)
         return context
 
-    def post(self, request, project, lang, variable_path):
+    def variables_file(self, release, lang, path):
+        if release is None:
+            path = "/sources/%s/variables/%s.xml"%(lang, path)
+        else:
+            path = "/releases/%s/sources/%s/variables/%s.xml"%(release, lang, path)
+        return path
+
+    
+class VariablesPostMixin(VariablesMixin):        
+    def post(self, request, project, lang, variable_path, release = None):
         try:
-            context, kolekti = self.get_context_data({'project':project, 'lang':lang, 'variable_path':variable_path})
+            context, kolekti = self.get_context_data({'project':project, 'lang':lang})
+            variables_file = self.variables_file(release, lang, variable_path) 
             payload = json.loads(request.body)
-            varpath = payload.get('path')
-            xvar = kolekti.parse(varpath)
+#            varpath = payload.get('path')
+            xvar = kolekti.parse(variables_file)
             for var, mvar in zip(xvar.xpath('/variables/variable'), payload.get('data')):
                 for (val, mval) in zip(var.xpath('value/content'), mvar):
                     val.text = mval
-            kolekti.xwrite(xvar, varpath)
+            kolekti.xwrite(xvar, variables_file)
             return HttpResponse('ok')
         except:
             logger.exception('Could not save variable')
             return HttpResponse(status=500)
     
-class VariablesDetailsView(VariablesMixin):
+class VariablesDetailsView(VariablesMixin, TemplateView):
     template_name = "variables/details.html"
-    def get(self, request, project, lang, variable_path):
-        context, kolekti = self.get_context_data({'project':project, 'lang':lang, 'variable_path':variable_path})
+    def get(self, request, project, lang, variable_path, release=None):
+        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         try:
-            context.update(self.variable_details(kolekti, project, lang, variable_path))
+            self.variable_details( context, kolekti, release, lang, variable_path)
             return self.render_to_response(context)
         except:
             logger.exception('unable to process variable file')
             raise
         
-    def post(self, request, project, lang, variable_path):
+    def post(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        variables_file = self.variables_file(release, lang, variable_path) 
         try:
             action = request.POST.get('action')
-            path = request.POST.get('path')
-            xvar = kolekti.parse(path)
+#            path = request.POST.get('path')
+
+            xvar = kolekti.parse(variables_file)
             if action == "newvar":
                 varname = request.POST.get('varname')
                 varvalue = request.POST.get('varvalue')
@@ -1297,89 +1394,87 @@ class VariablesDetailsView(VariablesMixin):
                         "name":request.POST.get("crit"),                            
                         "value":request.POST.get("val")
                         })
-                    
-                
+
+
+            kolekti.xwrite(xvar, variables_file)                     
+            return HttpResponseRedirect('')
         except:
-            logger.exception('var action failed')
-            
-        kolekti.xwrite(xvar, path)
-        return HttpResponseRedirect('?path='+path)
+            logger.exception('var action failed')                     
+            raise
 #        return self.render_to_response(self.variable_details(path))
         
-class VariablesEditvarView(VariablesMixin):
+class VariablesEditvarView(VariablesPostMixin, TemplateView):
     template_name = "variables/editvar.html"
-    def get(self, request, project, lang, variable_path):
+    def get(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        self.variable_details(context, kolekti, release, lang, variable_path, True)
         index = int(request.GET.get('index',1)) - 1
-        context.update(self.variable_details(kolekti, project, lang, variable_path, True))
         context.update({
-            "variable_path":variable_path,
             "method":"line",
             "current":index,
             })
         return self.render_to_response(context)
     
 
-class VariablesEditcolView(VariablesMixin):
+class VariablesEditcolView(VariablesPostMixin, TemplateView):
     template_name = "variables/editvar.html"
-    def get(self, request, project, lang, variable_path):
+    def get(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
-        path = request.GET.get('path')
+#        path = request.GET.get('path')
+
         index = int(request.GET.get('index', 1)) - 1
-        project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-        context.update(self.variable_details(kolekti, project, lang, variable_path, True))
+#        project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
+        self.variable_details(context, kolekti, release, lang, variable_path, True)
         context.update({
-            "variable_path":variable_path,                                          
             "method":"col",
             "current":index,
             })
         return self.render_to_response(context)
     
     
-class VariablesUploadView(kolektiMixin, TemplateView):
-    def post(self, request, project, lang, variable_path):
+class VariablesUploadView(VariablesMixin, TemplateView):
+    def post(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES[u'upload_file']
-            project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
+            variables_file = self.variables_file(release, lang, variable_path) 
 
-            path = request.POST['path']
+#            path = request.POST['path']
             converter = OdsToXML(kolekti.syspath())
-            converter.convert(uploaded_file, project_variable_path)
+            converter.convert(uploaded_file, variables_file)
             # self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
 
-class VariablesCreateView(kolektiMixin, TemplateView):
-    def post(self, request, project, lang, variable_path):
+class VariablesCreateView(VariablesMixin, TemplateView):
+    def post(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
-            
-            project_variable_path = "/sources/%s/variables/%s"%(lang, variable_path)
-            project_variable_path = self.set_extension(project_variable_path, ".xml")
-            logger.debug(project_variable_path)
+            variables_file = self.variables_file(release, lang, variable_path) 
             varx = kolekti.parse_string('<variables><critlist></critlist></variables>')
-            kolekti.xwrite(varx, project_variable_path)
-            return HttpResponse(json.dumps(kolekti.path_exists(project_variable_path)),content_type="application/json")
+            kolekti.xwrite(varx, variables_file)
+            return HttpResponse(json.dumps(kolekti.path_exists(variables_file)),content_type="application/json")
         except:
             logger.exception('could not create variable file')
             import traceback
             print traceback.format_exc()
             return HttpResponse(status=500)
 
-class VariablesODSView(kolektiMixin, View):
-    def get(self, request, project, lang, variable_path):
+class VariablesODSView(VariablesMixin, View):
+    def get(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
-        filename = variable_path.rsplit('/',1)[-1].replace('.xml','.ods')
-        odsfile = StringIO()
+        variables_file = self.variables_file(release, lang, variable_path)
+        ods_path = variables_file.replace('.xml','.ods')
+        filename = ods_path.rsplit('/',1)[-1]
+        ods_file = StringIO()
         converter = XMLToOds(kolekti.syspath())
-        converter.convert(odsfile, '/sources/' + lang + '/variables/' + variable_path)
-        response = HttpResponse(odsfile.getvalue(),
+        converter.convert(ods_file, variables_file)
+        response = HttpResponse(ods_file.getvalue(),
                                 content_type="application/vnd.oasis.opendocument.spreadsheet")
         response['Content-Disposition']='attachement; filename="%s"'%filename
-        odsfile.close()
+        ods_file.close()
         return response
 
 
@@ -1737,7 +1832,7 @@ class BrowserReleasesView(BrowserView):
     def get_directory(self, kolekti, path):
         try:
             releases = {}
-            logger.debug(kolekti)
+#            logger.debug(kolekti)
             for assembly, date in kolekti.get_release_assemblies(path):
                 item = {'name':assembly,
                         'type':"text/xml",

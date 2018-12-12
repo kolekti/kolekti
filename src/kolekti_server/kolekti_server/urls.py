@@ -98,15 +98,15 @@ urls = [
             
             url(r'^variables/', include([
                 url(r'^$', VariablesListView.as_view(), name='kolekti_variables'),
-                url(r'^(?P<variable_path>.+)/', include([
-                    url(r'^edit$', VariablesDetailsView.as_view(), name='kolekti_variable'),
+                url(r'^(?P<variable_path>.+)/', include([                    
+#                    url(r'^edit$', VariablesDetailsView.as_view(), name='kolekti_variable_edit'),
                     url(r'^create$', VariablesCreateView.as_view(), name='kolekti_variable_create'),
                     url(r'^upload$', VariablesUploadView.as_view(), name='kolekti_variable_upload'),
 #                    url(r'^detail$', VariablesDetailsView.as_view(), name='kolekti_variable_details'),
                     url(r'^editvar$', VariablesEditvarView.as_view(), name='kolekti_variable_editval'),
                     url(r'^editcol$', VariablesEditcolView.as_view(), name='kolekti_variable_editcol'),
                     url(r'^ods$', VariablesODSView.as_view(), name='kolekti_variable_ods'),
-                    url(r'^$', VariablesListView.as_view(), name='kolekti_variables_browse'),
+                    url(r'^$', VariablesDetailsView.as_view(), name='kolekti_variable'),
                 ])),
             ])),
         
@@ -122,6 +122,7 @@ urls = [
             url(r'^import/$', ImportView.as_view(), name='kolekti_import'),
             url(r'^import/template/$', ImportTemplateView.as_view(), name='kolekti_import_template'),
 
+
         ])), # sources
             
          
@@ -133,9 +134,9 @@ urls = [
             url(r'^archive', ReleaseArchiveView.as_view(),name="kolekti_release_archive"),
             url(r'^states/$', ReleaseStatesView.as_view(), name='kolekti_release_states'),
             url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_delete'),
-                            
-            url(r'^(?P<lang>[^/\?]+)/', include([
-                url(r'^detail/$', ReleaseLangDetailsView.as_view(), name='kolekti_release_lang_detail'),
+            url(r'^update/$', ReleaseUpdateView.as_view(), name='kolekti_release_update'),
+            url(r'^sources/(?P<lang>[^/\?]+)/', include([
+                url(r'^$', ReleaseLangDetailsView.as_view(), name='kolekti_release_lang_detail'),
                 url(r'^state/$', ReleaseLangStateView.as_view(), name='kolekti_release_lang_state'),
                 url(r'^focus/$', ReleaseLangFocusView.as_view(), name='kolekti_release_lang_focus'),
                 url(r'^copy/$', ReleaseLangCopyView.as_view(), name='kolekti_release_lang_copy'),
@@ -143,6 +144,19 @@ urls = [
                 url(r'^publish/$', ReleaseLangPublishView.as_view(),name='kolekti_release_lang_publish'),
                 url(r'^validate/$', ReleaseLangValidateView.as_view(),name='kolekti_release_lang_validate'),
                 url(r'^assembly/$', ReleaseLangAssemblyView.as_view(),name='kolekti_release_lang_assembly'),
+                url(r'^variables/', include([
+                    url(r'^(?P<variable_path>.+)/', include([                    
+                        url(r'^edit$', VariablesDetailsView.as_view(), name='kolekti_release_lang_variable'),
+                        url(r'^create$', VariablesCreateView.as_view(), name='kolekti_release_lang_variable_create'),
+                        url(r'^upload$', VariablesUploadView.as_view(), name='kolekti_release_lang_variable_upload'),
+    #                    url(r'^detail$', VariablesDetailsView.as_view(), name='kolekti_release_lang_variable_details'),
+                        url(r'^editvar$', VariablesEditvarView.as_view(), name='kolekti_release_lang_variable_editval'),
+                        url(r'^editcol$', VariablesEditcolView.as_view(), name='kolekti_release_lang_variable_editcol'),
+                        url(r'^ods$', VariablesODSView.as_view(), name='kolekti_release_lang_variable_ods'),
+                        url(r'^$', VariablesListView.as_view(), name='kolekti_release_lang_variables_browse'),
+                    ]))
+                ])),
+
                 url(r'^publications/*', ReleaseLangPublicationsView.as_view(),name='kolekti_release_lang_publications'),
                 url(r'^publications.json$', ReleaseLangPublicationsListJsonView.as_view(),name='kolekti_release_lang_publications_list_json'),
 
@@ -189,9 +203,11 @@ urls = [
             url(r'^history/$', ProjectHistoryView.as_view(), name='kolekti_project_history'),
             url(r'^publications.json$', PublicationsListJsonView.as_view(),name='kolekti_publications_list_json'),
             url(r'^publications/(?P<publication_path>.+)/zip/$', PublicationsZipView.as_view(),name='kolekti_publications_zip'),
-            url(r'^search/$', SearchView.as_view(),name='kolekti_search'),
+            
         ])), #/api
-    url(r'^(?P<path>.*)$', ProjectStaticView.as_view(), name='kolekti_project_static'),
+        url(r'^search/',include('search.urls')),
+        url(r'^audit/',include('audit.urls')),
+        url(r'^(?P<path>.*)$', ProjectStaticView.as_view(), name='kolekti_project_static'),
     
   ])), # project
     

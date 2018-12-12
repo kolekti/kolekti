@@ -155,7 +155,7 @@ $(document).ready(function() {
 	var varname = $(this).data('varname')
 	if (confirm('Voulez vous réélement supprimer la variable '+varname)) {
 	    $.ajax({
-		    url:Urls.kolekti_variables_details(kolekti.project, kolekti.lang, path),
+		    url:Urls.kolekti_variable(kolekti.project, kolekti.lang, path),
 		    type:'POST',
 		    data:{
                 "action":"delvar",
@@ -163,7 +163,7 @@ $(document).ready(function() {
 		        "index":varindex
             }
 	    }).success(function(data) {
-            window.location.href=Urls.kolekti_variables_details(kolekti.project, kolekti.lang, path)
+            window.location.href=Urls.kolekti_variable(kolekti.project, kolekti.lang, path)
 	    });
 	}
 	
@@ -187,13 +187,13 @@ $(document).ready(function() {
 	var condname = $(this).data('condname')
 	if (confirm('Voulez vous réélement supprimer toutes les valeurs pour la condition  '+condname)) {
 	    $.ajax({
-		    url:Urls.kolekti_variables_details(kolekti.project, kolekti.lang, path),
+		    url:Urls.kolekti_variable(kolekti.project, kolekti.lang, path),
 		    type:'POST',
 		    data:{"action":"delcond",
 		          "path":path,
 		          "index":condindex}
 	    }).success(function(data) {
-		    window.location.href=Urls.kolekti_variables_details(kolekti.project, kolekti.lang, path)
+		    window.location.href=Urls.kolekti_variable(kolekti.project, kolekti.lang, path)
 	    });
 	}
 	

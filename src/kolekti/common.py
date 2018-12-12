@@ -112,8 +112,7 @@ class kolektiBase(object):
     def write_project_config(self):
         self.xwrite(self.project_settings, '/kolekti/settings.xml')
         
-    def set_project(self, path, username=None):
-            
+    def set_project(self, path, username=None):            
         if os.sys.platform[:3] == "win":
             appurl = urllib.pathname2url(self._appdir)[3:]
             os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
@@ -412,6 +411,68 @@ class kolektiBase(object):
                     yield callback(varfile, t)
                     
 
+    def duplicate_release(self, releasename, old_index, new_index):
+        old_release = releasename + '_' + old_index
+        new_release = releasename + '_' + new_index
+        
+        ossource = self.__makepath("/releases/%s"%old_release)
+        osdest   = self.__makepath("/releases/%s"%new_release)
+
+        os.makedirs(osdest)
+        
+        releaseinfo = json.loads(self.read('/releases/' + old_release + '/release_info.json'))
+        releaseinfo['releaseprev'] = old_release
+        releaseinfo['pubname'] = releasename
+        releaseinfo['assembly_dir'] = "/releases/%s"%new_release
+        releaseinfo['releaseindex'] = new_index
+        releaseinfo['releasedir'] = new_release
+        self.write(json.dumps(releaseinfo), '/releases/' + new_release + '/release_info.json', sync=False)
+        
+        shutil.copytree(
+            os.path.join(ossource, 'kolekti'),
+            os.path.join(osdest, 'kolekti')
+        )
+        
+        shutil.copytree(
+            os.path.join(ossource, 'sources'),
+            os.path.join(osdest, 'sources')
+        )
+        self.move_resource(
+            "/releases/%s/kolekti/publication-parameters/%s_asm.xml"%(new_release, old_release),
+            "/releases/%s/kolekti/publication-parameters/%s_asm.xml"%(new_release, new_release)
+            )
+        
+        jobpath = '/releases/%s/kolekti/publication-parameters/%s_asm.xml'%(new_release, new_release)
+        
+        xjob = self.parse(jobpath)
+        rootjob = xjob.getroot()
+        rootjob.set('pubdir', new_release)
+        rootjob.set('releasename',releasename)
+        rootjob.set('releaseindex' , new_index)
+        rootjob.set('id', '%s_asm.xml'%(new_release,))
+        self.xwrite(xjob, jobpath)
+        
+        langs = self.list_directory('/releases/%s/sources'%new_release)
+        for lang in langs:
+            if lang == 'share':
+                continue;
+            assembly_path = "/releases/%s/sources/%s/assembly/%s_asm.html"%(new_release, lang, new_release)
+            self.move_resource(
+                "/releases/%s/sources/%s/assembly/%s_asm.html"%(new_release, lang, old_release),
+                assembly_path
+                )
+
+            assembly = self.parse(assembly_path)
+            for meta in assembly.xpath('/h:html/h:head/h:meta', **ns):
+                if meta.get('name', '') == "kolekti.releasedir":
+                    meta.set('name', new_release)
+                if meta.get('name', '') == "kolekti.releasename":
+                    meta.set('name', releasename)
+                if meta.get('name', '') == "kolekti.releaseindex":
+                    meta.set('name', new_index)
+            self.xwrite(assembly, assembly_path)
+            
+                    
     def copy_release(self, release, srclang, dstlang):
         # copy images & variables
         #srcsubdirs = [d['name'] for d in  self.get_directory('%s/sources/%s'%(path, srclang)) if d['name'] != 'assembly']
@@ -424,7 +485,8 @@ class kolektiBase(object):
         try:
             self.syncMgr.post_save(dstpath)
         except:
-            pass
+            logger.debug("no post save")
+
 
         # copy assembly / change language in references to images
         # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
@@ -1001,7 +1063,19 @@ class kolektiTests(kolektiBase):
             if len(xml.xpath(testcase['xpath'], namespaces = self.namespaces)) == 0:
                 raise KolektiValidationError(testcase['message'])
 
+    def update_release(self, release, new_index):
+        """ updates a release from sources
+            regenerates the assembly from the toc in source language,
+            
+        """
+        pass
 
+    def copy_release_index(self, release, new_index):
+        
+        pass
+
+    
+            
 import unittest
             
 class VariableTest(unittest.TestCase):

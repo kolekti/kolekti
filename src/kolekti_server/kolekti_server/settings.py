@@ -70,6 +70,8 @@ INSTALLED_APPS = (
     'allauth.socialaccount',
     'invitations',
     'django.contrib.admin',
+    'audit',
+    'search',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -1109,7 +1109,7 @@ class Releaser(Publisher):
 
             # filter assembly with profiles
             from release import Release
-            release = Release(self._base, release_dir)
+            release = Release(self._path, release_dir)
             release.apply_filters(self._publang)
             
         except:

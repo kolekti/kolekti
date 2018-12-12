@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block current_tools %}menu-current{% endblock %}
+{% block current_tools %}{% if not release %}menu-current{% endif %}{% endblock %}
+{% block current_variables %}{% if not release %}class="menu-current"{% endif %}{% endblock %}
+{% block current_releases %}{% if release %}class="menu-current"{% endif %}{% endblock %}
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
@@ -16,7 +18,13 @@
 </script>
 {% endblock %}
 
-{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <span title="{{ path }}"> {{ name }}</span>{% endblock %}
+{% block title %}
+{% if release %}
+<a href="{% url 'kolekti_release_lang_detail' project=project release=release lang=lang %}">{{release}}</a> : Variables <span title="{{ path }}"> {{ name }}</span>
+{% else %}
+<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <span title="{{ path }}"> {{ name }}</span>
+{% endif %}
+{% endblock %}
 
 {% block content %}
 
@@ -28,7 +36,7 @@
 	<ul class="list-group">
 	  {% for variable in variables %}
 	  <li class="list-group-item">
-	    <a href="{% url 'kolekti_variable_editval' project=project lang=lang variable_path=variable_path %}?index={{ forloop.counter }}">{{variable}}</a>
+	    <a href="{% url 'kolekti_variable_editval' project=project lang=lang variable_path=path %}?index={{ forloop.counter }}">{{variable}}</a>
 	    <span class="pull-right">
 	      <button data-varindex="{{forloop.counter}}"
 		      class="btn btn-xs btn-default kolekti-action-rename-variable"
@@ -61,7 +69,7 @@
 	  {% for condition in conditions %}
 	  {% if condition.expr %}
 	  <li class="list-group-item">
-	    <a href="{% url 'kolekti_variable_editcol' project=project lang=lang variable_path=variable_path %}?index={{ forloop.counter }}">{{ condition.label }}</a>
+	    <a href="{% url 'kolekti_variable_editcol' project=project lang=lang variable_path=path %}?index={{ forloop.counter }}">{{ condition.label }}</a>
 	    <span class="pull-right">
 	      <button data-condname="{{condition.label}}"
 		      data-condindex="{{forloop.counter}}"
@@ -297,7 +305,7 @@
 {% block menu %}
     <div class="row">
       <div class="col-sm-12 col-md-12">
-	<a href="{% url 'kolekti_variable_ods' project=project lang=lang variable_path=variable_path %}" title="générer fichier ods" class="btn btn-block btn-default"><span class="glyphicon glyphicon-export" aria-hidden="true"></span><span> exporter ods</span></a>
+	<a href="{% url 'kolekti_variable_ods' project=project lang=lang variable_path=path %}" title="générer fichier ods" class="btn btn-block btn-default"><span class="glyphicon glyphicon-export" aria-hidden="true"></span><span> exporter ods</span></a>
       </div>
     </div>
     <br>

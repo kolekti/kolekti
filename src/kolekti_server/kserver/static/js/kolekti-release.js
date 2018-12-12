@@ -118,7 +118,7 @@ $(document).ready( function () {
 	    $('#variables_pane').removeClass('hidden')
         var release = $('#main').data('release');
         var relang = $('#main').data('lang');
-	    kolekti_browser({'root':'/releases/' +$('#main').data('release')+'/sources/'+ relang +'/variables/',
+	    kolekti_browser({'root':'/releases/' +$('#main').data('release')+'/sources/'+ relang +'/variables',
 		                 'parent':"#variables_pane",
 		                 'title':" ",
 		                 'titleparent':".title",
@@ -130,10 +130,14 @@ $(document).ready( function () {
 		                })
 	        .select(
 			    function(path) {
-                    console.log('variable select')
+                    console.log(path);
+                    rpath = path.split('/').splice(6).join("/")
+                    rpath = rpath.replace(".xml","")
+                    //                    console.log('variable select')
                     //                    Urls.kolekti_variable(kolekti.project, path)
-                    console.log(Urls.kolekti_variable(kolekti.project + '/releases/' + release, relang, path));
-		            window.location.href = Urls.kolekti_variable(kolekti.project + '/releases/' + release, relang, path);
+                    // console.log(Urls.kolekti_release_lang_variable(kolekti.project, release, relang, rpath));
+		            window.location.href = Urls.kolekti_release_lang_variable(kolekti.project, release, relang, rpath);
+
                 
 	            })
 	        .create(upload_varfile)

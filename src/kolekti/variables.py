@@ -43,5 +43,83 @@ class XMLToOds(common.kolektiBase):
                         data = zipin.read(f.filename)
                     zipout.writestr(f, data)
         
-                
 
+class UpdateFromReleases(common.kolektiBase):
+    def run(self, srclang):
+        for release in self.list_directory('/releases'):
+            for lang in self.list_directory('/releases/%s/sources/'%release):
+                yield lang
+                if lang == srclang or lang=='share':
+                    continue
+                top = '/releases/%s/sources/%s/variables'%(release, lang)
+                l = len(self.getOsPath(top))
+                for root, dirs, files in os.walk(self.getOsPath(top)):
+                    for varfile in files:
+                        path = '%s/%s'%(root[l+1:],varfile)
+                        tpath = '/sources/%s/variables/%s'%(lang,path)
+                        spath = '%s/%s'%(top,path)
+                        if not self.exists(tpath):
+                            yield 'create %s'%tpath 
+                            self.copy_resource(spath, tpath)
+                        else:
+                            svars = self.parse(spath)
+                            tvars = self.parse(tpath)
+                            for varval in svars.xpath('/variables/variable/value'):
+                                varcode = varval.getparent().get('code')
+                                content = ET.tostring(varval.find("content"), encoding="utf-8")
+                                tpath = '/variables/variable[@code="%s"]/value'%varcode
+                                if len(tvars.xpath(tpath)):
+                                    
+                                    for crit in varval.iter('crit'):
+                                        critname = crit.get('name')
+                                        critval  = crit.get('value')
+                                        tpath = tpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
+                                        
+                                    if len(tvars.xpath(tpath)):
+                                        found = False
+                                        for tcontent in tvars.xpath(tpath)[0].findall('content'):
+                                            if ET.tostring(tcontent, encoding="utf-8") == content:
+                                                found = True
+                                        if not found:
+                                            tvars.xpath(tpath)[0].append(varval.find("content"))
+                                            
+                                    else:
+                                        tvar = tvars.xpath('/variables/variable[@code="%s"]'%varcode)[0]
+                                        tvar.append(varval)
+                                else:
+                                    tvars.getroot().append(varval.getparent())
+                                    
+class AuditVariables(common.kolektiBase):
+    def audit_varfile(self, lang, varpath):
+        path = '/sources/%s/variables/%s'%(lang,varpath)
+        svar = self.parse(path)
+        translations = {} 
+        for l in self.project_languages():
+            ltop = '/sources/%s/variables'%l
+            lpath = '%s/%s'%(ltop, varpath)
+            translation = {}
+            if self.exists(lpath):
+                tvar = self.parse(lpath)
+                varsdesc = {}
+                for var in svar.xpath('/variables/variable'):
+                    varcode = var.get('code')
+
+                    if len(tvar.xpath('/variables/variable[@code="%s"]'%varcode)):                        
+                        values = {}
+                        for condvalue in var.iter('value'):
+                            condition = {}
+                            for crit in condvalue.iter('crit'):
+                                critname = unicode(crit.get('name'))
+                                condition.update({critname:crit.get('value')})
+                            values[l].append({'condition':condition, 'content':condvalue.find('content')})
+                        varsdesc.update({varcode:values})
+                translations.update({l: varsdesc})
+        return translations
+    
+    def audit_all(self, lang):
+        top = '/sources/%s/variables'%lang
+        l = len(self.getOsPath(top))
+        for root, dirs, files in os.walk(self.getOsPath(top)):
+            for varfile in files:
+                path = '%s/%s'%(root[l+1:],varfile)
+                yield {path:self.audit_varfile(lang, path)}

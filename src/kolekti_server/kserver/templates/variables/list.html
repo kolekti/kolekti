@@ -3,6 +3,7 @@
 
 {% block title %}Variables{% endblock %}
 {% block current_tools %}menu-current{% endblock %}
+{% block current_variables %}class="menu-current"{% endblock %}
 {% block help-topic %}variable{% endblock %}
 
 {% block extracss %}
@@ -38,7 +39,9 @@
 <div class="main">
   <div class="title">
   </div>
-  <div class="browser collapse in" id="browser_lang" data-browserpath="/sources/{{ lang }}/variables/{% if variable_path %}{{ variable_path }}/{% endif %}">
+  <div class="browser collapse in"
+       id="browser_lang"
+       data-browserpath="{% if release %}/releases/{{ release }}{% endif %}/sources/{{ lang }}/variables/{% if variable_path %}{{ variable_path }}/{% endif %}">
   </div>
 
   <div id="uploadmodal" class="modal fade">

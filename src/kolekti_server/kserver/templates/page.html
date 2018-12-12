@@ -49,22 +49,26 @@
 	    <li class="dropdown  {% block current_tools %}{% endblock %}">
 	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projet <span class="caret"></span></a>
 	      <ul class="dropdown-menu" role="menu">
-		<li><a href="{% url 'kolekti_variables' project=project lang=default_lang %}">Variables</a></li>
-		<li><a href="{% url 'kolekti_criteria_edit' project=project %}">Critères</a></li>
-		<li><a href="{% url 'kolekti_languages_edit' project=project %}">Langues</a></li>
-		<li><a href="{% url 'kolekti_jobs' project=project %}">Paramètres de publication</a></li>
-		<li><a href="{% url 'kolekti_templates' project=project lang=default_lang %}">Modèles de modules</a></li>
-		<li><a href="{% url 'kolekti_publication_templates' project=project %}">Modèles de sorties</a></li>
+		<li {% block current_variables %}{% endblock %}><a href="{% url 'kolekti_variables' project=project lang=default_lang %}">Variables</a></li>
+		<li {% block current_criteria %}{% endblock %}><a href="{% url 'kolekti_criteria_edit' project=project %}">Critères</a></li>
+		<li {% block current_languages %}{% endblock %}><a href="{% url 'kolekti_languages_edit' project=project %}">Langues</a></li>
+		<li {% block current_jobs %}{% endblock %}><a href="{% url 'kolekti_jobs' project=project %}">Paramètres de publication</a></li>
+		<li {% block current_templates %}{% endblock %}><a href="{% url 'kolekti_templates' project=project lang=default_lang %}">Modèles de modules</a></li>
+		<li {% block current_publication_templates %}{% endblock %}><a href="{% url 'kolekti_publication_templates' project=project %}">Modèles de sorties</a></li>
+
+        <li {% block current_audit %}{% endblock %}><a href="{% url 'audit_home' project=project %}">Audit du projet</a></li>
+        
 		<li role="presentation" class="divider"></li>
 
 		<li><a href="{% url 'kolekti_import' project=project lang=default_lang %}">Importer un fichier tableur</a></li>
         {% if svn_url != "local" %}
 		<li role="presentation" class="divider"></li>
-		<li><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
+		<li {% block current_synchro %}{% endblock %}><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
         {% endif %}
 		{% if active_project_admin %}
-		<li><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
+		<li {% block current_translation_admin %}{% endblock %}><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
 		{% endif %}
+        
 		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>

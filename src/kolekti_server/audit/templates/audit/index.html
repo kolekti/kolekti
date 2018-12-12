@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block current_tools %}{% if not release %}menu-current{% endif %}{% endblock %}
+{% block current_audit %}class="menu-current"{% endblock %}
+
+{% block help-topic %}audit{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-audit.css" %}"></script>
+{% endblock %}
+
+{% block extrascripts %}
+<script src="{% static "js/kolekti-audit.js" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block title %}
+Audit
+{% endblock %}
+
+{% block content %}
+<div id="main" 		data-path = "{{ path }}">
+  <h1>Audit du project {{project }}</h1>
+  <ul>
+    <li><a href="{% url 'audit_variables' project=project %}">Variables</a></li>
+  </ul>
+</div>
+{% endblock %}

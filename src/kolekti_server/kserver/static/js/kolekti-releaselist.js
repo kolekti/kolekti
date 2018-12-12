@@ -9,6 +9,17 @@ $(document).ready(function() {
     
     var url_releases = Urls.kolekti_browser_releases(kolekti.project)
     var path = $('.browser').data('browserpath')
+
+	var fmtdate = function(d) {
+		var mm = d.getMonth() + 1; // getMonth() is zero-based
+		var dd = d.getDate();
+		
+		return [d.getFullYear(),
+			    (mm>9 ? '' : '0') + mm,
+			    (dd>9 ? '' : '0') + dd
+		       ].join('');
+	};
+    
     
     kolekti_browser({'root':'/releases',
                      'url':url_releases,
@@ -25,14 +36,6 @@ $(document).ready(function() {
                 console.log(path);
                 var release_path = path.replace('/releases/','')
 		        document.location.href = Urls.kolekti_release_lang_detail(kolekti.project, release_path, kolekti.lang)
-		        
-                /*
-		          $.get('/releases/detail/',{'path':path})
-		          .success(function(data) {
-		          $('#detail_release').html($(data));
-		          })
-		          //	document.location.href = '/release/detail/?release='+path
-		          */
 	        })
     
     
@@ -89,6 +92,44 @@ $(document).ready(function() {
 
 
     $('body').on('click', '.kolekti-action-update', function(e) {
+		var releasepath = $(this).closest('tr').data('name')
+        var i = releasepath.lastIndexOf('_')
+        var min =releasepath.substring(i+1);
+        var maj =releasepath.substring(0, i);
+        
+        $('#modal_release_update').data('release', releasepath)
+        $("#modal_release_new_index").val(fmtdate(new Date()));
         $("#modal_release_update").modal()
+        $("#modal_release_update .majorname").each(function() {
+            console.log(this)
+            $(this).html(maj)
+        });
+        $("#modal_release_update .minorname").each(function() {
+            $(this).html(min)
+        });
+    })
+    
+    $('body').on('click', '#modal_release_update_confirm', function(e) {
+        var modal = $(this).closest('.modal')
+        var release = modal.data('release')
+        var index = modal.find('#modal_release_new_index').val()
+        var from_sources = modal.find('#modal_release_update_sources').get(0).checked
+        var options = {
+            'index': index,
+            'from_sources':from_sources
+        }
+        $.post(
+	        Urls.kolekti_release_update(kolekti.project, release),
+            options
+        ).done(function() {
+            window.location.reload();
+        }).fail(function(xhr) {
+            console.log(xhr, $(this))
+            var message = xhr.responseText;
+            
+            modal.find('.error_message').html(message)
+            modal.find('.error').removeClass('hidden')
+        })
+               
     })
 })

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% load lxml_source %}
+
+{% block current_tools %}{% if not release %}menu-current{% endif %}{% endblock %}
+{% block current_audit %}class="menu-current"{% endblock %}
+
+{% block help-topic %}audit{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-audit.css" %}"></script>
+{% endblock %}
+
+{% block extrascripts %}
+<script src="{% static "js/kolekti-audit.js" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block title %}
+Audit
+{% endblock %}
+
+{% block content %}
+<div id="main" 		data-path = "{{ path }}">
+  <h1>Audit du project {{project }}</h1>
+  <h2>{{ title }}</h2>
+  {% for record in audit %}
+  {% for varfile, vars in record.items %}
+  <div>
+    {{ varfile }}
+
+    {% for lang, variables in vars.items %}
+    {{lang}}
+    {% for varcode, values in variables.items %}
+    {{varcode}}
+    {% for value in values %}
+    {{ value.condition }} : {{ value.content|serialize_content|safe }}
+    
+    {% endfor %}
+    {% endfor %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+  {% endfor %}
+</div>
+{% endblock %}
