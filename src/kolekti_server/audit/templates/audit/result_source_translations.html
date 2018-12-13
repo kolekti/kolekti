@@ -1,0 +1,82 @@
+{% extends "base-wide.html" %}
+{% load static %}
+{% load lxml_source %}
+{% load dict_utils %}
+
+{% block current_tools %}{% if not release %}menu-current{% endif %}{% endblock %}
+{% block current_audit %}class="menu-current"{% endblock %}
+
+{% block help-topic %}audit{% endblock %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-audit.css" %}"></script>
+{% endblock %}
+
+{% block extrascripts %}
+<script src="{% static "js/kolekti-audit.js" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block title %}
+Audit
+{% endblock %}
+
+{% block content %}
+<div id="main" 		data-path = "{{ path }}">
+  <h1>Audit du projet {{project }}</h1>
+  <h2>{{ title }}</h2>
+  {% for record in audit %}
+  {% with forloop.counter as colnb %}
+  {% for varfile, vars in record.items %}
+  
+  <div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a  data-toggle="collapse" href="#collapse{{ colnb }}" aria-expanded="false" aria-controls="collapse{{ colnb }}">{{ varfile }}</a>
+      </div>
+      <div class="collapse panel-body" id="collapse{{ colnb }}">
+        {% if vars.2 %}
+        <p>warning !</p>
+        {% endif %}
+        {% for double in vars.1 %}
+        <p>{{double}}</p>
+        {% endfor %}
+        
+        {% for varname, varinfo in vars.0.items %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a  data-toggle="collapse" href="#collapse_{{ colnb }}_{{forloop.counter}}" aria-expanded="false" aria-controls="collapse_{{ colnb }}_{{forloop.counter}}">{{ varname }}</a>
+          </div>
+          <div class="collapse panel-body" id="collapse_{{ colnb }}_{{forloop.counter}}">
+            <table class="table table-compact">
+              <thead>
+                <tr>
+                  <th>condition</th>
+                  {% for lang in trlangs %}
+                  <th>{{ lang }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+{#                {{varinfo|pprint}}  #}
+                {% for cond, translations in varinfo.0.items %}
+                <tr>
+                  <td>{{cond}}</td>
+                  {% for lang in trlangs %}
+                  <td>{{ lang }}{{ translations|get_item:lang }}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+  {% endwith %}
+  {% endfor %}
+</div>
+{% endblock %}
