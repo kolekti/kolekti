@@ -121,7 +121,6 @@
 	    <div class="row {% if job.path != toc_meta.kolekti_jobpath %}hidden{% endif %} kolekti-job kolekti-job-{{ job.name|csssafe }}"
 		 data-kolekti-jobname="{{ job.name }}" data-kolekti-job="{{ job.path }}">
 	      <div class="col-sm-12 col-md-12">
-		
 		<h6>Profils</h6>
 	      </div>
 	      {% for profile in job.profiles %}

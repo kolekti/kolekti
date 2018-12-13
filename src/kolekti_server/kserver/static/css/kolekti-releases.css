@@ -110,12 +110,26 @@ li.active span .state.lead {
 /* diff */
 
 ins.diff-insert,
-del.diff-del,
 span.DiffInsert,
+del.diff-del,
 span.DiffDelete
     {
-        background-color: #d9edf7;
         text-decoration:none;
+        padding-left:5px;
+        padding-right:5px;
+    }
+
+ins.diff-insert,
+span.DiffInsert
+    {
+        background-color: rgb(223, 240, 216);
+        
+    }
+
+del.diff-del,
+span.DiffDelete
+    {
+        background-color: rgb(242, 222, 222);
     }
 
 i.diff-marker {

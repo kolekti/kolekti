@@ -85,9 +85,9 @@ class Release(object):
         for ritem in args:
             if ritem is not None:
                 break
-            else:
-                # Executed only if loop terminates through normal exhaustion, not via break
-                return None
+        else:
+            # Executed only if loop terminates through normal exhaustion, not via break
+            return None
         
         # Otherwise, grab their string representations (empty string for None)
         return ''.join((unicode(v) if v is not None else "") for v in args)
@@ -122,6 +122,19 @@ class Release(object):
             parent.text = self.noneCat(parent.text, elt.tail)
         return elt
         
+    def remove(self, elt):
+        """
+        Remove the element. The element is deleted with all of its children
+        """
+        parent = elt.getparent()
+        prev = elt.getprevious()
+        parent.remove(elt)
+        if prev is not None:
+            prev.tail = self.noneCat(prev.tail, elt.tail)
+        else:
+            parent.text = self.noneCat(parent.text, elt.tail)
+        return elt
+        
     def apply_filters(self, lang):
         assembly = self.assembly(lang)
         do_save = False
@@ -134,11 +147,11 @@ class Release(object):
     def apply_filters_element(self, elt, profile_filter=True, assembly_filter=False, setPI = False, remove_conditional_elements = ['div', 'span']):
 #        assert(not elt.get('class') is None)
 
-#        logger.debug('condition')
-#        logger.debug(elt.get('class'))
+        logger.debug('condition')
+        logger.debug(elt.get('class'))
         tag = elt.xpath('string(local-name())')
-#        logger.debug(tag)
-#        logger.debug(self.job_criteria())
+        logger.debug(tag)
+        logger.debug(self.job_criteria())
         
         if assembly_filter:
             evalc = self.eval_condition(self.job_criteria(), elt.get('class'))
@@ -157,7 +170,7 @@ class Release(object):
         if setPI:
             elt.addprevious(ET.ProcessingInstruction("filter", "[{} {}]".format(tag, elt.get('class'))))
             
-        elt.getparent().remove(elt)
+        self.remove(elt)
         return True
 
             
@@ -233,7 +246,7 @@ class FilterTest(unittest.TestCase):
         condstring = "N=A"
         crits = {'M':'A'}
         val = self.release.eval_condition(crits, condstring)
-        self.assertTrue(val)
+        self.assertEqual(val, None)
 
     def test_eval_5(self):
         condstring = "M=A,B"
@@ -336,4 +349,48 @@ class FilterTest(unittest.TestCase):
         crits = {'M':'A'}
         val = self.release.eval_condition(crits, condstring)
         self.assertTrue(val)
+        
+    def test_zone(self):
+        self.release.job_criteria = lambda:{'M':'A'}
+        elt = ET.XML('<p>before<span class="M=A">keep</span><span class="M=B">remove</span>after</p>')
+        for e in elt.xpath('//*[@class]'):
+            self.release.apply_filters_element(e, False,True,False)
+        val = ET.tostring(elt)
+        self.assertEqual(val, '<p>beforekeepafter</p>')
+
+
+    def test_unwrap(self):
+        root = ET.XML('<p>before<span class="M=A">keep</span><span class="M=B">remove</span>after</p>')
+        e=root.find('span')
+        self.release.unwrap(e)
+        val = ET.tostring(root)
+        self.assertEqual(val, '<p>beforekeep<span class="M=B">remove</span>after</p>')
+        
+    def test_unwrap_2(self):
+        root = ET.XML('<p>before<span class="M=A">keep</span><span class="M=B">remove</span>after</p>')
+        e=root.findall('span')
+        self.release.unwrap(e[1])
+        val = ET.tostring(root)
+        self.assertEqual(val, '<p>before<span class="M=A">keep</span>removeafter</p>')
+        
+    def test_unwrap_3(self):
+        root = ET.XML('<p>before<s>in</s><s>in2</s>after</p>')
+        e=root.find('s')
+        self.release.unwrap(e)
+        val = ET.tostring(root)
+        self.assertEqual(val, '<p>beforein<s>in2</s>after</p>')
+        
+    def test_unwrap_4(self):
+        root = ET.XML('<p>before<s>in</s><s>in2</s>after</p>')
+        e=root.findall('s')
+        self.release.unwrap(e[1])
+        val = ET.tostring(root)
+        self.assertEqual(val, '<p>before<s>in</s>in2after</p>')
+        
+    def test_unwrap_5(self):
+        root = ET.XML('<p>before<s>in</s><s>in2</s>after</p>')
+        for e in root.findall('s'):
+            self.release.unwrap(e)
+        val = ET.tostring(root)
+        self.assertEqual(val, '<p>beforeinin2after</p>')
         

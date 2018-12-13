@@ -48,6 +48,8 @@
   
 
   <xsl:template name = "popover">
+    <xsl:param name="color"/>
+    <xsl:param name="content"/>
     <xsl:variable name="diffdetails">
       <xsl:call-template name="diffdetails"/>
     </xsl:variable>
@@ -57,17 +59,15 @@
     </xsl:variable>
     
     <a tabindex="0"
-       class="btn
-              btn-xs
-              btn-info
-              btn-popover"
+       class="btn-popover text-{$color}"
        role="button"
        data-toggle="popover"
        data-trigger="focus"
        data-placement="bottom"
        title="Détails de la différence"
        data-content="{$verbatimdiffdetails}">
-      <i class="glyphicon glyphicon-plus-sign"/>
+      <xsl:copy-of select="$content"/>
+<!--      <i class="glyphicon glyphicon-plus-sign"/>-->
     </a>    
   </xsl:template>
   
@@ -77,7 +77,7 @@
         <p>module source :</p>
         <div class="panel panel-default">
           <div class="panel-body">
-            <xsl:apply-templates select="ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th" mode="diff-pop"/>
+            <xsl:apply-templates select="(ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th)[last()]" mode="diff-pop"/>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
         <p>assemblage :</p>
         <div class="panel panel-default">
           <div class="panel-body">
-            <xsl:apply-templates select="ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th" mode="diff-pop"/>
+            <xsl:apply-templates select="(ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th)[last()]" mode="diff-pop"/>
           </div>
         </div>
       </div>
@@ -93,6 +93,10 @@
 
   </xsl:template>
 
+  <xsl:template match="*" mode="diff-pop-list">
+    <xsl:value-of select="name()"/>
+  </xsl:template>
+  
   <xsl:template match="text()" mode="verbatim">
     <xsl:value-of select="."/>
   </xsl:template>
@@ -120,45 +124,69 @@
   
   <xsl:template name="mark-diff-insert">
     <ins class="diff-insert diff-popup">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
+      <xsl:call-template name = "popover">
+        <xsl:with-param name="color">success</xsl:with-param>
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
     </ins>
   </xsl:template>
       
   <xsl:template name="mark-diff-delete">
     <del class="diff-del diff-popup">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
+      <xsl:call-template name = "popover">
+      <xsl:with-param name="color">danger</xsl:with-param>
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
     </del>
   </xsl:template>
 
   <xsl:template name="mark-diff-insert-formatting">
     <span class="diff-insert-formatting">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
+      <xsl:call-template name = "popover">
+        <xsl:with-param name="color">success</xsl:with-param>
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
     </span>
   </xsl:template>
   
   <xsl:template name="mark-diff-delete-formatting">
     <span class="diff-delete-formatting">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
-      </span>
+      <xsl:call-template name = "popover">
+        <xsl:with-param name="color">danger</xsl:with-param>        
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
+    </span>
   </xsl:template>
 
   <!-- `diff:insert` and `diff:delete` elements are only placed around
        text. -->
   <xsl:template match="diff:insert">
     <span class="DiffInsert">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
+      <xsl:call-template name = "popover">
+        <xsl:with-param name="color">success</xsl:with-param>
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
     </span>
   </xsl:template>
 
   <xsl:template match="diff:delete">
     <span class="DiffDelete">
-      <xsl:call-template name = "popover"/>
-      <xsl:apply-templates/>
+      <xsl:call-template name = "popover">
+        <xsl:with-param name="color">danger</xsl:with-param>
+        <xsl:with-param name="content">
+          <xsl:apply-templates/>
+        </xsl:with-param>
+      </xsl:call-template>
     </span>
   </xsl:template>
 

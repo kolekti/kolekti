@@ -2471,6 +2471,7 @@ class CompareReleaseTopicSource(kolektiMixin, View):
             tree1 = xsl(diff_topic)
             tree2 = xsl(assembly_topic)
             logger.debug("tree 1 -------------------")
+            logger.debug(ET.tostring(diff_topic))
             logger.debug(tree1)
             logger.debug("tree 2 -------------------")
             logger.debug(tree2)

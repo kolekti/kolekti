@@ -602,7 +602,7 @@ $(document).ready( function () {
 	$('#toc_root').attr('data-kolekti-meta-kolekti_jobclass',cssclass)
 	$('#toc_root').data('kolekti-meta-kolekti_jobpath',path)
 	$('#toc_root').attr('data-kolekti-meta-kolekti_jobpath',path)
-	$('#editjoblink').attr('href','/settings/job?path='+path)
+	    $('#editjoblink').attr('href',Urls.kolekti_job_edit(kolekti.project, name + '.xml'))
 	$('.label_job').each(function(i,e) {
 	    $(e).html(name)}
 			    );
