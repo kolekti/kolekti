@@ -23,6 +23,7 @@ Audit
   <h1>Audit du project {{project }}</h1>
   <ul>
     <li><a href="{% url 'audit_variables' project=project %}">Variables</a></li>
+    <li><a href="{% url 'audit_variables_source_translations' project=project %}">Traductions sources variables</a></li>
   </ul>
 </div>
 {% endblock %}

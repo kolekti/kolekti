@@ -6,4 +6,5 @@ admin.autodiscover()
 urlpatterns = [
     url(r'^$', HomeView.as_view(), name='audit_home'),
     url(r'^variables/$', AuditVariablesView.as_view(), name='audit_variables'),
+    url(r'^variables/translate/source$', AuditVariablesSourceTranslationsView.as_view(), name='audit_variables_source_translations'),
 ]

@@ -27,5 +27,17 @@ class AuditVariablesView(kolektiMixin,TemplateView):
         context.update({'audit':audit})
         return self.render_to_response(context)
     
+class AuditVariablesSourceTranslationsView(kolektiMixin,TemplateView):
+    template_name="audit/result_source_translations.html"
+    def get(self, request, project):
+        context, kolekti = self.get_context_data({'project':project})
+        audit = AuditVariables(kolekti.getOsPath('/'))
+        
+        context.update({
+            'audit':audit.audit_source_translations('en'),
+            'trlangs':audit.audit_list_translation_langs('en')
+            })
+        return self.render_to_response(context)
+    
 
     

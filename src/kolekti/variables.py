@@ -4,6 +4,7 @@
 #     Copyright (C) 2007-2014 Stéphane Bonhomme (stephane@exselt.com)
 
 import os
+import copy
 from zipfile import ZipFile
 from lxml import etree as ET
 
@@ -46,7 +47,11 @@ class XMLToOds(common.kolektiBase):
 
 class UpdateFromReleases(common.kolektiBase):
     def run(self, srclang):
+        #        for release in  ['A184_20180507']:
         for release in self.list_directory('/releases'):
+            if not self.exists('/releases/%s/release_info.json'%release):
+                continue
+            yield release
             for lang in self.list_directory('/releases/%s/sources/'%release):
                 yield lang
                 if lang == srclang or lang=='share':
@@ -55,40 +60,67 @@ class UpdateFromReleases(common.kolektiBase):
                 l = len(self.getOsPath(top))
                 for root, dirs, files in os.walk(self.getOsPath(top)):
                     for varfile in files:
+                        if not os.path.splitext(varfile)[1] == ".xml":
+                            continue
                         path = '%s/%s'%(root[l+1:],varfile)
                         tpath = '/sources/%s/variables/%s'%(lang,path)
                         spath = '%s/%s'%(top,path)
                         if not self.exists(tpath):
-                            yield 'create %s'%tpath 
-                            self.copy_resource(spath, tpath)
+                            yield 'create %s'%tpath
+                            self.makedirs(self.dirname(tpath))
+                            svars = self.parse(spath)
+                            for content in svars.xpath('//content'):
+                                content.set('release-origin',release)
+                            self.xwrite(svars, tpath)
                         else:
+                            file_changed = False
+                            yield 'handle %s'%tpath
                             svars = self.parse(spath)
                             tvars = self.parse(tpath)
                             for varval in svars.xpath('/variables/variable/value'):
                                 varcode = varval.getparent().get('code')
                                 content = ET.tostring(varval.find("content"), encoding="utf-8")
-                                tpath = '/variables/variable[@code="%s"]/value'%varcode
-                                if len(tvars.xpath(tpath)):
-                                    
+                                txpath = '/variables/variable[@code="%s"]/value'%varcode
+                                if len(tvars.xpath(txpath)):
+                                    yield 'variable %s'%varcode
                                     for crit in varval.iter('crit'):
                                         critname = crit.get('name')
                                         critval  = crit.get('value')
-                                        tpath = tpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
-                                        
-                                    if len(tvars.xpath(tpath)):
+                                        txpath = txpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
+                                    matched = tvars.xpath(txpath) 
+                                    if len(matched):
+                                        yield 'value found %s'%tpath
                                         found = False
-                                        for tcontent in tvars.xpath(tpath)[0].findall('content'):
-                                            if ET.tostring(tcontent, encoding="utf-8") == content:
+                                        for tcontent_elt in matched[0].findall('content'):
+                                            tcontent_elt=copy.deepcopy(tcontent_elt)
+                                            try:
+                                                tcontent_elt.attrib.pop('release-origin')
+                                            except KeyError:
+                                                pass
+                                            tcontent = ET.tostring(tcontent_elt, encoding="utf-8") 
+                                            yield ">>> "+content
+                                            yield "<<< "+tcontent
+                                            if tcontent == content:
                                                 found = True
+                                        yield 'same text ? ' + str(found)
                                         if not found:
-                                            tvars.xpath(tpath)[0].append(varval.find("content"))
-                                            
+                                            content = varval.find("content")
+                                            content.set('release-origin',release)
+                                            matched[0].append(varval.find("content"))
+                                            file_changed = True
                                     else:
                                         tvar = tvars.xpath('/variables/variable[@code="%s"]'%varcode)[0]
                                         tvar.append(varval)
+                                        file_changed = True
                                 else:
                                     tvars.getroot().append(varval.getparent())
+                                    file_changed = True
                                     
+                            if file_changed:
+                                self.xwrite(tvars, tpath)
+
+
+                            
 class AuditVariables(common.kolektiBase):
     def audit_varfile(self, lang, varpath):
         path = '/sources/%s/variables/%s'%(lang,varpath)
@@ -123,3 +155,81 @@ class AuditVariables(common.kolektiBase):
             for varfile in files:
                 path = '%s/%s'%(root[l+1:],varfile)
                 yield {path:self.audit_varfile(lang, path)}
+
+
+    def audit_list_translation_langs (self, srclang):
+        return [l for l in self.list_directory('/sources') if not l  in ['share',srclang]]
+
+    def audit_source_translations(self, srclang):
+        trlangs = self.audit_list_translation_langs(srclang)
+        
+        top = '/sources/%s/variables'%srclang
+        l = len(self.getOsPath(top))
+#        return []
+        return [{'CoverTitles.xml':self.audit_varfile_source_translations('CoverTitles.xml', srclang, trlangs)}]
+    
+        # for root, dirs, files in os.walk(self.getOsPath(top)):
+        #     for varfile in files:
+        #         path = '%s/%s'%(root[l+1:],varfile)
+        #         yield {path:self.audit_varfile_source_translations(path, srclang, trlangs)}
+
+    def audit_varfile_source_translations(self, path, srclang, trlangs):
+        xvars = {}
+        xsrc = self.parse('/sources/%s/variables/%s'%(srclang, path))
+        for trlang in trlangs:
+            try:
+                xv = self.parse('/sources/%s/variables/%s'%(trlang, path))
+            except:
+                xv = None
+            xvars.update({trlang:xv})
+        logger.debug(trlangs)
+        double = []
+        res = {}
+        file_warning = False
+        for variable in xsrc.xpath('//variable'):
+            varinfo = {}
+            varcode = variable.get('code')
+            warning = False
+            txpath = '/variables/variable[@code="%s"]/value'%varcode
+            for varval in variable.findall('value'):
+                valinfo = {}
+                critspec = ""
+                for crit in varval.iter('crit'):
+                    critname = crit.get('name')
+                    critval  = crit.get('value')
+                    critspec = critspec + "%s=%s;"%(critname, critval) 
+                    txpath = txpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
+                
+                for lang, tvars in xvars.iteritems():
+                    logger.debug("%s  %s %s %s"%(path, varcode, critspec, lang))                    
+                    if tvars is not None:
+                        matched_elts = tvars.xpath(txpath)
+                        if len(matched_elts) >1:
+                            double.append('%s:%s'%(varcode, scriptspec))
+                            warning = True
+                            rescontent = {}
+                            for matched in matched_elts:
+                                contents = matched.findall('content')
+                                if len(contents)>1:
+                                    warning = True
+                                rescontent.append(contents)
+                            valinfo.update({lang:rescontents})
+                                
+                        elif len(matched_elts) == 0:
+                            warning = True
+                            valinfo.update({lang:None})
+                            
+                        else:
+                            matched = matched_elts[0]
+                            contents = matched.findall('content')
+                            if len(contents)>1:
+                                warning = True
+                            valinfo.update({lang:[contents]})
+                    else:
+                        valinfo.update({lang:[]})
+                        warning = True
+                        
+                varinfo.update({critspec:valinfo})
+            res.update({varcode:(varinfo, warning)})
+            file_warning = file_warning or warning
+        return res, double, file_warning

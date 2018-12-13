@@ -487,7 +487,9 @@ class kolektiBase(object):
         except:
             logger.debug("no post save")
 
-
+        # remplace variable files with sources if available
+        top = '/release/%s/sources/%s/variables'%(release, dstlang)
+        
         # copy assembly / change language in references to images
         # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])
         assembly_path = '/'.join([dstpath, 'assembly', release+'_asm.html'])
