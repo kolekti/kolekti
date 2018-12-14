@@ -1,0 +1,54 @@
+<div class="modal fade" id="modal_release_update">
+  <div class="modal-dialog modal-lg">
+	<div class="modal-content">
+	  <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+        <h4 class="modal-title">Création d'un nouvel indice</h4>
+	  </div>
+	  <div class="modal-body">
+        <div class="form">
+          <div class="row"> 
+            <div class="col-md-12">
+              <span class="input-group">
+                <label for="modal_release_new_index">Nouvel indice de version : <span class="majorname">?</span>_</label>
+                
+                <input type="text" placeholder="Nouvel indice" id="modal_release_new_index"/>
+              </span>
+            </div>
+          </div>
+          
+          <div class="row"> 
+            <div class="col-md-12">
+              <span class="input-group">                          
+	            <div class="btn-group">
+                  <input id="modal_release_update_sources" checked type="radio" name="method" value="generate"/>
+                  <label for="modal_release_update_sources">Par génération à partir des sources</label>
+                </div>
+              </span>
+            </div>
+          </div>
+          <div class="row"> 
+            <div class="col-md-12">
+              <span class="input-group">                          
+	            <div class="btn-group">
+                  <input id="modal_release_update_index" type="radio" name="method" value="copy"/>
+                  <label for="modal_release_update_index">Par copie de l'indice <span class="minorname">?</span></label>
+                </div>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="error hidden">
+          <div class="">
+            <p class="error_message"></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-default" id="modal_release_update_cancel" data-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" id="modal_release_update_confirm">Créer</button>
+      </div>
+    </div>
+  </div>
+</div>

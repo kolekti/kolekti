@@ -214,6 +214,14 @@
 	                </small>
                     {{ profile.label }}
 	              </a>
+                  <a href="#" class="kolekti-activate-profile" data-active="yes">
+                    <span class="text-success">
+                      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    </span>
+                    <span class="text-danger hidden">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </span>
+                  </a>
                 </h6>
                 
                 <div class="collapse" id="collapseProfil{{ forloop.counter }}">
@@ -240,7 +248,17 @@
           <div class="collapse" id="collapseSorties">
 	        <ul>
 	          {% for script in releaseparams.scripts %}
-	          <li>{{ script }}</li>
+	          <li>{{ script }}
+                  <a href="#" class="kolekti-activate-output" data-active="yes">
+                    <span class="text-success">
+                      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    </span>
+                    <span class="text-danger hidden">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </span>
+                  </a>
+
+              </li>
 	          {% endfor %}
 	        </ul>
           </div>
