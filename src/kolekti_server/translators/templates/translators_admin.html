@@ -42,7 +42,7 @@
     <div class="row" id="release_list">
       {% for release in releases %}
       <div class="col-md-12">	
-	<div class="panel panel-default release filterable" data-filter-value="{{ release.name }}" data-project="{{ project.directory }}" data-release="{{ release.name }}">
+	<div class="panel panel-default release filterable" data-filter-value="{{ release.name }}" data-project="{{ project }}" data-release="{{ release.name }}">
 	  <div class="panel-heading">
         <span class="pull-right kolekti-release-langs"></span>
 	    <h3 class="panel-title">
@@ -64,11 +64,12 @@
 		<li class="list-group-item list-group-item-info">
 		  <div class="pull-right">
 		    <form 
-		       action="{% url 'translators_admin_remove' project=project.directory release=release.name %}"
+		       action="{% url 'translators_admin_remove' project=project release=release.name %}"
 		       method="POST"
 		       enctype="multipart/form-data">
+              {% csrf_token %}
 		      <input type="hidden" name="release" value="{{ release.name }}"/>
-		      <input type="hidden" name="project" value="{{ project.directory }}"/>
+		      <input type="hidden" name="project" value="{{ project }}"/>
 		      <input type="hidden" name="translator" value="{{ translator.user.username }}"/>
 		      <button data-username="{{translator.user.username}}" class="btn btn-default btn-xs remove-translator"><i class="fa fa-trash"></i></button>
 		    </form>
@@ -83,11 +84,12 @@
 		{% endif %}
 		<li class="list-group-item">
 		  <form class="form-inline form-admin-translation"
-			action="{% url 'translators_admin_add' project=project.directory release=release.name %}"
+			action="{% url 'translators_admin_add' project=project release=release.name %}"
 			method="POST"
-			enctype="multipart/form-data">
+			    enctype="multipart/form-data">
+            {% csrf_token %}
 		    <input type="hidden" name="release" value="{{ release.name }}"/>
-		    <input type="hidden" name="project" value="{{ project.directory }}"/>
+		    <input type="hidden" name="project" value="{{ project }}"/>
 		    <div class="form-group">
 		      <label for="translatorfield" class="control-label">Add translator</label>
 		      <select class="form-control" id="translatorfield" name="translator">
@@ -103,7 +105,7 @@
 		</li>
 	      </ul>
 	    </div>
-        <span class="pull-right"><a href="{% url 'translators_release' project=project.directory release=release.name %}">Translator interface</a></span>
+        <span class="pull-right"><a href="{% url 'translators_release' project=project release=release.name %}">Translator interface</a></span>
 
 	    {% comment %}
 	    <div class="kolekti-release-documents">

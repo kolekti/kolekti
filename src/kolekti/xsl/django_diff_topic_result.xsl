@@ -50,6 +50,7 @@
   <xsl:template name = "popover">
     <xsl:param name="color"/>
     <xsl:param name="content"/>
+    
     <xsl:variable name="diffdetails">
       <xsl:call-template name="diffdetails"/>
     </xsl:variable>
@@ -57,13 +58,19 @@
     <xsl:variable name="verbatimdiffdetails">
       <xsl:apply-templates select="ex:node-set($diffdetails)" mode="verbatim"/>
     </xsl:variable>
-    
-    <a tabindex="0"
+
+    <xsl:variable name="tidx">
+      <xsl:number count="*[@diff:insert]|*[@diff:delete]|*[@diff:insert-formatting]|*[@diff:delete-formatting]|diff:insert|diff:delete" from="/"/>
+    </xsl:variable>
+
+
+    <a tabindex="{$tidx}"
        class="btn-popover text-{$color}"
        role="button"
        data-toggle="popover"
        data-trigger="focus"
        data-placement="bottom"
+       
        title="Détails de la différence"
        data-content="{$verbatimdiffdetails}">
       <xsl:copy-of select="$content"/>
@@ -332,6 +339,79 @@
     </xsl:choose>
   </xsl:template>
 
+
+  
+  <!-- Put diff markup in marked paragraph formatting tags. -->
+  <xsl:template match="span|b|i|u|strike|sub|sup" mode="diff-pop">
+    <xsl:choose>
+      <xsl:when test="@diff:insert">
+        <xsl:copy>
+          <xsl:call-template name="mark-diff-insert-pop" />
+        </xsl:copy>
+      </xsl:when>
+      <xsl:when test="@diff:delete">
+        <xsl:copy>
+          <xsl:call-template name="mark-diff-delete-pop" />
+        </xsl:copy>
+      </xsl:when>
+      <xsl:when test="@diff:insert-formatting">
+        <xsl:copy>
+          <xsl:call-template name="mark-diff-insert-formatting-pop" />
+        </xsl:copy>
+      </xsl:when>
+      <xsl:when test="@diff:delete-formatting">
+        <xsl:copy>
+          <xsl:call-template name="mark-diff-delete-formatting-pop" />
+        </xsl:copy>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates mode="diff-pop"/>
+        </xsl:copy>
+      </xsl:otherwise>
+      </xsl:choose>
+  </xsl:template>
+  
+  <!-- Put diff markup into pseudo-paragraph tags, if they act as paragraph. -->
+  <xsl:template match="li|dt|dd|th|td" mode="diff-pop">
+    <xsl:variable name="localParas" select="p|h1|h2|h3|h4|h5|h6" />
+    <xsl:choose>
+      <xsl:when test="not($localParas) and ancestor-or-self::*[@diff:insert]">
+        <xsl:copy>
+          <p>
+            <xsl:call-template name="mark-diff-insert-pop" />
+          </p>
+        </xsl:copy>
+        </xsl:when>
+        <xsl:when test="not($localParas) and ancestor-or-self::*[@diff:delete]">
+          <xsl:copy>
+            <p>
+              <xsl:call-template name="mark-diff-delete-pop" />
+            </p>
+          </xsl:copy>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:copy>
+            <xsl:apply-templates mode="diff-pop"/>
+          </xsl:copy>
+        </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+
+
+  <!-- datails du diff (dans le popup) -->
+
+
+    <xsl:template match="p|h1|h2|h3|h4|h5|h6" mode="diff-details">
+      <p>
+        <xsl:apply-templates mode="diff-pop"/>
+      </p>
+    </xsl:template>
+    
+
+
+  
   <!-- Put diff markup in marked paragraph formatting tags. -->
   <xsl:template match="span|b|i|u|strike|sub|sup" mode="diff-pop">
     <xsl:choose>

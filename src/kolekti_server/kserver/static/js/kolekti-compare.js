@@ -2,16 +2,19 @@ $(function() {
 
     $('body').popover({
         selector: '.btn-popover',
+        trigger:'focus',
+        container:'body',
         html:true
     });
+
     
     var release = $('#main').data('release')
     var lang = $('#main').data('lang')
     var status = $('#main').data('state')
 
-    var compare_topic = function (topicelt, cmp_release) {
+    var compare_topic = function (topicelt, global_counter ,cmp_release) {
 //        console.log(cmp_release)
-        $.post(Urls.kolekti_compare_topic_source(kolekti.project), {
+        return $.post(Urls.kolekti_compare_topic_source(kolekti.project), {
             'release': release,
             'cmprelease': cmp_release,
             'lang': lang,
@@ -30,13 +33,14 @@ $(function() {
                 else
                     $(topicelt).find('.topicstatus .content').html("Comparaison avec la version " + cmp_release +" (" + nbdiff + " différences)")
                 $(topicelt).find('.topicstatus').removeClass('hidden')
+                global_counter && global_counter(nbdiff)
                 
               })
             .fail(function(data) {
                 var statuss = JSON.parse(data.responseText)
-                console.log(data)
-                console.log(statuss)
-                console.log(statuss.message)
+                // console.log(data)
+                // console.log(statuss)
+                // console.log(statuss.message)
                 
                 $(topicelt).find('.topicstatus').addClass('alert-danger')
                 $(topicelt).find('.topicstatus').removeClass('alert-info')
@@ -55,15 +59,40 @@ $(function() {
             })
     }
 
-
+    var close_all_diff= function() {
+        $('.topicstatus').addClass('alert-info')
+        $('.topicstatus').removeClass('alert-danger')
+        $('.topicstatus').addClass('hidden')
+        $('.topiccontent').show()
+        $('.topicdiffsource').remove()
+        $('#collapseRC').find('.compare-control').addClass('hidden')
+    }
+    $('#compare_close').click(close_all_diff)
+    
+    var control = function(info_compare) {
+        var controlelt = $('#collapseRC').find('.compare-control')
+        // console.log(controlelt)
+        controlelt.counter = 0
+        var global_counter = function(nbdif) {
+            // console.log(controlelt.counter)
+            controlelt.counter += nbdif
+            $(controlelt).find('.counter').html(controlelt.counter)
+        }
+        $(controlelt).find('.info_compare').html(info_compare)
+        controlelt.removeClass('hidden')
+        
+        return global_counter
+    }
 
     $(document).on('click','.btn_compare_release_source', function(ev) {
         if ($(this).closest('li').hasClass('disabled'))
             return
         ev.preventDefault();
+        var counter = control('les modules source')
         $('.topic').each(function(){
-            compare_topic($(this))
-        })
+            compare_topic($(this), counter)
+        });
+                         
     })
                    
     $(document).on('click','.btn_compare_releases', function(ev) {
@@ -71,8 +100,9 @@ $(function() {
             return
         ev.preventDefault();
         var release = $(this).data('release')
+        var counter = control( 'la version ' + release)
         $('.topic').each(function(){
-            compare_topic($(this), release)
+            compare_topic($(this), counter, release)
         })
 
     })
@@ -81,7 +111,6 @@ $(function() {
         if ($(this).closest('li').hasClass('disabled'))
             return
         ev.preventDefault();
-//        ev.stopPropagation();
         var topicelt = $(this).closest('.topic')
         compare_topic(topicelt)
     })

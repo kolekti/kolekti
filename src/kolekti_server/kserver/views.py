@@ -133,84 +133,17 @@ class kolektiMixin(LoginRequiredMixin):
         context.update(data)
         return context, kolekti
 
-    
-    def config(self):
-        return self._config
-
+   
     def process_svn_url(self, url):
         localpath = "file://%s/"%(settings.KOLEKTI_SVN_ROOT,)
         remotepath = "http://%s/svn/"%(settings.HOSTNAME,)
         return url.replace(localpath, remotepath)
-    
-    def projects_OLD(self):
-        """List projects available for user"""
-        projects = []
-#        logger.debug(self.request.user.username)
-        if settings.KOLEKTI_MULTIUSER:
-            userprojects = UserProject.objects.filter(user = self.request.user)
-        else:
-            userprojects = UserProject.objects.all()
-        for up in userprojects:
-            project={
-                'userproject':up,
-                'name':up.project.name,
-                'id':up.project.pk,
-            }
-            try:
-                project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, up.project.directory)
-                project_settings = ET.parse(os.path.join(project_path, 'kolekti', 'settings.xml')).getroot()
-                if project_settings.xpath('string(/settings/@version)') != '0.7':
-                    continue
-                project.update({'languages':[l.text for l in project_settings.xpath('/settings/languages/lang')],
-                                'defaultlang':project_settings.xpath('string(/settings/@sourcelang)')})
-            except:
-                continue
-
-
-            try:
-                from kolekti.synchro import SynchroManager
-                synchro = SynchroManager(project_path)
-                projecturl = synchro.geturl()
-                project.update({"status":"svn","url":self.process_svn_url(projecturl)})
-            except ExcSyncNoSync:
-                project.update({"status":"local"})
-            projects.append(project)
-            
-        return sorted(projects, key=lambda p: p.get('name').lower())
 
     def get_sync_manager(self, kolekti):
         from kolekti.synchro import SynchroManager
         sync = SynchroManager(kolekti.syspath(''))
         return sync
-        
-    def localname(self,e):
-        return re.sub('\{[^\}]+\}','',e.tag)
-    
-    def get_jobs(self, kolekti):
-        res = []
-        for job in kolekti.iterjobs:
-            xj = kolekti.parse(job['path'])
-            profiles = []
-            scripts  = []
             
-            for p in xj.xpath('/job/profiles/profile'):
-                label = p.find('label').text
-                enabled = p.get('enabled')
-                profiles.append((label, enabled))
-                
-            for s in xj.xpath('/job/scripts/script'):
-                try:
-                    label = s.find('label').text
-                except:
-                    continue
-                enabled = s.get('enabled')
-                scripts.append((label, enabled))
-                
-            job.update({'profiles': profiles,
-                        'scripts':scripts,
-                        })
-            res.append(job)
-        return sorted(res, key = lambda j: j['name'])
 
     def format_iterator(self, sourceiter, project):
         template = get_template('publication-iterator.html')
@@ -221,7 +154,6 @@ class kolektiMixin(LoginRequiredMixin):
             chunck.update({'id':nbchunck,'project':project})
             yield template.render(chunck)
         
-
     def set_extension(self, path, default):
         if os.path.splitext(path)[1] == "":
             path = path + default
@@ -518,6 +450,33 @@ class TocsListView(kolektiMixin, TemplateView):
 class TocEditView(kolektiMixin, TemplateView):
     template_name = "tocs/detail.html"
 
+    def get_jobs(self, kolekti):
+        res = []
+        for job in kolekti.iterjobs:
+            xj = kolekti.parse(job['path'])
+            profiles = []
+            scripts  = []
+            
+            for p in xj.xpath('/job/profiles/profile'):
+                label = p.find('label').text
+                enabled = p.get('enabled')
+                profiles.append((label, enabled))
+                
+            for s in xj.xpath('/job/scripts/script'):
+                try:
+                    label = s.find('label').text
+                except:
+                    continue
+                enabled = s.get('enabled')
+                scripts.append((label, enabled))
+                
+            job.update({'profiles': profiles,
+                        'scripts':scripts,
+                        })
+            res.append(job)
+        return sorted(res, key = lambda j: j['name'])
+
+    
     def get(self, request, project, lang, toc_path):
         context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         toc_file = toc_path.split('/')[-1]
@@ -1578,18 +1537,8 @@ class SettingsJsView(kolektiMixin, TemplateView):
 class SettingsJsonView(kolektiMixin, TemplateView):
     template_name = "settings/list.html"
     def get(self, request, project):
-        context.get_context_data({
+        context, kolekti = self.get_context_data({
             'project': project,
-            'kolekti':self._config,
-            'kolektiversion' : self._kolektiversion
-            })
-        if request.kolekti_userproject is not None:
-            context.update({
-                'srclangs' : languages,
-                'releaselangs' : kolekti.project_languages(),
-                'default_srclang': kolekti.project_default_language(),
-                'active_project_name' : self.request.kolekti_userproject.project.name,
-                'active_srclang' : self.request.kolekti_userproject.srclang,
             })
 
         return HttpResponse(json.dumps(context),content_type="application/json")
@@ -2184,8 +2133,7 @@ class SyncRevisionView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project':project})
         sync = self.get_sync_manager(kolekti)
         revsumm, revinfo, difftext = sync.revision_info(rev)
-        context, kolekti = self.get_context_data({
-            "project":project,
+        context.update({
             "history": sync.history(),
             'revsumm':revsumm,
             'revinfo':revinfo,
@@ -2205,7 +2153,7 @@ class SyncDiffView(kolektiMixin, TemplateView):
         diff,  headdata, workdata = sync.diff(entry) 
         import difflib
         #htmldiff = hd.make_table(headdata.splitlines(), workdata.splitlines())
-        context, kolekti = self.get_context_data({
+        context.update({
             'diff':difflib.ndiff(headdata.splitlines(), workdata.splitlines()),
             'headdata':headdata,
             'workdata':workdata,

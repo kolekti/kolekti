@@ -55,9 +55,9 @@
 		<li {% block current_jobs %}{% endblock %}><a href="{% url 'kolekti_jobs' project=project %}">Paramètres de publication</a></li>
 		<li {% block current_templates %}{% endblock %}><a href="{% url 'kolekti_templates' project=project lang=default_lang %}">Modèles de modules</a></li>
 		<li {% block current_publication_templates %}{% endblock %}><a href="{% url 'kolekti_publication_templates' project=project %}">Modèles de sorties</a></li>
-
+<!--
         <li {% block current_audit %}{% endblock %}><a href="{% url 'audit_home' project=project %}">Audit du projet</a></li>
-        
+    -->    
 		<li role="presentation" class="divider"></li>
 
 		<li><a href="{% url 'kolekti_import' project=project lang=default_lang %}">Importer un fichier tableur</a></li>
@@ -65,8 +65,8 @@
 		<li role="presentation" class="divider"></li>
 		<li {% block current_synchro %}{% endblock %}><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
         {% endif %}
-		{% if active_project_admin %}
-		<li {% block current_translation_admin %}{% endblock %}><a href="{% url 'translators_admin' project=active_project_directory %}">Assigner les traductions</a></li>
+		{% if user_project.is_admin %}
+		<li {% block current_translation_admin %}{% endblock %}><a href="{% url 'translators_admin' project=project %}">Assigner les traductions</a></li>
 		{% endif %}
         
 		<!--

@@ -25,7 +25,7 @@ logger = logging.getLogger('kolekti.'+__name__)
 # kolekti imports
 
 from kserver_saas.models import Project, UserProject
-from kserver.views import LoginRequiredMixin, ReleaseStatesView
+from kserver.views import LoginRequiredMixin, kolektiMixin, ReleaseStatesView
 
 from .models import TranslatorRelease
 from .synchro import TranslatorSynchro
@@ -40,19 +40,19 @@ def in_translator_group(user):
         return user.groups.filter(name='translator').count() == 1
     return False
 
-class TranslatorsSharedMixin(kolektiBase):
+class TranslatorsSharedMixin(kolektiMixin):
    
     def project(self, project):
         projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
         # up = UserProject.objects.get(user = self.request.user, project__directory = project)
-        self.set_project(projectpath, self.request.user.username)
+        # self.set_project(projectpath, self.request.user.username)
         # self.project_activate(up)
         
     def project_languages(self, project):
         try:
             project_settings = ET.parse(os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project, 'kolekti','settings.xml'))
             return ([l.text for l in project_settings.xpath('/settings/languages/lang')],
-                    [l.text for l in project_settings.xpath('/settings/languages/lang')],
+                    [l.text for l in project_settings.xpath('/settings/releases/lang')],
                     project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
@@ -112,7 +112,7 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
     template_name = "translators_home.html"
     def get(self, request, project = None, release = None):
         if project is None:
-            releases = TranslatorRelease.objects.filter(user = request.user).order_by("project")
+            releases = TranslatorRelease.objects.filter(user = request.user).order_by("project", "release_name")
         else:
             releases = TranslatorRelease.objects.filter(user = request.user, project__directory = project)
             if release is not None:
@@ -427,11 +427,8 @@ class TranslatorsAdminMixin(TranslatorsSharedMixin):
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(TranslatorsAdminMixin, cls).as_view(**initkwargs)
-        if settings.KOLEKTI_MULTIUSER:
-            return login_required(view)
-        else:
-            return view
-    
+        return login_required(view)
+        
 class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
     template_name = "translators_admin.html"
     def get(self, request, project):
@@ -439,21 +436,22 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
             userproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
         except  UserProject.DoesNotExist:
             return HttpResponse(status=401)
-        releasepath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases')
+        context, kolekti = self.get_context_data({'project':project})
         releases = []
-        for release in os.listdir(releasepath):
-            if not os.path.exists(os.path.join(releasepath, release, 'sources')):
+        for release in kolekti.list_directory('/releases'):
+            if not kolekti.exists('/releases/%s/sources'%release):
                 continue
             releaseinfo = {'langs':[], 'name':release}
-            for lang in os.listdir(os.path.join(releasepath, release, 'sources')):
-                    assemblypath = os.path.join(releasepath, release, 'sources', lang, 'assembly', release + '_asm.html')
-                    if os.path.exists(assemblypath):
-                        releaseinfo['langs'].append({'lang': lang})
+            for lang in kolekti.list_directory('/releases/%s/sources'%release):
+                assemblypath = '/releases/%s/sources/%s/assembly/%s_asm.html'%(release, lang, release)
+                if kolekti.exists(assemblypath):
+                    releaseinfo['langs'].append({'lang': lang})
                     
             releaseinfo.update({
                 'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
-                })
+            })
             releases.append(releaseinfo)
+
         userprojects = UserProject.objects.filter(user = self.request.user)
         userproject = userprojects.get(project__directory = project)
         projects = []
@@ -464,16 +462,12 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
                 'id':up.project.pk,
             }
             projects.append(pproject)
-            
-        context = {
-            'active_project_name':Project.objects.get(directory = project).name,
-            'projects':projects,
+        
+        context.update({
             'translators': User.objects.filter(groups__name='translator'),
-            'releases':sorted(releases),
-            'languages':self.project_languages(project),
-            'project': Project.objects.get(directory = project),
-            'active_srclang' : userproject.srclang,
-            }
+            'releases':sorted(releases, key=lambda x: x['name']),
+#            'languages':self.project_languages(project),
+            })
 
         return self.render_to_response(context)
 

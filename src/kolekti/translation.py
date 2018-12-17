@@ -160,6 +160,7 @@ class AssemblyImporter(object):
         taga = elta.xpath('local-name()')
         tagb = eltb.xpath('local-name()')
         if taga != tagb:
+            logger.debug('structure does not match %s %s'%(taga, tagb))
             raise KolektiValidationError('structure does not match')
 
         self._compare_attributes(elta, eltb)

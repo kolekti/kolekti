@@ -155,14 +155,15 @@ $(document).ready( function () {
 	        data:$.param({
 		        'state' :  $('#main').data('state')
 	        })
-	}).done(function(data) {
-	    $('#btn_save').addClass('disabled');
-	    $('#btn_save').addClass('btn-default');
-	    $('#btn_save').removeClass('btn-warning');
-	    kolekti_recent(displayname($('#main').data('release')),
-                       'version',
-                       Urls.kolekti_release_lang_detail(kolekti.project, $('#main').data('release'), $('#main').data('lang')))
-	});
+            
+	    }).done(function(data) {
+	        $('#btn_save').addClass('disabled');
+	        $('#btn_save').addClass('btn-default');
+	        $('#btn_save').removeClass('btn-warning');
+	        kolekti_recent(displayname($('#main').data('release')),
+                           'version',
+                           Urls.kolekti_release_lang_detail(kolekti.project, $('#main').data('release'), $('#main').data('lang')))
+	    });
     }
     
     $('#btn_save').on('click', function() {
