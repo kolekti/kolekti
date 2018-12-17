@@ -1181,7 +1181,7 @@ class ReleasePublisher(Publisher):
     def process_path(self, path):
         return self.assembly_dir() + "/" + super(ReleasePublisher,self).process_path(path)
         
-    def publish_assembly(self, assembly):
+    def publish_assembly(self, assembly, active_profiles = None, active_outputs = None):
         try :
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         except:
@@ -1194,6 +1194,20 @@ class ReleasePublisher(Publisher):
             }
             yield errev
 
+        if active_profiles is not None:
+            for p in xjob.xpath('/job/profiles/profile'):
+                if p.find('label').text in active_profiles:
+                    p.set('enabled', '1')
+                else:
+                    p.set('enabled', '0')
+                    
+        if active_outputs is not None:
+            for o in xjob.xpath('/job/scripts/script'):
+                if o.find('label').text in active_outputs:
+                    o.set('enabled', '1')
+                else:
+                    o.set('enabled', '0')
+            
         for ev in self.publish_release(assembly, xjob):
             yield ev
         return

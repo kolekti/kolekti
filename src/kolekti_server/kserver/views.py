@@ -895,11 +895,14 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             try:
                 other_release_info = json.loads(kolekti.read('/releases/'+r+'/release_info.json'))
                 if other_release_info['releasename'] == release_name:
+                    logger.debug(other_release_info['releasename'])
+                    logger.debug(r)
+
                     a = '/releases/'+ r +'/sources/' + lang + "/assembly/" + r + "_asm.html"
-                    logger.debug(a)
                     if kolekti.exists(a):
                         yield r 
             except IOError:
+#                logger.exception('could not read release info json')
                 pass
         return
     
@@ -934,7 +937,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 #        logger.debug(states)
                 #        logger.debug(focus)
         indices = list(self.__release_indices(kolekti, release, context.get('lang', default_srclang)))
-
+        logger.debug(indices)
         context.update({
             'langstate':langstate,
             'langstates':zip(release_languages,states,focus),
@@ -1005,6 +1008,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             
         })
         
+        logger.debug(assembly_meta)
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
@@ -1054,10 +1058,14 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project':project})
         langs = request.POST.getlist('langs[]')
         prefix = request.POST.get('prefix', '/releases/')
+        profiles = request.POST.getlist('profiles[]', None)
+        outputs = request.POST.getlist('outputs[]', None)
         try:
-            logger.debug(langs)
             p = publish.ReleasePublisher(prefix + release, kolekti.syspath(), langs=langs)
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
+            return StreamingHttpResponse(
+                self.format_iterator(p.publish_assembly(release + "_asm", profiles, outputs), project),
+                content_type="text/html"
+                )
 
         except:
             import traceback
@@ -1070,11 +1078,18 @@ class ReleasePublishView(kolektiMixin, TemplateView):
     
 class ReleaseLangPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
-    def post (self, request, project, release, lang):        
+    def post (self, request, project, release, lang):
+        profiles = request.POST.getlist('profiles[]', None)
+        outputs = request.POST.getlist('outputs[]', None)
         context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         try:
             p = publish.ReleasePublisher('/releases/'+release, kolekti.syspath(), langs=[lang])
-            return StreamingHttpResponse(self.format_iterator(p.publish_assembly(release + "_asm"), project), content_type="text/html")
+            return StreamingHttpResponse(
+                self.format_iterator(
+                    p.publish_assembly(release + "_asm",profiles, outputs),
+                    project
+                    ),
+                content_type="text/html")
 
         except:
             import traceback
@@ -1836,6 +1851,7 @@ class BrowserReleasesView(BrowserView):
             for assembly, date in kolekti.get_release_assemblies(path):
                 item = {'name':assembly,
                         'type':"text/xml",
+                        
                         'date':date}
                 try:
                     found = False
@@ -1856,7 +1872,8 @@ class BrowserReleasesView(BrowserView):
                             'indexes':[r]}
                         found = True
                 except:
-                    releases[assembly]=item
+                    pass
+#                    releases[assembly]=item
 #                    logger.exception('release list error')
 #            logger.debug(releases)
             return releases.values()

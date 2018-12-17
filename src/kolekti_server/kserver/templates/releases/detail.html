@@ -42,11 +42,11 @@
 
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
-	<div class="input-group">
-	  <!--	    
-		    <div class="btn-group btn-group-justified">
-		      <div class="btn-group" role="group">
-			-->
+	    <div class="input-group">
+	      <!--
+		  <div class="btn-group btn-group-justified">
+		  <div class="btn-group" role="group">
+          -->
 	  <button type="button" class="btn btn-primary btn-group-justified btn_publish" id="btn_publish">Publier</button>
 	  <div class="input-group-btn">
 	    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -61,18 +61,19 @@
       </div>
     </div>
 
+    {% comment %}
     {% if assembly_meta.kolekti_releasename_ and assembly_meta.kolekti_releaseindex %}
     <div class="row top-margin">
       <div class="col-sm-12 col-md-12">
-	<div class="btn-group btn-group-justified" role="group">
-	  <div class="btn-group" role="group">
-	    <button type="button" class="btn btn-default btn-update" id="btn_update">Actualiser</button>
-	  </div>
-	</div>
+	    <div class="btn-group btn-group-justified" role="group">
+	      <div class="btn-group" role="group">
+	        <button type="button" class="btn btn-default btn-update" id="btn_update">Actualiser</button>
+	      </div>
+	    </div>
       </div>
     </div>
     {% endif %}
-
+    {% endcomment %}
 
     <br/>
 
@@ -147,7 +148,7 @@
           <div class="compare-param">
             <p>Comparer l'assemblage affiché avec :</p>
           
-            {% if assembly_meta.kolekti_releasename and assembly_meta.kolekti_releaseindex %}
+{#            {% if assembly_meta.kolekti_releasename and assembly_meta.kolekti_releaseindex %} #}
             {% with release_indices|length as nbindices %}
 	        <div class="input-group-btn">
 	          <button type="button" class="btn btn-default dropdown-toggle {% if not nbindices %}disabled{%endif%}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -162,7 +163,7 @@
 	          </ul>
 	        </div>
             {% endwith %}
-            {% endif %}
+{#            {% endif %} #}
             <button type="button" class="btn btn-default btn_compare_release_source">Tous les modules source</button>
           </div>
           <div class="compare-current hidden">
@@ -214,7 +215,7 @@
 	                </small>
                     {{ profile.label }}
 	              </a>
-                  <a href="#" class="kolekti-activate-profile" data-active="yes">
+                  <a href="#" class="kolekti-activate-profile" data-active="yes" data-profile="{{ profile.label }}">
                     <span class="text-success">
                       <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                     </span>
@@ -248,16 +249,16 @@
           <div class="collapse" id="collapseSorties">
 	        <ul>
 	          {% for script in releaseparams.scripts %}
-	          <li>{{ script }}
-                  <a href="#" class="kolekti-activate-output" data-active="yes">
-                    <span class="text-success">
-                      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                    </span>
-                    <span class="text-danger hidden">
-                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    </span>
-                  </a>
-
+	          <li>
+                <span>{{ script }}</span>
+                <a href="#" class="kolekti-activate-output" data-active="yes" data-output="{{ script }}">
+                  <span class="text-success toggle">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                  </span>
+                  <span class="text-danger hidden toggle">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  </span>
+                </a>
               </li>
 	          {% endfor %}
 	        </ul>

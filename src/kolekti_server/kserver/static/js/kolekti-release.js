@@ -293,10 +293,24 @@ $('.btn_publish').on('click', function() {
 	params['release']=release;
 	var alllang = ($(this).attr('id') == "btn_publish_all")
 	params['langs']= get_publish_languages(alllang);
+    params['profiles'] = [];
+    $('.kolekti-activate-profile').each(function() {
+        if ($(this).data('active') == 'yes')
+            params['profiles'].push($(this).data('profile'))
+    });
+    
+    params['outputs'] = [];
+    $('.kolekti-activate-output').each(function() {
+        if ($(this).data('active') == 'yes')
+            params['outputs'] .push($(this).data('output'))
+    });
+
+    console.log(params)
+    
 	var streamcallback = function(data) {
 	    $("#pub_results").html(data);
 	}
-	
+
 	$.ajaxPrefilter("html streamed", function(){return "streamed"});
 	streamedTransport(streamcallback);
 	$.ajax({
@@ -464,4 +478,21 @@ $('.btn_publish').on('click', function() {
 	$('#uploadmodal').modal('hide');
     });
 
+    
+    
+    // select configuration
+    var toggle_activate =  function() {
+        if($(this).data('active')=='yes') {
+            $(this).data('active','no')
+            $(this).find('.text-success').addClass('hidden')
+            $(this).find('.text-danger').removeClass('hidden')
+        } else {
+            $(this).data('active','yes')
+            $(this).find('.text-success').removeClass('hidden')
+            $(this).find('.text-danger').addClass('hidden')
+        }
+    };
+                       
+    $('.kolekti-activate-output').on("click", toggle_activate);
+    $('.kolekti-activate-profile').on("click", toggle_activate);
 })
