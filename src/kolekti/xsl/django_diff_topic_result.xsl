@@ -403,12 +403,12 @@
   <!-- datails du diff (dans le popup) -->
 
 
-    <xsl:template match="p|h1|h2|h3|h4|h5|h6" mode="diff-details">
-      <p>
-        <xsl:apply-templates mode="diff-pop"/>
-      </p>
-    </xsl:template>
-    
+  <xsl:template match="p|h1|h2|h3|h4|h5|h6" mode="diff-details">
+    <p>
+      <xsl:apply-templates mode="diff-pop"/>
+    </p>
+  </xsl:template>
+  
 
 
   
