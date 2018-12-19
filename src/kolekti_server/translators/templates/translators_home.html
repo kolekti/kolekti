@@ -34,6 +34,14 @@
         </div>
       </div>
     </div>
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {% for release in releases %}
+        <p><a href="#{{ release.project.directory }}_{{ release.release_name }}">
+            [{{ release.project.directory }}] {{ release.release_name }}</a></p>
+        {% endfor %}
+      </div>
+    </div>
   </div>
   
   <div class="col-md-7">
@@ -41,16 +49,18 @@
     {% for release in releases %}
     
     <div class="panel panel-default release"
-         data-project="{{ release.self.project.directory }}"
-         data-release="{{ release.self.release_name }}"
-         data-source-assembly-url="{% url 'translators_src_assembly' project=release.self.project.directory release=release.self.release_name %}"
-         data-source-zip-url="{% url 'translators_src_zip' project=release.self.project.directory release=release.self.release_name %}"
-         data-upload-url="{% url 'translators_upload' project=release.self.project.directory release=release.self.release_name  %}"
+         data-project="{{ release.project.directory }}"
+         data-release="{{ release.release_name }}"
+         data-source-assembly-url="{% url 'translators_src_assembly' project=release.project.directory release=release.release_name %}"
+         data-source-zip-url="{% url 'translators_src_zip' project=release.project.directory release=release.release_name %}"
+         data-upload-url="{% url 'translators_upload' project=release.project.directory release=release.release_name  %}"
+         id="{{ release.project.directory }}_{{ release.release_name }}"
          >
       <div class="panel-heading">
         <h3 class="panel-title">
-          <span class="project_name">{{ release.self.project.name }}</span>
-          <span class="release_name">{{ release.self.release_name }}</span>
+          <span class="project_name">{{ release.project.name }}</span>
+          <span class="release_name">{{ release.release_name }}</span>
+          <span class="pull-right"><a href="#">[top]</a></span>
         </h3>
       </div>
       <div class="panel-body">
@@ -196,6 +206,7 @@
 	                <i class='fa fa-refresh fa-spin'></i> Upload in progress...
 	              </div>
                 </div>
+                
                 <div class="modal-footer">
                   <div class="form-group">
 		            <div class="col-sm-offset-2 col-sm-10">
@@ -221,7 +232,8 @@
           </div>
           <div class="upload-progress">
             <div class="alert alert-info" role="alert">
-	          <div class="alert-content"><i class="fa fa-spinner"></i> <span class="progresstxt"></span></div>
+	          <div class="alert-content"><i class="fa fa-spinner fa-spin"></i> <span class="progresstxt"></span></div>
+	          <div class="alert-content-stream"></div>
 	        </div>                
           </div>
         </div>

@@ -41,26 +41,44 @@ def in_translator_group(user):
     return False
 
 class TranslatorsSharedMixin(kolektiMixin):
-   
-    def project(self, project):
-        projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
-        # up = UserProject.objects.get(user = self.request.user, project__directory = project)
-        # self.set_project(projectpath, self.request.user.username)
-        # self.project_activate(up)
-        
-    def project_languages(self, project):
+    def get_context_data(self, data={}, **kwargs):
         try:
-            project_settings = ET.parse(os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project, 'kolekti','settings.xml'))
-            return ([l.text for l in project_settings.xpath('/settings/languages/lang')],
-                    [l.text for l in project_settings.xpath('/settings/releases/lang')],
-                    project_settings.xpath('string(/settings/@sourcelang)'))
+            context = super(kolektiMixin, self).get_context_data(**kwargs)
+        except AttributeError:
+            context = {}
+        kolekti = None
+        if 'project' in data.keys():
+            project = data['project']
+            project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
+            kolekti = kolektiBase(project_path)
+            context.update({
+                'default_lang' : kolekti.project_default_language(),
+            })
+
+            if not 'lang' in data.keys():
+                context.update({
+                    'lang' : kolekti.project_default_language()
+                })
+                
+        context.update({
+            'user_groups': self.request.user.groups.all()
+            })
+        
+        context.update(data)
+        return context, kolekti
+           
+    def project_languages(self, kolekti):
+        try:
+            project_settings = kolekti.parse('/kolekti/settings.xml')
+            return (
+                [l.text for l in project_settings.xpath('/settings/languages/lang')],
+                [l.text for l in project_settings.xpath('/settings/releases/lang')],
+                project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
         except AttributeError:
             return ['en'],['en','fr','de'],'en'
 
-
-        
         
 class TranslatorsMixin(TranslatorsSharedMixin):
     @method_decorator(user_passes_test(in_translator_group, login_url='/'))
@@ -108,26 +126,20 @@ class TranslatorsMixin(TranslatorsSharedMixin):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
-class TranslatorsHomeView(TranslatorsMixin, TemplateView):
-    template_name = "translators_home.html"
-    def get(self, request, project = None, release = None):
-        if project is None:
-            releases = TranslatorRelease.objects.filter(user = request.user).order_by("project", "release_name")
-        else:
-            releases = TranslatorRelease.objects.filter(user = request.user, project__directory = project)
-            if release is not None:
-                releases = releases.filter(release_name = release)
-        
-        form = UploadAssemblyForm()
-        context = {'upload_form':form, 'releases':[]}
-        for release in releases:
-            context['releases'].append({
-                'self' : release,
-#                'langs': self.project_languages(release.project.directory)
-                })
-            
-        return self.render_to_response(context)
+class TranslatorsHomeMixin(TranslatorsMixin):
+    def get_context_data(self, data={}, **kwargs):
+        context, kolekti = super(TranslatorsHomeMixin, self).get_context_data(data, **kwargs)
 
+        if 'project' in data.keys():
+            releases = TranslatorRelease.objects.filter(user = request.user, project__directory = project).order_by("release_name")
+            if 'release' in data.keys():
+                releases = releases.filter(release_name = release)
+        else:
+            releases = TranslatorRelease.objects.filter(user = self.request.user).order_by("project", "release_name")
+
+        form = UploadAssemblyForm()
+        context.update({'upload_form':form, 'releases':releases})
+        return context, kolekti
 
     def post(self, request, project = None, release = None):
         res=[]
@@ -137,25 +149,42 @@ class TranslatorsHomeView(TranslatorsMixin, TemplateView):
             uploaded_file = request.FILES[u'upload_file']
             assembly = uploaded_file.read() 
             importer = TranslationImporter()
-            release = importer.guess_release(assembly)
-            project = TranslatorRelease.objects.get(release = release).project
+            if release is None:
+                release = importer.guess_release(assembly)
+            if project is None:
+                project = TranslatorRelease.objects.get(release = release).project
+                
             importer.import_assembly(assembly)
         else:
-            context = {}
+            context = {}        
             return self.render_to_response(context)
-        
+        return HttpResponseRedirect(request.path)
+
+class TranslatorsHomeView(TranslatorsHomeMixin, TemplateView):    
+    template_name = "translators_home.html"
+    def get(self, request):
+        context, kolekti = self.get_context_data()
+        return self.render_to_response(context)
+
+class TranslatorsProjectView(TranslatorsHomeMixin, TemplateView):    
+    template_name = "translators_home.html"
+    def get(self, request, project):
+        context, kolekti = self.get_context_data({'project':project})
+        return self.render_to_response(context)
+
+class TranslatorsReleaseView(TranslatorsHomeMixin, TemplateView):    
+    template_name = "translators_home.html"
+    def get(self, request, project, release):            
+        context, kolekti = self.get_context_data({'project':project, 'release':release})
+        return self.render_to_response(context)
             
 class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseStatesView):
-    def get(self, request, project):
-
-        path, release = request.GET.get('release').rsplit('/',1)
-
+    def get(self, request, project, release):
+        context, kolekti = self.get_context_data({'project':project, 'release':release})
         sync_mgr = TranslatorSynchro(project, release, request.user.username)  
-
-        release_langs = self.project_languages(project)[1]
+        release_langs = self.project_languages(kolekti)[1]
         states = []
         for lang in release_langs:
-            asfilename = "/".join(['/releases', release, "sources", lang, "assembly", release+'_asm.html'])
             state = sync_mgr.lang_state(lang)
             if state == "source_lang":
                 states.insert(0,(lang, state))
@@ -165,57 +194,59 @@ class TranslatorsReleaseStatusesView(TranslatorsMixin, ReleaseStatesView):
     
 class TranslatorsLangsView(TranslatorsMixin, View):
     def get(self, request, project):
-        return HttpResponse(json.dumps(self.project_languages(project)),content_type="application/json")
+        context, kolekti = self.get_context_data({'project':project})
+        return HttpResponse(json.dumps(self.project_languages(kolekti)),content_type="application/json")
 
 class TranslatorsDocumentsView(TranslatorsMixin, View):
-    def get(self, request, project):
-        release_path = request.GET.get('release')
-        assembly_name = release_path.rsplit('/',1)[1]
-        lang = request.GET.get('lang',"")
-        projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
-        publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
+    def get(self, request, project, release, lang):
+        context, kolekti = self.get_context_data({'project':project})
+        publisher = ReleasePublisher('/releases/' + release, kolekti.syspath(), langs = [lang])
         res = []
         
-        for l, p, e, t in publisher.documents_release(assembly_name):
+        for l, p, e, t in publisher.documents_release(release):
+#            logger.debug(l)
+#            logger.debug(p)
+#            logger.debug(e)
+#            logger.debug(t)
             try:
-                v = os.listdir(os.path.join(settings.KOLEKTI_BASE, request.user.username, project, p[1:]+'.cert'))
+                v = kolekti.list_directory(p[1:]+'.cert')
             except OSError:
                 v = []
                 
             res.append((l, p.replace('/releases/',''), e, v, t)) 
-        return HttpResponse(json.dumps(res),content_type="application/json")
+        return HttpResponse(json.dumps(res), content_type="application/json")
         
 class TranslatorsPublishView(TranslatorsMixin, View):
-    def get(self, request, project):
+    def get(self, request, project, release, lang):
         try:
-            release_path = request.GET.get('release')
-            assembly_name = release_path.rsplit('/',1)[1]
-            lang = request.GET.get('lang',"")
-            projectpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project)
-            publisher = ReleasePublisher(release_path, projectpath, langs = [lang])
-            res = list(publisher.publish_assembly(assembly_name + "_asm"))
+            context, kolekti = self.get_context_data({'project':project})
+            publisher = ReleasePublisher('/releases/' + release, kolekti.syspath(), langs = [lang])
+            return StreamingHttpResponse(
+                self.format_iterator(publisher.publish_assembly(release + "_asm"), project , template = "translators_publication_iterator.html"),
+                content_type="text/html"
+                )
+
         except:
-            logger.exception('translators publication error [%s/%s]'%(project,release_path))
+            logger.exception('translators publication error [%s/%s]'%(project,release))
             res = {'status':'error'}
             
         return HttpResponse(json.dumps(res),content_type="application/json")
         
 class TranslatorsSourceZipView(TranslatorsMixin, View):
-    def get(self, request, project, release):
-        sourcelang = request.GET.get('lang')
-        projectpath = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
-        self.set_project(projectpath)
-        zipname = "%s_%s_%s"%(project, release, sourcelang)
-        # to be set with release sourcelang
-        langs = [sourcelang]
-        z = self.zip_release(release, langs)
+    def get(self, request, project, release, lang):
+        context, kolekti = self.get_context-data({
+            "project":project,
+            "release":release,
+            })
+        
+        zipname = "%s_%s_%s"%(project, release, lang)
+        z = kolekti.zip_release(release, [lang])
         response = HttpResponse(z, content_type="application/zip")
         response['Content-Disposition'] = "attachment; filename=%s.zip"%(zipname,)
         return response
 
 class TranslatorsSourceAssemblyView(TranslatorsMixin, View):
-    def get(self, request, project, release):
-        lang = request.GET.get('lang')
+    def get(self, request, project, release, lang):
         assembly = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, 'releases', release,'sources',lang, 'assembly',release+'_asm.html')
         return serve(request, os.path.basename(assembly), os.path.dirname(assembly))
 
@@ -279,11 +310,12 @@ class TranslatorsCertificateUploadView(TranslatorsMixin, View):
             uploaded_file = request.FILES[u'upload_file']
             docpath = request.POST[u'path']
 #            path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases",  release , 'certificates' , lang)
-            path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath + '.cert')
+            path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", release, docpath + '.cert')
             try:
                 os.makedirs(path)
             except:
                 pass
+            logger.debug(path)
             with open(os.path.join(path,uploaded_file.name), "wb") as f:
                 for chunk in uploaded_file.chunks():
                     f.write(chunk)
@@ -498,6 +530,5 @@ class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
         return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
     
 class TranslatorsAdminReleaseStatusesView(TranslatorsAdminMixin, ReleaseStatesView):
-    def get(self, request, project):
-        self.project(project)
-        return super(TranslatorsAdminReleaseStatusesView, self).get(request)
+    def get(self, request, project, release):
+        return super(TranslatorsAdminReleaseStatusesView, self).get(request, project, release)

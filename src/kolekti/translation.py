@@ -133,6 +133,7 @@ class AssemblyImporter(object):
                     'release': release
                     }
                 state = syncmgr.propget("release_state",assembly_file)
+#                logger.debug("%s : %s"%(l, state))
                 if state=="sourcelang":
                     return l
             except:
@@ -176,7 +177,7 @@ class AssemblyImporter(object):
         
     def check_structure(self, project, assembly, release) :
         srclang = self._get_source_lang(project, release)
-
+        logger.debug(5*"%s ", self._path, self._username, project,release, srclang)
         src_assembly_file = os.path.join(self._path, self._username, project, 'releases', release, "sources", srclang, "assembly", release+"_asm.html")
         src_assembly = ET.parse(src_assembly_file, self.__parser)
         try :
@@ -268,6 +269,8 @@ class AssemblyImporter(object):
         if not (state == 'translation' or state == 'validation'):
                 raise KolektiValidationError('release state does not allow update of translation')
 
+        logger.debug("check assembly %s, %s, %s"%(project, assembly, release))
+        
         self.check_structure(project, assembly, release)
         self.check_variables(project, assembly, release)            
         self.fix_topic_sources(project, assembly, release)

@@ -33,7 +33,7 @@ class Publisher(PublisherMixin, kolektiBase):
         #if self._publang is None:
         #    self._publang = self._config.get("sourcelang","en")
         self._cleanup = True
-        logger.debug("kolekti %s"%self._version)
+#        logger.debug("kolekti %s"%self._version)
 
     def getPublisherExtensions(self):        
         return PublisherExtensions
@@ -89,7 +89,7 @@ class Publisher(PublisherMixin, kolektiBase):
         xsassembly = self.get_xsl('assembly', PublisherExtensions, lang=self._publang)
         assembly = xsassembly(xtoc, lang="'%s'"%self._publang)
         self.log_xsl(xsassembly.error_log)
-        logger.debug(ET.tostring(assembly)[:1000])
+#        logger.debug(ET.tostring(assembly)[:1000])
         
         # apply pre-assembly filtering  
         s = self.get_xsl('criteria', PublisherExtensions, profile=xjob, lang=self._publang)
@@ -124,8 +124,8 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time(),
                         })
 
-            logger.debug("W: unable to create assembly directory")
-            logger.debug(traceback.format_exc())
+            logger.exception("W: unable to create assembly directory")
+
             return assembly, assembly_dir, pubname, events
 
         try:
@@ -183,8 +183,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time(),
                         })
 
-                    logger.error("resources for script %s not found"%scriptlabel)
-                    logger.debug(traceback.format_exc())
+                    logger.exception("resources for script %s not found"%scriptlabel)
                     
             for script in xjob.xpath("/job/scripts/script[@enabled = 1]"):
                 scriptlabel = script.xpath('string(label|ancestor::script/label)')
@@ -200,8 +199,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time(),
                         })
 
-                    logger.error("variables for script %s not found"%scriptlabel)
-                    logger.debug(traceback.format_exc())
+                    logger.exception("variables for script %s not found"%scriptlabel)
 
         return assembly, assembly_dir, pubname, events 
 
@@ -237,7 +235,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         }
                     
                 # invoke scripts
-                logger.debug( "starting scripts %s", profilename)
+#                logger.debug( "starting scripts %s", profilename)
 #                logger.debug(ET.tostring(xjob))
                     
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
@@ -251,14 +249,13 @@ class Publisher(PublisherMixin, kolektiBase):
                             indata = outdata
                         except:
                             import traceback
-                            logger.error("Script %s finished with errors"%scriptlabel)
+                            logger.exception("Script %s finished with errors"%scriptlabel)
                             yield {
                                 'event':'error',
                                 'msg':"Erreur d'execution du script %s"%scriptlabel,
                                 'stacktrace':traceback.format_exc(),
                                 'time':time.time(),
                                 }
-                            logger.debug(traceback.format_exc())
                             
                     yield {
                         'event':'result',
@@ -279,14 +276,13 @@ class Publisher(PublisherMixin, kolektiBase):
                             }
                     except:
                         import traceback
-                        logger.error("Script %s finished with errors"%script.find('label').text)
+                        logger.exception("Script %s finished with errors"%script.find('label').text)
                         yield {
                             'event':'error',
                             'msg':"Erreur d'execution du script %s"%script.find('label').text,
                             'stacktrace':traceback.format_exc(),
                             'time':time.time(),
                             }
-                        logger.debug(traceback.format_exc())
                 if self._cleanup:
                     self.delete_resource(self.pubdir(assembly_dir, profile)+ "/document.xhtml")
 
@@ -360,17 +356,12 @@ class Publisher(PublisherMixin, kolektiBase):
             # assembly = s(assembly)
             
         except ET.XSLTApplyError, e:
-            logger.debug(s.error_log)
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.exception(s.error_log)
             logger.error("Error in publication process (xsl)")
             raise
 
         except:
-            import traceback
-            print traceback.format_exc()
-            logger.debug(traceback.format_exc())
-            logger.error("Error in publication process")
+            logger.exception("Error in publication process")
             raise
         
         # write pivot
@@ -387,9 +378,7 @@ class Publisher(PublisherMixin, kolektiBase):
         try:
             self.makedirs(assembly_dir + "/kolekti")
         except:
-            logger.debug("W: unable to create kolekti subdirectory")
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.exception("W: unable to create kolekti subdirectory")
 
 
     # copy used variables xml files into assembly space
@@ -405,7 +394,7 @@ class Publisher(PublisherMixin, kolektiBase):
             try:
                 self.makedirs(self.dirname(assembly_dir + "/" +srcfile))
             except OSError:
-                logger.debug('makedir failed')
+                logger.exception('makedir failed')
                 import traceback
                 yield {
                         'event':'warning',
@@ -413,7 +402,6 @@ class Publisher(PublisherMixin, kolektiBase):
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                logger.debug(traceback.format_exc())
             try:
                 self.copyFile(srcfile, assembly_dir + '/' + srcfile)
                 
@@ -462,9 +450,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 # refdir = os.path.join(assembly_dir + '/' + os.path.dirname(ref))
                 self.makedirs(refdir)
             except OSError:
-                logger.debug('makedir failed')
-                import traceback
-                logger.debug(traceback.format_exc())
+                logger.exception('makedir failed')
             try:
                 self.copyFile(ref, assembly_dir + '/' + ref)
             except:
@@ -499,9 +485,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 plugin = self.get_script(plugname)
                 plugin.copylibs(assembly_dir, label)
         except:
-            logger.error('Unable to copy script libs')
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.exception('Unable to copy script libs')
             raise
         
         params = {}
@@ -550,9 +534,7 @@ class Publisher(PublisherMixin, kolektiBase):
                             raise
 
         except:
-            import traceback
-            logger.debug(traceback.format_exc())
-            logger.error("[Script %s] could not copy resources"%scriptlabel)
+            logger.exception("[Script %s] could not copy resources"%scriptlabel)
             raise
         
         
@@ -647,9 +629,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     plugin = self.get_script(plugname)
                 except:
-                    logger.error("Impossible de charger le script %(label)s"%{'label': scriptlabel.encode('utf-8')})
-                    import traceback
-                    logger.debug(traceback.format_exc())
+                    logger.exception("Impossible de charger le script %(label)s"%{'label': scriptlabel.encode('utf-8')})
                     raise
 
                 res = plugin(script, profile, assembly_dir, inputs)
@@ -1138,7 +1118,7 @@ class ReleaseTranslation(Publisher):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
         self._release_dir = release_dir
-        super(ReleasePublisher, self).__init__(*args, **kwargs)
+        super(ReleaseTranslation, self).__init__(*args, **kwargs)
         if self._publangs is None:
             self._publangs = self.project_settings.xpath("/settings/languages/lang/text()")
         self._cleanup = False
@@ -1232,15 +1212,15 @@ class ReleasePublisher(Publisher):
         try:
             scrdef=self.scriptdefs.xpath('/scripts/pubscript[@id="%s"]'%scriptname)[0]
         except IndexError:
-            logger.error("Script %s not found" %scriptname)
-            raise
+            logger.exception("Script %s not found" %scriptname)
+            return '', None, ''
         
         link = scrdef.find('link').get('ref')
         ptype = scrdef.find('link').get('type')
         link = link.replace('_PUBURI_', '/'.join([profilepath, lang]))
         link = link.replace('_PUBNAME_', filename)
         filepath = '/'.join(['/releases', release, link])
-        return filepath, ptype
+        return filepath, ptype, link
    
     def documents_release(self, release):
         try :
@@ -1253,6 +1233,7 @@ class ReleasePublisher(Publisher):
                 'stacktrace':traceback.format_exc(),
                 'time':time.time(),
             }
+            logger.exception('unable to get pub params')
             yield errev
             return
         try:
@@ -1261,9 +1242,9 @@ class ReleasePublisher(Publisher):
                 for jobprofile in xjob.xpath('/job/profiles/profile[@enabled="1"]'):
                     for lang in self._publangs:
                         self._publang = lang
-                        ref, reftype = self.release_script_filename(release, lang, jobprofile, jobscript)
+                        ref, reftype, link = self.release_script_filename(release, lang, jobprofile, jobscript)
                 
-                        yield (jobprofile.find('label').text, ref, self.exists(ref), reftype)
+                        yield (jobprofile.find('label').text, link, self.exists(ref), reftype)
         except:
             logger.exception('documents release error')
         return
@@ -1325,8 +1306,7 @@ class ReleasePublisher(Publisher):
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                    logger.error("unable to read assembly %s"%assembly)
-                    logger.debug(traceback.format_exc())
+                    logger.exception("unable to read assembly %s"%assembly)
                     langpubevt.append(errevt)
                     yield errevt
                     return
@@ -1420,7 +1400,7 @@ class ReleasePublisher(Publisher):
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'_asm.xml')
             profilename = ""
             for event in mf:
-                logger.debug(event['event'])
+#                logger.debug(event['event'])
                 if event.get('event','') == "release_publication":
                     for event2 in event.get('content'):
                         if event2.get('event','') == "lang" and event2.get('label','') in self._publangs:
@@ -1442,8 +1422,8 @@ class ReleasePublisher(Publisher):
                                 
         except:
             import traceback
-            logger.error('erreur lors de la validation')
-            logger.debug(traceback.format_exc())
+            logger.exception('erreur lors de la validation')
+#            logger.debug(traceback.format_exc())
             errev = {
                 'event':'error',
                 'msg':"erreur lors de la validation",

@@ -70,6 +70,8 @@
     <script src="/static/js/kolekti-common.js"></script>
     -->
     <script type="text/javascript" src="{% static "js/kolekti-ajax.js" %}"></script>
+    <script type="text/javascript" src="{% url 'javascript-catalog' packages='kserver' %}"></script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
     {% block extrascripts %}{% endblock %}
   </body>
 </html>
