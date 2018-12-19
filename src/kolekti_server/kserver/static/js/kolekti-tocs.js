@@ -451,49 +451,49 @@ $(document).ready( function () {
 	    $('#pub_end').hide();
 
 	    var streamcallback = function(data) {
-		//		console.log(data);
-		$("#pub_results").html(data);
+		    //		console.log(data);
+		    $("#pub_results").html(data);
 	    }
 	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
 	    streamedTransport(streamcallback);
 
 	    $.ajax({
-		url:url,
-		type:'POST',
-		data:params,
-		dataType:"streamed",
-		beforeSend:function(xhr, settings) {
-		    ajaxBeforeSend(xhr, settings);
-		    settings.xhr.onreadystatechange=function(){
-//			console.log(xhr.responseText);
+		    url:url,
+		    type:'POST',
+		    data:params,
+		    dataType:"streamed",
+		    beforeSend:function(xhr, settings) {
+		        ajaxBeforeSend(xhr, settings);
+		        settings.xhr.onreadystatechange=function(){
+                    //			console.log(xhr.responseText);
+		        }
 		    }
-		}
 	    }).done(function(data) {
-		$("#pub_results").html(data);
+		    $("#pub_results").html(data);
 	    }).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#pub_results').html([
-		    $('<div>',{'class':"alert alert-danger",
-			       'html':[$('<h5>',{'html':"Erreur"}),
-				       $('<p>',{'html':"Une erreur inattendue est survenue lors de la publication"})
-				       
-				      ]}),
-		    $('<a>',{
-			'class':"btn btn-primary btn-xs",
-			'data-toggle':"collapse",
-			'href':"#collapseStacktrace",
-			'aria-expanded':"false",
-			'aria-controls':"collapseStracktrace",
-			    'html':'Détails'}),
-		    $('<div>',{'class':"well",
-			       'html':[
-				   $('<p>',{'html':textStatus}),
-				   $('<p>',{'html':errorThrown}),
-				   $('<pre>',{'html':jqXHR.responseText})]
-			      })
-		]);
+		    $('#pub_results').html([
+		        $('<div>',{'class':"alert alert-danger",
+			               'html':[$('<h5>',{'html':"Erreur"}),
+				                   $('<p>',{'html':"Une erreur inattendue est survenue lors de la publication"})
+				                   
+				                  ]}),
+		        $('<a>',{
+			        'class':"btn btn-primary btn-xs",
+			        'data-toggle':"collapse",
+			        'href':"#collapseStacktrace",
+			        'aria-expanded':"false",
+			        'aria-controls':"collapseStracktrace",
+			        'html':'Détails'}),
+		        $('<div>',{'class':"well",
+			               'html':[
+				               $('<p>',{'html':textStatus}),
+				               $('<p>',{'html':errorThrown}),
+				               $('<pre>',{'html':jqXHR.responseText})]
+			              })
+		    ]);
 	    }).always(function() {
-		$('#pub_progress').remove();
-		$('#pub_end').show();
+		    $('#pub_progress').remove();
+		    $('#pub_end').show();
 	    });
 	};
 	

@@ -145,8 +145,8 @@ class kolektiMixin(LoginRequiredMixin):
         return sync
             
 
-    def format_iterator(self, sourceiter, project):
-        template = get_template('publication-iterator.html')
+    def format_iterator(self, sourceiter, project, template='publication-iterator.html'):
+        template = get_template(template)
         nbchunck = 0
         for chunck in sourceiter:
             logger.debug(chunck)

@@ -1,43 +1,42 @@
 $(function() {
 
     var enable_save = function() {
-	$('#btn_save').removeClass('disabled');
-	$('#btn_save').removeClass('btn-default');
-	$('#btn_save').addClass('btn-warning');
+	    $('#btn_save').removeClass('disabled');
+	    $('#btn_save').removeClass('btn-default');
+	    $('#btn_save').addClass('btn-warning');
     }
     
     var disable_save = function() {
-	$('#btn_save').addClass('disabled');
-	$('#btn_save').addClass('btn-default');
-	$('#btn_save').removeClass('btn-warning');
+	    $('#btn_save').addClass('disabled');
+	    $('#btn_save').addClass('btn-default');
+	    $('#btn_save').removeClass('btn-warning');
     }
 
     $(window).on('beforeunload', function(e) {
-	if($('#btn_save').hasClass('btn-warning')) {
+	    if($('#btn_save').hasClass('btn-warning')) {
             return 'Modifications non enregistrées';
-	}
+	    }
     });
     
     $('#btn_save').on('click', function() {
-	record_values();
-	var data = { "path":kolekti_variable_path,
-		         "data":kolekti_variable_data["values"]
-		   }
-	
-	$.ajax({
-	    url:Urls.kolekti_variable_editval(kolekti.project, kolekti.lang, kolekti_variable_path),
-	    type:'POST',
-	    data:JSON.stringify(data),
-	    contentType:'text/javascript'
-	}).success(function(data) {
-	    disable_save()
-        var lang = kolekti_variable_path.split('/')[2]
-        var variable_path = kolekti_variable_path.split('/').splice(4). join('/')
-	    kolekti_recent(displayname(kolekti_variable_path),
-                       'variables',
-                       Urls.kolekti_variable(kolekti.project, lang, variable_path))
-
-	});
+	    record_values();
+	    var data = { "path":kolekti_variable_path,
+		             "data":kolekti_variable_data["values"]
+		           }
+	    
+	    $.ajax({
+	        url:Urls.kolekti_variable_editval(kolekti.project, kolekti_variable_lang, kolekti_variable_path),
+	        type:'POST',
+	        data:JSON.stringify(data),
+	        contentType:'text/javascript'
+	    }).success(function(data) {
+	        disable_save()
+            var variable_path = kolekti_variable_path.split('/').splice(4). join('/')
+	        kolekti_recent(displayname(kolekti_variable_path),
+                           'variables',
+                           Urls.kolekti_variable(kolekti.project, kolekti_variable_lang, variable_path))
+        
+	    });
     });
 
     

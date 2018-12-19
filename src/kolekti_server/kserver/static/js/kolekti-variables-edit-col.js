@@ -25,17 +25,15 @@ $(function() {
 		           }
 	    
 	    $.ajax({
-	        url:Urls.kolekti_variable_editcol(kolekti.project, kolekti.lang, kolekti_variable_path),
+	        url:Urls.kolekti_variable_editcol(kolekti.project, kolekti_variable_lang, kolekti_variable_path),
 	        type:'POST',
 	        data:JSON.stringify(data),
 	        contentType:'text/javascript'
 	    }).success(function(data) {
 	        disable_save()
-            var lang = kolekti_variable_path.split('/')[2]
-            var variable_path = kolekti_variable_path.split('/').splice(4). join('/')
 	        kolekti_recent(displayname(kolekti_variable_path),
                            'variables',
-                           Urls.kolekti_variable(kolekti.project, lang, variable_path))
+                           Urls.kolekti_variable(kolekti.project, kolekti_variable_lang, kolekti_variable_path))
 	    });
     });
 
