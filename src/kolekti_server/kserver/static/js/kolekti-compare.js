@@ -119,4 +119,7 @@ $(function() {
     if (status != "sourcelang") {
         $('.btn_compare_release_source').addClass('disabled')
     }
+
+
+    
 })

@@ -166,13 +166,15 @@ i.diff-marker {
 .diff-source span.DiffDelete
 {
     color: #D0D0D0;
+    display:none;
 }
 
 .diff-release ins.diff-insert,
 .diff-release span.DiffInsert
  {
      color: #D0D0D0;
-}
+     display:none;
+ }
 
 .diff-release del.diff-del,
 .diff-release span.DiffDelete
@@ -189,5 +191,8 @@ i.diff-marker {
 .diff-release del.diff-del,
 .diff-release span.DiffDelete
 {
-        background-color: inherit;
+    background-color: inherit;
+    padding-left:inherit;
+    padding-right:inherit;
+    
 }

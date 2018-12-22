@@ -81,7 +81,7 @@
   <xsl:template name="diffdetails">
     <div class="diff row" style="min-width:300px">
       <div class="diff-release col-md-6">
-        <p>module source :</p>
+        <p><span class="popup-label-source" >module source :</span></p>
         <div class="panel panel-default">
           <div class="panel-body">
             <xsl:apply-templates select="(ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th)[last()]" mode="diff-pop"/>
@@ -89,7 +89,7 @@
         </div>
       </div>
       <div class="diff-source col-md-6">
-        <p>assemblage :</p>
+        <p><span class="popup-label-comp">assemblage :</span></p>
         <div class="panel panel-default">
           <div class="panel-body">
             <xsl:apply-templates select="(ancestor-or-self::p|ancestor-or-self::h1|ancestor-or-self::h2|ancestor-or-self::h3|ancestor-or-self::h4|ancestor-or-self::h5|ancestor-or-self::h6|ancestor-or-self::li|ancestor-or-self::dt|ancestor-or-self::dd|ancestor-or-self::td|ancestor-or-self::th)[last()]" mode="diff-pop"/>
