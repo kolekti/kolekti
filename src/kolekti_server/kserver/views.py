@@ -696,7 +696,11 @@ class ReleaseDeleteView(kolektiMixin, View):
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             logger.exception("Could not delete release")
-            return HttpResponse(status=500)
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"Could not delete release"
+                }), content_type='application/json', status=500)
+
             
 class ReleaseLangDeleteView(kolektiMixin, View):
     def post(self, request, project, release, lang):
@@ -706,7 +710,10 @@ class ReleaseLangDeleteView(kolektiMixin, View):
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         except:
             logger.exception("Could not delete release lang")
-            return HttpResponse(status=500)
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"Could not delete release lang"
+                }), content_type='application/json', status=500)
             
     
 class ReleaseLangStateView(kolektiMixin, TemplateView):
@@ -731,8 +738,11 @@ class ReleaseLangStateView(kolektiMixin, TemplateView):
             return HttpResponse(state)
         except:
             import traceback
-            print traceback.format_exc()
-            return HttpResponse(status=500)
+            logger.exception('could not get release state')
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could not get release state"
+                }), content_type='application/json', status=500)
                     
 class ReleaseLangFocusView(kolektiMixin, TemplateView):
     def post(self, request, project, release, lang):
@@ -746,10 +756,14 @@ class ReleaseLangFocusView(kolektiMixin, TemplateView):
             rf.state = (state == "true")
             rf.save()
             return HttpResponse(json.dumps({"status":"OK"}), content_type="application/json")
+        
         except:
             import traceback
-            print traceback.format_exc()
-            return HttpResponse(status=500)
+            logger.exception('could get release focus')
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could get release focus"
+                }), content_type='application/json', status=500)
                     
 class ReleaseLangCopyView(kolektiMixin, TemplateView):
     template_name = "releases/list.html"
@@ -771,6 +785,11 @@ class ReleaseLangCopyView(kolektiMixin, TemplateView):
 
         except:
             logger.exception('could not copy source release')
+            import traceback
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could not copy source release"
+                }), content_type='application/json', status=500)
     
         return HttpResponseRedirect(reverse('kolekti_release_lang_detail', kwargs={
             'project':project,
@@ -794,6 +813,11 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
                 )) for t in body])
         except:
             logger.exception('could get release assembly')
+            import traceback
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could not get release assembly"
+                }), content_type='application/json', status=500)
             
         return HttpResponse(content)
     
@@ -816,34 +840,28 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
         return publications
 
     def get(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({
-            'project': project,
-            'lang':lang
-            })
-        context.update({'publications':self.__release_publications(kolekti, release, lang)})
+        try:
+            context, kolekti = self.get_context_data({
+                'project': project,
+                'lang':lang
+                })
+            context.update({'publications':self.__release_publications(kolekti, release, lang)})
 
-        return self.render_to_response(context)
-                
+            return self.render_to_response(context)
+        except:
+            logger.exception('could get release assembly')
+            import traceback
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could not get release assembly"
+                }), content_type='application/json', status=500)
+
 class ReleaseLangDetailsView(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
     def __has_valid_actions(self,  kolekti, release):
         xjob = kolekti.parse('/releases/' + release + '/kolekti/publication-parameters/'+ release +'_asm.xml')
         return len(xjob.xpath('/job/scripts/script[@enabled="1"]/validation/script')) > 0
-
-    def __release_indices_(self,  kolekti, release, lang):
-        current = release
-        try:
-            while True:
-                logger.debug('previous %s', str(current))
-                release_info = json.loads(kolekti.read('/releases/'+current+'/release_info.json'))
-                current = release_info['releaseprev']
-                if current is None:
-                    return               
-                yield current
-                
-        except IOError:
-            return
 
     def __release_indices(self,  kolekti, release, lang):
         release_info = json.loads(kolekti.read('/releases/'+ release +'/release_info.json'))
@@ -861,7 +879,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                     if kolekti.exists(a):
                         yield r 
             except IOError:
-#                logger.exception('could not read release info json')
+                # logger.exception('could not read release info json')
                 pass
         return
     
@@ -876,8 +894,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         default_srclang = kolekti.project_default_language()
         for lang in release_languages:
             tr_assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+'_asm.html'])
-#            logger.debug(kolekti.path_exists(tr_assembly_path))
-#            logger.debug(tr_assembly_path)
             if kolekti.path_exists(tr_assembly_path):
                 if (sync is not None):
                     states.append(sync.propget('release_state',tr_assembly_path))
@@ -892,9 +908,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 focus.append(ReleaseFocus.objects.get(release = release, assembly = assembly_name, lang = lang).state)
             except:
                 focus.append(False)
-                #        logger.debug(release_languages)
-                #        logger.debug(states)
-                #        logger.debug(focus)
         indices = list(self.__release_indices(kolekti, release, context.get('lang', default_srclang)))
         logger.debug(indices)
         context.update({
@@ -1107,6 +1120,7 @@ class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
             logger.debug("state %s, %s",key, val)
             if val == "sourcelang":
                 srclang = key
+        
         try:
             if from_sources:
                 jobpath = '/releases/' + release + '/kolekti/publication-parameters/' + release + '_asm.xml'
@@ -2404,6 +2418,7 @@ class CompareReleaseTopicSource(kolektiMixin, View):
     def post(self, request, project):
         class ParseTopicException(Exception):
             pass
+        
         try:
             from xmldiff import formatting,main
             context, kolekti = self.get_context_data({
@@ -2455,13 +2470,19 @@ class CompareReleaseTopicSource(kolektiMixin, View):
 #            return HttpResponse(json.dumps(diff),content_type="application/json")
 #            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
             return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
-        except ParseTopicException as reason:
+        except ParseTopicException as topic:
             logger.exception('could not calculate diff : parse topic failed %s', str(reason))
-            
-            return HttpResponse(json.dumps({'reason' : 'parsetopic', 'topic':str(reason), 'message':'Impossible de lire le module %s'%str(reason)}), content_type='application/json', status=403)
-        except Exception as reason:
+            import traceback
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                'message':'Impossible de lire le module %s'%str(topic)
+                }), content_type='application/json', status=403)
+        except:
             logger.exception('could not calculate diff')
-            return HttpResponse(json.dumps({'reason' : 'unknown', "message":"could not calculate diff"}), content_type='application/json', status=500)
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"could not calculate diff"
+                }), content_type='application/json', status=500)
 
 
     
