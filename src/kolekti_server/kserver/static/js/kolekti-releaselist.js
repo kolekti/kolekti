@@ -99,6 +99,7 @@ $(document).ready(function() {
         
         $('#modal_release_update').data('release', releasepath)
         $("#modal_release_new_index").val(fmtdate(new Date()));
+        $('#modal_release_update').find('.error').html('')
         $("#modal_release_update").modal()
         $("#modal_release_update .majorname").each(function() {
             console.log(this)
@@ -125,10 +126,29 @@ $(document).ready(function() {
             window.location.reload();
         }).fail(function(xhr) {
             console.log(xhr, $(this))
-            var message = xhr.responseText;
+            var data = JSON.parse(xhr.responseText)
+            var message = data.message
             
+            modal.find('.error').html(
+                $('<div>', {
+                    'class':"alert alert-danger alert-dismissible",
+                    'role':"alert",
+                    'html':[
+                        $('<button>', {
+                            'type':"button",
+                            'class':"close",
+                            'data-dismiss':"alert",
+                            'aria-label':"Close",
+                            'html':$('<span aria-hidden="true">&times;</span>')
+                        }),
+                        $('<p>',{
+                            'class':"error_message"
+                        })
+                    ]
+                })
+            )
             modal.find('.error_message').html(message)
-            modal.find('.error').removeClass('hidden')
+            
         })
                
     })

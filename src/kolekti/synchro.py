@@ -81,10 +81,12 @@ class StatusTree(dict):
     def display(self, node = None, depth = 0):        
         if node is None:
             node = self
+        if depth > 1:
+            return
         try:
             c = ('-'*depth) + node['__self']['path'].split('/')[-1]
             nbs = 100 - len(c)
-            logger.debug(c + (' '*nbs) + node['__self']['kolekti_status'])
+#            logger.debug(c + (' '*nbs) + node['__self']['kolekti_status'])
         except:
             logger.exception("display")
             pass
@@ -229,9 +231,9 @@ class SvnClient(object):
             self._client.set_default_username(username)
         
         def get_login( realm, username, may_save ):
-            logger.debug('get login')
-            logger.debug(realm)
-            logger.debug(username)
+#            logger.debug('get login')
+#            logger.debug(realm)
+#            logger.debug(username)
             if self.__username is None or self.__password is None:
                 raise ExcSyncRequestAuth
             return True, self.__username, self.__password, True
@@ -248,7 +250,7 @@ class SvnClient(object):
         self._client.callback_notify = callback_notification
         
         def callback_accept_cert(arg):
-            logger.debug("callback certificate %s"%arg)
+#            logger.debug("callback certificate %s"%arg)
             return  True, 1, True
             if self.__accept_cert:
                 return  True, 1, True
@@ -260,7 +262,7 @@ class SvnClient(object):
 
         def callback_conflict_resolver(arg):
             try:
-                logger.debug(arg)
+#                logger.debug(arg)
                 conflict_choice = "mine_full"
                 save_merged = None
                 merge_file = None
@@ -271,11 +273,11 @@ class SvnClient(object):
         self._client.callback_conflict_resolver = callback_conflict_resolver
         
 class SynchroManager(SvnClient):
-    def __init__(self, base, username = None):
+    def __init__(self, base, username, project):
         super(SynchroManager, self).__init__(username = username)
-        self._base = base
+        self._base = os.path.join(base, username, project)
         try:
-            self._info = self._client.info(base)
+            self._info = self._client.info(self._base)
         except pysvn.ClientError:
             #logger.exception('unable to setup sync client')
             raise ExcSyncNoSync
@@ -286,10 +288,9 @@ class SynchroManager(SvnClient):
         return os.path.join(self._base, *pathparts)
 
     def _localpath(self, ospath):
-        if ospath == self._base or ospath + "/" == self._base:
-            return ""
         lp = ospath.replace(self._base, '')
-        return '/'.join(lp.split(os.path.sep))        
+        steps = [step for step in lp.split(os.path.sep) if len(step)]
+        return '/'.join(steps)
     
     def geturl(self):
         return self._info.get('repos')
@@ -514,11 +515,11 @@ class SynchroManager(SvnClient):
         info = self._client.info(path)
             
         rurl = info.get('url')
-        logger.debug('dry run '+rurl)
+#        logger.debug('dry run '+rurl)
         workrev = info.commit_revision
         headrev = pysvn.Revision(pysvn.opt_revision_kind.head)
         
-        logger.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
+#        logger.debug("merge %s W:%s H:%s %s)"%(rurl, workrev, headrev, path))
 
         import subprocess
         cmd = 'svn merge --dry-run -r BASE:HEAD "%s"'%path 
@@ -551,7 +552,7 @@ class SynchroManager(SvnClient):
         osfiles = []
         for f in files:
             osfiles.append(self.__makepath(f))
-            logger.debug(self._client.status(self.__makepath(f)))
+#            logger.debug(self._client.status(self.__makepath(f)))
         self._client.revert(sorted(osfiles, key = len), recurse = True)
             
     def commit_all(self, log_message):

@@ -1,4 +1,5 @@
 $(function() {
+    
     if (typeof kolekti === 'undefined') {
         return
     }
@@ -58,23 +59,25 @@ $(function() {
     }
 
     var pendingstatusrequest = false;
+
+    var cached_status = sessionStorage.getItem('kolektistatus');
+    if (cached_status == null)
+	    sessionStorage.setItem('kolektistatus',JSON.stringify({}))
     
     var updatestatus = function(e) {
 	    if (pendingstatusrequest)
 	        return
 	
-	    var cached_status = sessionStorage.getItem('kolektistatus');
+	    var cached_status = JSON.parse(sessionStorage.getItem('kolektistatus'));
 	    var now = new Date()
-	    if(cached_status != null) {
-	        cached_status = JSON.parse(cached_status);
-	        if (cached_status['project'] == kolekti.project) {
-		        if(cached_status['time'] > (now.getTime() - 10000)){
-		            setstatus(cached_status['status'])
-//                    console.log('cached')
-		            return;
-		        }
+	    if (cached_status.hasOwnProperty(kolekti.project)) {
+            var cachetime = cached_status[kolekti.project]['time']
+		    if ( cachetime == 0  || cachetime > (now.getTime() - 60000)) {
+		        setstatus(cached_status[kolekti.project]['status'])
+		        return;
 	        }
 	    }
+        
         pendingstatusrequest = true;
         
 	    $('#btn_rev>span span.circle').hide()
@@ -86,12 +89,11 @@ $(function() {
         var url = Urls.kolekti_sync_status(kolekti.project)
 	    $.get(url).done(function(data){
 	        var now = new Date()
-	        cached_status = {
-		        'project':kolekti.project,
-		        'time':now.getTime()
-	        }
-	        cached_status['status'] = data;
-	        cached_status['revnum'] = data.revision.revnum;
+	        cached_status[kolekti.project] = {
+		        'time':now.getTime(),
+                'status':data,
+                'revnum':data.revision.revnum
+	        };
 	        setstatus(data)
 	        sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
 	    }).always(function() {
@@ -102,23 +104,41 @@ $(function() {
     var pendingrevnumrequest = false;
     
     var updaterevnum = function(e) {
-	if(pendingrevnumrequest)
-	    return
+	    if(pendingrevnumrequest)
+	        return
+        pendingrevnumrequest = true;
         var url = Urls.kolekti_sync_remote_status(kolekti.project)
-	    $.get(url).done(function(data){
-	        if (data.revision)
-	            $('#revnum').html(data.revision.number);
-	    })
+	    $.get(url)
+            .done(function(data){
+	            if (data.revision)
+	                $('#revnum').html(data.revision.number);
+	        })
+            .always(function(){
+                pendingrevnumrequest = false;
+            })
     }
+
     
     $(window).focus(function(){
 	    updatestatus();
 	    updaterevnum();
     });
-    $(window).on('kolektibrowserchange',function(){
+
+    $(window).on('kolekticlearcachedstatus',function(){
+        console.log("clear cached status") 
+        var cached_status = JSON.parse(sessionStorage.getItem('kolektistatus'));
+	    if (cached_status.hasOwnProperty(kolekti.project)) {
+            cached_status[kolekti.project]['time'] = 0
+        }
+        sessionStorage.setItem('kolektistatus',JSON.stringify(cached_status))
+    })
+                 
+    $(window).on('kolektiupdatestatus',function(){
 	    updatestatus();
 	    updaterevnum();
     });
+
+    
     updatestatus();
     updaterevnum();
 

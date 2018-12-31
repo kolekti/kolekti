@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 #     kOLEKTi : a structural documentation generator
-#     Copyright (C) 2007-2013 Stéphane Bonhomme (stephane@exselt.com)
+#     Copyright (C) 2007-2019 Stéphane Bonhomme (stephane@exselt.com)
+
+""" Release utilities"""
 
 import os
 import copy
@@ -13,11 +15,17 @@ logger = logging.getLogger("kolekti." + __name__)
 
 
 class Release(object):
-    def __init__(self, basepath, release):
+    """ Release releative functions
+    - Copying release
+    - Renaming
+    - filtering assemblies
+    """
+    def __init__(self, user, project, release):
         self._basepath = basepath
         self._release = release
         self._xmlparser = ET.XMLParser(load_dtd = True)
 
+        
     def __pathchars(self, s):
         intab = """?'"<>\/|"""
         outtab = "!_______"
@@ -216,6 +224,9 @@ class Release(object):
             
         return result
 
+
+
+    
     
             
 import unittest

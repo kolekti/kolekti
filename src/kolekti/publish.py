@@ -53,7 +53,7 @@ class Publisher(PublisherMixin, kolektiBase):
         # imports a script python module
         pm = getattr(plugins,plugin)
         pl  = getattr(pm, "plugin")
-        return pl(self._path, lang = self._publang)
+        return pl(*self.args, lang = self._publang)
         #return plugins.getPlugin(plugin,self._path)
 
 

@@ -76,9 +76,8 @@ ns= {"namespaces":namespaces}
 
 class kolektiBase(object):
     namespaces = namespaces
-    def __init__(self, path=None, *args, **kwargs):
-#        super(kolektiBase, self).__init__(path)
-        #TODO  :  read ini file for gettininstallation directory
+    def __init__(self, basepath, username, project, *args, **kwargs):
+        
         self._xmlparser = ET.XMLParser(load_dtd = True)
         self._xmlparser.resolvers.add(PrefixResolver())
         self._htmlparser = ET.HTMLParser(encoding='utf-8')
@@ -89,9 +88,25 @@ class kolektiBase(object):
         except :
             self._app_config = {'InstallSettings':{'installdir':os.path.realpath( __file__), 'kolektiversion':"0.7"}}
             self._appdir = os.path.dirname(os.path.realpath( __file__ ))
-        if path is not None:
-            self.set_project(path)
 
+        if basepath is not None:
+            if basepath[-1]==os.path.sep:
+                basepath = basepath[:-1]
+                
+        self._basepath = basepath
+        self._username = username
+        self._project = project
+        
+        self._path = os.path.join(basepath, username, project)
+        
+        self.project_settings = self.get_project_config(self._path)
+
+        self._version = self.project_settings.get('version')
+
+    @property
+    def args(self):
+        return [self._basepath, self._username, self._project]
+                
     def get_project_config(self, path):
         conf = ET.parse(os.path.join(path, 'kolekti', 'settings.xml')).getroot()
         if conf.get('version', None) == "1.0":
@@ -113,18 +128,8 @@ class kolektiBase(object):
         self.xwrite(self.project_settings, '/kolekti/settings.xml')
         
     def set_project(self, path, username=None):            
-        if os.sys.platform[:3] == "win":
-            appurl = urllib.pathname2url(self._appdir)[3:]
-            os.environ['XML_CATALOG_FILES']="/".join([appurl,'dtd','w3c-dtd-xhtml.xml'])
-            
-        # logger.debug('project path : %s'%path)
-        if path[-1]==os.path.sep:
-            self._path = path
-        else:
-            self._path = path + os.path.sep
-
-        projectdir = os.path.basename(self._path[:-1])
-        projectspath = os.path.dirname(self._path[:-1])
+        projectdir = os.path.basename(self._path)
+        projectspath = os.path.dirname(self._path)
         self.project_settings = conf = self.get_project_config(path)
         
         self._config = {
@@ -139,28 +144,30 @@ class kolektiBase(object):
         self._kolektiversion = self._app_config.get('InstallSettings', {'kolektiversion',"0.7"})['kolektiversion']
         # logger.debug("kolekti v%s"%self._version)
         # instanciate synchro & indexer classes
-        try:
-            self.syncMgr = SynchroManager(self._path, username)
-        except ExcSyncNoSync:
-            self.syncMgr = None
-        try:
-            self.indexMgr = IndexManager(projectspath, projectdir)
-        except:
-            self.indexMgr = None
+#        try:
+#            self.syncMgr = SynchroManager(self._path, username)
+#        except ExcSyncNoSync:
+#            self.syncMgr = None
+#        try:
+#            self.indexMgr = IndexManager(projectspath, projectdir)
+#        except:
+#            self.indexMgr = None
 
 
 
     @property
     def _syncnumber(self):
         try:
-            return self.syncMgr.rev_number()
+            syncMgr = SynchroManager(*self.args)
+            return syncMgr.rev_number()
         except:
             return "?"
             
     @property
     def _syncstate(self):
         try:
-            return self.syncMgr.rev_state()
+            syncMgr = SynchroManager(*self.args)
+            return syncMgr.rev_state()
         except:
             return "?"
             
@@ -168,7 +175,7 @@ class kolektiBase(object):
         try:
             if name[:9] == "get_base_" and name[9:]+'s' in objpathes[self._version]:
                 def f(objpath):
-                    return self.process_path(objpathes[self._config['version']][name[9:]+"s"] + "/" + objpath)
+                    return self.process_path(objpathes[self.config['version']][name[9:]+"s"] + "/" + objpath)
                 return f
         except:
             import traceback
@@ -179,7 +186,15 @@ class kolektiBase(object):
 
     @property
     def config(self):
-        return self._config
+        conf = self.project_settings
+        return {
+            "project":self._project,
+            "projectdir":self._project,
+            "sourcelang":conf.get('sourcelang'),
+            "version":conf.get('version'),
+            "languages":[l.text for l in conf.xpath('/settings/languages/lang')],
+            }
+
 
     def process_path(self,path):
         return path
@@ -437,7 +452,7 @@ class kolektiBase(object):
             os.path.join(ossource, 'sources'),
             os.path.join(osdest, 'sources')
         )
-        self.move_resource(
+        self.copy_resource(
             "/releases/%s/kolekti/publication-parameters/%s_asm.xml"%(new_release, old_release),
             "/releases/%s/kolekti/publication-parameters/%s_asm.xml"%(new_release, new_release)
             )
@@ -453,12 +468,12 @@ class kolektiBase(object):
         self.xwrite(xjob, jobpath)
         
         langs = self.list_directory('/releases/%s/sources'%new_release)
-        for lang in langs:
-            if lang == 'share':
+        for tlang in langs:
+            if tlang == 'share':
                 continue;
-            assembly_path = "/releases/%s/sources/%s/assembly/%s_asm.html"%(new_release, lang, new_release)
-            self.move_resource(
-                "/releases/%s/sources/%s/assembly/%s_asm.html"%(new_release, lang, old_release),
+            assembly_path = "/releases/%s/sources/%s/assembly/%s_asm.html"%(new_release, tlang, new_release)
+            self.copy_resource(
+                "/releases/%s/sources/%s/assembly/%s_asm.html"%(old_release, tlang, old_release),
                 assembly_path
                 )
 
@@ -483,7 +498,8 @@ class kolektiBase(object):
 
         self.copyDirs(srcpath,dstpath)            
         try:
-            self.syncMgr.post_save(dstpath)
+            syncMgr = SynchroManager(*self.args)
+            syncMgr.post_save(dstpath)
         except:
             logger.debug("no post save")
 
@@ -576,7 +592,7 @@ class kolektiBase(object):
     def get_extensions(self, extclass, **kwargs):
         # loads xslt extension classes
         extensions = {}
-        extf_obj = extclass(self._path, **kwargs)
+        extf_obj = extclass(self._basepath, self._username, self._project, **kwargs)
         exts = (n for n in dir(extclass) if not(n.startswith('_')))
         extensions.update(ET.Extension(extf_obj,exts,ns=extf_obj.ens))
         return extensions
@@ -662,7 +678,8 @@ class kolektiBase(object):
 
     def move_resource(self, src, dest):
         try:
-            self.syncMgr.move_resource(src, dest)
+            syncMgr = SynchroManager(*self.args)
+            syncMgr.move_resource(src, dest)
         except:
             shutil.move(self.__makepath(src), self.__makepath(dest))
         try:
@@ -672,9 +689,11 @@ class kolektiBase(object):
         
     def copy_resource(self, src, dest):
         try:
-            self.syncMgr.copy_resource(src, dest)
+            syncMgr = SynchroManager(*self.args)
+            syncMgr.copy_resource(src, dest)
         except:
             shutil.copy(self.__makepath(src), self.__makepath(dest))
+            
         try:
             self.indexMgr.copy_resource(src, dest)
         except:
@@ -684,7 +703,8 @@ class kolektiBase(object):
     def delete_resource(self, path, sync = True):
         if sync:
             try:
-                self.syncMgr.delete_resource(path)
+                syncMgr = SynchroManager(*self.args)
+                syncMgr.delete_resource(path)
             except:
                 if os.path.isdir(self.__makepath(path)):
                     shutil.rmtree(self.__makepath(path))
@@ -702,7 +722,8 @@ class kolektiBase(object):
 
     def post_save(self, path):
         try:
-            self.syncMgr.post_save(path)
+            syncMgr = SynchroManager(*self.args)
+            syncMgr.post_save(path)
         except:
             pass
 #            logger.debug('Synchro unavailable')
@@ -1023,8 +1044,8 @@ class XSLExtensions(kolektiBase):
     Extensions functions for xslt that are applied during publishing process
     """
     ens = "kolekti:extensions:functions"
-    def __init__(self, path, **kwargs):
-        super(XSLExtensions, self).__init__(path)
+    def __init__(self, basepath, username, project, **kwargs):
+        super(XSLExtensions, self).__init__(basepath, username, project)
 
 class PrefixResolver(ET.Resolver):
     """

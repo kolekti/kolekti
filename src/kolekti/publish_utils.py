@@ -39,7 +39,7 @@ class PublisherMixin(object):
         super(PublisherMixin, self).__init__(*args, **kwargs)
 
         if self._publang is None:
-            self._publang = self._config.get("sourcelang","en")
+            self._publang = self.config.get("sourcelang","en")
 
         self.scriptdefs = ET.parse(os.path.join(self._appdir,'pubscripts.xml')).getroot()
 

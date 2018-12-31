@@ -270,13 +270,14 @@ $(document).ready( function () {
 				'class':"dropdown-menu",
 				'role':"menu",
 				'html':
-				$.map(v, function(tocref) {
+				    $.map(v, function(tocref) {
+                        tocpath = tocref.split('/').slice(4).join('/')
 				    return $('<li>', {
 					'role':"presentation",
 					'html':$('<a>', {
 					    'role':"menuitem",
 					    'tabindex':"-1",
-					    'href':'/tocs/edit/?toc='+tocref,
+					    'href':Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath),
 					    'html':tocref
 					})
 				    })
@@ -1273,15 +1274,11 @@ $(document).ready( function () {
 				    topic = data;
 			    else
 				    topic = $.parseXML( data );
-                console.log(url)
 			    var topic_obj = create_topic_obj(path, idtopic, topic);
 			    $(refcomp).after(topic_obj)
 			    usecases(topic_obj);
 			    $(refcomp).detach();
 			} catch (err) {
-                console.log(data)
-                
-                console.log(err)
 			    // was not XML
 			    var id = Math.round(new Date().getTime() + (Math.random() * 100));
 			    var topic_obj = create_topic_error_obj(path, idtopic, "Le module n'est pas valide");

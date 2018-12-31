@@ -50,7 +50,8 @@ class TranslatorsSharedMixin(kolektiMixin):
         if 'project' in data.keys():
             project = data['project']
             project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
-            kolekti = kolektiBase(project_path)
+            kolekti = kolektiBase(settings.KOLEKTI_BASE, self.request.user.username, project)
+            
             context.update({
                 'default_lang' : kolekti.project_default_language(),
             })

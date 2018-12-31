@@ -35,7 +35,7 @@ class Command(BaseCommand):
         parser.add_argument('project', type=str)
         parser.add_argument('-s', '--source', type=str)
         parser.add_argument('-i', '--index', type=str)
-        parser.add_argument('-p', '--pass', type=int)
+#        parser.add_argument('-p', '--pass', type=int)
         
         
     def handle(self, *args, **options):
@@ -48,9 +48,12 @@ class Command(BaseCommand):
         newindex = options['index']
         ppass = options['pass']
         projectpath = os.path.join(settings.KOLEKTI_BASE, user, project)
+
+        self.copy_release_index(projectpath, release, newindex)
         
         self._set_release_info(projectpath, release)
 
+        
         if ppass==1:
             self._copy_release(projectpath, release, newindex)
         if ppass==2:

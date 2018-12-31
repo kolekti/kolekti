@@ -109,8 +109,7 @@ class kolektiMixin(LoginRequiredMixin):
         if 'project' in data.keys():
             try:
                 project = data['project']
-                project_path = os.path.join(settings.KOLEKTI_BASE, self.request.user.username, project)
-                kolekti = kolektiBase(project_path)
+                kolekti = kolektiBase(settings.KOLEKTI_BASE, self.request.user.username, project)
                 userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
                 context.update({
                     'user_project' : userproject,
@@ -141,7 +140,7 @@ class kolektiMixin(LoginRequiredMixin):
 
     def get_sync_manager(self, kolekti):
         from kolekti.synchro import SynchroManager
-        sync = SynchroManager(kolekti.syspath(''))
+        sync = SynchroManager(*kolekti.args)
         return sync
             
 
@@ -164,15 +163,14 @@ class HomeView(kolektiMixin, TemplateView):
     def get(self, request):
         context, kolekti = self.get_context_data()
         projects = context['user_projects']
+        from kolekti.synchro import SynchroManager
         for project in projects:
             project_dir = project.project.directory
             project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project_dir)
             if os.path.exists(os.path.join(project_path, '.svn')):
                 try:
-                    from kolekti.synchro import SynchroManager
-                    synchro = SynchroManager(project_path)
-                    projecturl = synchro.geturl()
-                    
+                    synchro = SynchroManager(settings.KOLEKTI_BASE, request.user.username, project_dir)
+                    projecturl = synchro.geturl()                    
                     project.extra = {"status":"svn", "url":self.process_svn_url(projecturl)}
                 except ExcSyncNoSync:
                     project.extra = {"status":"local"}
@@ -581,7 +579,7 @@ class TocPublishView(kolektiMixin, TemplateView):
 
             xjob.getroot().set('pubdir',pubdir)
             
-            p = publish.DraftPublisher(kolekti.syspath(), lang=lang)
+            p = publish.DraftPublisher(*kolekti.args, lang=lang)
             toc_project_path = "/".join(['','sources', lang, 'tocs', toc_path])
             return StreamingHttpResponse(self.format_iterator(p.publish_draft(toc_project_path, xjob, pubtitle), project), content_type="text/html")
         
@@ -594,7 +592,7 @@ class TocPublishView(kolektiMixin, TemplateView):
 
 class ReleaseMixin(object):
     def release_iter(self, kolekti, lang, tocpath, xjob):
-        r = publish.Releaser(kolekti.syspath(), lang = lang)
+        r = publish.Releaser(*kolekti.args, lang = lang)
         pp = r.make_release(tocpath, xjob)
         release_dir = pp[0]['assembly_dir'][:-1]
         yield {
@@ -604,11 +602,20 @@ class ReleaseMixin(object):
             'time':pp[0]['datetime'],
             'lang':lang,
         }
-        if r.syncMgr is not None :
-            r.syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
-        else:
-            logger.debug('no sync manager to set assembly property')
-        p = publish.ReleasePublisher(release_dir, kolekti.syspath(), langs=[lang])
+        try:
+            syncMgr = self.get_sync_manager(kolekti)
+            syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+        except:
+            logger.exception('no sync manager to set assembly property')
+            import traceback
+            yield {
+                'event':'error',
+                'msg':"impossibile d'initalise l'état de l'assemblage",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+
+        p = publish.ReleasePublisher(release_dir, *kolekti.args, langs=[lang])
         for e in p.publish_assembly(pp[0]['pubname']):
             yield e
 
@@ -812,7 +819,7 @@ class ReleaseLangAssemblyView(kolektiMixin, TemplateView):
                 project ="'%s'"%project,
                 )) for t in body])
         except:
-            logger.exception('could get release assembly')
+            logger.exception('could not get release assembly')
             import traceback
             return HttpResponse(json.dumps({
                 'exception':traceback.format_exc(),
@@ -1033,7 +1040,7 @@ class ReleasePublishView(kolektiMixin, TemplateView):
         profiles = request.POST.getlist('profiles[]', None)
         outputs = request.POST.getlist('outputs[]', None)
         try:
-            p = publish.ReleasePublisher(prefix + release, kolekti.syspath(), langs=langs)
+            p = publish.ReleasePublisher(prefix + release, *kolekti.args, langs=langs)
             return StreamingHttpResponse(
                 self.format_iterator(p.publish_assembly(release + "_asm", profiles, outputs), project),
                 content_type="text/html"
@@ -1055,7 +1062,7 @@ class ReleaseLangPublishView(kolektiMixin, TemplateView):
         outputs = request.POST.getlist('outputs[]', None)
         context, kolekti = self.get_context_data({'project':project, 'lang':lang})
         try:
-            p = publish.ReleasePublisher('/releases/'+release, kolekti.syspath(), langs=[lang])
+            p = publish.ReleasePublisher('/releases/'+release, *kolekti.args, langs=[lang])
             return StreamingHttpResponse(
                 self.format_iterator(
                     p.publish_assembly(release + "_asm",profiles, outputs),
@@ -1080,7 +1087,7 @@ class ReleaseLangValidateView(kolektiMixin, View):
 #        print jobpath
 #        xjob = kolekti.parse(jobpath)
         try:
-            p = publish.ReleasePublisher(release_path, kolekti.syspath(), langs=[lang])
+            p = publish.ReleasePublisher(release_path, *kolekti.args, langs=[lang])
             return StreamingHttpResponse(self.format_iterator(p.validate_release(), project), content_type="text/html")
 
         except:
@@ -1108,21 +1115,35 @@ class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
         if kolekti.exists('/releases/%s'%(new_release,)):
             logger.warning("Already exists")
             return HttpResponse(
-                json.dumps({'status':'E', "msg":'l´indice %s existe' }),
+                json.dumps({"message":u'l´indice %s existe déjà'%new_index }),
                 content_type="application/json",
                 status=403
                 )
                     
-        tocpath = releaseinfo.get('toc')        
-        states = self.release_statuses(kolekti, release)
-       
-        for key, val in states:
-            logger.debug("state %s, %s",key, val)
-            if val == "sourcelang":
-                srclang = key
-        
+
         try:
             if from_sources:
+                logger.debug(" create from sources")
+
+                states = self.release_statuses(kolekti, release)
+                
+                srclang = None
+                for key, val in states:
+                    if val == "sourcelang":
+                        srclang = key
+                if srclang is None:
+                    return HttpResponse(json.dumps({
+                        'exception':"",
+                        "message":"could not determine source lang"
+                    }), content_type='application/json', status=500)
+        
+                tocpath = releaseinfo.get('toc')
+                if tocpath is None:
+                    return HttpResponse(json.dumps({
+                        'exception':"",
+                        "message":"could not determine toc"
+                    }), content_type='application/json', status=500)
+                
                 jobpath = '/releases/' + release + '/kolekti/publication-parameters/' + release + '_asm.xml'
                 xjob = kolekti.parse(jobpath)
                 rootjob = xjob.getroot()
@@ -1131,40 +1152,44 @@ class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
                 rootjob.set('releaseindex' , new_index)
                 rootjob.set('id', '%s_asm.xml'%(new_release,))
                 self.release_iter(kolekti, srclang, tocpath, xjob)
-                r = publish.Releaser(kolekti.syspath(), lang = srclang)
+                r = publish.Releaser(*kolekti.args, lang = srclang)
                 r.make_release(tocpath, xjob)
+
+                sync = self.get_sync_manager(kolekti)        
+
+                for key, val in states:
+                    if val is None:
+                        continue
+
+                    dstlang = key
+                    assembly = "/".join(['/releases', new_release , "sources" , dstlang , "assembly" , new_release+'_asm.html'])
+
+                    if val == "sourcelang":
+                        sync.propset("release_state",'sourcelang', assembly)
+                        continue
+                            
+                    for copiedfile in kolekti.copy_release_index(new_release, srclang, dstlang):
+                        logger.debug(copiedfile)
+
+                    sync.propset("release_state",'edition', assembly)
+                    sync.propset("release_srclang", srclang, assembly)
+                    # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
+                
             else:
+                logger.debug(" duplicate release")
                 kolekti.duplicate_release(majorname, old_index, new_index)
                 
         except:
             logger.exception("Could not update release")
-            return HttpResponse(status=500)
+            import traceback
+            return HttpResponse(json.dumps({
+                'exception':traceback.format_exc(),
+                "message":"Could not update release"
+                }), content_type='application/json', status=500)
+
 
         # initialise les langues
-        assembly = "/".join(['/releases', new_release , "sources" , srclang , "assembly" , new_release+'_asm.html'])
         
-        sync = self.get_sync_manager(kolekti)
-        
-        sync.propset("release_state",'sourcelang', assembly)
-        
-        for key, val in states:
-            if val == "sourcelang":
-                continue
-            if val is None:
-                continue
-
-            dstlang = key
-
-            logger.debug("state %s, %s",key, val)
-            
-            for copiedfile in kolekti.copy_release(new_release, srclang, dstlang):
-                logger.debug(copiedfile)
-            assembly = "/".join(['/releases', new_release , "sources" , dstlang , "assembly" , new_release+'_asm.html'])
-
-            sync.propset("release_state",'edition', assembly)
-            sync.propset("release_srclang", srclang, assembly)
-            # self.syncMgr.commit(path,"Revision Copy %s to %s"%(srclang, dstlang))
-
         return HttpResponse(json.dumps("ok"), content_type="text/javascript")
 
 
@@ -2136,11 +2161,12 @@ class SyncStatusTreeView(kolektiMixin, View):
             context, kolekti = self.get_context_data({'project':project})
             sync = self.get_sync_manager(kolekti)
             state = sync.statuses()
-            return HttpResponse(json.dumps(state),content_type="application/json")
+            return HttpResponse(json.dumps(state, sort_keys=True),content_type="application/json")
         except:
             logger.exception("Unable to get sync tree")
             return HttpResponse(json.dumps({'status':'E', 'stacktrace':traceback.format_exc()}), content_type="application/json", status=403)
-    
+
+        
 class SyncRevisionView(kolektiMixin, TemplateView):
     template_name = "synchro/revision.html"
     def get(self, request, project, rev):
@@ -2193,6 +2219,7 @@ class SyncRemoteStatusView(kolektiMixin, View):
             sync = self.get_sync_manager(kolekti)
             syncnum = dict(sync.rev_number())
             return HttpResponse(json.dumps(syncnum),content_type="application/json")
+        
         except:
             logger.exception("Unable to get project remote sync status")
             return HttpResponse(json.dumps({'revision':{'number':'!'}}),content_type="application/json")
@@ -2405,7 +2432,7 @@ class CompareReleaseTopicSource(kolektiMixin, View):
 
     def filter_release(self, tree, release, kolekti):
         from kolekti.release import Release
-        release = Release(kolekti.syspath('/'), release)
+        release = Release(*kolekti.args, release = release)
         modified = False
         for elt in tree.xpath('.//*[contains(@class, "=")]'):
             logger.debug(elt)
@@ -2479,6 +2506,7 @@ class CompareReleaseTopicSource(kolektiMixin, View):
                 }), content_type='application/json', status=403)
         except:
             logger.exception('could not calculate diff')
+            import traceback
             return HttpResponse(json.dumps({
                 'exception':traceback.format_exc(),
                 "message":"could not calculate diff"

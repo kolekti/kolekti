@@ -70,6 +70,10 @@ $(document).ready(function() {
         $.each(statuses, function(name, value) {
             if (name == "__self")
                 return;
+            if (!value.hasOwnProperty('__self')) {
+                console.log("no __self for ", value)
+                return;
+            }
             var node_status = value.__self.kolekti_status
             var node_inherited_status = value.__self.kolekti_inherited_status
             var node_detail_status =
@@ -81,8 +85,8 @@ $(document).ready(function() {
                         "krstatus":value.__self.rstatus,
                         "kwstatus":value.__self.wstatus,
                         "open":(node_inherited_status == status)?true:false,
-                        "checked":(node_status == status)?true:false,
-                        "chkDisabled":(node_status == status)?false:true,
+                        "checked":(node_status == status || node_inherited_status == status)?true:false,
+                        "chkDisabled":(node_status == status || node_inherited_status == status)?false:true,
                         "status":node_status,
                         "hstatus":node_inherited_status,
                         "dstatus":node_detail_status,
@@ -177,13 +181,15 @@ $(document).ready(function() {
     });
     
     $('form').on('submit', function() {
-	    console.log("submit form");
+        
+//	    console.log("submit form");
         var path, form = $(this);
         $('.checkbox_true_full').each(function(e,i) {
             console.log('checkbox')
             path =  $(i).closest('li').data('kpath')
             form.append('<input type="hidden" name="fileselect" value="' + path + '">');
         });
+	    $(window).trigger('kolekticlearcachedstatus');
 	    $('#modal_processing').modal('show')
     })
 		  
