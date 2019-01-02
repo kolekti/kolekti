@@ -39,7 +39,25 @@ $(document).ready(function() {
 	        })
     
     
-	    .setup(function(){
+	    .setup(function(parent){
+            // renaming
+            $(parent).find('.kolekti-action-rename').off('click')
+            
+            $(parent).find('.kolekti-action-rename').click(function(e){
+                console.log('rename')
+                var releasepath = $(this).closest('tr').data('name')
+                var i = releasepath.lastIndexOf('_')
+                var min =releasepath.substring(i+1);
+                var maj =releasepath.substring(0, i);
+                
+                $('#modal_release_rename').data('release', releasepath)
+                $("#modal_release_rename_index").val(min)
+                $('#modal_release_rename').find('.error').html('')
+                $("#modal_release_rename").modal()
+                $("#modal_release_rename_majorname").val(maj)
+            });
+
+            // update release state
 	        $('.kolekti-browser-release-state').each(function() {
 		        var releasepath = $(this).closest('tr').data('name')
 		        var statecell = $(this)
@@ -71,7 +89,6 @@ $(document).ready(function() {
 
     
     $('body').on('click', '.dirtoggle', function(e) {
-	    e.preventDefault()
 	    var toggle = $(this).closest('tr').find('.kolekti-browser-icon i.hidden');
 	    toggle.removeClass('hidden');
 	    if (toggle.hasClass('fa-folder-open')) {
