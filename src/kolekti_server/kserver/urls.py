@@ -92,6 +92,7 @@ urlpatterns = [
             url(r'^states/$', ReleaseStatesView.as_view(), name='kolekti_release_states'),
             url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_delete'),
             url(r'^update/$', ReleaseUpdateView.as_view(), name='kolekti_release_update'),
+            url(r'^rename/$', ReleaseRenameView.as_view(), name='kolekti_release_rename'),
             url(r'^sources/(?P<lang>[^/\?]+)/', include([
                 url(r'^$', ReleaseLangDetailsView.as_view(), name='kolekti_release_lang_detail'),
                 url(r'^state/$', ReleaseLangStateView.as_view(), name='kolekti_release_lang_state'),

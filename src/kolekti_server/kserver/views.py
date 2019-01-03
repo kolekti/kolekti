@@ -835,15 +835,14 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     def __release_publications(self, kolekti, release, lang):
         publications = []
         try:
-            mf = json.loads(self.read("/releases/" + release_path + "/manifest.json"))
+            mf = json.loads(kolekti.read("/releases/" + release_path + "/manifest.json"))
             for event in mf:
                 if event.get('event','') == "release_publication":
                     for event2 in event.get('content'):
                         if event2.get('event','') == "lang" and event2.get('label','') == lang:
                             publications.extend(event2.get('content'))
         except:
-            import traceback
-            print traceback.format_exc()
+            logger.debug('manifest not found [%s]'%release)
         return publications
 
     def get(self, request, project, release, lang):
@@ -916,7 +915,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             except:
                 focus.append(False)
         indices = list(self.__release_indices(kolekti, release, context.get('lang', default_srclang)))
-        logger.debug(indices)
         context.update({
             'langstate':langstate,
             'langstates':zip(release_languages,states,focus),
@@ -991,7 +989,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
-        context, kolekti = self.get_context_data({'project':project, 'lang':lang})
+        context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
 
         assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
@@ -1008,27 +1006,14 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             })
             return self.render_to_response(context)
             
-        xsl = self.get_xsl('django_assembly_save')
+        xsl = kolekti.get_xsl('django_assembly_save')
         xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
         
         kolekti.update_assembly_lang(xassembly, lang)
         kolekti.xwrite(xassembly, assembly_path)
 
-        sync = self.get_sync_manager(kolekti)
-        try:
-            srclang = sync.propget('release_srclang', assembly_path)
-        except:
-            srclang = kolekti.project_srclang
 
-        context.update({
-            'releasesinfo':kolekti.release_details(release, lang),
-            'success':True,
-            'release_path':release,
-            'assembly_name': release,
-            'lang':lang,
-            'srclang':srclang,
-        })
-        return self.render_to_response(context)
+        return HttpResponseRedirect('')
 
 
 class ReleasePublishView(kolektiMixin, TemplateView):
@@ -1100,11 +1085,31 @@ class ReleaseLangValidateView(kolektiMixin, View):
             return self.render_to_response(context)
 
 
+class ReleaseRenameView(kolektiMixin, ReleaseMixin, View):
+    def post(self, request, project, release):
+        name = request.POST.get('name')
+        index = request.POST.get('index')
+        context, kolekti = self.get_context_data({'project': project})
+        
+        new_release = '%s_%s'%(name, index)
+        if kolekti.exists('/releases/%s'%(new_release,)):
+            logger.warning("Already exists")
+            return HttpResponse(
+                json.dumps({"message":u'la version %s existe déjà'%new_release }),
+                content_type="application/json",
+                status=403
+                )
+        from kolekti.release import Release
+        r = Release(*kolekti.args, release=release)
+        r.rename(name, index)
+        
+        return HttpResponse(json.dumps("ok"), content_type="text/javascript")
+        
+        
 class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
     def post(self, request, project, release):
         new_index = request.POST.get('index')
         from_sources = (request.POST.get('from_sources', 'false') == "true")
-        logger.debug(from_sources)
         context, kolekti = self.get_context_data({'project': project})
         releaseinfo = json.loads(kolekti.read('/releases/'+release+'/release_info.json'))
         majorname = releaseinfo.get('releasename')

@@ -44,19 +44,36 @@ $(document).ready(function() {
             $(parent).find('.kolekti-action-rename').off('click')
             
             $(parent).find('.kolekti-action-rename').click(function(e){
-                console.log('rename')
+
                 var releasepath = $(this).closest('tr').data('name')
                 var i = releasepath.lastIndexOf('_')
-                var min =releasepath.substring(i+1);
-                var maj =releasepath.substring(0, i);
+                var min = releasepath.substring(i+1);
+                var maj = releasepath.substring(0, i);
                 
                 $('#modal_release_rename').data('release', releasepath)
                 $("#modal_release_rename_index").val(min)
                 $('#modal_release_rename').find('.error').html('')
                 $("#modal_release_rename").modal()
                 $("#modal_release_rename_majorname").val(maj)
+
+                // update major name select menu
+                $('#modal_release_rename_menu_majorname').html()
+                $('.kolekti-browser-name .dirtoggle').each(function(){
+                    var item = $('<li>',{
+                        'html':$('<a>',{
+                            'href':"#",
+                            'html': $(this).html()
+                        })
+                    })
+                    item.on('click', function() {
+                        $('#modal_release_rename_majorname').val($(this).find("a").html())
+                    })
+                    item.appendTo('#modal_release_rename_menu_majorname')
+                })
             });
 
+            //modal_release_rename_menu_majornameœ
+            
             // update release state
 	        $('.kolekti-browser-release-state').each(function() {
 		        var releasepath = $(this).closest('tr').data('name')
@@ -138,6 +155,51 @@ $(document).ready(function() {
         }
         $.post(
 	        Urls.kolekti_release_update(kolekti.project, release),
+            options
+        ).done(function() {
+            window.location.reload();
+        }).fail(function(xhr) {
+            console.log(xhr, $(this))
+            var data = JSON.parse(xhr.responseText)
+            var message = data.message
+            
+            modal.find('.error').html(
+                $('<div>', {
+                    'class':"alert alert-danger alert-dismissible",
+                    'role':"alert",
+                    'html':[
+                        $('<button>', {
+                            'type':"button",
+                            'class':"close",
+                            'data-dismiss':"alert",
+                            'aria-label':"Close",
+                            'html':$('<span aria-hidden="true">&times;</span>')
+                        }),
+                        $('<p>',{
+                            'class':"error_message"
+                        })
+                    ]
+                })
+            )
+            modal.find('.error_message').html(message)
+            
+        })
+               
+    })
+
+    
+    $('body').on('click', '#modal_release_rename_confirm', function(e) {
+        var modal = $(this).closest('.modal')
+        var release = modal.data('release')
+        var index = modal.find('#modal_release_rename_index').val()
+        var majorname = modal.find('#modal_release_rename_majorname').val()
+        var options = {
+            'source': release,
+            'name': majorname,
+            'index': index,
+        }
+        $.post(
+	        Urls.kolekti_release_rename(kolekti.project, release),
             options
         ).done(function() {
             window.location.reload();

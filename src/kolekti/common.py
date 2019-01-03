@@ -72,7 +72,7 @@ class KolektiVariableValueError(Exception):
 
 
 namespaces = {"h":"http://www.w3.org/1999/xhtml"}
-ns= {"namespaces":namespaces}
+ns = {"namespaces":namespaces}
 
 class kolektiBase(object):
     namespaces = namespaces

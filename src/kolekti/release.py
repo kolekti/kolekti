@@ -8,10 +8,30 @@
 import os
 import copy
 import logging
+import shutil
+import time
+import json
 from lxml import etree as ET
 
+from synchro import SynchroManager
 
 logger = logging.getLogger("kolekti." + __name__)
+
+release_info = {
+    "assembly_dir" : None,
+    "lang" : None,
+    "datetime" : 0,
+    "toc" : None,
+    "releaseindex" : None,
+    "releasename" : None,
+    "pubname" : None,
+    "job" : None,
+    "releasedir" : None,
+    "releaseprev" : None
+}
+
+namespaces = {"h":"http://www.w3.org/1999/xhtml"}
+ns = {"namespaces":namespaces}
 
 
 class Release(object):
@@ -20,11 +40,16 @@ class Release(object):
     - Renaming
     - filtering assemblies
     """
-    def __init__(self, user, project, release):
+    def __init__(self, basepath, username, project, release):
         self._basepath = basepath
+        self._username = username
+        self._project = project
         self._release = release
         self._xmlparser = ET.XMLParser(load_dtd = True)
 
+    @property
+    def args(self):
+        return [self._basepath, self._username, self._project]
         
     def __pathchars(self, s):
         intab = """?'"<>\/|"""
@@ -36,7 +61,7 @@ class Release(object):
     def _syspath(self, path):
         # returns os absolute path from relative path
         pathparts = [self.__pathchars(p) for p in path.split('/') if p!='']
-        return os.path.join(self._basepath, *pathparts)
+        return os.path.join(self._basepath, self._username, self._project, *pathparts)
 
         
     def __makepath(self, path):
@@ -47,8 +72,7 @@ class Release(object):
         ospath = self.__makepath(filename)
         with open(ospath, "w") as f:
             f.write(ET.tostring(xml, encoding = encoding, pretty_print = pretty_print,xml_declaration=xml_declaration))
-        
-    
+            
     def parse(self, filename):
         src = self.__makepath(filename)
         return ET.parse(src,self._xmlparser)
@@ -224,9 +248,117 @@ class Release(object):
             
         return result
 
-
-
+    # rename release
     
+    def rename(self, newname, newindex):
+
+        newrelease = newname + '_' + newindex
+        src = '/releases/%s'%(self._release,)
+        dst = '/releases/%s'%(newrelease,)
+        try:
+            syncMgr = SynchroManager(*self.args)
+            syncMgr.move_resource(src, dest)
+        except:
+            shutil.move(
+                self._syspath(src),
+                self._syspath(dst)
+                )
+            
+        logger.debug(os.listdir(self._syspath('{}/sources'.format(dst))))
+        for lang in os.listdir(self._syspath('{}/sources'.format(dst))):
+            logger.debug(lang)
+            src_assembly_path = '/sources/%s/assembly/%s_asm.html'%(lang,self._release)
+            if os.path.exists(self._syspath("%s%s"%(dst, src_assembly_path))):
+                assembly_path = ('/sources/%s/assembly/%s_asm.html'%(lang, newrelease))
+
+                try:
+                    syncMgr.move_resource(
+                        "%s%s"%(dst, src_assembly_path),
+                        "%s%s"%(dst, assembly_path)
+                    )
+                except:
+                    shutil.move(
+                        self._syspath("%s%s"%(dst, src_assembly_path)),
+                        self._syspath("%s%s"%(dst, assembly_path))
+                    )
+
+                ospath = self._syspath("%s%s"%(dst, assembly_path))
+                assembly = ET.parse(ospath, self._xmlparser)
+                head = assembly.xpath('/h:html/h:head', **ns)[0]
+                self._set_meta(head, "kolekti.project", self._project)
+                self._set_meta(head, "kolekti.releasedir", newrelease)
+                self._set_meta(head, "kolekti.releasename", newname)
+                self._set_meta(head, "kolekti.releaseindex", newindex)
+
+                with open(ospath, "w") as f:
+                    f.write(ET.tostring(
+                        assembly,
+                        encoding = "utf-8",
+                        pretty_print = True,
+                        xml_declaration = True
+                        ))
+
+        # handle publication parameters
+        src_job_path = '/kolekti/publication-parameters/%s_asm.xml'%(self._release)
+        job_path = '/kolekti/publication-parameters/%s_asm.xml'%(newrelease)
+        try:
+            syncMgr.move_resource(
+                "%s%s"%(dst, src_job_path),
+                "%s%s"%(dst, job_path)
+            )
+        except:
+            shutil.move(
+                self._syspath("%s%s"%(dst, src_job_path)),
+                self._syspath("%s%s"%(dst, job_path))
+            )
+
+        # process publication parameters
+
+        ospath = self._syspath("%s%s"%(dst, job_path))
+        pp = ET.parse(ospath, self._xmlparser)
+        job = pp.getroot()
+        job.set('pubdir',newrelease)
+        job.set('id',newrelease+"_asm")
+        
+        with open(ospath, "w") as f:
+            f.write(ET.tostring(
+                pp,
+                encoding = "utf-8",
+                pretty_print = True,
+                xml_declaration = True
+                ))
+
+
+        # process json info file
+        infofile = self._syspath('{}/release_info.json'.format(dst))
+        try:
+            mf = json.load(open(infofile))
+        except:
+            logger.exception('info unreadable')
+            mf = copy.copy(release_info)
+
+        date = int(time.time())
+            
+        mf.update({
+            "assembly_dir" : '/releases/{}'.format(newrelease),
+            "datetime" : date,
+            "releaseindex" : newindex,
+            "releasename" : newname,
+            "releasedir" : newrelease,
+        })
+        json.dump(mf, open(infofile,'w'))
+
+            
+
+            
+    def _set_meta(self, head, name, content):
+        try:
+            meta = head.xpath('h:meta[@name="{}"]'.format(name), **ns)[0]
+            meta.set("content", content)
+        except IndexError:
+            meta = ET.SubElement(head, '{http://www.w3.org/1999/xhtml}meta', {"name":name, "content":content})
+
+        
     
             
 import unittest
