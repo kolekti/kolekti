@@ -33,7 +33,6 @@ $(document).ready(function() {
 		            })
 	    .select(
 	        function(path) {
-                console.log(path);
                 var release_path = path.replace('/releases/','')
 		        document.location.href = Urls.kolekti_release_lang_detail(kolekti.project, release_path, kolekti.lang)
 	        })
@@ -102,18 +101,41 @@ $(document).ready(function() {
 					        
 		            })
 	        });
+            init_view();
 	    });
 
+    var toggle_status = sessionStorage.getItem('kolekti_version_browser_state');
+    if (toggle_status == null)
+	    sessionStorage.setItem('kolekti_version_browser_state',JSON.stringify([]))
+    
+    var init_view = function(e) {
+	    var toggle_status = JSON.parse(sessionStorage.getItem('kolekti_version_browser_state'));
+        $.each(toggle_status, function(i, v) {
+            var row = $('tr[data-name="' + v + '"]')
+            row.find('.kolekti-browser-icon i.fa-folder').addClass('hidden');
+            row.find('.kolekti-browser-icon i.fa-folder-open').removeClass('hidden');
+	        while (row.length) {
+	            row = row.next('.release-index');
+		        row.removeClass('hidden')
+	        }
+        });
+    };
     
     $('body').on('click', '.dirtoggle', function(e) {
-	    var toggle = $(this).closest('tr').find('.kolekti-browser-icon i.hidden');
+        var toggle_status = JSON.parse(sessionStorage.getItem('kolekti_version_browser_state'));
+	    var row = $(this).closest('tr')
+        var name = row.data('name')
+	    var toggle = row.find('.kolekti-browser-icon i.hidden');
 	    toggle.removeClass('hidden');
 	    if (toggle.hasClass('fa-folder-open')) {
-	        $(this).closest('tr').find('.kolekti-browser-icon i.fa-folder').addClass('hidden');
+	        row.find('.kolekti-browser-icon i.fa-folder').addClass('hidden');
+            toggle_status.push(name)
 	    } else {
-	        $(this).closest('tr').find('.kolekti-browser-icon i.fa-folder-open').addClass('hidden');
+	        row.find('.kolekti-browser-icon i.fa-folder-open').addClass('hidden');
+            toggle_status.removevalue(name)
 	    }
-	    var row = $(this).closest('tr')
+        sessionStorage.setItem('kolekti_version_browser_state',JSON.stringify(toggle_status))
+        
 	    while (row.length) {
 	        row = row.next('.release-index');
 	        if (toggle.hasClass('fa-folder-open')) {
@@ -124,6 +146,9 @@ $(document).ready(function() {
 	    }
     });
 
+
+    // directory toggle state 
+    
 
     $('body').on('click', '.kolekti-action-update', function(e) {
 		var releasepath = $(this).closest('tr').data('name')
@@ -136,7 +161,6 @@ $(document).ready(function() {
         $('#modal_release_update').find('.error').html('')
         $("#modal_release_update").modal()
         $("#modal_release_update .majorname").each(function() {
-            console.log(this)
             $(this).html(maj)
         });
         $("#modal_release_update .minorname").each(function() {
@@ -159,7 +183,6 @@ $(document).ready(function() {
         ).done(function() {
             window.location.reload();
         }).fail(function(xhr) {
-            console.log(xhr, $(this))
             var data = JSON.parse(xhr.responseText)
             var message = data.message
             
@@ -204,7 +227,6 @@ $(document).ready(function() {
         ).done(function() {
             window.location.reload();
         }).fail(function(xhr) {
-            console.log(xhr, $(this))
             var data = JSON.parse(xhr.responseText)
             var message = data.message
             

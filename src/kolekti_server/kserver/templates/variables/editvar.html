@@ -22,10 +22,16 @@
 <script src="{% static 'js/kolekti-variables-edit-'|add:method|add:'.js'" %}"></script>
 {% endblock %}
 
-{% block title %}<a href="{% url 'kolekti_variables' project=project lang=lang %}">Variables</a> : <a href="{% url 'kolekti_variable' project=project lang=lang variable_path=path %}">{{ name }}</a>{% endblock %}
+{% block title %}
+{% if release %}
+<a href="{% url 'kolekti_release_lang_detail' project=project release=release lang=lang %}">{{release}}</a> : {{ lang }} : variables : <a href="{% url 'kolekti_release_lang_variable' project=project release=release lang=lang variable_path=path %}">{{ name }}</a>
+{% else %}
+<a href="{% url 'kolekti_variables' project=project lang=lang %}">variables</a> : <a href="{% url 'kolekti_variable' project=project lang=lang variable_path=path %}">{{ name }}</a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
-<div id="main">
+<div id="main" {% if release %}data-release="{{release}}"{% endif %}>
   <div class="row">
       
     <div class="col-sm-8 col-sm-offset-4">

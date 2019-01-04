@@ -113,6 +113,14 @@ urlpatterns = [
                         url(r'^$', VariablesListView.as_view(), name='kolekti_release_lang_variables_browse'),
                     ]))
                 ])),
+                url(r'^pictures/', include([
+                    url(r'^$', PicturesListView.as_view(), name='kolekti_release_lang_pictures'),
+                    url(r'^upload$', PictureUploadView.as_view(), name='kolekti_release_lang_picture_upload'),
+                    url(r'^(?P<picture_path>.+)/', include([
+                        url(r'^details$', PictureDetailsView.as_view(), name='kolekti_release_lang_picture_details'),
+                        url(r'^$', PicturesListView.as_view(), name='kolekti_release_lang_pictures_browse'),
+                ])),
+            ])),
 
                 url(r'^publications/*', ReleaseLangPublicationsView.as_view(),name='kolekti_release_lang_publications'),
                 url(r'^publications.json$', ReleaseLangPublicationsListJsonView.as_view(),name='kolekti_release_lang_publications_list_json'),

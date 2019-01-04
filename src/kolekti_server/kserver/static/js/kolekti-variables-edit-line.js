@@ -23,18 +23,26 @@ $(function() {
 	    var data = { "path":kolekti_variable_path,
 		             "data":kolekti_variable_data["values"]
 		           }
+        var url, hist;
+        if ($("#main").data('release')){
+            var release = $("#main").data('release')
+            url = Urls.kolekti_release_lang_variable_editcol(kolekti.project, release, kolekti_variable_lang, kolekti_variable_path)
+            hist = Urls.kolekti_release_lang_variable(kolekti.project, release, kolekti_variable_lang, kolekti_variable_path)
+        } else {
+            url = Urls.kolekti_variable_editcol(kolekti.project, kolekti_variable_lang, kolekti_variable_path)
+            hist = Urls.kolekti_variable(kolekti.project, kolekti_variable_lang, kolekti_variable_path)
+        }
 	    
 	    $.ajax({
-	        url:Urls.kolekti_variable_editval(kolekti.project, kolekti_variable_lang, kolekti_variable_path),
+	        url:url,
 	        type:'POST',
 	        data:JSON.stringify(data),
 	        contentType:'text/javascript'
 	    }).success(function(data) {
 	        disable_save()
-            var variable_path = kolekti_variable_path.split('/').splice(4). join('/')
 	        kolekti_recent(displayname(kolekti_variable_path),
                            'variables',
-                           Urls.kolekti_variable(kolekti.project, kolekti_variable_lang, variable_path))
+                           hist)
         
 	    });
     });

@@ -179,11 +179,11 @@ class Release(object):
     def apply_filters_element(self, elt, profile_filter=True, assembly_filter=False, setPI = False, remove_conditional_elements = ['div', 'span']):
 #        assert(not elt.get('class') is None)
 
-        logger.debug('condition')
-        logger.debug(elt.get('class'))
+#        logger.debug('condition')
+#        logger.debug(elt.get('class'))
         tag = elt.xpath('string(local-name())')
-        logger.debug(tag)
-        logger.debug(self.job_criteria())
+#        logger.debug(tag)
+#        logger.debug(self.job_criteria())
         
         if assembly_filter:
             evalc = self.eval_condition(self.job_criteria(), elt.get('class'))

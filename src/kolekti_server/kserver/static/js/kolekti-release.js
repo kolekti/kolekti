@@ -80,7 +80,11 @@ $(document).ready( function () {
 	    $(this).addClass('active')
 	    $('.release-panel-part').addClass('hidden')
 	    $('#illust_pane').removeClass('hidden')
-	    kolekti_browser({'root':'/releases/' + $('#main').data('release')+'/sources/'+$('#main').data('lang')+'/pictures/',
+        var release = $('#main').data('release');
+        var relang = $('#main').data('lang');
+
+	    kolekti_browser({'root':'/releases/' + release +'/sources/'+ relang +'/pictures',
+                         'path':'/releases/' + release +'/sources/'+ relang +'/pictures/',
 			             'parent':"#illust_pane",
 			             'title':" ",
 			             'titleparent':".title",
@@ -93,20 +97,21 @@ $(document).ready( function () {
 			            })
 	        .select(
 		        function(path) {
-		            $.get(Urls.kolekti_picture_details(kolekti.project, path))
+                    rpath = path.split('/').splice(6).join("/")
+                    console.log(rpath)
+		            $.get(Urls.kolekti_release_lang_picture_details(kolekti.project, release, relang, rpath))
 			            .done(
 			                function(data) {
 				                $('#preview').html([
-				                    $('<h4>',{'html':displayname(path)}),
 				                    data
-				]);
-				$('#preview img').attr('src',path);
-				$('#preview').parent().removeClass('hidden');
-			    }
-			)
-		})
-	    .create(upload_image)
-	
+				                ]);
+				                $('#preview img').attr('src',Urls.kolekti_project_static(kolekti.project, path));
+				                $('#preview').closest('.panel').removeClass('hidden');
+			                }
+			            )
+		        })
+	        .create(upload_image)
+	    
     })
 
     $('#btn_variables').on('click', function() {
@@ -118,7 +123,8 @@ $(document).ready( function () {
 	    $('#variables_pane').removeClass('hidden')
         var release = $('#main').data('release');
         var relang = $('#main').data('lang');
-	    kolekti_browser({'root':'/releases/' +$('#main').data('release')+'/sources/'+ relang +'/variables',
+	    kolekti_browser({'root':'/releases/' + release +'/sources/'+ relang +'/variables',
+                         'path':'/releases/' + release +'/sources/'+ relang +'/variables/',
 		                 'parent':"#variables_pane",
 		                 'title':" ",
 		                 'titleparent':".title",
@@ -126,11 +132,9 @@ $(document).ready( function () {
 		                 'modal':"no",
 		                 'os_actions':'yes',
 		                 'create_actions':'yes',
-		                 'create_builder':upload_variable_builder_builder()
 		                })
 	        .select(
 			    function(path) {
-                    console.log(path);
                     rpath = path.split('/').splice(6).join("/")
                     rpath = rpath.replace(".xml","")
                     //                    console.log('variable select')
@@ -140,7 +144,7 @@ $(document).ready( function () {
 
                 
 	            })
-	        .create(upload_varfile)
+	        .create(create_varfile)
 	        .setup_file(setup_varfile);
     })
 

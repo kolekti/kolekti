@@ -503,8 +503,27 @@ class kolektiBase(object):
         except:
             logger.debug("no post save")
 
-        # remplace variable files with sources if available
-        top = '/release/%s/sources/%s/variables'%(release, dstlang)
+        # replace variable files with translations in sources if available
+
+        top = self.getOsPath('/releases/%s/sources/%s/variables'%(release, dstlang))
+        for root, dirs, files in os.walk(top):
+            rroot = root[len(top):]
+            for f in files:
+                srcf = '/sources/%s/variables%s/%s'%(dstlang, rroot, f)
+                if self.exists(srcf):
+                    dstf = '/releases/%s/sources/%s/variables%s/%s'%(release, dstlang, rroot, f)
+                    self.copy_resource(srcf, dstf)
+
+                
+        # remplace pictures files with translations in sources if available
+        top = '/release/%s/sources/%s/pictures'%(release, dstlang)
+        for root, dirs, files in os.walk(top):
+            rroot = root[len(top):]
+            for f in files:
+                srcf = '/sources/%s/pictures%s/%s'%(dstlang, rroot, f)
+                if self.exists(srcf):
+                    dstf = '/releases/%s/sources/%s/pictures%s/%s'%(release, dstlang, rroot, f)
+                    self.copy_resource(srcf, dstf)
         
         # copy assembly / change language in references to images
         # src_assembly_path = '/'.join([path,'sources',srclang,'assembly',assembly_name+'_asm.html'])

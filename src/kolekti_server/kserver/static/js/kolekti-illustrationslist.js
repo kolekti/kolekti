@@ -15,6 +15,7 @@ $(document).ready(function() {
     });			       
 
     var path = $('.browser').data('browserpath')
+
     kolekti_browser({'root':'/sources/'+kolekti.lang+'/pictures',
                      'path':path,
 		             'parent':".browser",
@@ -29,7 +30,6 @@ $(document).ready(function() {
 		            })
 	    .select(
 	        function(path) {
-                console.log(path)
                 var lang = path.split('/')[3]
                 var pic_path = path.split('/').splice(5). join('/')
                 var url = Urls.kolekti_picture_details(kolekti.project, lang, pic_path)

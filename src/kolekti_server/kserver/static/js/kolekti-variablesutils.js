@@ -7,9 +7,20 @@ var create_varfile = function(browser, folder, update_function) {
 //    console.log(path)
     var lang = path.split('/')[2]
     var variable_path = path.split('/').splice(4). join('/')
+
+    var release = $('#main').data('release')
+    var createurl;
+    if (release){
+        var var_path = path.split('/').splice(6). join('/')
+        createurl = Urls.kolekti_release_lang_variable_create(kolekti.project, release, lang, var_path)
+    } else {
+        var var_path = path.split('/').splice(4). join('/')
+        createurl = Urls.kolekti_variable_create(kolekti.project, lang, var_path)
+    }
+
     
     $.post(
-	    Urls.kolekti_variable_create(kolekti.project, lang, variable_path)
+        createurl
     ).done(
 	    function() {
 		    update_function()
@@ -20,16 +31,27 @@ var create_varfile = function(browser, folder, update_function) {
 
 var upload_varfile_form = function(e) {
     var path = $(this).data('path');
-    $('#variable_file_path').val(path)
+    $('#variable_file_path').val(path.replace('.xml',''))
     $('#uploadmodal').modal('show');
 }
 
 var upload_varfile = function(e) {    
     var thisform = $('form#uploadform');
     var formData = new FormData(thisform.get()[0]);
+    var path = formData.get('path')
+    var release = $('#main').data('release')
+    var uploadurl;
+
+    if (release){
+        var var_path = path.split('/').splice(6). join('/')
+        uploadurl = Urls.kolekti_release_lang_variable_upload(kolekti.project, release, kolekti.lang, var_path)
+    } else {
+        var var_path = path.split('/').splice(4). join('/')
+        uploadurl = Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, var_path)
+    }
+
     $.ajax({
-        url: Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, path),
-//        url: '/variables/upload',  //server script to process data
+        url: uploadurl,
         type: 'POST',
         xhr: function() {  // custom xhr
             myXhr = $.ajaxSettings.xhr();
@@ -59,21 +81,26 @@ var upload_varfile = function(e) {
 var upload_variable_builder_builder = function() {
     return upload_builder = function(e, path) {
 	e.prepend(   
-	    ['Transférer un fichier de variables ods : ',
-	     $('<form>', {'class':"upload_form",
-			  'enctype':"multipart/form-data",
-			  "html":[$('<input>',{ 'type':"file",
-						'id':'upload_file',
-						'name':'upload_file',
-						'class':"form-control upload"
-					      }),
-				  $('<input>',{ 'type':"hidden",
-						'name':'path',
-						'value':path,
-					      })
-				 ]
-			 }),
-	     $('<br>')
+	    [
+            'Transférer un fichier de variables ods : ',
+	        $('<form>', {
+                'class':"upload_form",
+			    'enctype':"multipart/form-data",
+			    "html":[
+                    $('<input>',{
+                        'type':"file",
+				        'id':'upload_file',
+				        'name':'upload_file',
+				        'class':"form-control upload"
+			        }),
+				    $('<input>',{
+                        'type':"hidden",
+					    'name':'path',
+					    'value':path,
+				    })
+			    ]
+		    }),
+	        $('<br>')
 	    ]);
     }
 };
@@ -81,12 +108,24 @@ var upload_variable_builder_builder = function() {
 
 var setup_varfile = function(browser, file_element, path, filename){
 //    console.log(path.split('/'), filename)
-    var lang = path.split('/')[2]
-    var variable_path = path.split('/').splice(4).join('/') + filename
+    
+    var release = $('#main').data('release')
+    var lang, variable_path, odsurl;
 
+    if (release){
+        lang = path.split('/')[4]
+        variable_path = path.split('/').splice(6).join('/') + filename.replace('.xml','')
+        odsurl = Urls.kolekti_release_lang_variable_ods(kolekti.project, release, lang, variable_path)
+    } else {
+        lang = path.split('/')[2]
+        variable_path = path.split('/').splice(4).join('/') + filename.replace('.xml','')
+        odsurl = Urls.kolekti_variable_ods(kolekti.project, lang, variable_path)
+    }
+    
+    
     $(file_element).find('.kolekti-browser-item-action').append(
 	[
-	    $('<a>', {'href':Urls.kolekti_variable_ods(kolekti.project, lang, variable_path),
+	    $('<a>', {'href':odsurl,
 		  'title':'générer fichier ods',
 		  'class':'btn btn-xs btn-default',
 		  'html':[
@@ -99,14 +138,15 @@ var setup_varfile = function(browser, file_element, path, filename){
 	    "&nbsp;",
 	    $('<a>', {'href':"#",
 		      'title':'dépposer fichier ods',
-		      'data-path':path + filename,
+		      'data-path': path + filename,
 		      'class':'btn btn-xs btn-default upload-varfile',
 		      'html':[
-			  $('<span>', {'class':"glyphicon glyphicon-import",
-				       'aria-hidden':"true"}),
-			  $('<span>', {
-				       'html':' importer ods'
-				      })]
+			      $('<span>', {
+                      'class':"glyphicon glyphicon-import",
+				      'aria-hidden':"true"}),
+			      $('<span>', {
+				      'html':' importer ods'
+				  })]
 		     })
 	]
 	);

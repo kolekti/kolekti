@@ -1173,7 +1173,7 @@ class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
                         sync.propset("release_state",'sourcelang', assembly)
                         continue
                             
-                    for copiedfile in kolekti.copy_release_index(new_release, srclang, dstlang):
+                    for copiedfile in kolekti.copy_release(new_release, srclang, dstlang):
                         logger.debug(copiedfile)
 
                     sync.propset("release_state",'edition', assembly)
@@ -1205,27 +1205,39 @@ class TopicsListView(kolektiMixin, TemplateView):
 class TopicTemplateListView(kolektiMixin, TemplateView):
     template_name = "topics/templates.html"
 
-class PicturesListView(kolektiMixin, TemplateView):
+class PicturesMixin(kolektiMixin):
+    def picture_path(self, release, lang, path):
+        if release is None:
+            path = "/sources/%s/pictures/%s"%(lang, path)
+        else:
+            path = "/releases/%s/sources/%s/pictures/%s"%(release, lang, path)
+        return path
+
+    
+class PicturesListView(PicturesMixin, TemplateView):
     template_name = "illustrations/list.html"
 
 class PictureUploadView(kolektiMixin, TemplateView):
-    def post(self, request, project):
+    def post(self, request, project, lang, picture_path, release=None):
         context, kolekti = self.get_context_data({'project':project})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            r_picture_path = self.picture_path(release, lang, picture_path) 
             uploaded_file = request.FILES[u'upload_file']
             path = request.POST['path']
-            kolekti.write_chunks(uploaded_file.chunks, path +'/'+ uploaded_file.name, mode = "wb") 
+            kolekti.write_chunks(uploaded_file.chunks, r_picture_path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
             return HttpResponse(status=500)
 
-class PictureDetailsView(kolektiMixin, TemplateView):
+class PictureDetailsView(PicturesMixin, TemplateView):
     template_name = "illustrations/details.html"
-    def get(self, request, project, lang, picture_path):
+    def get(self, request, project, lang, picture_path, release=None):
         context, kolekti = self.get_context_data({'project':project, 'lang':lang})
+        
         name = picture_path.rsplit('/',1)[-1]
-        project_path =  '/sources/' + lang + '/pictures/' + picture_path
+
+        project_path = self.picture_path(release, lang, picture_path)
         ospath = kolekti.syspath(project_path)
         logger.debug(ospath)
         try:
@@ -1248,9 +1260,6 @@ class PictureDetailsView(kolektiMixin, TemplateView):
         return self.render_to_response(context)
 
 
-
-
-    
 class VariablesListView(kolektiMixin, TemplateView):
     template_name = "variables/list.html"
     
@@ -1459,7 +1468,7 @@ class VariablesUploadView(VariablesMixin, TemplateView):
             variables_file = self.variables_file(release, lang, variable_path) 
 
 #            path = request.POST['path']
-            converter = OdsToXML(kolekti.syspath())
+            converter = OdsToXML(*kolekti.args)
             converter.convert(uploaded_file, variables_file)
             # self.write_chunks(uploaded_file.chunks,path +'/'+ uploaded_file.name) 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
@@ -1487,7 +1496,7 @@ class VariablesODSView(VariablesMixin, View):
         ods_path = variables_file.replace('.xml','.ods')
         filename = ods_path.rsplit('/',1)[-1]
         ods_file = StringIO()
-        converter = XMLToOds(kolekti.syspath())
+        converter = XMLToOds(*kolekti.args)
         converter.convert(ods_file, variables_file)
         response = HttpResponse(ods_file.getvalue(),
                                 content_type="application/vnd.oasis.opendocument.spreadsheet")
