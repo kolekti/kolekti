@@ -45,79 +45,70 @@ class XMLToOds(common.kolektiBase):
                     zipout.writestr(f, data)
         
 
-class UpdateFromReleases(common.kolektiBase):
-    def run(self, srclang):
+class UpdateFromRelease(common.kolektiBase):
+    def run(self, srclang, release):
         #        for release in  ['A184_20180507']:
-        for release in self.list_directory('/releases'):
-            if not self.exists('/releases/%s/release_info.json'%release):
+        if not self.exists('/releases/%s/release_info.json'%release):
+            return
+        for lang in self.list_directory('/releases/%s/sources/'%release):
+            if lang == srclang or lang=='share':
                 continue
-            yield release
-            for lang in self.list_directory('/releases/%s/sources/'%release):
-                yield lang
-                if lang == srclang or lang=='share':
-                    continue
-                top = '/releases/%s/sources/%s/variables'%(release, lang)
-                l = len(self.getOsPath(top))
-                for root, dirs, files in os.walk(self.getOsPath(top)):
-                    for varfile in files:
-                        if not os.path.splitext(varfile)[1] == ".xml":
-                            continue
-                        path = '%s/%s'%(root[l+1:],varfile)
-                        tpath = '/sources/%s/variables/%s'%(lang,path)
-                        spath = '%s/%s'%(top,path)
-                        if not self.exists(tpath):
-                            yield 'create %s'%tpath
-                            self.makedirs(self.dirname(tpath))
-                            svars = self.parse(spath)
-                            for content in svars.xpath('//content'):
-                                content.set('release-origin',release)
-                            self.xwrite(svars, tpath)
-                        else:
-                            file_changed = False
-                            yield 'handle %s'%tpath
-                            svars = self.parse(spath)
-                            tvars = self.parse(tpath)
-                            for varval in svars.xpath('/variables/variable/value'):
-                                varcode = varval.getparent().get('code')
-                                content = ET.tostring(varval.find("content"), encoding="utf-8")
-                                txpath = '/variables/variable[@code="%s"]/value'%varcode
-                                if len(tvars.xpath(txpath)):
-                                    yield 'variable %s'%varcode
-                                    for crit in varval.iter('crit'):
-                                        critname = crit.get('name')
-                                        critval  = crit.get('value')
-                                        txpath = txpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
-                                    matched = tvars.xpath(txpath) 
-                                    if len(matched):
-                                        yield 'value found %s'%tpath
-                                        found = False
-                                        for tcontent_elt in matched[0].findall('content'):
-                                            tcontent_elt=copy.deepcopy(tcontent_elt)
-                                            try:
-                                                tcontent_elt.attrib.pop('release-origin')
-                                            except KeyError:
-                                                pass
-                                            tcontent = ET.tostring(tcontent_elt, encoding="utf-8") 
-                                            yield ">>> "+content
-                                            yield "<<< "+tcontent
-                                            if tcontent == content:
-                                                found = True
-                                        yield 'same text ? ' + str(found)
-                                        if not found:
-                                            content = varval.find("content")
-                                            content.set('release-origin',release)
-                                            matched[0].append(varval.find("content"))
-                                            file_changed = True
-                                    else:
-                                        tvar = tvars.xpath('/variables/variable[@code="%s"]'%varcode)[0]
-                                        tvar.append(varval)
+            top = '/releases/%s/sources/%s/variables'%(release, lang)
+            l = len(self.getOsPath(top))
+            for root, dirs, files in os.walk(self.getOsPath(top)):
+                for varfile in files:
+                    if not os.path.splitext(varfile)[1] == ".xml":
+                        continue
+                    path = '%s/%s'%(root[l+1:],varfile)
+                    tpath = '/sources/%s/variables/%s'%(lang,path)
+                    spath = '%s/%s'%(top,path)
+                    yield tpath
+                    if not self.exists(tpath):
+                        self.makedirs(self.dirname(tpath))
+                        svars = self.parse(spath)
+                        for content in svars.xpath('//content'):
+                            content.set('release-origin',release)
+                        self.xwrite(svars, tpath)
+                    else:
+                        file_changed = False
+                        svars = self.parse(spath)
+                        tvars = self.parse(tpath)
+                        for varval in svars.xpath('/variables/variable/value'):
+                            varcode = varval.getparent().get('code')
+                            content = ET.tostring(varval.find("content"), encoding="utf-8")
+                            txpath = '/variables/variable[@code="%s"]/value'%varcode
+                            if len(tvars.xpath(txpath)):
+                                for crit in varval.iter('crit'):
+                                    critname = crit.get('name')
+                                    critval  = crit.get('value')
+                                    txpath = txpath + '[crit[@name="%s" and @value="%s"]]'%(critname, critval)
+                                matched = tvars.xpath(txpath) 
+                                if len(matched):
+                                    found = False
+                                    for tcontent_elt in matched[0].findall('content'):
+                                        tcontent_elt=copy.deepcopy(tcontent_elt)
+                                        try:
+                                            tcontent_elt.attrib.pop('release-origin')
+                                        except KeyError:
+                                            pass
+                                        tcontent = ET.tostring(tcontent_elt, encoding="utf-8") 
+                                        if tcontent == content:
+                                            found = True
+                                    if not found:
+                                        content = varval.find("content")
+                                        content.set('release-origin',release)
+                                        matched[0].append(varval.find("content"))
                                         file_changed = True
                                 else:
-                                    tvars.getroot().append(varval.getparent())
+                                    tvar = tvars.xpath('/variables/variable[@code="%s"]'%varcode)[0]
+                                    tvar.append(varval)
                                     file_changed = True
+                            else:
+                                tvars.getroot().append(varval.getparent())
+                                file_changed = True
                                     
-                            if file_changed:
-                                self.xwrite(tvars, tpath)
+                        if file_changed:
+                            self.xwrite(tvars, tpath)
 
 
                             
