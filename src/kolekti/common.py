@@ -1086,6 +1086,9 @@ class PrefixResolver(ET.Resolver):
 class KolektiValidationError(Exception):
     pass
 
+class KolektiValidationMissing(Exception):
+    pass
+
 class kolektiTests(kolektiBase):
     testcases = {
         'assembly': [

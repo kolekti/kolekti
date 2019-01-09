@@ -16,3 +16,6 @@ class CertifyDocumentForm(forms.Form):
 
 class UploadAssemblyForm(forms.Form):
     upload_file  = forms.FileField()
+    project  = forms.CharField(required=False, widget = forms.HiddenInput)
+    release  = forms.CharField(required=False, widget = forms.HiddenInput)
+    lang     = forms.CharField(required=False, widget = forms.HiddenInput)

@@ -1,6 +1,5 @@
 $(document).ready(function() {
 
-
     // drag and drop files
     var parent = $('.release')
 
@@ -75,37 +74,36 @@ $(document).ready(function() {
     
 
     $("form.form-upload-translation").submit(function(e) {
-	console.log('upload')
-	e.preventDefault();
+	    console.log('upload')
+	    e.preventDefault();
         var release=$(this).data('release');
         var project=$(this).data('project');
-	var release_elt=$('.release').filter(function(i,e) {
+	    var release_elt=$('.release').filter(function(i,e) {
             return $(e).data('project')==project && $(e).data('release')==release
         }).first();
         console.log('release elt', release_elt)
-	var formUrl = $(this).attr('action');
-	var formData = new FormData($(this)[0]);
+	    var formUrl = $(this).attr('action');
+	    var formData = new FormData($(this)[0]);
         $('#uploadModal').modal('hide')
-	$(release_elt).find('.processing-upload').removeClass('hidden')
-	$.ajax({
-	    url: formUrl,
-	    type: 'POST',
-	    data: formData,
-	    async: true,
-	    cache: false,
-	    contentType: false,
-	    processData: false
-	}).success(function (data) {
-	    console.log('success')
-	    update(release_elt, JSON.parse(data),formData.get('lang'))
-	}).error(function(x,e) {
-	    console.log('rror')
-	    console.log(e)
-	}).always(function(){
-	    console.log('always')	
-	    $(release_elt).find('.processing-upload').addClass('hidden')
-	});
-	
+	    $(release_elt).find('.processing-upload').removeClass('hidden')
+	    $.ajax({
+	        url: formUrl,
+	        type: 'POST',
+	        data: formData,
+	        async: true,
+	        cache: false,
+	        contentType: false,
+	        processData: false
+	    }).success(function (data) {
+	        console.log('success')
+	        update(release_elt, JSON.parse(data),formData.get('lang'))
+	    }).error(function(x,e) {
+	        console.log('rror')
+	        console.log(e)
+	    }).always(function(){
+	        console.log('always')	
+	        $(release_elt).find('.processing-upload').addClass('hidden')
+	    });
     })
 })
     

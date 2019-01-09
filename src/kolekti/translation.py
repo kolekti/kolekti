@@ -6,6 +6,7 @@ import os
 import json
 from zipfile import ZipFile
 import re
+import urllib2
 
 import mimetypes
 mimetypes.init()
@@ -17,11 +18,47 @@ logger = logging.getLogger(__name__)
 from django.utils.text import get_valid_filename
 
 from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
-from .common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError
+from .common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError, KolektiValidationMissing
 from kolekti import plugins
-from .synchro import SynchroManager
+from .synchro import SvnClient
 
 logger = logging.getLogger(__name__)
+
+
+class TranslatorSynchro(SvnClient):
+    def __init__(self, basepath, username, project, release):
+        super(TranslatorSynchro, self).__init__(username = username)
+        self._base = os.path.join(basepath, username, project, 'releases', release)
+        self._release = release
+
+    def __makepath(self, path):
+        # returns os absolute path from relative path
+        pathparts=urllib2.url2pathname(path).split(os.path.sep)
+        return os.path.join(self._base, *pathparts)
+        
+    def lang_state(self, lang):
+        assembly = '/'.join(['sources', lang, 'assembly', self._release + '_asm.html']) 
+        ospath = self.__makepath(assembly)
+        try:
+            props = self._client.propget('release_state', ospath)
+            state = props.get(ospath.replace('\\','/').encode('utf8'), None)
+        except:
+            # logger.exception('could not get assembly state')
+            state = None
+            
+        if state is None:
+#            logger.debug(os.path.exists(ospath))
+            if os.path.exists(ospath):
+                state = "local"
+        return state
+
+    def propget(self, name, path):
+        ospath = self.__makepath(path)
+        try:
+            props = self._client.propget(name, ospath)
+            return props.get(ospath.replace('\\','/').encode('utf8'),None)
+        except:
+            return None
 
 class TranslationImporter(kolektiTests):
 
@@ -116,24 +153,20 @@ class TranslationImporter(kolektiTests):
 
 class AssemblyImporter(object):
     namespaces = {'h':'http://www.w3.org/1999/xhtml'}
-    def __init__(self, path, username):
+    def __init__(self, path, username, project = None, release = None):
         self._path = path
         self._username = username 
+        self._release = release  
+        self._project = project 
         self.__parser = ET.XMLParser(load_dtd=True)
         
     def _get_source_lang(self, project, release):
-        release_dir = os.path.join(self._path, self._username, project, 'releases', release)
-        syncmgr = SynchroManager(release_dir, self._username)
+        syncmgr = TranslatorSynchro(self._path, self._username, project, release)
         for l in os.listdir(os.path.join(self._path, self._username, project, 'releases', release, 'sources')):
             if l == 'share':
                 continue
             try:
-                assembly_file = "sources/%(lang)s/assembly/%(release)s_asm.html"%{
-                    'lang': l,
-                    'release': release
-                    }
-                state = syncmgr.propget("release_state",assembly_file)
-#                logger.debug("%s : %s"%(l, state))
+                state = syncmgr.lang_state(l)
                 if state=="sourcelang":
                     return l
             except:
@@ -154,7 +187,7 @@ class AssemblyImporter(object):
         for attr,val in elta.attrib.iteritems():
             if self._check_attribute(elta, attr):
                 if eltb.get(attr) != val:
-                    raise KolektiValidationError('structure does not match [attributes] [%s]'%attr)
+                    raise KolektiValidationError('structure does not match [attributes] [%s]'%(attr,))
                 
             
     def _iter_structures(self, elta, eltb):
@@ -206,7 +239,7 @@ class AssemblyImporter(object):
             project = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.project"]/@content', namespaces=self.namespaces)[0]
         except:
             logger.exception('project meta not found')
-            raise KolektiValidationError('could not detect project')
+            raise KolektiValidationMissing('could not detect project')
 
         if not os.path.exists(os.path.join(self._path, self._username, project)):
             raise KolektiValidationError('project directory does not exists')
@@ -219,7 +252,7 @@ class AssemblyImporter(object):
             release = assembly.xpath('/h:html/h:head/h:meta[@name="kolekti.releasedir"]/@content', namespaces=self.namespaces)[0]
         except:            
             logger.exception('release name not found')
-            raise KolektiValidationError('could not detect release name')
+            raise KolektiValidationMissing('could not detect release name')
 
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release)):
             raise KolektiValidationError('release directory does not exists')            
@@ -246,22 +279,35 @@ class AssemblyImporter(object):
             
         except:
             logger.exception('language not found')
-            raise KolektiValidationError('could not detect language')
-        
-        project = self.guess_project(assembly)
-        release = self.guess_release(assembly, project)
+            raise KolektiValidationMissing('could not detect language')
+        logger.debug("{%s}",type(self._project))
+        if self._project is None:
+            project = self.guess_project(assembly)
+        else:
+            project = self._project
+            
+        if self._release is None:
+            release = self.guess_release(assembly, project)
+        else:
+            release = self._release
+        src_lang = self._get_source_lang(project, release)
+            
         lang = self.lang_unalias(lang)
+
+        if lang == src_lang:
+            raise KolektiValidationMissing('language is source language')
+        
         if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
             raise KolektiValidationError('language directory does not exists [%s]'%lang)
-        
 
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
         assembly_dir = os.path.join(release_dir, 'sources', lang, 'assembly')
         assembly_file = '/'.join(['sources', lang, 'assembly', release + '_asm.html'])
-        syncmgr = SynchroManager(release_dir, self._username)
+        
+        syncmgr = TranslatorSynchro(self._path, self._username, project, release)
         
         try:
-            state = syncmgr.propget("release_state", assembly_file)
+            state = syncmgr.lang_state(lang)
         except:
             logger.exception('import release state')
             raise KolektiValidationError('could not get release state')

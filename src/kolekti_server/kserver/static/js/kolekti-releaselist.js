@@ -122,6 +122,7 @@ $(document).ready(function() {
     };
     
     $('body').on('click', '.dirtoggle', function(e) {
+        e.preventDefault()
         var toggle_status = JSON.parse(sessionStorage.getItem('kolekti_version_browser_state'));
 	    var row = $(this).closest('tr')
         var name = row.data('name')

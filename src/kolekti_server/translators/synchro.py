@@ -10,7 +10,7 @@ from django.conf import settings
 
 
 class TranslatorSynchro(SvnClient):
-    def __init__(self, project, release, username):
+    def __init__(self, path, username, project, release):
         super(TranslatorSynchro, self).__init__(username = username)
         self._base = os.path.join(settings.KOLEKTI_BASE, username, project, 'releases', release)
         self._release = release

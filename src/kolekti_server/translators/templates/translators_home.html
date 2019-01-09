@@ -9,6 +9,7 @@
 {% block extrascripts %}
 <script type="text/javascript" src="{% static "js/translators.js" %}"></script>
 <script type="text/javascript" src="{% static "js/translators-upload.js" %}"></script>
+<script src="/jsreverse/" type="text/javascript"></script>
 {% endblock %}
 
 {% block page-content %}
@@ -21,7 +22,7 @@
       <div class="panel-body">
         <div class="row">
           <div class="col-md-12">
-            <form method="POST" class="form upload-assembly-form">
+            <form method="POST" class="form upload-assembly-form" autocomplete="off">
               {{ upload_form|bootstrap }}
               <div class="form-group">
 		        <div class="pull-right">

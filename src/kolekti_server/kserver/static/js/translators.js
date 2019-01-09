@@ -204,20 +204,27 @@ var republish_documents = function(project, release, lang, callbacks){
     
 }
 
-$(function() {    
+$(function() {
+
+    // displays the tables for releases
+    
     $('.release').each(function(){
 	    update_releases_langs($(this))
     });
     
-    
     $('.upload-assembly-form').on('submit', function(e) {
-        console.log("upload", this)
         e.preventDefault()
+        assembly_upload_submit()
+    });
+    
+    var assembly_upload_submit = function() {        
+        console.log("upload", this)
+        
         $('#uploadStatusModal .upload-status').html('')
         $('#uploadStatusModal').modal()
         $('#uploadStatusModal .upload-progress').show()
         $('#uploadStatusModal .upload-progress .progresstxt').html("Uploading...")
-        var formdata = new FormData($(this)[0])
+        var formdata = new FormData($('.upload-assembly-form')[0])
         //        formdata.append('file', this.files[0]);
         
         $.ajax({
@@ -261,6 +268,111 @@ $(function() {
                         )
                     }
                 })
+            } else if (data.status == 'missing') {
+                
+                $('#uploadStatusModal .upload-status').html(
+                    [
+                        $('<div>', {
+                            'class':'alert alert-warning',
+                            'html':$('<div>', {
+                                'class':'alert-content',
+                                'html':'could not find assembly information, please fill out :'
+                            })
+                            
+                        }),
+                        $('<div>', {
+                            'id':"dropdownRelease",
+                            'class':"dropdown",
+                            'html' :[
+                                $('<button>', {
+                                    'class':"btn btn-default dropdown-toggle",
+                                    'type':"button",
+                                    'id':"dropdownRelease",
+                                    'data-toggle':"dropdown",
+                                    'aria-haspopup':"true",
+                                    'aria-expanded':"true",
+                                    'html':[
+                                        'Choose release ',
+                                        $('<span>', {
+                                            'class':"caret"
+                                        })
+                                    ]}),
+                                $('<ul>', {
+                                    'class':"dropdown-menu",
+                                    'aria-labelledby':"dropdownRelease"
+                                }),
+                            ]}),
+                        $('<div>', {
+                            'id':"dropdownLang",
+                            'class':"dropdown hidden",
+                            'html' :[
+                                $('<button>', {
+                                    'class':"btn btn-default dropdown-toggle",
+                                    'type':"button",
+                                    'id':"dropdownLang",
+                                    'data-toggle':"dropdown",
+                                    'aria-haspopup':"true",
+                                    'aria-expanded':"true",
+                                    'html':[
+                                        'Choose language ',
+                                        $('<span>', {
+                                            'class':"caret"
+                                        })
+                                    ]}),
+                                $('<ul>', {
+                                    'class':"dropdown-menu",
+                                    'aria-labelledby':"dropdownLang"
+                                })
+                            ]}),
+                        $('<div>', {
+                            'id':"btnValid",
+                            'class':"hidden",
+                            'html' :[
+                                $('<button>', {
+                                    'class':"btn btn-primary",
+                                    'type':"button",
+                                    'html': 'Ok'
+                                })
+                            ]})
+                    ])
+                
+                $('.release').each(function(){
+                    $('#dropdownRelease .dropdown-menu').append(
+                        $('<li><a href="#" class="dropdownReleaseItem" data-release="' + $(this).data('release') + '" data-project="' + $(this).data('project') + '">'+ $(this).data('project') + " " + $(this).data('release')+'</a></li>')
+                    )
+                });
+                
+                $('#uploadStatusModal .dropdownReleaseItem').on('click', function() {
+                    var release = $(this).data('release')
+                    var project = $(this).data('project')
+                    
+                    $.get(Urls.translators_statuses(project, release))
+                        .done (function(data) {
+                            $.each(data, function(i, v) {
+                                if (v[1] == "translation") {
+                                    console.log(v)
+                                    
+                                    $('#dropdownLang .dropdown-menu').append(
+                                        $('<li><a href="#" class="dropdownLangItem" data-lang="' + v[0] + '">'+ v[0] +'</a></li>')
+                                    )
+                                }
+                            });
+                            $('#uploadStatusModal .dropdownLangItem').on('click', function() {
+                                var language = $(this).data('lang')
+                                $('#btnValid').on('click', function() {
+                                    $('#id_project').val(project)
+                                    $('#id_release').val(release)
+                                    $('#id_lang').val(language)
+                                    assembly_upload_submit()
+                                })
+                                $('#btnValid').removeClass('hidden')
+                            })
+                            $('#dropdownLang').removeClass('hidden')
+                        })
+                })
+                
+                    
+                $('#uploadStatusModal .upload-progress').hide()
                 
             } else {
                 $('#uploadStatusModal .upload-progress').hide()
@@ -291,7 +403,7 @@ $(function() {
         })
         
         return true;
-    })
+    }
     
     $('#uploadStatusModal').on('hidden.bs.modal', function() {
         window.location.reload()
