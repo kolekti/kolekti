@@ -8,6 +8,7 @@ import logging
 import pysvn
 import json
 from lxml import etree as ET
+from django.conf import settings
 
 ns ={"namespaces": {"h":"http://www.w3.org/1999/xhtml"}}
 parser  = ET.XMLParser(load_dtd = True)
@@ -38,7 +39,6 @@ class Command(BaseCommand):
         
     def handle(self, *args, **options):
         logging.debug(options)
-        from django.conf import settings
         user = options['user']
         project = options['project']
         release = options['release']
@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         self.stdout.write(str(langs))
 
-        self._publish_release(projectpath, release, list(langs))
+        self._publish_release(user, project, release, list(langs))
 
         self.stdout.write("done.")
 
@@ -59,12 +59,12 @@ class Command(BaseCommand):
             if l != 'share':
                 yield l
         
-    def _publish_release(self, projectpath, releasename, langs):
+    def _publish_release(self, user, project, releasename, langs):
 
         from kolekti import publish
         try:
             release = '/releases/' + releasename
-            p = publish.ReleasePublisher(release, projectpath, langs=langs)
+            p = publish.ReleasePublisher(release, settings.KOLEKTI_BASE, user, project, langs=langs)
             self.stderr.write('lang %s'%str(langs))
             for event in p.publish_assembly(releasename + "_asm"):
                 if event['event'] == "job":
