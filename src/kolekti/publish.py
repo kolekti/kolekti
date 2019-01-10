@@ -1234,7 +1234,7 @@ class ReleasePublisher(Publisher):
                 'time':time.time(),
             }
             logger.exception('unable to get pub params')
-            yield errev
+            yield errev, None, None, None
             return
         try:
             for jobscript in xjob.xpath('/job/scripts/script'):
@@ -1242,9 +1242,14 @@ class ReleasePublisher(Publisher):
                 for jobprofile in xjob.xpath('/job/profiles/profile[@enabled="1"]'):
                     for lang in self._publangs:
                         self._publang = lang
-                        ref, reftype, link = self.release_script_filename(release, lang, jobprofile, jobscript)
-                
-                        yield (jobprofile.find('label').text, link, self.exists(ref), reftype)
+                        if self.exists(self._release_dir + '/sources/' + lang):
+                            ref, reftype, link = self.release_script_filename(release, lang, jobprofile, jobscript)                
+                            logger.debug(jobprofile.find('label').text)
+                            logger.debug(link)
+                            logger.debug(self.exists(ref))
+                            logger.debug(reftype)
+                            yield (jobprofile.find('label').text, link, ref, self.exists(ref), reftype)
+
         except:
             logger.exception('documents release error')
         return

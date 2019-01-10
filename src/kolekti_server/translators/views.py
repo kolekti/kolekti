@@ -202,18 +202,18 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
         publisher = ReleasePublisher('/releases/'+release, *kolekti.args, langs = [lang])
         res = []
-        
-        for l, p, e, t in publisher.documents_release(release):
-#            logger.debug(l)
-#            logger.debug(p)
-#            logger.debug(e)
-#            logger.debug(t)
-            try:
-                v = kolekti.list_directory(p[1:]+'.cert')
-            except OSError:
-                v = []
-                
-            res.append((l, p.replace('/releases/',''), e, v, t)) 
+        try:
+            for item in publisher.documents_release(release):
+                logger.debug(item)
+                l, p, r, e, t = item
+                try:
+                    v = kolekti.list_directory(p[1:]+'.cert')
+                except OSError:
+                    v = []
+            
+            res.append((l, p.replace('/releases/',''), e, v, t, r))
+        except:
+            logger.exception('could not get documents for release')
         return HttpResponse(json.dumps(res), content_type="application/json")
         
 class TranslatorsPublishView(TranslatorsMixin, View):
