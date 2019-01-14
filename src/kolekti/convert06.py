@@ -13,7 +13,6 @@ import logging
 import shutil
 
 logger = logging.getLogger(__name__)
-print __name__
 from kolekti.variables import OdsToXML
 
 class ConvertException(Exception):
