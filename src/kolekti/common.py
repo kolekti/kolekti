@@ -858,6 +858,16 @@ class kolektiBase(object):
     def project_languages_labels(self):
         return sorted([{"code":l.text, "label":l.get('label',l.text)} for l in self.project_settings.xpath('/settings/languages/lang')], key = lambda f: f['code'])
 
+    def project_languages_directories(self):
+        langdirs={}
+        for lang in self.project_settings.xpath('/settings/languages/lang'):
+            langdirs.update({lang:{'var':False, 'img':False}})
+            if self.exists('/sources/%s/variables'):
+                langdirs[lang]['var'] = True
+            if self.exists('/sources/%s/pictures'):
+                langdirs[lang]['img'] = True
+        return langdirs
+    
     def project_default_language(self):
         return self.project_settings.xpath('string(/settings/@sourcelang)')
 
