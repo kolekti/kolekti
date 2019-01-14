@@ -152,24 +152,38 @@ def __get_config(env, section, item):
     return VALUE
 
 
-if os.sys.platform[:3] == "win":
-    appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
-    DB_NAME = appdatadir + '\\db.sqlite3'
-    DB_NAME = DB_NAME.replace('\\','/')
-else:
-    DB_NAME = __get_config('KOLEKTI_DBFILE','InstallSettings','database_dir')
+# if os.sys.platform[:3] == "win":
+#     appdatadir = os.path.join(os.getenv("APPDATA"),'kolekti')
+#     DB_NAME = appdatadir + '\\db.sqlite3'
+#     DB_NAME = DB_NAME.replace('\\','/')
+# else:
+#     DB_NAME = __get_config('KOLEKTI_DBFILE','InstallSettings','database_dir')
     #DB_NAME = os.path.join(DB_DIR, 'db.sqlite3')
 
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_NAME,
-    }
-}
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/db/db.sqlite3',
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'kolekti',
+            'USER': os.environ['KOLEKTI_DB_USER'],
+            'PASSWORD': os.environ['KOLEKTI_DB_PASS'],
+            'HOST': 'database',
+            'PORT': '',
+            }
+        }
+    
+
 
 ACCOUNT_ACTIVATION_DAYS = 7;
     

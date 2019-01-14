@@ -19,7 +19,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 SECRET_KEY = '3i#tv@#u7v8314r=5m4z2)irzs8p@h8%e*=sz5i8g1x4k0+k4^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
 
 ALLOWED_HOSTS = []
 
@@ -69,13 +69,25 @@ WSGI_APPLICATION = 'kolekti_server.wsgi_svn.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/db/db.sqlite3',
-    }
-}
-
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/db/db.sqlite3',
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'kolekti',
+            'USER': os.environ['KOLEKTI_DB_USER'],
+            'PASSWORD': os.environ['KOLEKTI_DB_PASS'],
+            'HOST': 'database',
+            'PORT': '',
+            }
+        }
+    
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
