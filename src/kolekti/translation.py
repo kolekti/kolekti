@@ -229,10 +229,20 @@ class AssemblyImporter(object):
         pass
     
     def fix_topic_sources(self, project, assembly, release) :
-        pass
+        return assembly
     
     def fix_links(self, project, assembly, release) :
-        pass
+        return assembly
+    
+    def fix_assembly(self, project, assembly, release) :
+        fixtures = os.path.join(self._path, self._username, project, 'releases', release, 'kolekti', 'fixtures')
+        if os.path.exists(fixtures):
+            for fixfile in os.listdir(fixtures):
+                extension = os.path.splitext(fixfile)[1]
+                if extension == '.xsl':
+                    xsl = ET.XSLT(ET.parse(os.path.join(fixtures, fixfile)))
+                    assembly = xsl(assembly)
+        return assembly
     
     def guess_project(self, assembly):
         try:
@@ -264,7 +274,7 @@ class AssemblyImporter(object):
             return lang[:2]
         return lang
     
-    def import_assembly(self, assembly_src):
+    def import_assembly(self, assembly_src, lang=None):
         # xml parse
         try:
             assembly = ET.fromstring(assembly_src, self.__parser)
@@ -274,12 +284,13 @@ class AssemblyImporter(object):
             raise KolektiValidationError('xml parse error: line %d:%d\n%s'%(error.line, error.column, error.message))
 
         # check lang
-        try:
-            lang = assembly.xpath('/h:html/h:body/@lang|/h:html/h:body/@xml:lang', namespaces=self.namespaces)[0]
-            
-        except:
-            logger.exception('language not found')
-            raise KolektiValidationMissing('could not detect language')
+        if lang is None:
+            try:
+                lang = assembly.xpath('/h:html/h:body/@lang|/h:html/h:body/@xml:lang', namespaces=self.namespaces)[0]
+            except:
+                logger.exception('language not found')
+                raise KolektiValidationMissing('could not detect language')
+        
         logger.debug("{%s}",type(self._project))
         if self._project is None:
             project = self.guess_project(assembly)
@@ -290,6 +301,7 @@ class AssemblyImporter(object):
             release = self.guess_release(assembly, project)
         else:
             release = self._release
+            
         src_lang = self._get_source_lang(project, release)
             
         lang = self.lang_unalias(lang)
@@ -319,9 +331,11 @@ class AssemblyImporter(object):
         
         self.check_structure(project, assembly, release)
         self.check_variables(project, assembly, release)            
-        self.fix_topic_sources(project, assembly, release)
-        self.fix_links(project, assembly, release)
+        assembly = self.fix_topic_sources(project, assembly, release)
+        assembly = self.fix_links(project, assembly, release)
 
+        assembly = self.fix_assembly(project, assembly, release)
+        
         with open(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang, 'assembly', release+"_asm.html"), 'w') as f:
             f.write(ET.tostring(assembly, encoding='utf-8'))
         return {'project':project, 'release': release, 'lang':lang}
