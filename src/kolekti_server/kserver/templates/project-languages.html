@@ -6,7 +6,7 @@
 {% block current_languages %}class="menu-current"{% endblock %}
 
 {% block title %}Configuration des langues{% endblock %}
-{% block help-topic %}projects{% endblock %}
+{% block help-topic %}config{% endblock %}
 {% block extrascripts %}
     <script src="{% static "js/kolekti-config-lang.js" %}"></script>
 {% endblock %}
@@ -28,7 +28,7 @@
         </thead>
         
         <tbody>
-          <tr>
+          <tr  class="info">
             <td>
               <input type="text" class="form-control klabel" placeholder="Intitulé langue">
             </td>
@@ -37,7 +37,7 @@
             </td>
             <td></td>
             <td>
-              <button class="btn btn-success btn-sm lang_add" type="button">Ajouter</button>
+              <button class="btn btn-default btn-sm lang_add" type="button">Ajouter</button>
             </td>
         </tbody>
         
@@ -51,7 +51,7 @@
             </td>
             <td>
 	          <input type="button"
-                     class="btn btn-warning btn-xs lang-del{% if lang.code == default_lang %} disabled{% endif %}"
+                     class="btn btn-default btn-xs lang-del{% if lang.code == default_lang %} disabled{% endif %}"
                      value="Supprimer"/>
             </td>
           </tr>
