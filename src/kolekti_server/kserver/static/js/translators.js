@@ -155,7 +155,13 @@ var update_documents = function(project, release, lang, container, statecell, st
 
 
 var update_releases_langs = function(release) {
-//    console.log('update_releases_langs', release)
+    //    console.log('update_releases_langs', release)
+    if ($(release).data('state') == 'loaded') {
+        return;
+        
+    }
+    $(release).data('state', 'loaded')
+    
     var sourcelang,
 	    releasename = release.data('release'),
 	    project = release.data('project'),
@@ -208,9 +214,21 @@ $(function() {
 
     // displays the tables for releases
     
+/*
     $('.release').each(function(){
 	    update_releases_langs($(this))
     });
+*/
+
+    $('.release-collapse').on('shown.bs.collapse', function () {
+	    update_releases_langs($(this).closest('.release'))
+    })
+
+    $('.sidelink').on('click', function() {
+        var rerel = $(this).attr('href')
+        update_releases_langs($(rerel))
+        $(rerel).find('.release-collapse').collapse('show')
+    })
     
     $('.upload-assembly-form').on('submit', function(e) {
         e.preventDefault()

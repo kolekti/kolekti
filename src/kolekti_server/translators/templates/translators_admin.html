@@ -21,12 +21,14 @@
 
     <div class="row">
       <div class="col-md-6">
+        {% if filter %}
 	    <div class="form">
 	      <div class="form-group">
 	        <label for="filter_field" class="control-label">Filter</label>
 	        <input type="text" id="filter_field" class="input-filter-menu" data-filter-list="#release_list"/>
 	      </div>
 	    </div>
+        {% endif %}
       </div>
       <div class="col-md-6">	
 	<div class="alert alert-warning alert-dismissible" role="alert">

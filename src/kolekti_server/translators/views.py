@@ -210,8 +210,8 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
                     v = kolekti.list_directory(p[1:]+'.cert')
                 except OSError:
                     v = []
-            
-            res.append((l, p.replace('/releases/',''), e, v, t, r))
+                
+                res.append((l, p.replace('/releases/',''), e, v, t, r))
         except:
             logger.exception('could not get documents for release')
         return HttpResponse(json.dumps(res), content_type="application/json")
@@ -340,10 +340,13 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
             path = tempfile.mkdtemp()
             project = request.POST.get('project', None)
             release = request.POST.get('release', None)
+            lang = request.POST.get('lang', None)
             if not len(project):
                 project = None
             if not len(release):
                 release = None
+            if not len(lang):
+                lang = None
             with open(os.path.join(path,uploaded_file.name), "wb") as f:
                 for chunk in uploaded_file.chunks():
                     f.write(chunk)
@@ -353,7 +356,7 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
                 with open(os.path.join(path, uploaded_file.name)) as f:
                    src = f.read() 
 
-                assembly_info = importer.import_assembly(src)
+                assembly_info = importer.import_assembly(src, lang)
                 
             except KolektiValidationError, e:                
                 logger.exception('error in translation import')
@@ -512,6 +515,47 @@ class TranslatorsAdminView(TranslatorsAdminMixin, TemplateView):
         context.update({
             'translators': User.objects.filter(groups__name='translator'),
             'releases':sorted(releases, key=lambda x: x['name']),
+            'filter' : True,
+            #            'languages':self.project_languages(project),
+
+            })
+
+        return self.render_to_response(context)
+
+class TranslatorsAdminReleaseView(TranslatorsAdminMixin, TemplateView):
+    template_name = "translators_admin.html"
+    def get(self, request, project, release):
+        try:
+            userproject = UserProject.objects.get(user = request.user, project__directory = project, is_admin = True)
+        except  UserProject.DoesNotExist:
+            return HttpResponse(status=401)
+        context, kolekti = self.get_context_data({'project':project})
+        if not kolekti.exists('/releases/%s/sources'%release):
+            raise
+        releaseinfo = {'langs':[], 'name':release}
+        for lang in kolekti.list_directory('/releases/%s/sources'%release):
+            assemblypath = '/releases/%s/sources/%s/assembly/%s_asm.html'%(release, lang, release)
+            if kolekti.exists(assemblypath):
+                releaseinfo['langs'].append({'lang': lang})
+                    
+        releaseinfo.update({
+            'translators': TranslatorRelease.objects.filter(release_name = release, project__directory = project)
+        })
+
+        userprojects = UserProject.objects.filter(user = self.request.user)
+        userproject = userprojects.get(project__directory = project)
+        projects = []
+        for up in userprojects:
+            pproject={
+                'userproject':up,
+                'name':up.project.name,
+                'id':up.project.pk,
+            }
+            projects.append(pproject)
+        
+        context.update({
+            'translators': User.objects.filter(groups__name='translator'),
+            'releases':[releaseinfo],
 #            'languages':self.project_languages(project),
             })
 

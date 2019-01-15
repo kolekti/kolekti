@@ -16,7 +16,7 @@ urlpatterns = [
         url(r'^admin/$', TranslatorsAdminView.as_view(), name='translators_admin'),
         url(r'^(?P<release>[^/]+)/', include([
             url(r'^$', TranslatorsReleaseView.as_view(), name='translators_release'),
-
+            url(r'^admin/$', TranslatorsAdminReleaseView.as_view(), name='translators_admin_release'),
             url(r'^states/$', TranslatorsReleaseStatusesView.as_view(), name='translators_statuses'),
             url(r'^admin/states/$', TranslatorsAdminReleaseStatusesView.as_view(), name='admin_translators_statuses'),
             url(r'^upload/$', TranslatorsUploadView.as_view(), name='translators_upload'),

@@ -247,6 +247,7 @@ class ProjectLanguagesView(ProjectsView):
         context, kolekti = self.get_context_data({'project':project})
         
         context.update({
+            "directories" :kolekti.project_languages_directories(),
             "languages"   :kolekti.project_languages_labels(),
             "default_lang":kolekti.project_default_language()
             })
