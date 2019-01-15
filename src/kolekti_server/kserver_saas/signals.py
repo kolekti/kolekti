@@ -53,22 +53,23 @@ def post_save_userproject_callback(sender, **kwargs):
     logger.debug('post save handler: save userproject')
     if instance.is_saas:
         if created or raw:
-            try:
-                username = instance.user.username
-                # TODO : use urllib (Win compatibility)
-                project_directory = instance.project.directory
-            
-                url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
-                logger.debug('checkout %s %s'%(username, url))
-                projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
-                SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
-                __generate_hooks(instance.project)
-                __generate_htgroup()
-            except:
-                logger.exception('Could not create user project')
-                user_project_directory = os.path.join(projectsroot, project_directory)
-                if os.path.exists(user_project_directory):
-                    shutil.rmtree(user_project_directory)
+            project_directory = instance.project.directory
+            user_project_directory = os.path.join(projectsroot, project_directory)
+            if not os.path.exists(user_project_directory):
+                try:
+                    username = instance.user.username
+                    # TODO : use urllib (Win compatibility)
+                
+                    url  = "file://%s/%s"%(settings.KOLEKTI_SVN_ROOT, project_directory)
+                    logger.debug('checkout %s %s'%(username, url))
+                    projectsroot = os.path.join(settings.KOLEKTI_BASE, username)
+                    SVNProjectManager(projectsroot, username = username).checkout_project(project_directory, url)
+                    __generate_hooks(instance.project)
+                    __generate_htgroup()
+                except:
+                    logger.exception('Could not create user project')
+                    if os.path.exists(user_project_directory):
+                        shutil.rmtree(user_project_directory)
             
             
 @receiver(post_delete, sender = UserProject)
