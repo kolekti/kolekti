@@ -164,26 +164,17 @@ def __get_config(env, section, item):
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': '/db/db.sqlite3',
-            }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'kolekti',
+        'USER': os.environ['KOLEKTI_DB_USER'],
+        'PASSWORD': os.environ['KOLEKTI_DB_PASS'],
+        'HOST': 'database',
+        'PORT': '',
         }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'kolekti',
-            'USER': os.environ['KOLEKTI_DB_USER'],
-            'PASSWORD': os.environ['KOLEKTI_DB_PASS'],
-            'HOST': 'database',
-            'PORT': '',
-            }
-        }
+    }
     
-
 
 ACCOUNT_ACTIVATION_DAYS = 7;
     
