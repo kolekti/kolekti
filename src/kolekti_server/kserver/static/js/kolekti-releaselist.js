@@ -20,6 +20,34 @@ $(document).ready(function() {
 		       ].join('');
 	};
     
+    var update_browser_state  = function() {
+		var releasepath = $(this).closest('tr').data('name')
+		var statecell = $(this)
+        var url_states = Urls.kolekti_release_states(kolekti.project, releasepath)
+		$.getJSON(url_states)
+		    .success(function(data) {
+                statecell.html('')
+			    $.each(data, function(index,item) {
+			        var i = item[0]
+			        var v = item[1]
+			        if (v)
+				        statecell.append($('<span>',{
+				            "class":"langstate "+v,
+				            "html":[
+                                $('<a>',{
+                                    "title":label_state[v],
+					                "href":Urls.kolekti_release_lang_detail(kolekti.project, releasepath, i),
+                                    //					                        "href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
+					                "html":i
+				                })
+                                ,$('<span>',{
+                                    "class":"releaselangback"}
+                                  )]
+				        }))
+			    });	      
+				
+		    })
+	};
     
     kolekti_browser({'root':'/releases',
                      'url':url_releases,
@@ -74,36 +102,11 @@ $(document).ready(function() {
             //modal_release_rename_menu_majornameœ
             
             // update release state
-	        $('.kolekti-browser-release-state').each(function() {
-		        var releasepath = $(this).closest('tr').data('name')
-		        var statecell = $(this)
-                var url_states = Urls.kolekti_release_states(kolekti.project, releasepath)
-		        $.getJSON(url_states)
-		            .success(function(data) {
-			            $.each(data, function(index,item) {
-			                var i = item[0]
-			                var v = item[1]
-			                if (v)
-				                statecell.append($('<span>',{
-				                    "class":"langstate "+v,
-				                    "html":[
-                                        $('<a>',{
-                                            "title":label_state[v],
-					                        "href":Urls.kolekti_release_lang_detail(kolekti.project, releasepath, i),
-//					                        "href":"/releases/detail/?release=/releases/"+releasepath+"&lang="+i,
-					                        "html":i
-				                        })
-                                        ,$('<span>',{
-                                            "class":"releaselangback"}
-                                          )]
-				                }))
-			            });	      
-					        
-		            })
-	        });
+//	        $('.kolekti-browser-release-state').each(update_browser_state);
+
             init_view();
 	    });
-
+                  
     var toggle_status = sessionStorage.getItem('kolekti_version_browser_state');
     if (toggle_status == null)
 	    sessionStorage.setItem('kolekti_version_browser_state',JSON.stringify([]))
@@ -117,6 +120,7 @@ $(document).ready(function() {
 	        while (row.length) {
 	            row = row.next('.release-index');
 		        row.removeClass('hidden')
+                row.find('.kolekti-browser-release-state').each(update_browser_state);
 	        }
         });
     };
@@ -141,6 +145,7 @@ $(document).ready(function() {
 	        row = row.next('.release-index');
 	        if (toggle.hasClass('fa-folder-open')) {
 		        row.removeClass('hidden')
+                row.find('.kolekti-browser-release-state').each(update_browser_state);
 	        } else {
 		        row.addClass('hidden')
 	        }
