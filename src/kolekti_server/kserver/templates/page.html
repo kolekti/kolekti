@@ -65,10 +65,11 @@
 		<li role="presentation" class="divider"></li>
 		<li {% block current_synchro %}{% endblock %}><a href="{% url 'kolekti_sync' project=project %}">Synchronisation</a></li>
         {% endif %}
+        {% comment %}
 		{% if user_project.is_admin %}
 		<li {% block current_translation_admin %}{% endblock %}><a href="{% url 'translators_admin' project=project %}">Assigner les traductions</a></li>
 		{% endif %}
-        
+        {% endcomment %}
 		<!--
 		<li role="presentation" class="divider"></li>
 		<li><a href="/projects/">Gestion des projets</a></li>
