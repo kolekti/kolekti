@@ -861,11 +861,11 @@ class kolektiBase(object):
     def project_languages_directories(self):
         langdirs={}
         for lang in self.project_settings.xpath('/settings/languages/lang'):
-            langdirs.update({lang:{'var':False, 'img':False}})
-            if self.exists('/sources/%s/variables'):
-                langdirs[lang]['var'] = True
-            if self.exists('/sources/%s/pictures'):
-                langdirs[lang]['img'] = True
+            tlang = str(lang.text)
+            langdirs.update({tlang:[]})
+            if self.exists('/sources/%s'%tlang):
+                for ldir in self.list_directory('/sources/%s'%tlang):                
+                    langdirs[tlang].append(ldir)
         return langdirs
     
     def project_default_language(self):

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load ostags %}
+{% load dict_utils %}
 {% load static %}
 
 {% block current_tools %}menu-current{% endblock %}
@@ -35,12 +36,15 @@
             <td>
               <input type="text" class="form-control kcode" placeholder="Code langue">
             </td>
-            <td></td>
+            <td>
+            </td>
+            <td>
+            </td>
             <td>
               <button class="btn btn-default btn-sm lang_add" type="button">Ajouter</button>
             </td>
+            
         </tbody>
-        
         <tbody>
 	      {% for lang in languages %}
           <tr class="lang" data-lang='{{ lang.code }}' {% if lang.code == default_lang %}data-default="yes"{% endif %}>
@@ -53,6 +57,22 @@
 	          <input type="button"
                      class="btn btn-default btn-xs lang-del{% if lang.code == default_lang %} disabled{% endif %}"
                      value="Supprimer"/>
+
+
+            </td>
+            <td>
+              {% if not "variables" in directories|get_item:lang.code %}
+	          <button type="button"
+                      title="Créer le dossier variables"
+                     class="btn btn-default btn-xs lang-create-variable">
+                      <i class="fa fa-folder-o"></i> var</button>
+              {% endif %}
+              {% if not "pictures" in directories|get_item:lang.code %}
+	          <button type="button"
+                      title="Créer le dossier images"
+                     class="btn btn-default btn-xs lang-create-picture">
+                      <i class="fa fa-folder-o"></i> img</button>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

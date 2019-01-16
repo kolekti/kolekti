@@ -1230,6 +1230,15 @@ class PicturesMixin(kolektiMixin):
 class PicturesListView(PicturesMixin, TemplateView):
     template_name = "illustrations/list.html"
 
+class PictureCreateDirView(PicturesMixin, TemplateView):
+    def post(self, request, project, lang):
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        pictures_dir = '/sources/%s/pictures/'%lang
+        kolekti.makedirs(pictures_dir)
+        return HttpResponse(json.dumps(kolekti.exists(pictures_dir)),content_type="application/json")
+        
+
+    
 class PictureUploadView(kolektiMixin, TemplateView):
     def post(self, request, project, lang, picture_path, release=None):
         context, kolekti = self.get_context_data({'project':project})
@@ -1488,6 +1497,13 @@ class VariablesUploadView(VariablesMixin, TemplateView):
         else:
             return HttpResponse(status=500)
 
+class VariablesCreateDirView(VariablesMixin, TemplateView):
+    def post(self, request, project, lang):
+        context, kolekti = self.get_context_data({'project': project, 'lang':lang})
+        variables_dir = '/sources/%s/variables/'%lang
+        kolekti.makedirs(variables_dir)
+        return HttpResponse(json.dumps(kolekti.exists(variables_dir)),content_type="application/json")
+        
 class VariablesCreateView(VariablesMixin, TemplateView):
     def post(self, request, project, lang, variable_path, release=None):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})

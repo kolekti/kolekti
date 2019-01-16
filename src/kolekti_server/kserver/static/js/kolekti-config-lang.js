@@ -18,9 +18,9 @@ $(document).ready(function() {
 
 
     $(window).on('beforeunload', function(e) {
-	if($('#btn_save').hasClass('btn-warning')) {
-            return 'Trame non enregistrée';
-	}
+	    if($('#btn_save').hasClass('btn-warning')) {
+            return 'Configuration non enregistrée';
+	    }
     });
 
     // save action
@@ -75,6 +75,38 @@ $(document).ready(function() {
         $(this).closest('.lang').data('default', 'yes')
 	    $(this).closest('.lang').find('.lang-del').addClass('disabled')
 	    enable_save()
+    })
+
+    $(document).on('click','.lang-create-variable',function() {
+	    if($('#btn_save').hasClass('btn-warning')) {
+            alert ('Enregistrez votre configuration avant de créer les dossiers')
+        } else {
+            var lang = $(this).closest('.lang').data('lang')
+            $.post(Urls.kolekti_variable_dir_create(kolekti.project, lang))
+                .done(function() {
+                    window.location.reload()
+                })
+                .fail(function() {
+                    alert('Echec de la création')
+                })
+        }        
+    })
+    
+    $(document).on('click','.lang-create-picture',function() {
+	    if($('#btn_save').hasClass('btn-warning')) {
+            alert ('Enregistrez votre configuration avant de créer les dossiers')
+        } else {
+            var lang = $(this).closest('.lang').data('lang')
+            $.post(Urls.kolekti_picture_dir_create(kolekti.project, lang))
+                .done(function() {
+                    window.location.reload()
+                })
+                .fail(function() {
+                    alert('Echec de la création')
+                })
+            
+        }
+        
     })
 
 

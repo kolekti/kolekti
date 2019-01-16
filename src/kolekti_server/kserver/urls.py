@@ -60,6 +60,7 @@ urlpatterns = [
             
             url(r'^variables/', include([
                 url(r'^$', VariablesListView.as_view(), name='kolekti_variables'),
+                url(r'^create$', VariablesCreateDirView.as_view(), name='kolekti_variable_dir_create'),
                 url(r'^(?P<variable_path>.+)/', include([                    
                     url(r'^create$', VariablesCreateView.as_view(), name='kolekti_variable_create'),
                     url(r'^upload$', VariablesUploadView.as_view(), name='kolekti_variable_upload'),
@@ -72,6 +73,7 @@ urlpatterns = [
         
             url(r'^pictures/', include([
                 url(r'^$', PicturesListView.as_view(), name='kolekti_pictures'),
+                url(r'^create$', PictureCreateDirView.as_view(), name='kolekti_picture_dir_create'),                
                 url(r'^upload$', PictureUploadView.as_view(), name='kolekti_picture_upload'),
                 url(r'^(?P<picture_path>.+)/', include([
                     url(r'^details$', PictureDetailsView.as_view(), name='kolekti_picture_details'),
