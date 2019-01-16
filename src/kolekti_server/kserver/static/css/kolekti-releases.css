@@ -34,6 +34,10 @@
 .state_publication .state_status_inside {
     visibility:hidden;
 }
+
+.state_sourcelang .state_status_background {
+    border-bottom: 5px solid #6fC068;
+
 .state_sourcelang .state.lead,
 .state_publication .state.lead {
     color:#3c763d;

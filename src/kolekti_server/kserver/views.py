@@ -916,9 +916,21 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             except:
                 focus.append(False)
         indices = list(self.__release_indices(kolekti, release, context.get('lang', default_srclang)))
+
+        lactive = []
+        lnone = []
+        source=()
+        for l, s, f in zip(release_languages,states,focus):
+            if s == "unknown":
+                lnone = [(l,s,f)] + lnone
+            elif s == "sourcelang":
+                source = (l,s,f)
+            else:
+                lactive.append((l,s,f))
+                
         context.update({
             'langstate':langstate,
-            'langstates':zip(release_languages,states,focus),
+            'langstates':[source] + lactive + lnone,
             'release_indices':sorted(indices)
             })
 

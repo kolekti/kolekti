@@ -310,7 +310,7 @@
 
 	{% for rlang, state, focus in langstates %}
 	
-	<li role="presentation"class="{% if rlang == relang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}">
+	<li role="presentation" class="{% if rlang == relang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}{% if state == "sourcelang" %} sourcelang{% endif %}">
 	 
 	  <a href=" {% if rlang != relang %}{% url "kolekti_release_lang_detail" project=project release=release lang=rlang %}{% endif %}#"
 	     aria-controls="release_content_ {{ rlang }}"
