@@ -137,7 +137,7 @@ var setup_varfile = function(browser, file_element, path, filename){
 		 }),
 	    "&nbsp;",
 	    $('<a>', {'href':"#",
-		      'title':'dépposer fichier ods',
+		      'title':'déposer fichier ods',
 		      'data-path': path + filename,
 		      'class':'btn btn-xs btn-default upload-varfile',
 		      'html':[
@@ -147,8 +147,14 @@ var setup_varfile = function(browser, file_element, path, filename){
 			      $('<span>', {
 				      'html':' importer ods'
 				  })]
+<<<<<<< Updated upstream
 		     })
 	]
 	);
     
+=======
+		         })
+            
+	]);
+>>>>>>> Stashed changes
 };

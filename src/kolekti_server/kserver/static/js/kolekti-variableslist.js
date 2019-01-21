@@ -25,8 +25,7 @@ $(document).ready(function() {
     	.create(create_varfile) 
 	    .setup_file(setup_varfile);
 
-    $('.browser_share').on('click',".upload-varfile", upload_varfile_form)
-    $('.browser_lang' ).on('click',".upload-varfile", upload_varfile_form)
+    $('#browser_lang' ).on('click',".upload-varfile", upload_varfile_form)
     $('.doimport').on('click', function(e) {
 	    upload_varfile()
 	    $('#uploadmodal').modal('hide');
