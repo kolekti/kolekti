@@ -29,7 +29,7 @@ if DEBUG:
     HOSTNAME='0.0.0.0'
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'kolekti', os.getenv('VIRTUAL_HOST','localhost.localdomain')]
 else:
-    HOSTNAME=os.getenv('VIRTUAL_HOST','kolekti', 'localhost.localdomain')
+    HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
     ALLOWED_HOSTS='*'
 
 
