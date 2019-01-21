@@ -109,11 +109,12 @@ class kolektiMixin(LoginRequiredMixin):
         if 'project' in data.keys():
             try:
                 project = data['project']
-                kolekti = kolektiBase(settings.KOLEKTI_BASE, self.request.user.username, project)
                 userproject = UserProject.objects.get(user = self.request.user, project__directory = project)
+                
+                kolekti = kolektiBase(settings.KOLEKTI_BASE, self.request.user.username, project)
                 context.update({
-                    'user_project' : userproject,
                     'default_lang' : kolekti.project_default_language(),
+                    'user_project' : userproject,
                 })
 
                 if not 'lang' in data.keys():
