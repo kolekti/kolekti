@@ -5,15 +5,16 @@ var create_varfile = function(browser, folder, update_function) {
     var filename = $(browser).find('#new_name').val();
     var path = folder + filename;
 //    console.log(path)
-    var lang = path.split('/')[2]
     var variable_path = path.split('/').splice(4). join('/')
 
     var release = $('#main').data('release')
     var createurl;
     if (release){
+        var lang = path.split('/')[4]
         var var_path = path.split('/').splice(6). join('/')
         createurl = Urls.kolekti_release_lang_variable_create(kolekti.project, release, lang, var_path)
     } else {
+        var lang = path.split('/')[2]
         var var_path = path.split('/').splice(4). join('/')
         createurl = Urls.kolekti_variable_create(kolekti.project, lang, var_path)
     }
@@ -31,8 +32,9 @@ var create_varfile = function(browser, folder, update_function) {
 
 var upload_varfile_form = function(e) {
     var path = $(this).data('path');
-    $('#variable_file_path').val(path.replace('.xml',''))
+    $('#variable_file_path').val(path)
     $('#uploadmodal').modal('show');
+    e.preventDefault();
 }
 
 var upload_varfile = function(e) {    
@@ -43,11 +45,13 @@ var upload_varfile = function(e) {
     var uploadurl;
 
     if (release){
-        var var_path = path.split('/').splice(6). join('/')
-        uploadurl = Urls.kolekti_release_lang_variable_upload(kolekti.project, release, kolekti.lang, var_path)
+        var lang = path.split('/')[4]
+        var var_path = path.split('/').splice(6).join('/').replace('.xml','')
+        uploadurl = Urls.kolekti_release_lang_variable_upload(kolekti.project, release, lang, var_path)
     } else {
-        var var_path = path.split('/').splice(4). join('/')
-        uploadurl = Urls.kolekti_variable_upload(kolekti.project, kolekti.lang, var_path)
+        lang = path.split('/')[2]
+        var var_path = path.split('/').splice(4).join('/').replace('.xml','')
+        uploadurl = Urls.kolekti_variable_upload(kolekti.project, lang, var_path)
     }
 
     $.ajax({
@@ -62,11 +66,12 @@ var upload_varfile = function(e) {
         },
         //Ajax events
         success: function() {
-//	    update_function()
-	},
+            window.location.reload()
+            //	    update_function()
+	    },
         error: errorHandler = function(jqXHR,textStatus,errorThrown) {
-//	    console.log(textStatus);
-//	    console.log(errorThrown);
+            //	    console.log(textStatus);
+            //	    console.log(errorThrown);
             alert("Erreur lors du transfert");
         },
         // Form data
