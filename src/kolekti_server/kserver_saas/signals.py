@@ -80,25 +80,38 @@ def post_delete_userproject_callback(sender, **kwargs):
         user_project_directory = os.path.join(settings.KOLEKTI_BASE, username, instance.project.directory)
         if os.path.exists(user_project_directory):
             shutil.rmtree(user_project_directory)
-        __generate_hooks(instance.project)
-        __generate_htgroup()
+        try:
+            __generate_hooks(instance.project)
+            __generate_htgroup()
+        except:
+            logger.exception('Could not update project repository')
 
 def __generate_hooks(project):
     ''' generate svn hooks in project repository'''
-    if settings.KOLEKTI_AUTOSYNC:
-        project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
-        if os.path.exists(project_directory):
-            hooksfile = os.path.join(project_directory, "hooks", "post-commit")
+    project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
+    logger.debug(project_directory)
+    if os.path.exists(project_directory):
+        hooksfile = os.path.join(project_directory, "hooks", "post-commit")
 
-            with open(hooksfile, 'w') as hooks:
-                hooks.write("#!/bin/bash\n")
+        with open(hooksfile, 'w') as hooks:
+            hooks.write("#!/bin/bash\n")
+            
+            if settings.KOLEKTI_AUTOSYNC:
                 for user_project in UserProject.objects.filter(project = project):
                     username = user_project.user.username
-                    cmd = "/usr/bin/svn update %s\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
+                    cmd = "/usr/bin/svn update %s  >> /var/log/kolekti/svn-post-commit.log\n"%(os.path.join(settings.KOLEKTI_BASE, username, project.directory))
                     hooks.write(cmd)
-            st = os.stat(hooksfile)
-            os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
+            if settings.KOLEKTI_TRANSLATION:
+                cmd = "curl -H 'X_SOURCE:KOLEKTI' http://kolekti:8000/translator/svnhook/$2/$1  >> /var/log/kolekti/svn-post-commit.log\n"
+                hooks.write(cmd)
+                                        
+
+        st = os.stat(hooksfile)
+        os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    else:
+        logger.debug('project %s does not exist', project_directory)
+        
 def __generate_htgroup():
     '''update svn acces group file'''
     with open(settings.AUTH_SYNC_HTGROUP, 'w') as groupfile:

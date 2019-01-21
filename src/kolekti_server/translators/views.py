@@ -5,12 +5,14 @@ import urllib2
 import shutil
 import time
 from lxml import etree as ET
-
+import pysvn
+import subprocess
+import datetime
 
 from django.views.static import serve
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.views.generic import View,TemplateView, ListView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -39,6 +41,69 @@ def in_translator_group(user):
         return user.groups.filter(name='translator').count() == 1
     return False
 
+
+
+class PostCommit(object):
+        def get_changed(self, revision, repo):
+            cmd = subprocess.Popen(['/usr/bin/svnlook', 'changed', '-r', str(revision), repo], stdout = subprocess.PIPE)
+            for line in cmd.stdout.readlines():
+                yield line
+                
+        def get_author(self, revision, repo):
+            cmd = subprocess.Popen(['/usr/bin/svnlook', 'author', '-r', str(revision), repo], stdout = subprocess.PIPE)
+            author = cmd.stdout.read()
+            return author.strip()
+                
+        def handle(self, *args, **options):
+            logger.debug('handle')
+            try:
+                from django.conf import settings
+                logger.debug(str(datetime.datetime.now()))
+                revision = options['revision']
+                repo = options['repo']
+                project = repo.split('/')[-1]
+                user = self.get_author(revision, repo)
+                logger.debug("author : [%s]"%user)
+                
+                try:
+                    acllist = TranslatorRelease.objects.exclude(user__username = user).filter(project__directory = project)
+                    logger.debug(acllist)
+                except TranslatorRelease.DoesNotExist:
+                    raise Exception('No update for "%d" ' % revision)
+                seen = set()
+                client = pysvn.Client()
+
+                for mf in self.get_changed(revision, repo):
+                    logger.debug(mf)
+                    mf = mf[4:]
+                    chunks = mf.split('/')
+                    if len(chunks)>1 and chunks[0] == "releases":
+                        if not chunks[1] in seen:
+                            seen.add(chunks[1])
+                            updates = acllist.filter(release_name = chunks[1])
+                            for update in updates:
+                                path = os.path.join(settings.KOLEKTI_BASE, update.user.username, update.project.directory, 'releases', update.release_name)
+                                client.update(path)
+                                logger.debug(path+" updated")
+                    
+                logger.debug('update succesfully completed')
+            except:
+                logger.exception('update command failed')
+
+
+class TranslatorsHook(View):
+    def get(self, request, rev, path):
+        if 'HTTP_X_SOURCE' in request.META:
+            try:
+                options = {'revision':rev, 'repo':path}
+                pc = PostCommit()
+                pc.handle(**options)
+                return HttpResponse("ok")
+            except:
+                logger.exception('could not execute hook')
+                raise
+        raise Http404
+    
 class TranslatorsSharedMixin(kolektiMixin):
     def get_context_data(self, data={}, **kwargs):
         try:

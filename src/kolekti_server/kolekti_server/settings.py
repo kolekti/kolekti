@@ -27,9 +27,9 @@ SECRET_KEY = '9ewjmy&i^@0kgd6(bapt%@azcl2wka6ml^tcs9v*9@-2%705#y'
 DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
 if DEBUG:
     HOSTNAME='0.0.0.0'
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', os.getenv('VIRTUAL_HOST','localhost.localdomain')]
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'kolekti', os.getenv('VIRTUAL_HOST','localhost.localdomain')]
 else:
-    HOSTNAME=os.getenv('VIRTUAL_HOST','localhost.localdomain')
+    HOSTNAME=os.getenv('VIRTUAL_HOST','kolekti', 'localhost.localdomain')
     ALLOWED_HOSTS='*'
 
 
@@ -192,6 +192,7 @@ else:
     KOLEKTI_MULTIUSER = True
     
 KOLEKTI_AUTOSYNC = False
+KOLEKTI_TRANSLATION = True
 RE_BROWSER_IGNORE=["~$","^\.svn$", "^#.*#$"]
 
 email_config = KOLEKTI_CONFIG.get('smtp_ssl')

@@ -7,6 +7,7 @@ urlpatterns = [
 
     url(r'^$', TranslatorsHomeView.as_view(), name='translators_home'),
     url(r'^upload/$', TranslatorsAssemblyUploadView.as_view(), name='translators_upload_assembly'),
+    url(r'^svnhook/(?P<rev>[^/]+)/(?P<path>.*)$', TranslatorsHook.as_view(), name='translators_hook'),
     
     url(r'^(?P<project>[0-9_.\w-]+)/', include([
         url(r'^$', TranslatorsProjectView.as_view(), name='translators_project'),

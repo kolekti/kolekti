@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
-
+import os
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -19,7 +19,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 SECRET_KEY = '3i#tv@#u7v8314r=5m4z2)irzs8p@h8%e*=sz5i8g1x4k0+k4^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = (os.getenv('KOLEKTI_DEBUG',"") == "True")
+DEBUG = False #(os.getenv('KOLEKTI_DEBUG',"") == "True")
 
 ALLOWED_HOSTS = []
 
@@ -33,7 +33,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-)
+    'kserver_saas',
+    'translators',
+    )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -99,3 +101,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
