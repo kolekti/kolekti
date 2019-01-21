@@ -147,14 +147,7 @@ var setup_varfile = function(browser, file_element, path, filename){
 			      $('<span>', {
 				      'html':' importer ods'
 				  })]
-<<<<<<< Updated upstream
-		     })
-	]
-	);
-    
-=======
 		         })
             
 	]);
->>>>>>> Stashed changes
 };
