@@ -149,7 +149,6 @@ class kolektiMixin(LoginRequiredMixin):
         template = get_template(template)
         nbchunck = 0
         for chunck in sourceiter:
-            logger.debug(chunck)
             nbchunck += 1
             chunck.update({'id':nbchunck,'project':project})
             yield template.render(chunck)
@@ -844,7 +843,7 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
                         if event2.get('event','') == "lang" and event2.get('label','') == lang:
                             publications.extend(event2.get('content'))
         except:
-            logger.debug('manifest not found [%s]'%release)
+            logger.exception('manifest not found [%s]'%release)
         return publications
 
     def get(self, request, project, release, lang):
@@ -880,9 +879,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             try:
                 other_release_info = json.loads(kolekti.read('/releases/'+r+'/release_info.json'))
                 if other_release_info['releasename'] == release_name:
-                    logger.debug(other_release_info['releasename'])
-                    logger.debug(r)
-
                     a = '/releases/'+ r +'/sources/' + lang + "/assembly/" + r + "_asm.html"
                     if kolekti.exists(a):
                         yield r 
@@ -920,7 +916,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
 
         lactive = []
         lnone = []
-        source=()
+        source=('  ', 'sourcelang', '')
         for l, s, f in zip(release_languages,states,focus):
             if s == "unknown":
                 lnone = [(l,s,f)] + lnone
@@ -928,7 +924,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 source = (l,s,f)
             else:
                 lactive.append((l,s,f))
-                
         context.update({
             'langstate':langstate,
             'langstates':[source] + lactive + lnone,
@@ -999,7 +994,6 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             
         })
         
-        logger.debug(assembly_meta)
         return self.render_to_response(context)
     
     def post(self, request, project, release, lang):
@@ -1188,7 +1182,8 @@ class ReleaseUpdateView(kolektiMixin, ReleaseMixin, View):
                         continue
                             
                     for copiedfile in kolekti.copy_release(new_release, srclang, dstlang):
-                        logger.debug(copiedfile)
+                        pass
+#                        logger.debug(copiedfile)
 
                     sync.propset("release_state",'edition', assembly)
                     sync.propset("release_srclang", srclang, assembly)
@@ -1262,7 +1257,7 @@ class PictureDetailsView(PicturesMixin, TemplateView):
 
         project_path = self.picture_path(release, lang, picture_path)
         ospath = kolekti.syspath(project_path)
-        logger.debug(ospath)
+#        logger.debug(ospath)
         try:
             im = Image.open(ospath)
             context.update({
@@ -2065,7 +2060,7 @@ class TopicTemplateCreateView(kolektiMixin, View):
         try:
             templatepath = request.POST.get('templatepath')
             templatepath = self.set_extension(templatepath, ".html")
-            logger.debug(templatepath)
+#            logger.debug(templatepath)
             topic = """<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -2127,7 +2122,7 @@ class SyncView(kolektiMixin, TemplateView):
                     "changes": statuses,
 #                    "root_statuses":root_statuses,
                     })
-            logger.debug('render')
+#            logger.debug('render')
             
         except ExcSyncNoSync:
             logger.exception("Synchro unavailable")
@@ -2479,9 +2474,9 @@ class CompareReleaseTopicSource(kolektiMixin, View):
         release = Release(*kolekti.args, release = release)
         modified = False
         for elt in tree.xpath('.//*[contains(@class, "=")]'):
-            logger.debug(elt)
+#            logger.debug(elt)
             modified = release.apply_filters_element(elt, profile_filter=False, assembly_filter=True, setPI = True) or modified
-            logger.debug(modified)            
+#            logger.debug(modified)            
         return modified
 
     
