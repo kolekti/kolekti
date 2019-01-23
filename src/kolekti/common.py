@@ -203,7 +203,7 @@ class kolektiBase(object):
         return self.__makepath(path)
 
     def localpath(self, path):
-        lp = path.replace(self._path,'')
+        lp = path.replace(self._path + '/','')
         return '/' + '/'.join(lp.split(os.path.sep))
     
     def path_exists(self, path):
@@ -990,12 +990,11 @@ class kolektiBase(object):
     @property
     def iterjobs(self):
         for root, dirs, files in os.walk(os.path.join(self._path, 'kolekti','publication-parameters'), topdown=False):
-            rootparts = root.split(os.path.sep)
-            for file in files:
-                if os.path.splitext(file)[-1] == '.xml':
-                    if not file=='criterias.xml':
-                        yield {"path":self.localpath(os.path.sep.join(rootparts+[file])),
-                               "name":os.path.splitext(file)[0]}
+            for jfile in files:
+                if os.path.splitext(jfile)[-1] == '.xml':
+                    if not jfile=='criterias.xml':
+                        yield {"path":self.localpath(root)+ '/' + jfile,
+                               "name":os.path.splitext(jfile)[0]}
         
     @property
     def iterreleasejobs(self):

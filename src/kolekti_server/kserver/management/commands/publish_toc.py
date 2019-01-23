@@ -8,6 +8,7 @@ import logging
 import pysvn
 import json
 from lxml import etree as ET
+from django.conf import settings
 
 ns ={"namespaces": {"h":"http://www.w3.org/1999/xhtml"}}
 parser  = ET.XMLParser(load_dtd = True)
@@ -36,7 +37,7 @@ class Command(BaseCommand):
         
         lang = self._get_source_lang(projectpath)
   
-        self._publish_toc(projectpath, toc, job, lang, allprofiles)
+        self._publish_toc(user, project, toc, job, lang, allprofiles)
 
         self.stdout.write("done.")
 
@@ -44,15 +45,15 @@ class Command(BaseCommand):
         xset = ET.parse(os.path.join(projectpath, 'kolekti', 'settings.xml'))
         return xset.getroot().get('sourcelang')
         
-    def _publish_toc(self, projectpath, toc, job, lang, allprofiles=False):
+    def _publish_toc(self, user, project, toc, job, lang, allprofiles=False):
 
         tocpath = "/sources/" + lang + "/tocs/" + toc + ".html"
         jobpath = "/kolekti/publication-parameters/" + job + ".xml"
         
         from kolekti import publish
         try:
-            p = publish.DraftPublisher(projectpath, lang=lang, cleanup=False)
-            fsjob = os.path.join(projectpath, jobpath[1:])
+            p = publish.DraftPublisher(settings.KOLEKTI_BASE, user, project, lang=lang, cleanup=False)
+            fsjob = os.path.join(settings.KOLEKTI_BASE, user, project, jobpath[1:])
             xjob = ET.parse(fsjob)
             if  allprofiles:
                 for profile in xjob.xpath("/job/profiles/profile"):
