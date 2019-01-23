@@ -131,74 +131,11 @@
           
 	      <div class="btn-group  pull-right" role="group">
 		    {% block infobuttons %}
-            
-        {% comment %}
-		<div class="btn-group" role="group">
-		  <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		    Projet {{ active_project_name }} ({{ active_srclang }})
-		    <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-		    {% for project in projects %}
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url kolekti_project_home project=project %}">{{project.name}}</a></li>
-<!--		    <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li> -->
-		    {% endfor %}
-		    <li role="presentation" class="divider"></li>
-		    <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
-		  </ul>
           
-		</div>
-        {% endcomment %}
-
 	      </div>
 	      {% block infobuttons_lang %}
-	      {% comment %}
-	      <div class="btn-group" role="group">
-
-		<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-expanded="true">
-		  {{ active_srclang }}
-		  <span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">en</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">de</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">it</a></li>
-		  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">zh</a></li>
-		</ul>
-        
-	      </div>
+            
           {% endblock %}
-
-          <div class="btn-group pull-right kfade" role="group" id="toaster">
-            <button id="btn_toaster" class="btn btn-xs btn-default" type="button">
-              <span>
-                <span class="spinner"><i class="fa fa-spinner fa-spin"></i></span>
-                <span class="msg">...</span>
-              </span>
-            </button>
-          </div>
-          
-          {% if project %}              
-	      <div class="btn-group  pull-right" role="group">
-		    {% block infobuttons %}
-            
-            {% comment %}
-		    <div class="btn-group" role="group">
-		      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-		        Projet {{ project.name }} ({{ lang }})
-		        <span class="caret"></span>
-		      </button>
-		      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-		        {% for project in projects %}
-		        <li role="presentation"><a role="menuitem" tabindex="-1" href="/projects/activate?project={{ project.userproject.project.directory }}&redirect=/">{{project.name}}</a></li>
-		        {% endfor %}
-		        <li role="presentation" class="divider"></li>
-		        <li role="presentation"><a href="/projects/">Gestion des projets</a></li>
-		      </ul>
-		    </div>
-            {% endcomment %}
-            
-            {% endblock %}
           </div>
           {% endblock %}
           {% endif %}
