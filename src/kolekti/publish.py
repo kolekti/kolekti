@@ -299,7 +299,7 @@ class Publisher(PublisherMixin, kolektiBase):
         logger.info("* Publishing profile %s"%profile.xpath('string(label)'))
 
         pubdir = self.pubdir(assembly_dir, profile)
-        logger.debug('profile pub dir %s', pubdir)
+#        logger.debug('profile pub dir %s', pubdir)
         try:
             # logger.debug(assembly)
             # criteria
@@ -308,7 +308,7 @@ class Publisher(PublisherMixin, kolektiBase):
             self.log_xsl(s.error_log)
             
             # filter
-            logger.debug("filter on profile")
+#            logger.debug("filter on profile")
             s = self.get_xsl('filter', self.getPublisherExtensions(), profile=profile, lang=self._publang)
             assembly = s(assembly)
             self.log_xsl(s.error_log)
@@ -414,23 +414,24 @@ class Publisher(PublisherMixin, kolektiBase):
                         'time':time.time(),
                         }
                 
-        # copy generic variable file 
-        srcdir = "kolekti/publication-templates/share"
-        srcfile = srcdir + "/labels.xml"
-        try:
-            self.makedirs(assembly_dir + "/" +srcdir)
-        except OSError:
-            pass
-        try:
-            self.copyFile(srcfile, assembly_dir + '/' + srcfile)
-        except:
-            import traceback
-            yield {
-                'event':'warning',
-                'msg':"fichier introuvable %s"%(srcfile.encode('utf-8'),),
-                'stacktrace':traceback.format_exc(),
-                'time':time.time(),
-                }
+        # copy generic variable file
+        
+        src_variables = [("kolekti/publication-templates/share", "labels.xml")]
+        for srcdir, srcfile in src_variables:
+            try:
+                self.makedirs(assembly_dir + "/" +srcdir)
+            except OSError:
+                pass
+            try:
+                self.copyFile(srcfile, assembly_dir + '/' + srcdir + '/' + srcfile)
+            except:
+                import traceback
+                yield {
+                    'event':'warning',
+                    'msg':"fichier introuvable %s"%(srcdir.encode('utf-8') + '/' + srcfile.encode('utf-8'),),
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    }
             
     # copy media to assembly space
     def copy_media(self, assembly, profile, assembly_dir):
@@ -554,7 +555,6 @@ class Publisher(PublisherMixin, kolektiBase):
 
 
     def start_script(self, script, profile, assembly_dir, inputs):
-        logger.debug('start script')
         # logger.debug(inputs)
         res = None
         #print "script",self._publang, ET.tostring(profile)
@@ -566,6 +566,7 @@ class Publisher(PublisherMixin, kolektiBase):
         pubname = self.substitute_variables(self.substitute_criteria(unicode(filename),profile), profile, {"LANG":self._publang})
         #print pubname
         name=script.get('name')
+        logger.debug('start script %s', name)
         params = {}
         for p in script.xpath('parameters/parameter'):
             params.update({p.get('name'):p.get('value')})
@@ -581,9 +582,11 @@ class Publisher(PublisherMixin, kolektiBase):
         # get the pivot ET document
         if isinstance(inputs, ET._ElementTree):
             pivot = inputs
+            logger.debug('inputs ET %s', str(inputs)[:100])
         else:
             pivot = None
             for item in inputs:
+                logger.debug(item)
                 if item.get('type','') == 'pivot':
                     if 'ET' in item.keys():
                         pivot = item['ET']
@@ -1092,10 +1095,20 @@ class Releaser(Publisher):
             release = Release(*self.args, release=release_dir)
             release.apply_filters(self._publang)
             
+            
         except:
+            import traceback
             logger.exception('could not create assembly')
-        self.write(json.dumps(res), assembly_dir+"/manifest.json", sync = False)
-        assembly_path = "/".join([assembly_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
+            errev = {
+                'event':'error',
+                'msg':" ",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            res.append(errev)
+
+        self.write(json.dumps(res), '/releases/' + release_dir + "/manifest.json", sync = False)
+#        assembly_path = "/".join(['releases', release_dir,'sources',self._publang,'assembly',pubname+'_asm.html'])
         
         return res
 
