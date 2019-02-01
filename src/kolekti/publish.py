@@ -423,8 +423,9 @@ class Publisher(PublisherMixin, kolektiBase):
             except OSError:
                 pass
             try:
-                self.copyFile(srcfile, assembly_dir + '/' + srcdir + '/' + srcfile)
+                self.copyFile(srcdir + '/' + srcfile, assembly_dir + '/' + srcdir + '/' + srcfile)
             except:
+                logger.exception('could not copy variable file')
                 import traceback
                 yield {
                     'event':'warning',
