@@ -104,13 +104,18 @@ class Command(BaseCommand):
     def _guess_release_date(self, projectpath, release):
         c = pysvn.Client()
         def callback_get_login(realm, username, may_save):
-            name = "waloo"
-            password = "klondik1"
+            name = ""
+            password = ""
             return True, name, password, False
         c.callback_get_login = callback_get_login
-        logs = c.log(os.path.join(projectpath,'releases', release))
-        return int(logs[-1].get('date'))
-                    
+        try:
+            logs = c.log(os.path.join(projectpath,'releases', release))
+            return int(logs[-1].get('date'))
+        except:
+            import traceback
+            self.stderr.write('W Could not get release datetime from svn, using now')
+            return time.time()
+        
     def _process_release_info(self, projectpath, release, newname):
         releasename, releaseindex = newname.rsplit('_', 1)
         infofile = os.path.join(projectpath,'releases', newname, 'release_info.json')
