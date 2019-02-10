@@ -299,6 +299,8 @@
 
 {% block content %}
     <div id="main" class="release"
+         data-active = "{{current_tab}}"
+         data-path = "{{path}}"
          data-release="{{release_path}}"
          data-lang="{{ relang }}"
          data-state="{{ langstate }}"
@@ -312,7 +314,29 @@
 	
 	<li role="presentation" class="{% if rlang == relang %}active{% endif %} {% if state == "unknown" %} pull-right{% endif %}{% if state == "sourcelang" %} sourcelang{% endif %}">
 	 
-	  <a href=" {% if rlang != relang %}{% url "kolekti_release_lang_detail" project=project release=release lang=rlang %}{% endif %}#"
+	  <a href="{% if current_tab == 'variables' %}
+
+{% if path %}
+  {% url "kolekti_release_lang_variables_browse" project=project release=release lang=rlang variable_path=path%}
+{% else %}
+  {% url "kolekti_release_lang_variables_browse_root" project=project release=release lang=rlang %}
+{% endif %}
+
+{% elif current_tab == 'pictures' %}
+{% if path %}
+{% url "kolekti_release_lang_pictures_browse" project=project release=release lang=rlang picture_path=path %}
+{% else %}
+{% url "kolekti_release_lang_pictures_browse_root" project=project release=release lang=rlang %}
+{% endif %}
+
+{% else %}
+{% if rlang != relang %}
+{% url "kolekti_release_lang_detail" project=project release=release lang=rlang %}
+{% else %}#{% endif %}
+{% endif %}
+
+
+"
 	     aria-controls="release_content_ {{ rlang }}"
 	     data-state="{{ state }}"
 	     data-lang="{{ rlang }}"
@@ -333,14 +357,79 @@
 	</li>
 
 	{% endfor %}
+
+    
+	<li role="presentation" class="{% if relang == 'share' %}active{% endif %}">
+
+      {% if has_share_pictures or has_share_variables %} 
+	  <a href=" 
+               {% if relang != 'share' %}
+               {% if has_share_pictures %}
+               {% url 'kolekti_release_lang_variables_browse_root' project=project release=release lang='share' %}
+               {% else %}
+               {% url 'kolekti_release_lang_pictures_browse_root' project=project release=release lang='share' %}
+               {% endif %}
+               {% endif %}"
+	     aria-controls="release_content_share"
+	     data-state="{{ state }}"
+	     data-lang="share"
+	     class="text-center"
+	     >
+	    <span class="state-picto">
+	      <div class="state_status_background">
+		    <div class="state_status_inside">
+		    </div>
+	      </div>
+	      <span class="state lead"><small>share</small></span>
+	    </span>
+	  </a>
+	     
+	</li>
+    {% endif %}
+
       </ul>
       <!-- Tab panes -->
 
       <div class="tab-content ">
+        
 	{% for rlang, state, focus in langstates %}
-	{% if rlang == relang %}
-	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == relang %} active{% endif %}" id="release_content_{{ rlang }}" data-lang="{{ rlang}}">
-	  {% if state == "unknown" %}
+	{% if forloop.first and relang ==  'share'  or rlang == relang  %}
+	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == relang or  relang ==  'share' %} active{% endif %}" id="release_content_{{ relang }}" data-lang="{{ relang}}">
+      {% if relang == 'share' %}
+
+      <div class="panel panel-info">
+      </div>
+	  <div class="panel-body">
+	    <div class="row">
+		  <div class="col-sm-6 col-md-6">
+            
+		    <div class="btn-group">
+		      <button type="button" class="btn btn-default btn-release-pane disabled" id="btn_assembly">
+		        Assemblage
+		      </button>
+		      <button type="button" class="btn btn-default btn-release-pane
+                                           {% if not has_pictures %} disabled {% endif %}
+                                           " id="btn_illust">
+		        Images
+		      </button>
+		      <button type="button" class="btn btn-default btn-release-pane
+                                           {% if not has_variables %} disabled {% endif %}
+                                           " id="btn_variables">
+		        Variables
+		      </button>
+		    </div>
+	      </div>
+          
+	      <div id="content_pane" class="release-panel-part">
+	      </div>
+	      <div id="illust_pane" class="release-panel-part hidden">
+	      </div>
+	      <div id="variables_pane" class="release-panel-part hidden">
+	      </div>
+	    </div>
+      </div>
+      
+	  {% elif state == "unknown" %}
 	  <div class="panel panel-info">
 	    <div class="panel-heading">
 	      <form action="{% url 'kolekti_release_lang_copy' project=project release=release lang=rlang %}" method="POST">
@@ -365,6 +454,7 @@
 	      </form>
 	    </div>
 	  </div>
+      
 	  {% else %}
 	  
 	  <div class="panel panel-info">
@@ -413,14 +503,17 @@
 	      
 	      {% endif %}
 	    </div>
-                  {% if success %}
+
+
+        <hr>
+        {% if success  %}
         
 	    <div class="panel-body">
 	      <div class="row">
 		    <div class="col-sm-6 col-md-6">
 
 		          <div class="btn-group">
-		            <button type="button" class="btn btn-default btn-release-pane active" id="btn_assembly">
+		            <button type="button" class="btn btn-default btn-release-pane" id="btn_assembly">
 		              Assemblage
 		            </button>
 		            <button type="button" class="btn btn-default btn-release-pane
@@ -437,15 +530,15 @@
 
 		    </div>
 	      </div>
+          
 	      <div id="content_pane" class="release-panel-part">
 	      </div>
 	      <div id="illust_pane" class="release-panel-part hidden">
-	
 	      </div>
 	      <div id="variables_pane" class="release-panel-part hidden">
 	      </div>
 	    </div>
-        {% else %}
+        {% else %} {# sucess #}
 
 	    <div class="panel-body">
 	      <div class="row">
@@ -462,19 +555,21 @@
             </div>
           </div>
         </div>
-                  {% endif %}	    
+        {% endif %}	    {# sucess #}
 	  </div>
 	  {% endif %}	  
 	</div>
-	{% endif %}	  
+	{% endif %}  {# lang #}	  
  	{% endfor %}
 
+    {% comment %}    
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">
 	  </div>
 	  <div class="browser_share collapse" id="browser_share">
 	  </div>
 	</div>
+    {% endcomment %}
 	
       </div>
       <div id="uploadmodal" class="modal fade">

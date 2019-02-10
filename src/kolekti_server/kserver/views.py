@@ -863,7 +863,7 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
                 "message":"could not get release assembly"
                 }), content_type='application/json', status=500)
 
-class ReleaseLangDetailsView(kolektiMixin, TemplateView):
+class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 
     def __has_valid_actions(self,  kolekti, release):
@@ -888,7 +888,7 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
         return
     
     def get_context_data(self, data={}, **kwargs):
-        context, kolekti = super(ReleaseLangDetailsView, self).get_context_data(data, **kwargs)
+        context, kolekti = super(ReleaseLangDetailsBase, self).get_context_data(data, **kwargs)
         states = []
         focus = []
         release = context.get('release')
@@ -926,19 +926,21 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
                 lactive.append((l,s,f))
         context.update({
             'langstate':langstate,
-            'langstates':[source] + lactive + lnone,
+            'langstates':[source] + lactive + lnone ,
             'release_indices':sorted(indices)
             })
 
         return context, kolekti
     
-    def get(self, request, project, release, lang):
+    def get_context_data_get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
 #        logger.debug(context)
         assembly_path = '/'.join(['','releases',release,"sources",lang,"assembly",release+"_asm.html"])
         assembly_meta = {}
         variables_path = '/'.join(['','releases',release,"sources",lang,"variables"])
         pictures_path = '/'.join(['','releases',release,"sources",lang,"pictures"])
+        share_variables_path = '/'.join(['','releases',release,"sources","share","variables"])
+        share_pictures_path = '/'.join(['','releases',release,"sources","share","pictures"])
         try:
             xassembly = kolekti.parse(assembly_path)
             for meta in xassembly.xpath("/h:html/h:head/h:meta",namespaces = {"h":"http://www.w3.org/1999/xhtml"}):
@@ -991,10 +993,15 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
             'validactions':self.__has_valid_actions(kolekti, release),
             'has_variables':kolekti.exists(variables_path),
             'has_pictures':kolekti.exists(pictures_path),
-            
+            'has_share_variables':kolekti.exists(share_variables_path),
+            'has_share_pictures':kolekti.exists(share_pictures_path),
+            'current_tab':"assembly",
         })
-        
-        return self.render_to_response(context)
+        return context
+
+
+    def get(self, request, project, release, lang):
+        return self.render_to_response(self.get_context_data_get(request, project, release, lang))
     
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
@@ -1023,7 +1030,36 @@ class ReleaseLangDetailsView(kolektiMixin, TemplateView):
 
         return HttpResponseRedirect('')
 
+class ReleaseLangDetailsView(ReleaseLangDetailsBase):
+    pass
 
+class ReleaseLangVariablesListView(ReleaseLangDetailsBase):
+    def get(self, request, project, release, lang, variable_path = None):
+        context = self.get_context_data_get(request, project, release, lang)
+        context.update({
+            'current_tab':"variables",
+            })
+        if variable_path is not None:
+            context.update({
+                'path': variable_path,
+                })
+        return self.render_to_response(context)
+    
+
+class ReleaseLangPicturesListView(ReleaseLangDetailsBase):
+    def get(self, request, project, release, lang, picture_path = None):
+        context = self.get_context_data_get(request, project, release, lang)
+        context.update({
+            'current_tab':"pictures",
+            })
+        if picture_path is not None:
+            context.update({
+                'path': picture_path,
+                })
+        
+        return self.render_to_response(context)
+
+    
 class ReleasePublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release):        

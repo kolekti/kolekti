@@ -106,7 +106,7 @@
 <!--	<td><span {% if not f.type == "text/directory" %}style="color:#808080" {% endif %}class="glyphicon {{ f.icon }}"></span></td>-->
 	<td class="kolekti-browser-name">
       <a
-	     {% if pathsteps.0.label == "sources" or pathsteps.0.label == "kolekti" %}
+	     {% if pathsteps.0.label == "sources" or pathsteps.0.label == "releases" or pathsteps.0.label == "kolekti" %}
          data-filepath = "{{f.path}}"
 	     href="{% url 'kolekti_project_static' project=project path=f.path %}"
 	     {% else %}

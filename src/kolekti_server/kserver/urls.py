@@ -105,6 +105,7 @@ urlpatterns = [
                 url(r'^validate/$', ReleaseLangValidateView.as_view(),name='kolekti_release_lang_validate'),
                 url(r'^assembly/$', ReleaseLangAssemblyView.as_view(),name='kolekti_release_lang_assembly'),
                 url(r'^variables/', include([
+                    url(r'^$', ReleaseLangVariablesListView.as_view(), name='kolekti_release_lang_variables_browse_root'),
                     url(r'^(?P<variable_path>.+)/', include([                    
                         url(r'^edit$', VariablesDetailsView.as_view(), name='kolekti_release_lang_variable'),
                         url(r'^create$', VariablesCreateView.as_view(), name='kolekti_release_lang_variable_create'),
@@ -112,15 +113,15 @@ urlpatterns = [
                         url(r'^editvar$', VariablesEditvarView.as_view(), name='kolekti_release_lang_variable_editval'),
                         url(r'^editcol$', VariablesEditcolView.as_view(), name='kolekti_release_lang_variable_editcol'),
                         url(r'^ods$', VariablesODSView.as_view(), name='kolekti_release_lang_variable_ods'),
-                        url(r'^$', VariablesListView.as_view(), name='kolekti_release_lang_variables_browse'),
+                        url(r'^$', ReleaseLangVariablesListView.as_view(), name='kolekti_release_lang_variables_browse'),
                     ]))
                 ])),
                 url(r'^pictures/', include([
-                    url(r'^$', PicturesListView.as_view(), name='kolekti_release_lang_pictures'),
+                    url(r'^$', ReleaseLangPicturesListView.as_view(), name='kolekti_release_lang_pictures_browse_root'),
                     url(r'^upload$', PictureUploadView.as_view(), name='kolekti_release_lang_picture_upload'),
                     url(r'^(?P<picture_path>.+)/', include([
                         url(r'^details$', PictureDetailsView.as_view(), name='kolekti_release_lang_picture_details'),
-                        url(r'^$', PicturesListView.as_view(), name='kolekti_release_lang_pictures_browse'),
+                        url(r'^$', ReleaseLangPicturesListView.as_view(), name='kolekti_release_lang_pictures_browse'),
                 ])),
             ])),
 
