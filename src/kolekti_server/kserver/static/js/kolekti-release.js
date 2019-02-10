@@ -10,7 +10,6 @@ $(document).ready( function () {
                     if (e.length) return e
                 }
             ).join("/")
-        console.log(rpath)
         return rpath
     }
     
@@ -159,17 +158,19 @@ $(document).ready( function () {
 			            })
 	        .select(
 		        function(path) {
-                    console.log(path)
-                    rpath = relative_path(path)
+                    
+                    var rpath = relative_path(path)
+                    rpath = rpath.replace(/^pictures\//,"")
+                    console.log(rpath)
+                    
 		            $.get(Urls.kolekti_release_lang_picture_details(kolekti.project, release, relang, rpath))
 			            .done(
 			                function(data) {
+                                console.log(data)
 				                $('#preview').html([
 				                    data
 				                ]);
-                                
-				                $('#preview img').attr('src',Urls.kolekti_project_static(kolekti.project, path));
-				                $('#preview').closest('.panel').removeClass('hidden');
+                                $('#preview').closest('.panel').removeClass('hidden');
 			                }
 			            )
 		        })
@@ -192,7 +193,7 @@ $(document).ready( function () {
 
 
     var update_lang_tabs_variables = function(path) {
-        rpath = relative_path(path)
+        var rpath = relative_path(path)
         
         $('#release_tabs a').each(function() {
             var lang = $(this).data('lang')
@@ -239,10 +240,12 @@ $(document).ready( function () {
 		                })
 	        .select(
 			    function(path) {
-                    console.log(path)
-                    rpath = relative_path(path)
+                    var rpath = relative_path(path)
                     rpath = rpath.replace(".xml","")
+                    rpath = rpath.replace(/^variables\//,"")
+
                     //                    Urls.kolekti_variable(kolekti.project, path)
+                    console.log(rpath)
 
 		            window.location.href = Urls.kolekti_release_lang_variable(kolekti.project, release, relang, rpath);
                     

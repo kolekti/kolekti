@@ -1,6 +1,6 @@
 <h4> {{ name }} </h4>
   <div class="col-sm-12 col-md-12">
-    <img alt="{{ path }}" src="{{ path }}" class="img-responsive" />
+    <img alt="{{ path }}" src="{% url 'kolekti_project_static' project=project path=project_path %}" class="img-responsive" />
   </div>
   <div class="col-sm-12 col-md-12">
     <ul>

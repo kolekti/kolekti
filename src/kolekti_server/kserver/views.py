@@ -1300,6 +1300,7 @@ class PictureDetailsView(PicturesMixin, TemplateView):
                 'fileweight':"%.2f"%(float(os.path.getsize(ospath)) / 1024),
                 'name':name,
                 'path':'/' + project + project_path,
+                'project_path' : project_path,
                 'format':im.format,
                 'mode':im.mode,
                 'size':im.size,

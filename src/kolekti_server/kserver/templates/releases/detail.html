@@ -26,12 +26,13 @@
 
 {% block menu %}
 
-{% for rlang, state, focus in langstates %}
-{% if rlang == relang %}
-{% if state != "unknown" %}
 
+{% for rlang, state, focus in langstates %}
+{% if forloop.first and relang ==  'share'  or rlang == relang  %}
+{% if state != "unknown" %}
 <div class="row">
-      <div class="col-sm-12 col-md-12">
+  {% if rlang == relang  %}
+  <div class="col-sm-12 col-md-12">
 	<div class="btn-group btn-group-justified" role="group">
 	  <div class="btn-group" role="group">
 	    <button type="button" class="btn btn-default btn-save disabled" id="btn_save">Enregistrer</button>
@@ -60,7 +61,7 @@
 	</div>
       </div>
     </div>
-
+    {% endif %} {# lang = relang #}
     {% comment %}
     {% if assembly_meta.kolekti_releasename_ and assembly_meta.kolekti_releaseindex %}
     <div class="row top-margin">
@@ -77,7 +78,7 @@
 
     <br/>
 
-
+    {% if rlang == relang  %}
     <div class="panel panel-default" id="panel_download">
       <div class="panel-heading">
 	    <h4 class="panel-title">
@@ -128,9 +129,10 @@
 	    </div>
       </div>
     </div>
-    {% endif %}
-
-
+    {% endif %} {# lang = relang #}
+    {% endif %} {# state != 'unknown' #}
+    
+      {% if rlang == relang  %}
     <div class="panel panel-default" id="release_compare">
       <div class="panel-heading">
 	    <h4 class="panel-title">
@@ -144,6 +146,7 @@
 	    </h4>
       </div>
       
+
       <div id="collapseRC" class="panel-collapse collapse  ">
 	    <div class="panel-body">
           <div class="compare-param">
@@ -183,7 +186,7 @@
         </div>
       </div>
     </div>
-    
+    {% endif %}  {# lang = relang #}
 
     <div class="panel panel-default" id="release_details">
       <div class="panel-heading">
@@ -292,7 +295,7 @@
     </div>
 
     
-{% endif %}
+{% endif %}  {# forloop.first or ... #}
 {% endfor %}    
 {% endblock %}
 
