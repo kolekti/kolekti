@@ -1,4 +1,5 @@
 
+
 .nav#release_tabs>li>a {
     padding: 10px 5px 0px 5px;
 }
@@ -37,6 +38,7 @@
 
 .state_sourcelang .state_status_background {
     border-bottom: 5px solid #6fC068;
+}
 
 .state_sourcelang .state.lead,
 .state_publication .state.lead {
@@ -55,6 +57,8 @@
     height:6px;
     width:6px;
 }
+
+
 
 .state_unknown .state_status_inside {
     visibility:hidden;
@@ -108,7 +112,6 @@ li.active span .state.lead {
 
 .popover {
     min-width:520px;
-    
 }
 
 /* diff */
@@ -118,6 +121,7 @@ span.DiffInsert,
 del.diff-del,
 span.DiffDelete
     {
+        
         text-decoration:none;
         padding-left:5px;
         padding-right:5px;
@@ -160,30 +164,19 @@ i.diff-marker {
 }
 
 /* popopos*/
+
+
+
 .diff-source ins.diff-insert,
 .diff-source span.DiffInsert
 {
-    color: blue;
+    color: #225baa;
 }
-
-.diff-source del.diff-del,
-.diff-source span.DiffDelete
-{
-    color: #D0D0D0;
-    display:none;
-}
-
-.diff-release ins.diff-insert,
-.diff-release span.DiffInsert
- {
-     color: #D0D0D0;
-     display:none;
- }
 
 .diff-release del.diff-del,
 .diff-release span.DiffDelete
 {
-    color: blue;
+    color: #225baa;
 }
 
 .diff-source ins.diff-insert,
@@ -200,3 +193,11 @@ i.diff-marker {
     padding-right:inherit;
     
 }
+
+
+.diff-source ins.diff-insert,
+.diff-release del.diff-del
+ {
+     display:none;
+ }
+
