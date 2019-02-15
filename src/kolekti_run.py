@@ -169,6 +169,9 @@ def main():
     # calculate absolute base directory
 
     basepath = os.path.abspath(args.base)
+    rootpath, username, project =  basepath.rsplit('/', 2)
+    
+    
     
     # if args.cmd == 'server':
     #    host,port = args.host.split(':')
@@ -182,7 +185,7 @@ def main():
         try:
             langs = args.languages.split(',')
             for lang in langs:
-                p = publish.DraftPublisher(basepath, lang = lang, cleanup = not(args.nocleanup))
+                p = publish.DraftPublisher(rootpath, username, project,  lang = lang, cleanup = not(args.nocleanup))
                 toc = p.parse(p.substitute_criteria(args.toc, profile = None))
                 if args.job:
                     job = args.job
@@ -216,7 +219,7 @@ def main():
     if args.cmd == 'make_release':
         from kolekti import publish
         try:
-            p = publish.Releaser(basepath, lang=args.lang)
+            p = publish.Releaser(rootpath, username, project, lang=args.lang)
             toc = p.parse(args.toc)
             if args.job:
                 job = args.job
@@ -243,7 +246,7 @@ def main():
         from kolekti import publish
         try:
             release = '/releases/' + args.name
-            p = publish.ReleasePublisher(release, basepath, langs = args.languages.split(','))
+            p = publish.ReleasePublisher(release, rootpath, username, project, langs = args.languages.split(','))
 
             for event in p.publish_assembly(args.name + "_asm"):
                 if event['event'] == "job":
@@ -278,29 +281,29 @@ def main():
                     
     if args.cmd == 'varods':
         from kolekti import variables
-        c = variables.XMLToOds(basepath)
+        c = variables.XMLToOds(rootpath, username, project)
         c.convert(args.odsfile, args.varpath)
 
     if args.cmd == 'varxml':
         from kolekti import variables
-        c = variables.OdsToXML(basepath)
+        c = variables.OdsToXML(rootpath, username, project)
         c.convert(args.odsfile, args.varpath )
 
 
     if args.cmd == 'index':
         from kolekti import searchindex
-        ix = searchindex.indexer(basepath)
+        ix = searchindex.indexer(rootpath, username, project)
         ix.indexbase()
 
     if args.cmd == 'search':
         from kolekti import searchindex
-        ix = searchindex.searcher(basepath)
+        ix = searchindex.searcher(rootpath, username, project)
         for res in ix.search(args.query):
             print res
 
     if args.cmd == 'sync':
         from kolekti import synchro
-        sync = synchro.SynchroManager(basepath)
+        sync = synchro.SynchroManager(rootpath, username, project)
         if args.cmdsync == "status":
             changes = sync.statuses()
             for s,l in changes.iteritems():
@@ -333,7 +336,7 @@ def main():
 
     if args.cmd == 'fixture':
         from kolekti import fixture
-        fix = fixture.fixture(basepath)
+        fix = fixture.fixture(rootpath, username, project)
         fix.apply(args.number)
         
 if __name__ == '__main__':
