@@ -76,6 +76,7 @@ urlpatterns = [
                 url(r'^create$', PictureCreateDirView.as_view(), name='kolekti_picture_dir_create'),                
                 url(r'^upload$', PictureUploadView.as_view(), name='kolekti_picture_upload'),
                 url(r'^(?P<picture_path>.+)/', include([
+                    url(r'^upload$', PictureUploadView.as_view(), name='kolekti_picture_path_upload'),
                     url(r'^details$', PictureDetailsView.as_view(), name='kolekti_picture_details'),
                     url(r'^$', PicturesListView.as_view(), name='kolekti_pictures_browse'),
                 ])),
@@ -120,6 +121,7 @@ urlpatterns = [
                     url(r'^$', ReleaseLangPicturesListView.as_view(), name='kolekti_release_lang_pictures_browse_root'),
                     url(r'^upload$', PictureUploadView.as_view(), name='kolekti_release_lang_picture_upload'),
                     url(r'^(?P<picture_path>.+)/', include([
+                        url(r'^upload$', PictureUploadView.as_view(), name='kolekti_release_lang_picture_path_upload'),
                         url(r'^details$', PictureDetailsView.as_view(), name='kolekti_release_lang_picture_details'),
                         url(r'^$', ReleaseLangPicturesListView.as_view(), name='kolekti_release_lang_pictures_browse'),
                 ])),

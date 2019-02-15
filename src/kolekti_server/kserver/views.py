@@ -949,15 +949,16 @@ class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
         except IOError:
             pass
         except ET.XMLSyntaxError, e:
+            logger.exception('xml syntax error')
             context, kolekti = self.get_context_data({
                 'project':project,
                 'lang':lang,                
                 'success':False,
-                'release_path':release_path,
-                'assembly_name':assembly_name,
+                'release':release,
+                'assembly_name':release,
                 'error':e,
             })
-            return self.render_to_response(context)
+            return context
 
         try:
             sync = self.get_sync_manager(kolekti)
@@ -1269,16 +1270,19 @@ class PictureCreateDirView(PicturesMixin, TemplateView):
         kolekti.makedirs(pictures_dir)
         return HttpResponse(json.dumps(kolekti.exists(pictures_dir)),content_type="application/json")
         
-
     
-class PictureUploadView(kolektiMixin, TemplateView):
-    def post(self, request, project, lang, picture_path, release=None):
+    
+class PictureUploadView(PicturesMixin, View):
+    def post(self, request, project, lang, release=None, picture_path=None):
         context, kolekti = self.get_context_data({'project':project})
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            if release is None:
+                picture_path = '/'.join(request.POST['path'].split('/')[4:])
+            else:
+                picture_path = '/'.join(request.POST['path'].split('/')[6:])
             r_picture_path = self.picture_path(release, lang, picture_path) 
             uploaded_file = request.FILES[u'upload_file']
-            path = request.POST['path']
             kolekti.write_chunks(uploaded_file.chunks, r_picture_path +'/'+ uploaded_file.name, mode = "wb") 
             return HttpResponse(json.dumps("ok"),content_type="text/javascript")
         else:
@@ -2030,6 +2034,7 @@ class TopicEditorView(kolektiMixin, TemplateView):
         try:
             topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
             topic = request.body
+            logger.debug(topic[:1000])
             xtopic = kolekti.parse_string(topic)
             kolekti.write(topic, topic_project_path)
             return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
@@ -2461,7 +2466,8 @@ class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
         assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
 
         topic = xsl(assembly, topic_id= "'%s'"%topic_id)
-
+        doctype = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+"""
         context.update({
             "body":ET.tostring(topic),
             "release":release,
@@ -2476,6 +2482,7 @@ class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             topic = request.body
+            logger.debug(topic[:1000])
             xtopic = kolekti.parse_string(topic)
             assembly_path = '/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
             assembly = kolekti.parse(assembly_path)
