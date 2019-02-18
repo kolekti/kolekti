@@ -1,3 +1,31 @@
+16/01/2019
+	* sort order for languages in release tabs
+	* translation attribution available from releases browser
+15/01/2019
+	* implements fixtures to apply on translation manager's uploads.
+	* Layout of project language settings
+14/01/2019
+	* change from sqlite to mysql container for storing user informations
+09/01/2019
+	* update translators relase : menu for navigation among releases, prevent from loading all the release * langs * documents information at once.
+02/01/2019
+	* Release renaming
+17/12/2018
+	* Selection of profiles/outputs in release screen
+13/12/2018
+	* support for multiling sources for variables and illustrations
+19/11/2018
+	* Menu in browser screens to navigate between languages
+16/11/2018	
+	* Assembly Editing functions
+23/10/2018
+	* Diff function to visually see differences between a version assebly and source topics
+02/10/2018
+	* Menu bar design, with logo and project name
+17/09/2018
+	* Synchronization interface refactoring : tree based view
+01/09/2018
+	* Complete url refactoring, ressources are now completly described in url,
 21/06/2018
 	* Adds resources to html help generation
 	* Fix title of screens to be consistent with menus
@@ -20,3 +48,6 @@
 	* Change label 'En validation' in release status menu [fix #182]
 	* Adds 'hidden' attribute on toc titles, in pivot, for sections excluded from toc [fix #157]
 	* Display XML parse  errors in interface instead of generic error 500
+
+	* detailed changelog may be found at: https://github.com/kolekti/kolekti/commits/master
+
