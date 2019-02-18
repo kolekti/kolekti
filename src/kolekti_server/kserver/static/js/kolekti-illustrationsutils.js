@@ -8,11 +8,16 @@ var upload_image = function(browser, folder, update_function) {
     var lang = $('#main').data('lang');
     console.log(path)
     var url;
+    console.log(kolekti.project,lang,steps)
+    
     if (steps[1] == "releases"){
+        lang = steps[4];
         url = Urls.kolekti_release_lang_picture_upload(kolekti.project, steps[2], lang)
     } else {
+        lang = steps[2];
         url = Urls.kolekti_picture_upload(kolekti.project, lang)
     }
+    console.log(url)
     $.ajax({
         url:url, 
         //            '/images/upload',  //server script to process data
