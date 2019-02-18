@@ -68,6 +68,9 @@ def initLocale():
 initLocale()
 
 
+class SynchroError(Exception):
+    pass
+
 class StatusTree(dict):
     def add_path_item(self, path, item):
         node = self
@@ -305,7 +308,7 @@ class SynchroManager(SvnClient):
         try:
             h = self._client.log(self._base, limit = 1)
         except pysvn.ClientError:
-            return '??'
+            raise SynchroError
         return {"revision":{"number":h[0].revision.number}}
     
     def rev_state(self):

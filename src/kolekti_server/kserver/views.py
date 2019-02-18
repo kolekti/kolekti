@@ -54,6 +54,7 @@ from kolekti.searchindex import Searcher
 from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
+from kolekti.synchro import SynchroManager, SynchroError
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -140,7 +141,6 @@ class kolektiMixin(LoginRequiredMixin):
         return url.replace(localpath, remotepath)
 
     def get_sync_manager(self, kolekti):
-        from kolekti.synchro import SynchroManager
         sync = SynchroManager(*kolekti.args)
         return sync
             
@@ -163,7 +163,6 @@ class HomeView(kolektiMixin, TemplateView):
     def get(self, request):
         context, kolekti = self.get_context_data()
         projects = context['user_projects']
-        from kolekti.synchro import SynchroManager
         for project in projects:
             project_dir = project.project.directory
             project_path = os.path.join(settings.KOLEKTI_BASE, request.user.username, project_dir)
@@ -606,6 +605,7 @@ class ReleaseMixin(object):
         try:
             syncMgr = self.get_sync_manager(kolekti)
             syncMgr.propset("release_state","sourcelang","/".join([release_dir,"sources",lang,"assembly",pp[0]['releasedir']+'_asm.html']))
+            
         except:
             logger.exception('no sync manager to set assembly property')
             import traceback
@@ -836,7 +836,7 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     def __release_publications(self, kolekti, release, lang):
         publications = []
         try:
-            mf = json.loads(kolekti.read("/releases/" + release_path + "/manifest.json"))
+            mf = json.loads(kolekti.read("/releases/" + release + "/manifest.json"))
             for event in mf:
                 if event.get('event','') == "release_publication":
                     for event2 in event.get('content'):
@@ -2298,9 +2298,12 @@ class SyncRemoteStatusView(kolektiMixin, View):
         context, kolekti = self.get_context_data({'project':project})
         try:
             sync = self.get_sync_manager(kolekti)
+            logger.debug(sync.rev_number())
             syncnum = dict(sync.rev_number())
             return HttpResponse(json.dumps(syncnum),content_type="application/json")
-        
+        except SynchroError:
+#            logger.debug("Unable to get project remote sync")
+            return HttpResponse(json.dumps({'revision':{'number':'!'}}),content_type="application/json")
         except:
             logger.exception("Unable to get project remote sync status")
             return HttpResponse(json.dumps({'revision':{'number':'!'}}),content_type="application/json")
