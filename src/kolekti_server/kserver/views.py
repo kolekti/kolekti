@@ -1016,8 +1016,8 @@ class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
             context, kolekti = self.get_context_data({
                 'project':project,
                 'lang':lang,
-                'release_path':release_path,
-                'assembly_name':assembly_name,
+                'release':release,
+                'assembly_name':release,
                 'error':e,
             })
             return self.render_to_response(context)

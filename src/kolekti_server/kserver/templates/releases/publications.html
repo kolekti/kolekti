@@ -25,7 +25,7 @@
 	      {% if publication.event == 'result' %}
 	      <ul>
 		{% for doc in publication.docs %}
-		<li><a href="{{doc.url}}">{{doc.label}}</a></li>
+		<li><a href="{% url 'kolekti_project_static' project=project path=doc.url %}">{{doc.label}}</a></li>
 		{% endfor %}
 	      </ul>
 	      {% endif %}

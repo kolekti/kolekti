@@ -394,7 +394,11 @@
       <!-- Tab panes -->
 
       <div class="tab-content ">
-        
+        {% if error %}
+        <div class="error">
+          {{ error }}
+          </div>
+       {% else %}
 	{% for rlang, state, focus in langstates %}
 	{% if forloop.first and relang ==  'share'  or rlang == relang  %}
 	<div role="tabpanel" class="tab-pane tab-lang{% if rlang == relang or  relang ==  'share' %} active{% endif %}" id="release_content_{{ relang }}" data-lang="{{ relang}}">
@@ -564,7 +568,7 @@
 	</div>
 	{% endif %}  {# lang #}	  
  	{% endfor %}
-
+    {% endif %} {# error #}
     {% comment %}    
 	<div id="browsers">
 	  <div class="browser_lang collapse in" id="browser_lang">
