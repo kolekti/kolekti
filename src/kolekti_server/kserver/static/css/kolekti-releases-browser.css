@@ -36,10 +36,14 @@
 }
 
 .kolekti-browser-release-state .langstate.sourcelang .releaselangback{
-    background-color: #a6f087;
+    background-color: #8dcc73;
     height: 100%;
 }
-
+/*
+.kolekti-browser-release-state .langstate.sourcelang a{
+    color:white;
+}
+*/
 .kolekti-browser-release-state .langstate.edition .releaselangback{
     background-color: #98d1f7;
     height: 25%;

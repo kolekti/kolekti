@@ -26,7 +26,7 @@
 /*    font-family:"Helvetica Narrow",Condensed;*/
 }
 
-.state_sourcelang .state_status_background,
+
 .state_publication .state_status_background {
     background-color: #dff0d8;
 }
@@ -37,7 +37,9 @@
 }
 
 .state_sourcelang .state_status_background {
-    border-bottom: 5px solid #6fC068;
+    background-color: #8dcc73;
+    
+
 }
 
 .state_sourcelang .state.lead,
