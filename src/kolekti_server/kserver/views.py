@@ -557,7 +557,8 @@ class TocPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post(self, request, project, lang, toc_path):
         try:
-            logger.debug('publish')
+#            logger.debug('publish')
+#            logger.debug(lang)
             context, kolekti = self.get_context_data({'project': project, 'lang':lang})
             jobpath = request.POST.get('job')
             pubdir  = request.POST.get('pubdir')
@@ -637,7 +638,7 @@ class ReleaseMixin(object):
                 if kolekti.exists(asfilename):
                     states.append((lang, "local"))
 
-            if state == "source_lang":
+            if state == "sourcelang":
                 states.insert(0,(lang, state))
             else:
                 states.append((lang, state))
@@ -2034,7 +2035,6 @@ class TopicEditorView(kolektiMixin, TemplateView):
         try:
             topic_project_path = '/sources/%s/%s/%s'%(lang, self.ttdir, topic_path)
             topic = request.body
-            logger.debug(topic[:1000])
             xtopic = kolekti.parse_string(topic)
             kolekti.write(topic, topic_project_path)
             return HttpResponse(json.dumps({'status':'ok'}), content_type="application/json")
@@ -2298,7 +2298,7 @@ class SyncRemoteStatusView(kolektiMixin, View):
         context, kolekti = self.get_context_data({'project':project})
         try:
             sync = self.get_sync_manager(kolekti)
-            logger.debug(sync.rev_number())
+#            logger.debug(sync.rev_number())
             syncnum = dict(sync.rev_number())
             return HttpResponse(json.dumps(syncnum),content_type="application/json")
         except SynchroError:
@@ -2485,7 +2485,6 @@ class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
         context, kolekti = self.get_context_data({'project': project, 'lang':lang})
         try:
             topic = request.body
-            logger.debug(topic[:1000])
             xtopic = kolekti.parse_string(topic)
             assembly_path = '/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
             assembly = kolekti.parse(assembly_path)
@@ -2558,18 +2557,18 @@ class CompareReleaseTopicSource(kolektiMixin, View):
                 diff_topic = cmp_assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
             assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
             assembly_topic = assembly.xpath("//html:div[@class='topic'][html:div[@class='topicinfo']/html:p[html:span[@class='infolabel'][.='source']]/html:span[@class='infovalue'][. = '{topic}']]".format(topic = topic), **ns)[0]
-            logger.debug("filter -------------------")
+#            logger.debug("filter -------------------")
 
             
             tree1 = xsl(diff_topic)
             tree2 = xsl(assembly_topic)
-            logger.debug("tree 1 -------------------")
-            logger.debug(ET.tostring(diff_topic))
-            logger.debug(tree1)
-            logger.debug("tree 2 -------------------")
-            logger.debug(tree2)
+#            logger.debug("tree 1 -------------------")
+#            logger.debug(ET.tostring(diff_topic))
+#            logger.debug(tree1)
+#            logger.debug("tree 2 -------------------")
+#            logger.debug(tree2)
 
-            logger.debug("diff   -------------------")
+#            logger.debug("diff   -------------------")
             formatter = formatting.XMLFormatter(normalize=formatting.WS_BOTH)
             diff = main.diff_trees(
                 tree1, tree2,
@@ -2578,8 +2577,8 @@ class CompareReleaseTopicSource(kolektiMixin, View):
 #                diff_options={'F': 0.5, 'ratio_mode': 'fast'})
 
             xdiff = xsl_result(ET.XML(diff), path="'/%s/releases/%s'"%(project, release))
-            logger.debug(diff)
-            logger.debug("done   -------------------")            
+#            logger.debug(diff)
+#            logger.debug("done   -------------------")            
 #            return HttpResponse(json.dumps(diff),content_type="application/json")
 #            return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
             return HttpResponse(ET.tostring(xdiff), content_type="text/xml")
