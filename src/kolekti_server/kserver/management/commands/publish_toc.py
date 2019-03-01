@@ -23,7 +23,8 @@ class Command(BaseCommand):
         parser.add_argument('project', type=str)
         parser.add_argument('toc', type=str)
         parser.add_argument('job', type=str)
-        parser.add_argument('-a', '--all', action='store_true')
+        parser.add_argument('-l', '--lang', type=str)
+        parser.add_argument('-a', '--all' , action='store_true')
         
     def handle(self, *args, **options):
         logging.debug(options)
@@ -33,9 +34,13 @@ class Command(BaseCommand):
         toc = options['toc']
         job = options['job']
         allprofiles = options['all']
+        lang = options['lang']
         projectpath = os.path.join(settings.KOLEKTI_BASE, user, project)
+        if lang is None:
+            lang = self._get_source_lang(projectpath)
+
         
-        lang = self._get_source_lang(projectpath)
+
   
         self._publish_toc(user, project, toc, job, lang, allprofiles)
 
