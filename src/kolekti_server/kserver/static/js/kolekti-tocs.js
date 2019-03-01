@@ -237,9 +237,10 @@ $(document).ready( function () {
 	};
 */
 	var topicref = $(topic).data('kolekti-topic-href');
-	var tocref = $('#toc_root').data('kolekti-path');
-        var tocpath = '/sources/'+kolekti.lang+'/tocs/'+ $('#toc_root').data('kolekti-path');
-        var url = Urls.kolekti_toc_usecases(kolekti.project, kolekti.lang, tocref)
+	    var tocref = $('#toc_root').data('kolekti-path');
+        var toclang = $('#toc_root').data('kolekti-lang');
+        var tocpath = '/sources/'+toclang+'/tocs/'+ $('#toc_root').data('kolekti-path');
+        var url = Urls.kolekti_toc_usecases(kolekti.project, toclang, tocref)
 	$.get(url, {"pathes":[topicref]}).
 	    success(function(data){
 //                console.log(data)
@@ -277,7 +278,7 @@ $(document).ready( function () {
 					'html':$('<a>', {
 					    'role':"menuitem",
 					    'tabindex':"-1",
-					    'href':Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, tocpath),
+					    'href':Urls.kolekti_toc_edit(kolekti.project, toclang, tocpath),
 					    'html':tocref
 					})
 				    })
@@ -304,7 +305,8 @@ $(document).ready( function () {
 
     $('#btn_save').on('click', function() {
 	    var path = $('#toc_root').data('kolekti-path');
-        var url = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path);
+        var toclang = $('#toc_root').data('kolekti-lang');
+        var url = Urls.kolekti_toc_edit(kolekti.project, toclang, path);
 	$.ajax({
 	    url:url,
 	    type:'POST',
@@ -328,31 +330,32 @@ $(document).ready( function () {
     })
 
     $('#btn_save_as').on('click', function() {
-	kolekti_browser({
-	    'root':'/sources/'+kolekti.lang+'/tocs',
-	    'title':"Enregistrer sous...",
-	    'mode':"create",
-	    'editable_path':false,
-	    'update_url':false
-	}).select(function(path) {
-        var url = Urls.kolekti_toc_edit(kolekti.project, kolekti.lang, path);
-//	    console.log(path);
-	    $('#toc_root').attr('data-kolekti-path', path);
-	    $.ajax({
-		url:url,
-		type:'POST',
-		data:process_toc($('#toc_root')),
-		contentType:'text/plain'
-	    }).success(function() {
-		$('#btn_save').addClass('disabled');
-		$('#btn_save').addClass('btn-default');
-		$('#btn_save').removeClass('btn-warning');
-		kolekti_recent(displayname(path),'trame',url)
-		document.location.href = url
-	    });
-	}).always(function(data) {
-	    $('#main_modal .modal').modal('hide');
-	})
+        var toclang = $('#toc_root').data('kolekti-lang');
+	    kolekti_browser({
+	        'root':'/sources/'+toclang+'/tocs',
+	        'title':"Enregistrer sous...",
+	        'mode':"create",
+	        'editable_path':false,
+	        'update_url':false
+	    }).select(function(path) {
+            var url = Urls.kolekti_toc_edit(kolekti.project, toclang, path);
+            //	    console.log(path);
+	        $('#toc_root').attr('data-kolekti-path', path);
+	        $.ajax({
+		        url:url,
+		        type:'POST',
+		        data:process_toc($('#toc_root')),
+		        contentType:'text/plain'
+	        }).success(function() {
+		        $('#btn_save').addClass('disabled');
+		        $('#btn_save').addClass('btn-default');
+		        $('#btn_save').removeClass('btn-warning');
+		        kolekti_recent(displayname(path),'trame',url)
+		        document.location.href = url
+	        });
+	    }).always(function(data) {
+	        $('#main_modal .modal').modal('hide');
+	    })
     })
 
     // publish
@@ -381,19 +384,20 @@ $(document).ready( function () {
     
     $('.btn_publish').on('click', function() {
 
-	var toc = $('#toc_root').data('kolekti-path');
-	var job = $('#toc_root').data('kolekti-meta-kolekti_job');
-	var cssclass = $('#toc_root').data('kolekti-meta-kolekti_jobclass');
-	var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
+	    var toc = $('#toc_root').data('kolekti-path');
+        var toclang = $('#toc_root').data('kolekti-lang');
+	    var job = $('#toc_root').data('kolekti-meta-kolekti_job');
+	    var cssclass = $('#toc_root').data('kolekti-meta-kolekti_jobclass');
+	    var jobpath =  $('#toc_root').data('kolekti-meta-kolekti_jobpath');
 
-	var url = Urls.kolekti_toc_publish(kolekti.project, kolekti.lang, toc)
+	    var url = Urls.kolekti_toc_publish(kolekti.project, toclang, toc)
 
-	params = get_publish_params(cssclass)
-	params['toc']=toc;
-	params['job']=jobpath;
+	    params = get_publish_params(cssclass)
+	    params['toc']=toc;
+	    params['job']=jobpath;
 
-	$('#main_modal .modal-body').html('<div id="releasename"></div><div id="pubresult"></div>');
-	$('#main_modal .modal-title').html('Publication');
+	    $('#main_modal .modal-body').html('<div id="releasename"></div><div id="pubresult"></div>');
+	    $('#main_modal .modal-title').html('Publication');
 
 	if (!(params['profiles'].length &&  params['scripts'].length)) {
 	    $('#pub_progress').remove();
@@ -414,6 +418,7 @@ $(document).ready( function () {
 		       ].join('');
 	    };
 
+        var toclang = $('#toc_root').data('kolekti-lang');
 	    var toc = $('#toc_root').data('kolekti-path');
 	    $('#main_modal .modal-footer button').html('fermer');
 	    $('#main_modal .modal-title').html('Création de version');
@@ -432,19 +437,20 @@ $(document).ready( function () {
 		params['release_name'] = $('#release_name').val().replace('/','_')
 		params['release_index'] = $('#release_index').val().replace('/','_')
 		params['pubdir'] = params['release_name'] + '_' +params['release_index'];
-		    var assembly = Urls.kolekti_project_static(kolekti.project, "/releases/"+ params['pubdir'] +"/sources/" + kolekti.lang + "/assembly/" + params['pubdir'] + '_asm.html')
-		$.get(assembly)
-		    .success(function() {
-			if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
-			    do_publish()
-		    })
-		    .error(function() {
-			do_publish()
-		    })
+		    var assembly = Urls.kolekti_project_static(kolekti.project, "/releases/"+ params['pubdir'] +"/sources/" + toclang + "/assembly/" + params['pubdir'] + '_asm.html')
+		    $.get(assembly)
+		        .success(function() {
+			        if(confirm('Cette version existe deja, voulez vous forcer la création ?'))
+			            do_publish()
+		        })
+		        .error(function() {
+			        do_publish()
+		        })
 	    })
 	}
 
 	var do_publish = function() {
+        var toclang = $('#toc_root').data('kolekti-lang');
 	    $('#main_modal .modal-footer button').html('fermer');
 	    $('#main_modal .modal').modal();
 	    $('#pubresult').html('<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">Lancement '+job+'</h4></div><div class="panel-body"><div class="progress" id="pub_progress"><div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Publication in progress</span></div></div><div id="pub_results"></div><div id="pub_end" class="alert alert-info" role="alert">Publication terminée</div></div></div>');
@@ -499,12 +505,12 @@ $(document).ready( function () {
 	};
 	
 	if ($(this).attr('id') == 'btn_release') {
-	    url = Urls.kolekti_toc_release(kolekti.project, kolekti.lang, toc)
+	    url = Urls.kolekti_toc_release(kolekti.project, toclang, toc)
 	    $('#main_modal .modal-title').html('Création de version');
 	    check_release(params, do_publish)
 
 	} else {
-        url = Urls.kolekti_toc_publish(kolekti.project, kolekti.lang, toc)
+        url = Urls.kolekti_toc_publish(kolekti.project, toclang, toc)
 	    $('#main_modal .modal-title').html('Publication de la trame');
 	    do_publish()
 	}
@@ -619,8 +625,9 @@ $(document).ready( function () {
 
     $('body').on('click', '.btn_topic_edit', function(e) {
 	    var topic = $(this).closest('.topic');
-        var topic_path = topic.data('kolekti-topic-href').replace('/sources/'+kolekti.lang+'/topics/','')
-        var url= Urls.kolekti_topic_edit(kolekti.project, kolekti.lang, topic_path)
+        var toclang = $('#toc_root').data('kolekti-lang');
+        var topic_path = topic.data('kolekti-topic-href').replace('/sources/'+toclang+'/topics/','')
+        var url= Urls.kolekti_topic_edit(kolekti.project, toclang, topic_path)
         
 	    window.open(url);
 
@@ -1029,6 +1036,7 @@ $(document).ready( function () {
 	var select_topic_browser = function() {
 	    //e.preventDefault();
 	    //e.stopImmediatePropagation();
+	    var toclang = $('#toc_root').data('kolekti-lang');
 	    
 	    $('.insert-buttons a').removeClass('active');
 	    $('#main_modal .modal .btn-insert-module').addClass('active');
@@ -1060,20 +1068,19 @@ $(document).ready( function () {
 			        $('#main_modal .modal').modal('hide');
 		        })
 	    };
-	    
 	    kolekti_browser(
-		{'root':'/sources/'+kolekti.lang+'/topics/',
-		 'parent':".insert-main",
-		 'titleparent':".new-module-title",
-		 'create_actions':'yes',
-		 'create_builder':create_builder,
-		 'update_url':'no',
-         'modal':'no'
-        })
+		    {'root':'/sources/'+toclang+'/topics/',
+		     'parent':".insert-main",
+		     'titleparent':".new-module-title",
+		     'create_actions':'yes',
+		     'create_builder':create_builder,
+		     'update_url':'no',
+             'modal':'no'
+            })
 		.select(insert_topic)
 		.create(function(browser, folder, update_function) {
 		    var filename = $(browser).find('#new_name').val();
-                    var url = Urls.kolekti_topic.create(kolekti.project, kolekti.lang, folder + "/" + filename)
+            var url = Urls.kolekti_topic.create(kolekti.project, toclang, folder + "/" + filename)
 		    $.post('/topics/create/',
 			   {
 			       'model': $('.label-tpl').data('tpl'),

@@ -203,7 +203,7 @@
 
 
     {% block content %}
-        <div class="row ">
+    <div class="row ">
       <div class="col-sm-12 col-md-4">
 	<div class="btn-group btn-group-justified">
 	  <div class="btn-group" role="group">
@@ -245,7 +245,7 @@
     <hr>
     </div>
 
-    <div id="toc_root" data-kolekti-title="{{ toc_title }}" data-kolekti-path="{{ toc_path }}"
+    <div id="toc_root" data-kolekti-lang="{{lang}}" data-kolekti-title="{{ toc_title }}" data-kolekti-path="{{ toc_path }}"
 	 data-kolekti-tocname="{{ toc_display }}"
 	 {% for namemeta, valuemeta  in toc_meta.items %}
 	 data-kolekti-meta-{{ namemeta }}="{{ valuemeta }}"
