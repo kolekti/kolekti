@@ -211,6 +211,11 @@ class Publisher(PublisherMixin, kolektiBase):
             iterator : yields a result for each selected profile / script 
            """ 
         assembly_dir = self.assembly_dir(xjob)
+#        date = self.get_date(self._publang)
+#        hour = self.get_hour(self._publang)
+#        revison = self.get_revision()
+        author = self._author
+        
         res=[]
 
         yield {'event':'job', 'label':xjob.get('id')}
