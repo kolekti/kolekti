@@ -34,6 +34,11 @@ class PublisherMixin(object):
             self._publang = kwargs.get('lang')
             kwargs.pop('lang')
 
+        self._author = "Unknown"
+        if kwargs.has_key('author'):
+            self._publang = kwargs.get('author')
+            kwargs.pop('author')
+
         self._draft = False
     
         super(PublisherMixin, self).__init__(*args, **kwargs)
