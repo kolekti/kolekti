@@ -61,18 +61,19 @@ $(function() {
     var pendingstatusrequest = false;
 
     var cached_status = sessionStorage.getItem('kolektistatus');
+    
     if (cached_status == null)
 	    sessionStorage.setItem('kolektistatus',JSON.stringify({}))
     
     var updatestatus = function(e) {
-	    if (pendingstatusrequest)
+	    if (pendingstatusrequest) {
 	        return
-	
+	    }
 	    var cached_status = JSON.parse(sessionStorage.getItem('kolektistatus'));
 	    var now = new Date()
 	    if (cached_status.hasOwnProperty(kolekti.project)) {
             var cachetime = cached_status[kolekti.project]['time']
-		    if ( cachetime == 0  || cachetime > (now.getTime() - 60000)) {
+		    if ( cachetime != 0  && cachetime > (now.getTime() - 60000)) {
 		        setstatus(cached_status[kolekti.project]['status'])
 		        return;
 	        }
@@ -125,7 +126,6 @@ $(function() {
     });
 
     $(window).on('kolekticlearcachedstatus',function(){
-        console.log("clear cached status") 
         var cached_status = JSON.parse(sessionStorage.getItem('kolektistatus'));
 	    if (cached_status.hasOwnProperty(kolekti.project)) {
             cached_status[kolekti.project]['time'] = 0
