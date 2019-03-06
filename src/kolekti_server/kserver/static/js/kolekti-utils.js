@@ -294,6 +294,9 @@ var kolekti_browser = function(args) {
     params['mode']=mode;
 
 
+    $(parent).data('folder_path', null)
+    $(parent).off()                
+    
     var get_folder_path = function() {
 	    return $(parent).data('folder_path')
     }
@@ -811,12 +814,10 @@ var kolekti_browser = function(args) {
 	    resfuncs['setup_file'] && resfuncs['setup_file']($(parent), e, get_folder_path(), f);
     };
     var closure_browsedir = function(e) {
-	    var f = $(e).data('name'); 
+	    var f = $(e).data('name');
 	    resfuncs['browsedir'] && resfuncs['browsedir']($(parent), e, get_folder_path(), f);
     };
     var promise_setup = function() {
-	    // console.log(resfuncs.setup)
-	    // console.log(resfuncs['setup'])
 	    resfuncs['setup'] && resfuncs['setup']($(parent), get_folder_path());
     };
 
@@ -827,6 +828,8 @@ var kolekti_browser = function(args) {
 	    if ($(this).data('mimetype') == "text/directory") {
 	        e.preventDefault();
 	        var path = get_folder_path() + $(this).html()+ '/';
+//            path = $(this).attr('href')            
+//            console.log('click folder', path) 
 	        if (update_url) {
                 var url = Urls.kolekti_project_static(kolekti.project,  path.substr(1))
 		        window.history.pushState([path], document.title, url)
@@ -1125,6 +1128,7 @@ var kolekti_browser = function(args) {
     // return functions
 
     return return_functions;
+    
 }
 
 

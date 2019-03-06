@@ -109,7 +109,6 @@ $(document).ready( function () {
 
 
     var update_lang_tabs_pictures = function(path) {
-        console.log(path)
         rpath = relative_path(path)
         $('#release_tabs a').each(function() {
             var lang = $(this).data('lang')
@@ -161,12 +160,10 @@ $(document).ready( function () {
                     
                     var rpath = relative_path(path)
                     rpath = rpath.replace(/^pictures\//,"")
-                    console.log(rpath)
                     
 		            $.get(Urls.kolekti_release_lang_picture_details(kolekti.project, release, relang, rpath))
 			            .done(
 			                function(data) {
-                                console.log(data)
 				                $('#preview').html([
 				                    data
 				                ]);
@@ -228,6 +225,7 @@ $(document).ready( function () {
             browser_path = '/releases/' + release +'/sources/'+ relang +'/variables/' 
         }
 		window.history.pushState([], release + " variables", url)
+        
 	    kolekti_browser({'root':'/releases/' + release +'/sources/'+ relang +'/variables',
                          'path': browser_path,
 		                 'parent':"#variables_pane",
@@ -245,7 +243,7 @@ $(document).ready( function () {
                     rpath = rpath.replace(/^variables\//,"")
 
                     //                    Urls.kolekti_variable(kolekti.project, path)
-                    console.log(rpath)
+
 
 		            window.location.href = Urls.kolekti_release_lang_variable(kolekti.project, release, relang, rpath);
                     
@@ -253,16 +251,16 @@ $(document).ready( function () {
 	        .create(create_varfile)
             .setup(
                 function(_, path) {
-                    console.log(dirpath)
-                    console.log(path)
+//                    console.log('dirpath',dirpath)
+//                    console.log('path',path)
                     update_lang_tabs_variables(path);
                 })
         
 	        .setup_file(setup_varfile)
         	.browsedir(
                 function(_, e, path) {
-                    console.log(path)
-                    update_lang_tabs_variables(path);
+//                    console.log(path)
+                    update_lang_tabs_variables('path',path);
                 })
     };
 
@@ -279,7 +277,6 @@ $(document).ready( function () {
         break;
     case 'variables':
         var path = $('#main').data('path')
-        
         if (!path) path=""
         show_tab_variables(path)
         break;
@@ -466,7 +463,7 @@ $(document).ready( function () {
 	        beforeSend:function(xhr, settings) {
 		        ajaxBeforeSend(xhr, settings);
 		        settings.xhr.onreadystatechange=function(){
-		            console.log(xhr.responseText);
+		            // console.log(xhr.responseText);
 		        }
 	        }
 	    }).done(function(data) {
@@ -576,7 +573,7 @@ $(document).ready( function () {
 	        beforeSend:function(xhr, settings) {
 		        ajaxBeforeSend(xhr, settings);
 		        settings.xhr.onreadystatechange=function(){
-		            console.log(xhr.responseText);
+                    //		            console.log(xhr.responseText);
 		        }
 	        }
 	    }).done(function(data) {
