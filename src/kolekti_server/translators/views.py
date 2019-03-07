@@ -431,9 +431,16 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
                 logger.exception('missing information in metadata')
                 return HttpResponse(json.dumps({"status":"missing","message":str(e)}),content_type="text/plain")
 
+            except ET.XMLSyntaxError, e:
+                logger.exception('XML syntax error')
+                return HttpResponse(json.dumps({"status":"missing","message":"XML syntax Error : " + str(e))}),content_type="text/plain")
+                          
             except:
                 logger.exception('unexpected error in translation import')
                 return HttpResponse(json.dumps({"status":"error","message":'unexpected error'}),content_type="text/plain")
+
+
+            
             finally:
                 shutil.rmtree(path)
 

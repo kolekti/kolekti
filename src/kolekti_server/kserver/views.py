@@ -47,7 +47,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.cache import add_never_cache_headers
 
 # kolekti imports
-from kolekti.common import kolektiBase
+from kolekti.common import kolektiBase, KolektiValidationError, KolektiValidationMissing 
 from kolekti.publish_utils import PublisherExtensions
 from kolekti import convert06, publish
 from kolekti.searchindex import Searcher
@@ -55,6 +55,7 @@ from kolekti.exceptions import ExcSyncNoSync
 from kolekti.variables import OdsToXML, XMLToOds
 from kolekti.import_sheets import Importer, Templater
 from kolekti.synchro import SynchroManager, SynchroError
+from kolekti.translation import  AssemblyImporter
 
 fileicons= {
     "application/zip":"fa-file-archive-o",
@@ -1007,30 +1008,67 @@ class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
     
     def post(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
-
-        assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
         payload = request.FILES.get('upload_file').read()
+        
         try:
-            xassembly = kolekti.parse_string(payload)
+            importer = AssemblyImporter(settings.KOLEKTI_BASE, request.user.username, project, release)
+            assembly_info = importer.import_assembly(payload, lang)
+
+        except KolektiValidationError, e:
+            logger.exception('error in translation import')
+            context.update({
+                'assembly_name':release,
+                'error':str(e),
+                })
+            return self.render_to_response(context)
+
+        except KolektiValidationMissing, e:                
+            logger.exception('missing information in metadata')
+            context.update({
+                'assembly_name':release,
+                'error':str(e),
+                })
+            return self.render_to_response(context)
 
         except ET.XMLSyntaxError, e:
             context, kolekti = self.get_context_data({
-                'project':project,
-                'lang':lang,
-                'release':release,
                 'assembly_name':release,
-                'error':e,
-            })
+                'error':str(e),
+                })
             return self.render_to_response(context)
-            
-        xsl = kolekti.get_xsl('django_assembly_save')
-        xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
-        
-        kolekti.update_assembly_lang(xassembly, lang)
-        kolekti.xwrite(xassembly, assembly_path)
-
+         
+        except:
+            logger.exception('unexpected error in translation import')
+            import traceback
+            context.update({
+                'assembly_name':release,
+                'error':'unexpected error in translation import ' + traceback.format_exc(),
+                })
+            return self.render_to_response(context)
 
         return HttpResponseRedirect('')
+    
+            
+        # assembly_path = '/'.join(['/releases/',release,'sources',lang,'assembly',release+'_asm.html'])
+
+        # try:
+        #     xassembly = kolekti.parse_string(payload)
+
+        # except ET.XMLSyntaxError, e:
+        #     context, kolekti = self.get_context_data({
+        #         'project':project,
+        #         'lang':lang,
+        #     })
+        #     return self.render_to_response(context)
+            
+        # xsl = kolekti.get_xsl('django_assembly_save')
+        # xassembly = xsl(xassembly, prefixrelease='"%s"'%release)
+        
+        # kolekti.update_assembly_lang(xassembly, lang)
+        # kolekti.xwrite(xassembly, assembly_path)
+
+
+
 
 class ReleaseLangDetailsView(ReleaseLangDetailsBase):
     pass

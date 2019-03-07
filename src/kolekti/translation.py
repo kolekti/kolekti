@@ -187,7 +187,7 @@ class AssemblyImporter(object):
         for attr,val in elta.attrib.iteritems():
             if self._check_attribute(elta, attr):
                 if eltb.get(attr) != val:
-                    raise KolektiValidationError('structure does not match [attributes] [%s]'%(attr,))
+                    raise KolektiValidationError('structure does not match [attributes] [%s (%s, %s)]'%(attr,val,eltb.get(attr)))
                 
             
     def _iter_structures(self, elta, eltb):
@@ -195,7 +195,7 @@ class AssemblyImporter(object):
         tagb = eltb.xpath('local-name()')
         if taga != tagb:
             logger.debug('structure does not match %s %s'%(taga, tagb))
-            raise KolektiValidationError('structure does not match')
+            raise KolektiValidationError('assembly structure does not match source')
 
         self._compare_attributes(elta, eltb)
 
@@ -329,12 +329,11 @@ class AssemblyImporter(object):
 
         logger.debug("check assembly %s, %s, %s"%(project, assembly, release))
         
-        self.check_structure(project, assembly, release)
-        self.check_variables(project, assembly, release)            
         assembly = self.fix_topic_sources(project, assembly, release)
         assembly = self.fix_links(project, assembly, release)
-
         assembly = self.fix_assembly(project, assembly, release)
+        self.check_structure(project, assembly, release)
+        self.check_variables(project, assembly, release)       
         
         with open(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang, 'assembly', release+"_asm.html"), 'w') as f:
             f.write(ET.tostring(assembly, encoding='utf-8'))

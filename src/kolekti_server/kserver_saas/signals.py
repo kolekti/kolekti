@@ -103,7 +103,8 @@ def __generate_hooks(project):
                     hooks.write(cmd)
 
             if settings.KOLEKTI_TRANSLATION:
-                cmd = "curl -H 'X_SOURCE:KOLEKTI' http://kolekti:8000/translator/svnhook/$2/$1  >> /var/log/kolekti/svn-post-commit.log\n"
+#                cmd = "curl -H 'X_SOURCE:KOLEKTI' http://kolekti:8000/translator/svnhook/$2/$1  >> /var/log/kolekti/svn-post-commit.log\n"
+                cmd = "nohup python /kolekti/src/kolekti_server/manage.py svnhook $1 $2 >> /var/log/kolekti/svn-post-commit.log\n"
                 hooks.write(cmd)
                                         
 
