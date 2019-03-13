@@ -38,7 +38,8 @@ class TranslatorReleaseManager(models.Manager):
                     release_path = '/releases/'+release_name
                     project_path = os.path.join(settings.KOLEKTI_BASE, user.username, project.directory)
                     try:
-                        publisher = ReleasePublisher(release_path, project_path, langs = [lang])
+                        logger.debug(str((release_name, settings.KOLEKTI_BASE, user, project, lang)))
+                        publisher = ReleasePublisher(release_path, settings.KOLEKTI_BASE, user.username, project.directory, langs = [lang])
                         for event in publisher.publish_assembly(release_name + "_asm"):
                             logger.debug(event)
                     except:
@@ -46,6 +47,7 @@ class TranslatorReleaseManager(models.Manager):
         
         return translator_release
         
+    
 class TranslatorRelease(models.Model):
     project = models.ForeignKey(Project)
     user = models.ForeignKey(User)

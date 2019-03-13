@@ -44,6 +44,7 @@ def in_translator_group(user):
 
 
 class PostCommit(object):
+        
         def get_changed(self, revision, repo):
             cmd = subprocess.Popen(['/usr/bin/svnlook', 'changed', '-r', str(revision), repo], stdout = subprocess.PIPE)
             for line in cmd.stdout.readlines():
@@ -433,7 +434,7 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
 
             except ET.XMLSyntaxError, e:
                 logger.exception('XML syntax error')
-                return HttpResponse(json.dumps({"status":"missing","message":"XML syntax Error : " + str(e))}),content_type="text/plain")
+                return HttpResponse(json.dumps({"status":"missing","message":"XML syntax Error : " + str(e)}),content_type="text/plain")
                           
             except:
                 logger.exception('unexpected error in translation import')
@@ -541,8 +542,7 @@ class TranslatorsStaticView(TranslatorsMixin, View):
             return HttpResponse(status=500)            
 
 
-
-# TRanslation assignment, for admin users of project
+# Translation assignment, for admin users of project
         
 class TranslatorsAdminMixin(TranslatorsSharedMixin):
     @classmethod
@@ -645,7 +645,7 @@ class TranslatorsAdminAddView(TranslatorsAdminMixin, TemplateView):
                     
             tr = TranslatorRelease.objects.create(project = _project, release_name = release, user = user)
             tr.save()
-        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+        return HttpResponseRedirect(reverse('translators_admin_release', kwargs = {'release':release, 'project':project}))
 
 class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
     def post(self, request, project, release):
@@ -657,7 +657,9 @@ class TranslatorsAdminRemoveView(TranslatorsAdminMixin, TemplateView):
             
         except TranslatorRelease.DoesNotExist:
             logger.debug('not found')
-        return HttpResponseRedirect(reverse('translators_admin', kwargs = {'project':project}))
+            
+        return HttpResponseRedirect(reverse('translators_admin_release', kwargs = {'release':release, 'project':project}))
+
     
 class TranslatorsAdminReleaseStatusesView(TranslatorsAdminMixin, ReleaseStatesView):
     def get(self, request, project, release):

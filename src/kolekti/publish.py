@@ -1364,7 +1364,7 @@ class ReleasePublisher(Publisher):
                     for event in mfevents:
                         if event.get('event','') == "release_publication":
                             for event2 in event.get('content'):
-                                if event2.get('event','') == "lang" and event2.get('label','') == lang:
+                                if event2.get('event','') == "lang" and event2.get('label','') in self._publangs:
                                     event2.update({'content':[]})
                 except IOError:
                     mfevents = []

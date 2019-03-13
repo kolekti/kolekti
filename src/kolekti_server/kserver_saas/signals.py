@@ -91,6 +91,18 @@ def __generate_hooks(project):
     project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
     logger.debug(project_directory)
     if os.path.exists(project_directory):
+        envfile = os.path.join(project_directory, "conf", "hooks-env")
+
+        with open(envfile, 'w') as env:
+            env.write("[post-commit]\n")
+            env.write('PYTHONPATH=/kolekti/src\n')
+            for var, val in os.environ.items():
+                if 'KOLEKTI' in var:
+                    env.write('%s = %s\n'%(var, val))
+        
+        st = os.stat(envfile)
+        os.chmod(envfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+        
         hooksfile = os.path.join(project_directory, "hooks", "post-commit")
 
         with open(hooksfile, 'w') as hooks:
@@ -103,8 +115,9 @@ def __generate_hooks(project):
                     hooks.write(cmd)
 
             if settings.KOLEKTI_TRANSLATION:
-#                cmd = "curl -H 'X_SOURCE:KOLEKTI' http://kolekti:8000/translator/svnhook/$2/$1  >> /var/log/kolekti/svn-post-commit.log\n"
-                cmd = "nohup python /kolekti/src/kolekti_server/manage.py svnhook $1 $2 >> /var/log/kolekti/svn-post-commit.log\n"
+#               # cmd = "curl -H 'X_SOURCE:KOLEKTI' http://kolekti:8000/translator/svnhook/$2/$1  >> /var/log/kolekti/svn-post-commit.log\n"
+                # cmd = "nohup python /kolekti/src/kolekti_server/manage.py post_commit $1 $2 >> /var/log/kolekti/svn-post-commit.log &\n"
+                cmd = 'nohup sh -c "python /kolekti/src/kolekti_server/manage.py post-commit $1 $2 >> /var/log/kolekti/svn-post-commit.log 2>&1" 2>&1 &'
                 hooks.write(cmd)
                                         
 
