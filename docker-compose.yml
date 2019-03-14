@@ -1,17 +1,18 @@
 version: '2'
 services:
   kolekti:
-    image: sbonhomme/kolekti-base
+#    image: local-kolekti-base
+#    image: local-kolekti-base-stretch
+    image: sbonhomme/kolekti-base:stretch
     volumes:
-      - "${KOLEKTI_SRC}:/kolekti/src:rw"
+      - "${KOLEKTI_SRC}:/kolekti:rw"
       - "${KOLEKTI_STATIC}:/static:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_PROJECTS}:/projects:rw"
-      - "${KOLEKTI_DB}:/db:rw"
       - "${KOLEKTI_LOG}:/var/log:rw"
       - "${KOLEKTI_FONTS}:/usr/share/fonts/extra"
       - "${KOLEKTI_PRIVATE}:/private"
-      - "${KOLEKTI_PRIVATE}/prince:/usr/lib/prince/license/:ro"
+      - "${KOLEKTI_PRIVATE}/prince:/usr/lib/prince/license"
     ports:
       - "8000"
     environment:
@@ -19,7 +20,7 @@ services:
       GUNICORN_OPTS:
       UID:
       GID:
-      KOLEKTI_DBFILE: /db/db.sqlite3
+#      KOLEKTI_DBFILE: /db/db.sqlite3
       KOLEKTI_PRIVATE: /private
       KOLEKTI_EMAIL_HOST:
       KOLEKTI_EMAIL_PORT:
@@ -27,20 +28,55 @@ services:
       KOLEKTI_EMAIL_PASSWORD:
       KOLEKTI_EMAIL_FROM:
       KOLEKTI_DEBUG:
+      KOLEKTI_DB_DIR:
+      KOLEKTI_DB_USER:
+      KOLEKTI_DB_PASS:
+      KOLEKTI_DB_ROOT:
       VIRTUAL_HOST:
+      NC_ADMINUSER:
+      NC_ADMINPASS:
+      NC_URL:
+    links:
+      - database
+      
   front:
     # the front is an apache, acting as a proxy to wsgi, serving static content and doing svn
-    image: sbonhomme/kolekti-front
+#    image: sbonhomme/kolekti-front
+    image: local-kolekti-front
     volumes:
+      - "${KOLEKTI_SRC}:/kolekti:rw"      
       - "${KOLEKTI_STATIC}:/static:ro"
-      - "${KOLEKTI_LOG}:/var/log:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
-      - "${KOLEKTI_PRIVATE}:/private:ro"
+      - "${KOLEKTI_LOG}:/var/log:rw"
+      - "${KOLEKTI_PRIVATE}:/private"
     ports:
       - "${EXTERNAL_PORT}:80"
     links:
       - kolekti
+      - database
     environment:
-      KOLEKTI_DBFILE: /db/db.sqlite3
+      PYTHONPATH: /kolekti/src:/kolekti/src/kolekti_server
+      DJANGO_SETTINGS_MODULE: kolekti_server.settings_svn
+      KOLEKTI_DB_DIR:
+      KOLEKTI_DB_USER:
+      KOLEKTI_DB_PASS:
+      KOLEKTI_DB_ROOT:
       UID:
       GID:
+
+  database:
+     image: mariadb
+     volumes:
+       - "${KOLEKTI_DB_DIR}:/var/lib/mysql"
+     ports:
+       - "3306"
+     environment:
+       MYSQL_PORT: "3306"
+       MYSQL_ROOT_PASSWORD: ${KOLEKTI_DB_ROOT}
+       MYSQL_USER: ${KOLEKTI_DB_USER}
+       MYSQL_PASSWORD: ${KOLEKTI_DB_PASS}
+       MYSQL_DATABASE: "kolekti"
+
+
+
+    
