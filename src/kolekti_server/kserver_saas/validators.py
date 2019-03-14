@@ -38,7 +38,7 @@ class HTPasswordGenerator(object):
                 exccmd.communicate()
                 logger.debug(err)
                 logger.debug(out)
-
+                logger.debug("password successfuly changed")
             except:
                 logger.exception("password change")
                 # if subprocess.call(cmd) != 0:

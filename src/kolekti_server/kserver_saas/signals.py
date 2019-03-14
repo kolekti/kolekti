@@ -89,7 +89,7 @@ def post_delete_userproject_callback(sender, **kwargs):
 def __generate_hooks(project):
     ''' generate svn hooks in project repository'''
     project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
-    logger.debug(project_directory)
+#    logger.debug(project_directory)
     if os.path.exists(project_directory):
         envfile = os.path.join(project_directory, "conf", "hooks-env")
 
@@ -124,7 +124,7 @@ def __generate_hooks(project):
         st = os.stat(hooksfile)
         os.chmod(hooksfile, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
     else:
-        logger.debug('project %s does not exist', project_directory)
+        logger.exception('project %s does not exist', project_directory)
         
 def __generate_htgroup():
     '''update svn acces group file'''
@@ -157,7 +157,6 @@ def post_sign_up_callback(sender, **kwargs):
 @receiver(invite_accepted)
 def post_invite_callback(sender, **kwargs):
     logger.debug('invite callback')
-    logger.debug(kwargs)
     email = kwargs['email']
     try:
         user = User.objects.get(email = email)
@@ -165,4 +164,4 @@ def post_invite_callback(sender, **kwargs):
         user.groups.add(group)
         
     except User.DoesNotExist:
-        logger.debug('user not found')
+        logger.exception('user not found')
