@@ -257,16 +257,22 @@ class Release(object):
         dst = '/releases/%s'%(newrelease,)
         try:
             syncMgr = SynchroManager(*self.args)
-            syncMgr.move_resource(src, dest)
+            os.makedirs(os.path.join(self._basepath, self._username, self._project) + dst)
+            syncMgr.add_resource(dst)
+            syncMgr.move_resource(src +'/sources', dst+ '/sources' )
+            syncMgr.move_resource(src +'/kolekti', dst + '/kolekti')
+            syncMgr.move_resource(src +'/release_info.json', dst +'/release_info.json')
+            syncMgr.delete_resource(src)
         except:
+            logger.exception('unable to get sync')
+            raise
             shutil.move(
                 self._syspath(src),
                 self._syspath(dst)
                 )
             
-        logger.debug(os.listdir(self._syspath('{}/sources'.format(dst))))
+#        logger.debug(os.listdir(self._syspath('{}/sources'.format(dst))))
         for lang in os.listdir(self._syspath('{}/sources'.format(dst))):
-            logger.debug(lang)
             src_assembly_path = '/sources/%s/assembly/%s_asm.html'%(lang,self._release)
             if os.path.exists(self._syspath("%s%s"%(dst, src_assembly_path))):
                 assembly_path = ('/sources/%s/assembly/%s_asm.html'%(lang, newrelease))
