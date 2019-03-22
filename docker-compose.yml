@@ -41,8 +41,8 @@ services:
       
   front:
     # the front is an apache, acting as a proxy to wsgi, serving static content and doing svn
-#    image: sbonhomme/kolekti-front
-    image: local-kolekti-front
+    image: sbonhomme/kolekti-front
+#    image: local-kolekti-front
     volumes:
       - "${KOLEKTI_SRC}:/kolekti:rw"      
       - "${KOLEKTI_STATIC}:/static:ro"
