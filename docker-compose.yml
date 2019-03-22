@@ -67,7 +67,7 @@ services:
   database:
      image: mariadb
      volumes:
-       - "${KOLEKTI_DB_DIR}:/var/lib/mysql"
+       - "${KOLEKTI_DB_DIR}/kolekti:/var/lib/mysql"
      ports:
        - "3306"
      environment:
