@@ -42,6 +42,7 @@ $(document).ready(function() {
     var myOnNodeCreated = function(event, treeId, treeNode) {
         $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
         $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
+        $('#'  + treeNode.tId+ '_span').addClass('wstatus-' + treeNode.kwstatus)
         var treestatus = $('#'  + treeNode.tId+ '_span').closest('.ztree').data('status')
         if (treeNode.hstatus != treestatus && treeNode.status != treestatus) {
             $('#'  + treeNode.tId+ '_span').closest('li').addClass('listitem-hiddable')
@@ -84,12 +85,16 @@ $(document).ready(function() {
                         "ktype":value.__self.kind,
                         "krstatus":value.__self.rstatus,
                         "kwstatus":value.__self.wstatus,
-                        "open":(node_inherited_status == status)?true:false,
-                        "checked":(node_status == status || node_inherited_status == status)?true:false,
-                        "chkDisabled":(node_status == status || node_inherited_status == status)?false:true,
+                        "kprstatus":value.__self.rpropstatus,
+                        "kpwstatus":value.__self.wpropstatus,
+                        
                         "status":node_status,
                         "hstatus":node_inherited_status,
                         "dstatus":node_detail_status,
+
+                        "open":(node_inherited_status == status)?true:false,
+                        "checked":(node_status == status || node_inherited_status == status)?true:false,
+                        "chkDisabled":(node_status == status || node_inherited_status == status)?false:true,
                        }
             if (children.length)
                 node.children = children

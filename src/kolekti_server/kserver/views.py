@@ -1186,7 +1186,16 @@ class ReleaseRenameView(kolektiMixin, ReleaseMixin, View):
         from kolekti.release import Release
         r = Release(*kolekti.args, release=release)
         r.rename(name, index)
-        
+        try:
+            from translators.models import TranslatorRelease
+            trs = TranslatorRelease.objects.filter(release_name=release)
+            for tr in trs:
+                tr.release_name=new_release
+                tr.save()
+        except TranslatorRelease.DoesNotExist:
+            logger.debug('no translator affected')
+        except ImportError:
+            logger.debug('translator not available')
         return HttpResponse(json.dumps("ok"), content_type="text/javascript")
         
         

@@ -51,7 +51,8 @@ class Command(BaseCommand):
         except TranslatorRelease.DoesNotExist:
             pass
 
-    def register_publish(self, user, project, chunks):
+    def register_publish(self, user,  chunks):
+        logger.debug('register %s %s', user, chunks)
         try:
             self.republish_list[user]
         except KeyError:
@@ -70,7 +71,8 @@ class Command(BaseCommand):
     def republish(self, project):
         for user, releases_info in self.republish_list.iteritems():
             for release, lang_info in releases_info.iteritems():
-                if type(lang_info) is not list:
+                logger.debug('republish %s %s %s %s', user, project, release, str(lang_info))
+                if type(lang_info) is not set:
                     lang_info = self.release_langs(user, project, release)
                 publisher = ReleasePublisher('/releases/'+release, settings.KOLEKTI_BASE, user, project, langs = lang_info)
                 for item in publisher.publish_assembly(release + "_asm"):
@@ -87,6 +89,7 @@ class Command(BaseCommand):
             repo = options['repo']
             project = repo.split('/')[-1]
             user = self.get_author(revision, repo)
+            
             self.stdout.write("author : [%s]"%user)
             
             try:
@@ -96,6 +99,7 @@ class Command(BaseCommand):
             
             seen = set()
             republish = {}
+            
             for mf in self.get_changed(revision, repo):
                 logger.debug(mf)
                 mf = mf[4:]
@@ -104,13 +108,23 @@ class Command(BaseCommand):
                     release = chunks[1]
                     updates = acllist.filter(release_name = release)
                     for update in updates:
-                        self.register_publish(update.user.username, project, chunks)
+                        path = os.path.join(settings.KOLEKTI_BASE, update.user.username, update.project.directory, 'releases', release)
+                        # register things to be republished
+                        if os.path.exists(path):
+                            self.register_publish(update.user.username, chunks)
+                        else:
+                            self.register_publish(update.user.username, ['releases', release, 'share'])
                         if not release in seen:
+                            # update local copy of release
                             seen.add(release)
-                            path = os.path.join(settings.KOLEKTI_BASE, update.user.username, update.project.directory, 'releases', release)
-                            self.client.update(path)
-                            logger.debug(path+" updated")
-                            self.stdout.write(path+" updated")
+
+                            if os.path.exists(path):
+                                self.client.update(path)
+                                logger.debug(path+" updated")
+                                self.stdout.write(path+" updated")
+                            else:
+                                url = "file://%s/%s/releases/%s"%(settings.KOLEKTI_SVN_ROOT, update.project.directory,release)
+                                self.client.checkout(url, path)
 
             self.republish(project)
             logger.debug('update succesfully completed')

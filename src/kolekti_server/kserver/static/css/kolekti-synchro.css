@@ -38,6 +38,16 @@ li.sync_node_disabled>ul>li.sync_node_disabled {
     color:#CC0000;
 }
 
+.sync_tree span.wstatus-added{
+    font-style:italic;
+}
+
+.sync_tree span.wstatus-deleted{
+    text-decoration: line-through;
+}
+
+
+
 .sync_tree li {
     list-style-type:none;
     

@@ -567,7 +567,9 @@ class SynchroManager(SvnClient):
         log_message = log_message.replace('\r\n', '\n')
         osfiles = []
         for f in files:
-            osfiles.append(self.__makepath(f))
+            lf = self.__makepath(f)
+            if self._client.info(lf) is not None:
+                osfiles.append(self.__makepath(f))
         commit_revision = self._client.checkin(osfiles, log_message, recurse = True)
         return commit_revision 
 
