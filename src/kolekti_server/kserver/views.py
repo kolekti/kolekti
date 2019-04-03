@@ -1012,7 +1012,7 @@ class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
         
         try:
             importer = AssemblyImporter(settings.KOLEKTI_BASE, request.user.username, project, release)
-            assembly_info = importer.import_assembly(payload, lang)
+            assembly_info = importer.import_assembly(payload, lang, check=False)
 
         except KolektiValidationError, e:
             logger.exception('error in translation import')

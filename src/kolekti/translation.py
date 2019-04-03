@@ -274,7 +274,7 @@ class AssemblyImporter(object):
             return lang[:2]
         return lang
     
-    def import_assembly(self, assembly_src, lang=None):
+    def import_assembly(self, assembly_src, lang=None, check=True):
         # xml parse
         try:
             assembly = ET.fromstring(assembly_src, self.__parser)
@@ -283,6 +283,7 @@ class AssemblyImporter(object):
             logger.exception('Assembly parse error')
             raise KolektiValidationError('xml parse error: line %d:%d\n%s'%(error.line, error.column, error.message))
 
+        
         # check lang
         if lang is None:
             try:
@@ -290,7 +291,7 @@ class AssemblyImporter(object):
             except:
                 logger.exception('language not found')
                 raise KolektiValidationMissing('could not detect language')
-        
+
         logger.debug("{%s}",type(self._project))
         if self._project is None:
             project = self.guess_project(assembly)
@@ -306,25 +307,28 @@ class AssemblyImporter(object):
             
         lang = self.lang_unalias(lang)
 
-        if lang == src_lang:
-            raise KolektiValidationMissing('language is source language')
+        if check:
+
+            if lang == src_lang:
+                raise KolektiValidationMissing('language is source language')
         
-        if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
-            raise KolektiValidationError('language directory does not exists [%s]'%lang)
+            if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
+                raise KolektiValidationError('language directory does not exists [%s]'%lang)
 
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
         assembly_dir = os.path.join(release_dir, 'sources', lang, 'assembly')
         assembly_file = '/'.join(['sources', lang, 'assembly', release + '_asm.html'])
-        
-        syncmgr = TranslatorSynchro(self._path, self._username, project, release)
-        
-        try:
-            state = syncmgr.lang_state(lang)
-        except:
-            logger.exception('import release state')
-            raise KolektiValidationError('could not get release state')
 
-        if not (state == 'translation' or state == 'validation'):
+        if check:
+            syncmgr = TranslatorSynchro(self._path, self._username, project, release)
+        
+            try:
+                state = syncmgr.lang_state(lang)
+            except:
+                logger.exception('import release state')
+                raise KolektiValidationError('could not get release state')
+
+            if not (state == 'translation' or state == 'validation'):
                 raise KolektiValidationError('release state does not allow update of translation')
 
         logger.debug("check assembly %s, %s, %s"%(project, assembly, release))
@@ -332,8 +336,10 @@ class AssemblyImporter(object):
         assembly = self.fix_topic_sources(project, assembly, release)
         assembly = self.fix_links(project, assembly, release)
         assembly = self.fix_assembly(project, assembly, release)
-        self.check_structure(project, assembly, release)
-        self.check_variables(project, assembly, release)       
+        
+        if check:
+            self.check_structure(project, assembly, release)
+            self.check_variables(project, assembly, release)       
         
         with open(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang, 'assembly', release+"_asm.html"), 'w') as f:
             f.write(ET.tostring(assembly, encoding='utf-8'))
