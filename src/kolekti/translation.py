@@ -303,17 +303,16 @@ class AssemblyImporter(object):
         else:
             release = self._release
             
-        src_lang = self._get_source_lang(project, release)
-            
-
         if check:
-            lang = self.lang_unalias(lang)
-
+            src_lang = self._get_source_lang(project, release)
             if lang == src_lang:
                 raise KolektiValidationMissing('language is source language')
         
             if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
-                raise KolektiValidationError('language directory does not exists [%s]'%lang)
+                lang = self.lang_unalias(lang)
+                if not os.path.exists(os.path.join(self._path, self._username, project, 'releases', release , 'sources', lang)):
+
+                    raise KolektiValidationError('language directory does not exists [%s]'%lang)
 
         release_dir = os.path.join(self._path, self._username, project, 'releases', release)
         assembly_dir = os.path.join(release_dir, 'sources', lang, 'assembly')

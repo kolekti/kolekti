@@ -220,7 +220,7 @@ class TranslatorsHomeMixin(TranslatorsMixin):
             if project is None:
                 project = TranslatorRelease.objects.get(release = release).project
                 
-            importer.import_assembly(assembly)
+            importer.import_assembly(assembly, check = True)
         else:
             context = {}        
             return self.render_to_response(context)
@@ -422,7 +422,7 @@ class TranslatorsAssemblyUploadView(TranslatorsMixin, View):
                 with open(os.path.join(path, uploaded_file.name)) as f:
                    src = f.read() 
 
-                assembly_info = importer.import_assembly(src, lang)
+                assembly_info = importer.import_assembly(src, lang, check = True)
                 
             except KolektiValidationError, e:                
                 logger.exception('error in translation import')
