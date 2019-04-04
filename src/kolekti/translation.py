@@ -305,9 +305,9 @@ class AssemblyImporter(object):
             
         src_lang = self._get_source_lang(project, release)
             
-        lang = self.lang_unalias(lang)
 
         if check:
+            lang = self.lang_unalias(lang)
 
             if lang == src_lang:
                 raise KolektiValidationMissing('language is source language')
