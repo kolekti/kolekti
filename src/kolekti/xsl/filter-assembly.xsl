@@ -33,12 +33,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
 
-
   <!--
-      <xsl:param name="action">publish</xsl:param>
+  <xsl:param name="action">assemble</xsl:param>
   -->
 
-  
   <xsl:include href="filter-share.xsl"/>
 
 
@@ -46,21 +44,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   <xsl:template match="html:a[@class='resource']/@href">
     <xsl:attribute name="href">
-      <xsl:value-of select="kfp:replace_assembly_criteria(string(.))" />
+      <xsl:value-of select="kfp:replace_publication_criteria(string(.))" />
     </xsl:attribute>
   </xsl:template>
 
   <xsl:template match="html:img/@src|html:embed/@src">
     <xsl:attribute name="src">
-      <xsl:value-of select="kfp:replace_assembly_criteria(string(.))" />
+      <xsl:value-of select="kfp:replace_publication_criteria(string(.))" />
     </xsl:attribute>
   </xsl:template>
 
   <!-- templates de remplacement des conditions -->
 
-  <xsl:template match="@class[contains(.,'=')]"/>
-  
-  <xsl:template match="html:div[@class='topic']">    
+  <xsl:template match="html:div[@class='topic']">
+    
     <xsl:variable name="children">
       <xsl:apply-templates select="node()[not(self::html:div[@class='topicinfo'])]"/>
     </xsl:variable>
@@ -73,6 +70,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </xsl:copy>
     </xsl:if>
   </xsl:template>
+
 
   <xsl:template match="html:*[contains(@class,'=')]">
     <xsl:variable name="classcond">
@@ -92,30 +90,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </xsl:call-template>
     </xsl:variable>
     <xsl:choose>
+
       <xsl:when test="$cond='true'">
         <!--
-            <xsl:comment><xsl:value-of select="$action"/><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+            <xsl:comment><xsl:value-of select="$classcond"/> -> true</xsl:comment>
         -->
-        <xsl:choose>
-          <xsl:when test="self::html:div|self::html:span">
-            <xsl:apply-templates select="node()"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:copy>          
-              <xsl:apply-templates select="node()|@*"/>        
-            </xsl:copy>
-          </xsl:otherwise>
-        </xsl:choose>
+	    <xsl:copy>
+	      <xsl:apply-templates select="node()|@*"/>
+	    </xsl:copy>        
       </xsl:when>
 
-      <xsl:when test="$cond='false'"/>
+      <xsl:when test="$cond='false'">
+        <!--
+            <xsl:comment><xsl:value-of select="$classcond"/> -> true</xsl:comment>
+        -->
+      </xsl:when>
       
       <xsl:when test="$cond='user'">
         <!--
             <xsl:comment><xsl:value-of select="$classcond"/> -> user</xsl:comment>
         -->
 	    <xsl:copy>
-	      <xsl:copy-of select="@class"/>
 	      <xsl:apply-templates select="node()|@*"/>
 	    </xsl:copy>        
       </xsl:when>
@@ -124,20 +119,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <!--
             <xsl:comment><xsl:value-of select="$classcond"/> -> none</xsl:comment>
         -->
-        <xsl:choose>
-          <xsl:when test="self::html:div|self::html:span">
-            <xsl:apply-templates select="node()"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:copy>          
-              <xsl:apply-templates select="node()|@*"/>        
-            </xsl:copy>
-          </xsl:otherwise>
-        </xsl:choose>
+	    <xsl:copy>
+	      <xsl:apply-templates select="node()|@*"/>
+	    </xsl:copy>
       </xsl:when>
+
     </xsl:choose>
-    
   </xsl:template>
 
-  
+
 </xsl:stylesheet>

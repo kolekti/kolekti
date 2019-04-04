@@ -172,8 +172,19 @@ class Release(object):
         do_save = False
         for elt in assembly.xpath('//*[contains(@class, "=")]'):
             do_save = self.apply_filters_element(elt) or do_save
+            
         if do_save:
-            print '{} [{}] modified'.format(self._release, lang)
+            # elimine les topics dont le contenu est vide
+            exp = '//h:div[@class="topic"][not(node()[not(self::h:div[@class="topicinfo"])][not(normalize-space()="")])]'           
+            for elt in assembly.xpath(exp, **ns):
+                self.remove(elt)
+                
+            # elimine les sections dont le contenu est vide
+            exp = '//h:div[@class="section"][not(.//h:div/@class="topic")]'
+            for elt in assembly.xpath(exp, **ns):
+                self.remove(elt)
+                
+            logger.debug('{} [{}] modified'.format(self._release, lang))
             self.xwrite(assembly, '/sources/{}/assembly/{}_asm.html'.format(lang, self._release))
 
     def apply_filters_element(self, elt, profile_filter=True, assembly_filter=False, setPI = False, remove_conditional_elements = ['div', 'span']):
@@ -190,14 +201,14 @@ class Release(object):
             if evalc in [True, None]:
                 if evalc and tag in remove_conditional_elements:
                     self.unwrap(elt)
+                    return True
                 return False
             
         if profile_filter:
             for profile in self.profiles_criteria():
                 evalc = self.eval_condition(profile, elt.get('class'))
                 if evalc in [True, None]:
-                    if evalc and tag in remove_conditional_elements:
-                        self.unwrap(elt)
+                    logger.debug("found " + str(profile))
                     return False
         if setPI:
             elt.addprevious(ET.ProcessingInstruction("filter", "[{} {}]".format(tag, elt.get('class'))))

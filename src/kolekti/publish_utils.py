@@ -52,9 +52,13 @@ class PublisherMixin(object):
     def process_path(self, path):
         return self.substitute_criteria(path, ET.XML('<criteria/>'))
 
-    def substitute_criteria(self, string, profile, extra={}):
+    def substitute_criteria(self, string, profile, extra={}, from_root=True, from_profile=True):
         extra.update({"LANG":self._publang})
-        return super(PublisherMixin, self).substitute_criteria(string, profile, extra=extra)
+        return super(PublisherMixin, self).substitute_criteria(
+            string, profile,
+            extra=extra,
+            from_root=from_root,
+            from_profile=from_profile)
 
     def _substscript(self, s, subst, profile):
         """substitues all _NAME_ by its profile value in string s""" 
@@ -82,7 +86,7 @@ class PublisherMixin(object):
             if pubevents.get('ET') is not None:
                 pubevents.update({'ET':''})
             map(self.purge_manifest_events, pubevents.values())
-        
+
 class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
     """
     Extensions functions for xslt that are applied during publishing process
@@ -157,6 +161,16 @@ class PublisherExtensions(PublisherMixin, AdapterMediawiki, XSLExtensions):
         return self.substitute_variables(srcstr, self._profile)
 
     def replace_criteria(self, _, args):
+        srcstr = args
+        r = self.substitute_criteria(srcstr, self._profile)
+        return r
+
+    def replace_assembly_criteria(self, _, args):
+        srcstr = args
+        r = self.substitute_criteria(srcstr, self._profile, from_profile=False)
+        return r
+
+    def replace_publication_criteria(self, _, args):
         srcstr = args
         r = self.substitute_criteria(srcstr, self._profile)
         return r

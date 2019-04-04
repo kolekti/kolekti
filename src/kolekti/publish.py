@@ -96,8 +96,8 @@ class Publisher(PublisherMixin, kolektiBase):
         assembly = s(assembly)
         self.log_xsl(s.error_log)
                         
-        s = self.get_xsl('filter', PublisherExtensions, profile=xjob, lang=self._publang)
-        assembly = s(assembly, action="'assemble'")
+        s = self.get_xsl('filter-assembly', PublisherExtensions, profile=xjob, lang=self._publang)
+        assembly = s(assembly)
         self.log_xsl(s.error_log)
 
         # process id and links

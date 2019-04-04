@@ -836,8 +836,13 @@ class kolektiBase(object):
             aurl = urlparse.urljoin(base,r)
             return aurl
 
-    def get_criteria_dict(self, profile):
-        criteria = profile.xpath("criteria/criterion|/job/criteria/criterion")
+    def get_criteria_dict(self, profile, from_root=True, from_profile=True):
+        criteria = []
+        if from_root:
+            criteria += profile.xpath("/job/criteria/criterion")
+        if from_profile:
+            criteria += profile.xpath("criteria/criterion")
+        
         criteria_dict={}
         for c in criteria:
             criteria_dict.update({c.get('code'):c.get('value',None)})
@@ -878,9 +883,9 @@ class kolektiBase(object):
                                
 
 
-    def substitute_criteria(self, string, profile, extra={}):
+    def substitute_criteria(self, string, profile, extra={}, from_root=True, from_profile=True):
         try:
-            criteria_dict = self.get_criteria_dict(profile)
+            criteria_dict = self.get_criteria_dict(profile, from_root=from_root, from_profile=from_profile)
         except AttributeError:
             criteria_dict = {}
         criteria_dict.update(extra)
