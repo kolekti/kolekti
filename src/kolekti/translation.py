@@ -234,6 +234,30 @@ class AssemblyImporter(object):
     def fix_links(self, project, assembly, release) :
         return assembly
     
+    def fix_lang(self, project, assembly, release, lang) :
+        for elt_img in assembly.xpath('//h:img',**ns):
+            src_img = elt_img.get('src')
+            splitpath = src_img.split('/')
+            if splitpath[1] == "sources" and splitpath[2] != 'share':
+                splitpath[2] = lang 
+                elt_img.set('src','/'.join(splitpath))
+        try:
+            assembly.xpath('/h:html/h:head/h:meta[@scheme="condition"][@name="LANG"]',**ns)[0].set('content',lang)
+        except IndexError:
+            pass
+        try:
+            assembly.xpath('/h:html/h:head/criteria[@code="LANG"]',**ns)[0].set('value',lang)
+        except IndexError:
+            pass
+        try:
+            body = assembly.xpath('/h:html/h:body',**ns)[0]
+            body.set('lang',lang)
+            body.set('{http://www.w3.org/XML/1998/namespace}lang',lang)
+        except IndexError:
+            pass
+
+        return assembly
+    
     def fix_assembly(self, project, assembly, release) :
         fixtures = os.path.join(self._path, self._username, project, 'releases', release, 'kolekti', 'fixtures')
         if os.path.exists(fixtures):
@@ -335,7 +359,8 @@ class AssemblyImporter(object):
         assembly = self.fix_topic_sources(project, assembly, release)
         assembly = self.fix_links(project, assembly, release)
         assembly = self.fix_assembly(project, assembly, release)
-        
+        assembly = self.fix_lang(project, assembly, release, lang)
+                
         if check:
             self.check_structure(project, assembly, release)
             self.check_variables(project, assembly, release)       
