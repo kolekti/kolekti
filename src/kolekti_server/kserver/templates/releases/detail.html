@@ -115,7 +115,9 @@
 	        </div>
 	        <div class="col-sm-12 col-md-12">
 	          <h5>Importer</h5>
-	          <form method="POST" class="upload_form" enctype="multipart/form-data">
+	          <form method="POST" class="upload_form" enctype="multipart/form-data"
+                    action="{% url 'kolekti_release_lang_detail' project=project release=release lang=relang%}"
+                    >
                 {% csrf_token %}
 		        <div class="input-group">
 		          <label style="font-weight:100">Assemblage [{{relang}}]

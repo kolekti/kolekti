@@ -150,7 +150,7 @@ class TranslationImporter(kolektiTests):
     def rollback(self, files):
         pass
 
-
+ns ={'namespaces': {'h':'http://www.w3.org/1999/xhtml'}}
 class AssemblyImporter(object):
     namespaces = {'h':'http://www.w3.org/1999/xhtml'}
     def __init__(self, path, username, project = None, release = None):
