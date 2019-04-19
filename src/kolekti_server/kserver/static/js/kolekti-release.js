@@ -321,7 +321,8 @@ $(document).ready( function () {
 	        var langs = []
 	        $('#release_tabs a').each( function() {
 		        if ($(this).data('state') != "unknown")
-		            langs.push($(this).data('lang'));
+                    if ($(this).data('lang') != "share")
+		                langs.push($(this).data('lang'));
 	        });
 	        return langs;
 	    } else {
@@ -407,11 +408,6 @@ $(document).ready( function () {
 
     $('.btn_publish').on('click', function() {
 
-	    var alllang = ($(this).attr('id') == "btn_publish_all")
-	    var lang = get_publish_languages(alllang)[0];
-        //	var lang = get_publish_languages(false)[0]
-	    var url = Urls.kolekti_release_lang_publish(kolekti.project, release, lang)
-
 	    $('#main_modal .modal-body').html('<div id="pubresult"></div>');
 	    $('#main_modal .modal-title').html('Publication');
 	    $('#main_modal .modal-footer').html(
@@ -434,7 +430,10 @@ $(document).ready( function () {
 	    var params = {}
 	    params['release']=release;
 	    var alllang = ($(this).attr('id') == "btn_publish_all")
-	    params['langs']= get_publish_languages(alllang);
+	    var langs = get_publish_languages(alllang);
+	    params['langs'] = langs;
+	    var lang = langs[0];
+        //	var lang = get_publish_languages(false)[0]
         params['profiles'] = [];
         $('.kolekti-activate-profile').each(function() {
             if ($(this).data('active') == 'yes')
@@ -453,6 +452,12 @@ $(document).ready( function () {
 	        $("#pub_results").html(data);
 	    }
 
+        var url;
+        if (alllang)
+            url = Urls.kolekti_release_publish(kolekti.project, release)
+        else
+            url = Urls.kolekti_release_lang_publish(kolekti.project, release, lang)
+        
 	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
 	    streamedTransport(streamcallback);
 	    $.ajax({
