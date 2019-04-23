@@ -44,13 +44,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   <xsl:template match="html:a[@class='resource']/@href">
     <xsl:attribute name="href">
-      <xsl:value-of select="kfp:replace_publication_criteria(string(.))" />
+      <xsl:value-of select="kfp:replace_assembly_criteria(string(.))" />
     </xsl:attribute>
   </xsl:template>
 
   <xsl:template match="html:img/@src|html:embed/@src">
     <xsl:attribute name="src">
-      <xsl:value-of select="kfp:replace_publication_criteria(string(.))" />
+      <xsl:value-of select="kfp:replace_assembly_criteria(string(.))" />
     </xsl:attribute>
   </xsl:template>
 
