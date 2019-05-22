@@ -298,10 +298,12 @@ var kolekti_browser = function(args) {
     $(parent).off()                
     
     var get_folder_path = function() {
+//        console.log('get_folder_path', $(parent).data('folder_path'))
 	    return $(parent).data('folder_path')
     }
     
     var set_folder_path = function(path) {
+//        console.log('set_folder_path', path)
 	    $(parent).data('folder_path', path)
     }
 
@@ -552,7 +554,8 @@ var kolekti_browser = function(args) {
 			                if(msg.length)
 				                msg = "<div>"+msg+"</div>";
 			                if(linksync) {
-				                msg += "<div><a href='/sync/'>";
+                                var url = Urls.kolekti_sync(kolekti.project)
+				                msg += "<div><a href='"+url+"'>";
                                 msg += gettext("Synchroniser le projet");
                                 msg += "</a></div>";
                             }
@@ -834,6 +837,8 @@ var kolekti_browser = function(args) {
                 var url = Urls.kolekti_project_static(kolekti.project,  path.substr(1))
 		        window.history.pushState([path], document.title, url)
             }
+            
+//            console.log('clickfilelink')
             set_folder_path(path);
 	        update();
             closure_browsedir(e)            
@@ -859,6 +864,7 @@ var kolekti_browser = function(args) {
                 var url = Urls['kolekti_project_static'](kolekti.project, newpath.substr(1))
 		        window.history.pushState([newpath],document.title, url)
             }
+//            console.log('clickpathstep')
 	        set_folder_path(newpath);
 	        update();
 	    }
@@ -897,6 +903,7 @@ var kolekti_browser = function(args) {
                     var url = Urls.kolekti_project_static(kolekti.project, path.substring(1))
 		            window.history.pushState(path, document.title, url + '/')
                 }
+//                console.log('clicknewfolder')
                 set_folder_path(path);               
 	            update();
 	        })
@@ -1084,21 +1091,30 @@ var kolekti_browser = function(args) {
     }
     
     // sync callbacks
-    $(parent).on('click', '.kolekti-browser-sync-add', function(event) {
+    $(parent).on('click', '.kolekti-browser-sync-add', function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
 	    $.ajax({
 	        type: 'POST',
 	        url: Urls.kolekti_sync_add(kolekti.project),
-	        data: {"path": get_foder_path() + $(this).closest('tr').data('name')}
-	    }).done(update)
+	        data: {"path": get_folder_path() + $(this).closest('tr').data('name')}
+	    }).done(function() {
+            update()
+        })
+        
 	    
     })
 
-    $(parent).on('click', '.kolekti-browser-sync-remove', function(event) {
+    $(parent).on('click', '.kolekti-browser-sync-remove', function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
 	    $.ajax({
 	        type: 'POST',
 	        url: Urls.kolekti_sync_remove(kolekti.project),
 	        data: {"path": get_folder_path()+ $(this).closest('tr').data('name')}
-	    }).done(update)
+	    }).done(function() {
+            update()
+        })
 	    
     })
     
@@ -1106,15 +1122,23 @@ var kolekti_browser = function(args) {
     if (update_url) {
 	    var currentState = window.history.state;
 	    if(currentState && currentState.path) {
+            console.log('pop curent directory from history');
 	        set_folder_path(currentState.path)
 	    }
         
 	    window.onpopstate = function(event) {
+//            console.log(event);
 	        if(event.state && event.state.path) {
+//                console.log('onpopstate 1');
 		        set_folder_path(event.state.path)
 		        update()
+	        } else if(event.state) {
+//                console.log('onpopstate 2');
+                set_folder_path(event.state[0])
+		        update()
 	        } else {
-                set_folder_path(root + '/')
+//                console.log('onpopstate 3');
+                set_folder_path(root)
 		        update()
 	        }
 	        
