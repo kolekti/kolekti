@@ -177,7 +177,9 @@ class StatusTree(dict):
                 kolekti_status='error'
                     
         elif rstatus in statuses_normal:
-            if wstatus in statuses_absent:
+            if wstatus == pysvn.wc_status_kind.unversioned:
+                kolekti_status='unversioned'
+            elif wstatus in statuses_absent:
                 kolekti_status='update'
             elif wstatus in statuses_modified:
                 kolekti_status = 'commit'
@@ -552,11 +554,26 @@ class SynchroManager(SvnClient):
         return update_revision
 
     def revert(self, files):
-        osfiles = []
+        revosfiles = []
         for f in files:
-            osfiles.append(self.__makepath(f))
-#            logger.debug(self._client.status(self.__makepath(f)))
-        self._client.revert(sorted(osfiles, key = len), recurse = True)
+            osfile = self.__makepath(f)
+            try:
+                status = self._client.status(osfile, recurse=False, get_all=True)[0]
+#                logger.debug(status.text_status)
+                if status.repos_text_status != pysvn.wc_status_kind.none:
+                    revosfiles.append(osfile)
+                elif status.text_status == pysvn.wc_status_kind.added:                    
+                    self._client.remove(osfile)
+            except pysvn.ClientError:
+                if os.path.exists(osfile):
+                    try:
+                        self._client.revert(osfile)
+                    except pysvn.ClientError:
+                        logger.debug(osfile + ' not under VC')
+#                logger.debug(osfile + ' not exist')
+        self._client.revert(sorted(revosfiles, key = len), recurse = True)
+
+
             
     def commit_all(self, log_message):
         log_message = log_message.replace('\r\n', '\n')

@@ -42,7 +42,9 @@ li.sync_node_disabled>ul>li.sync_node_disabled {
     font-style:italic;
 }
 
-.sync_tree span.wstatus-deleted{
+.sync_tree span.wstatus-deleted,
+.sync_tree span.rstatus-deleted
+{
     text-decoration: line-through;
 }
 

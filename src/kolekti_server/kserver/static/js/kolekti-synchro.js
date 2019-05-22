@@ -43,6 +43,7 @@ $(document).ready(function() {
         $('#'  + treeNode.tId+ '_span').addClass('status-' + treeNode.status)
         $('#'  + treeNode.tId+ '_span').addClass('hstatus-' + treeNode.hstatus)
         $('#'  + treeNode.tId+ '_span').addClass('wstatus-' + treeNode.kwstatus)
+        $('#'  + treeNode.tId+ '_span').addClass('rstatus-' + treeNode.krstatus)
         var treestatus = $('#'  + treeNode.tId+ '_span').closest('.ztree').data('status')
         if (treeNode.hstatus != treestatus && treeNode.status != treestatus) {
             $('#'  + treeNode.tId+ '_span').closest('li').addClass('listitem-hiddable')
