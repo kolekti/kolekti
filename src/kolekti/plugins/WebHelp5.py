@@ -172,6 +172,8 @@ class plugin(pluginBase.plugin):
             if d.tag=="{%s}div"%htmlns and d.get('class')=="topicinfo":
                 return False
             if d.tag=="{%s}div"%htmlns and d.get('class')=="topic":
+                if d.xpath("h:div[@class='topicinfo']/h:p[h:span[@class='infolabel']='robots'][h:span[@class='infovalue']='noindex']",namespaces={'h':htmlns}):
+                    return False                
                 if d.xpath("h:div[@class='topicinfo']/h:p[h:span[@class='infolabel']='topic_file']",namespaces={'h':htmlns}):
                     res=d.xpath("h:div[@class='topicinfo']/h:p[h:span[@class='infolabel']='topic_file']/h:span[@class='infovalue']",namespaces={'h':htmlns})[0].text
                 else:
