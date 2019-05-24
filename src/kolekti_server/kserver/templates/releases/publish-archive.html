@@ -27,13 +27,13 @@
     <h4>Profils de publication</h4>
     <ul>
       {% for profile in profiles %}
-      <li> {{ profile }}</li>
+      <li class="profile" data-profile="{{profile}}"> {{ profile }}</li>
       {% endfor %}
     </ul>
     <h4>Scripts</h4>
     <ul>
       {% for script in scripts %}
-    <li> {{ script }}</li>
+    <li class="output" data-output="{{script}}"> {{ script }}</li>
     {% endfor %}
     </ul>
     

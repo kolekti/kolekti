@@ -5,6 +5,14 @@ $(function(){
         return $("li.lang").map(function(){return $(this).data('lang')}).get()
     }
     
+    var get_publish_profiles = function() {
+        return $("li.profile").map(function(){return $(this).data('profile')}).get()
+    }
+    
+    var get_publish_outputs = function() {
+        return $("li.output").map(function(){return $(this).data('output')}).get()
+    }
+    
     $('.btn_publish').on('click', function() {
 	    var release = $('#main').data('release')
 	    var url= Urls.kolekti_release_publish(kolekti.project, release)
@@ -17,12 +25,16 @@ $(function(){
 	    var params = {}
 	    params['prefix']='/tmp/';
 	    params['langs']= get_publish_languages();
-	    var streamcallback = function(data) {
+	    params['profiles']= get_publish_profiles();
+	    params['outputs']= get_publish_outputs();
+
+        var streamcallback = function(data) {
 	        $("#pub_results").html(data);
 	    }
-	
+	    
 	    $.ajaxPrefilter("html streamed", function(){return "streamed"});
 	    streamedTransport(streamcallback);
+        
 	    $.ajax({
 	        url:url,
 	        type:'POST',

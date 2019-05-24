@@ -127,7 +127,6 @@ class Converter(ConvertMixin):
         self.lang = lang
         self.source_project = source_project
         self._appdir = os.path.dirname(os.path.realpath( __file__ ))
-        
     
     def get_xsl(self, name, args):
         extclass = XSLExtensions
@@ -295,7 +294,8 @@ class Converter(ConvertMixin):
                     ods_path = os.path.join(releasepath, 'sources', lang, 'variables', 'ods')
                     xml_path = '/' + '/'.join([release_parent_dir, releasename, 'sources', lang, 'variables', ods_file.replace('.ods', '.xml')])
                     myzip.extract(f, ods_path)
-                    converter = OdsToXML(project_path)
+                    kolekti_args = args.get('kolekti')
+                    converter = OdsToXML(*kolekti_args)
                     converter.convert(os.path.join(ods_path, f), xml_path, sync = False)
         return releasename
         

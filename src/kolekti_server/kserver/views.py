@@ -356,7 +356,8 @@ class ReleaseArchiveView(kolektiMixin, TemplateView):
                         converter = convert06.Converter(lang, kolekti.getOsPath(path))
                         releasename = converter.convert_enveloppe({
                             'enveloppe': kolekti.getOsPath(zippath),
-                            'target_project':kolekti.getOsPath('/')
+                            'target_project':kolekti.getOsPath('/'),
+                            'kolekti':kolekti.args,
                             }, 'tmp')
                         newpath = "/tmp/" + releasename
 
