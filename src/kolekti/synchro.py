@@ -428,18 +428,17 @@ class SynchroManager(SvnClient):
 
                     }
             if status.entry is not None:
-                for k, p in dict(status.entry).items():
-                    item.update({
-                        k:str(p)
-                        })
+                # for k, p in dict(status.entry).items():
+                #     item.update({
+                #         k:str(p)
+                #         })
                 item.update({
-                #     "kind":str(status.entry.kind),
+                     "kind":str(status.entry.kind),
                      "author":status.entry.commit_author,
-                #     "conflict_old":status.entry.conflict_old,
-                #     "conflict_work":status.entry.conflict_work,
-                #     "conflict_new":status.entry.conflict_new,
-                    
-                     })
+                     "conflict_old":status.entry.conflict_old,
+                     "conflict_work":status.entry.conflict_work,
+                     "conflict_new":status.entry.conflict_new,                    
+                    })
             else:
                 item.update({"kind":"none"})
             if path == "":
