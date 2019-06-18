@@ -21,6 +21,13 @@
 
 {% block operation %}
 
+{% if error %}
+<div class="alert alert-warning">
+  <p>Une erreur s'est produite au cours de la synchronisation, contactez votre support technique</p>
+  <pre>{{error}}</pre>
+</div>
+{% else %}
+
 {% if svn_url == "local" %}
 
 <div class="alert alert-warning">
@@ -35,7 +42,7 @@
   <h3>
 	<strong>Attention</strong> : les mêmes fichiers ont été modifiés par vous et par les autres rédacteurs
   </h3>
-  <form autocomplete="off" class="form-horizontal" method="POST">
+  <form autocomplete="off" class="form-horizontal" method="POST" action="{% url 'kolekti_sync'  project=project %}">
     {% csrf_token %}
 	<input  type="hidden" name="action" value="conflict"/>
     <div class="panel panel-default top-margin">
@@ -104,7 +111,7 @@
 
 <div class="sync_merge sync_hidden">
 <div class="alert alert-warning">
-  <form autocomplete="off" class="form-horizontal" method="POST">
+  <form autocomplete="off" class="form-horizontal" method="POST" action="{% url 'kolekti_sync'  project=project %}">
     {% csrf_token %}
 	<input  type="hidden" name="action" value="merge"/>
     <h3>Fusion des modifications concurrentes</h3>
@@ -166,7 +173,7 @@
 
 <div class="sync_update sync_hidden">
   <div class="alert alert-info">
-    <form autocomplete="off" class="form-horizontal" method="POST">
+    <form autocomplete="off" class="form-horizontal" method="POST" action="{% url 'kolekti_sync'  project=project %}">
       {% csrf_token %}
 	  <input  type="hidden" name="action" value="update"/>
       <h3>Récupération des modifications des autres rédacteurs</h3>
@@ -200,7 +207,7 @@
 
 <div class="sync_commit sync_hidden">
 <div class="alert alert-info">
-  <form autocomplete="off" class="form-horizontal" method="POST">
+  <form autocomplete="off" class="form-horizontal" method="POST" action="{% url 'kolekti_sync'  project=project %}">
     {% csrf_token %}
 	<input  type="hidden" name="action" value="commit"/>
     <h3>Envoi des fichiers modifiés</h3>
@@ -249,6 +256,8 @@
 </div>
 </div>
 {% endif %}
+{% endif %}
+
 {% endblock %}
 
 

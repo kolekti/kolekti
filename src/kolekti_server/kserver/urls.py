@@ -136,6 +136,7 @@ urlpatterns = [
         url(r'^api/', include([
             url(r'^sync/', include([        
                 url(r'^$', SyncView.as_view(), name='kolekti_sync'),
+                url(r'^error/(?P<stacktrace>.*)', SyncView.as_view(), name='kolekti_sync_error'),
                 url(r'^diff$', SyncDiffView.as_view(), name='kolekti_sync_diff'),
                 url(r'^status$', SyncStatusView.as_view(), name='kolekti_sync_status'),
                 url(r'^remotestatus$', SyncRemoteStatusView.as_view(), name='kolekti_sync_remote_status'),

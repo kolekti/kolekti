@@ -2201,7 +2201,8 @@ class SearchView(kolektiMixin, TemplateView):
 
 class SyncView(kolektiMixin, TemplateView):
     template_name = "synchro/main.html"
-    def get(self, request, project):
+    def get(self, request, project, stacktrace = None):
+        logger.debug(stacktrace)
         try:
             context, kolekti = self.get_context_data({'project':project})
             sync = self.get_sync_manager(kolekti)
@@ -2210,6 +2211,7 @@ class SyncView(kolektiMixin, TemplateView):
             context.update({
                     "history": sync.history(),
                     "changes": statuses,
+                    "error":stacktrace.replace('@@', '\r'),
 #                    "root_statuses":root_statuses,
                     })
 #            logger.debug('render')
@@ -2282,7 +2284,10 @@ class SyncView(kolektiMixin, TemplateView):
             return HttpResponseRedirect(reverse('kolekti_sync', kwargs={'project': project}))            
         except:
             logger.exception("Unable to get sync tree")
-            return HttpResponse(json.dumps({'status':'E', "action":action, 'stacktrace':traceback.format_exc()}), content_type="application/json", status=403)
+            st = traceback.format_exc()
+            st = st.replace('\n','@@')
+            return HttpResponseRedirect(reverse('kolekti_sync_error', kwargs={'project': project, 'stacktrace':st}))            
+#            return HttpResponse(json.dumps({'status':'E', "action":action}), content_type="application/json", status=403)
             
 class SyncStatusTreeView(kolektiMixin, View):
     def get(self, request, project):

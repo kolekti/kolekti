@@ -99,13 +99,20 @@ class StatusTree(dict):
             self.display(node = node[child], depth = depth + 1)
 
     def update_statuses(self, node = None):
+
         if node is None:
             node = self
+
         if len(node.keys()) == 1 and '__self' in node.keys() :
             children_statuses = []
         else:
             children_statuses = [self.update_statuses(node = node[child]) for child in node.keys() if not child=='__self']
         status = self._node_status(node, children_statuses)
+        # if node['__self']['path'] == "sources/en/pictures/img2.jpg":
+        #     logger.debug("node")
+        #     logger.debug(node['__self']['path'])
+        #     logger.debug(status)
+        #     logger.debug(children_statuses)
         
         
         if 'error' in  children_statuses:
@@ -147,14 +154,22 @@ class StatusTree(dict):
                 "rstatus" : str(rstatus),
                 "wpropstatus" : str(wpropstatus),
                 "rpropstatus" : str(rpropstatus),
+
                 })
         except KeyError:
             return ''
-
+        # if node['__self']['path'] == "sources/en/pictures/img2.jpg":
+        #     logger.debug("node -- ")
+        #     logger.debug(node['__self']['path'])
+        #     logger.debug(rstatus)
+        #     logger.debug(wstatus)
+        #     logger.debug(rpropstatus)
+        #     logger.debug(wpropstatus)
+        #     logger.debug("node -- ")
         if rstatus in statuses_modified:
             if wstatus == pysvn.wc_status_kind.added:
                 kolekti_status='conflict'                
-            elif wstatus == pysvn.wc_status_kind.unversioned:
+            elif wstatus == pysvn.wc_status_kind.unversioned:                
                 kolekti_status='conflict'
             elif wstatus in statuses_modified:
                 if (rstatus == pysvn.wc_status_kind.deleted) and (wstatus == pysvn.wc_status_kind.deleted or wstatus == pysvn.wc_status_kind.unversioned):
@@ -191,17 +206,26 @@ class StatusTree(dict):
         else:
             kolekti_status='error'
             
+        # if node['__self']['path'] == "sources/en/pictures/img2.jpg":
+        #     logger.debug(kolekti_status)
+        #     logger.debug(wpropstatus)
+        #     logger.debug(rpropstatus)
         # properties
         
         if wpropstatus in statuses_modified:
             if rpropstatus in statuses_modified:
-                kolekti_status='conflict'
+                if kolekti_status in ['ok', 'commit', 'update']:
+                    kolekti_status = 'conflict'
             else:
-                kolekti_status = 'commit'
+                if kolekti_status in ['ok', 'update']:
+                    kolekti_status = 'commit'
         else:
             if rpropstatus in statuses_modified:
-                kolekti_status='update'
+                if kolekti_status in ['ok']:
+                    kolekti_status='update'
                 
+#        if node['__self']['path'] == "sources/en/pictures/img2.jpg":
+#            logger.debug(kolekti_status)            
         return kolekti_status
 
 
@@ -267,7 +291,7 @@ class SvnClient(object):
 
         def callback_conflict_resolver(arg):
             try:
-#                logger.debug(arg)
+                logger.debug(arg)
                 conflict_choice = "mine_full"
                 save_merged = None
                 merge_file = None
@@ -386,7 +410,12 @@ class SynchroManager(SvnClient):
         for status in statuses:
             if status.text_status == pysvn.wc_status_kind.ignored:
                 continue
-            
+            # if status.path == "/projects/waloo/K--tests/sources/en/pictures/img2.jpg":
+            #     logger.debug('------------------------')
+            #     logger.debug(status.repos_text_status)            
+            #     logger.debug(status.text_status)            
+            #     logger.debug(status.repos_prop_status)            
+            #     logger.debug(status.prop_status)            
             item_path = self._localpath(status.path)
 
             item = {"path":item_path,
@@ -396,10 +425,21 @@ class SynchroManager(SvnClient):
                     "wstatus":status.text_status,
                     "rpropstatus":status.repos_prop_status,
                     "wpropstatus":status.prop_status,
+
                     }
             if status.entry is not None:
-                item.update({"kind":str(status.entry.kind),
-                             "author":status.entry.commit_author})
+                for k, p in dict(status.entry).items():
+                    item.update({
+                        k:str(p)
+                        })
+                item.update({
+                #     "kind":str(status.entry.kind),
+                     "author":status.entry.commit_author,
+                #     "conflict_old":status.entry.conflict_old,
+                #     "conflict_work":status.entry.conflict_work,
+                #     "conflict_new":status.entry.conflict_new,
+                    
+                     })
             else:
                 item.update({"kind":"none"})
             if path == "":
