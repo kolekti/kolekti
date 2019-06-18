@@ -2207,15 +2207,16 @@ class SyncView(kolektiMixin, TemplateView):
             context, kolekti = self.get_context_data({'project':project})
             sync = self.get_sync_manager(kolekti)
             statuses = sync.statuses(recurse = False)
-#            root_statuses = [statuses[i]['__self']['kolekti_status'] for i in statuses.keys()]
             context.update({
                     "history": sync.history(),
                     "changes": statuses,
+                })
+
+            if stacktrace is not None:
+                context.update({
                     "error":stacktrace.replace('@@', '\r'),
-#                    "root_statuses":root_statuses,
-                    })
-#            logger.debug('render')
-            
+                })
+
         except ExcSyncNoSync:
             logger.exception("Synchro unavailable")
             context.update({'status':'nosync'})
