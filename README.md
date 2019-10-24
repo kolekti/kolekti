@@ -69,7 +69,7 @@ Editer le fichier `.env` pour configurer l'environnement dans lequel est lancé 
 Données utilisateur
 -------------------
 
-Les données *utilisateur* de Kolekti : projets, dépôts svn, logs, base de données pour la gestion des utilisateurs, sont présente dans le sous-dossier *run* du dossier Kolekti.
+Les données *utilisateur* de Kolekti : projets, dépôts svn, logs, base de données pour la gestion des utilisateurs, sont présentes dans le sous-dossier *run* du dossier Kolekti.
 
 Il convient de crééer ces dossiers, avant de démarrer kolekti :
 
