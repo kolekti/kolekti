@@ -15,6 +15,8 @@ services:
       - "${KOLEKTI_PRIVATE}/prince:/usr/lib/prince/license"
     ports:
       - "8000"
+    restart:
+      always
     environment:
       PYTHONPATH: /kolekti/src
       GUNICORN_OPTS:

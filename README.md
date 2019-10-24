@@ -73,7 +73,7 @@ Les données *utilisateur* de Kolekti : projets, dépôts svn, logs, base de don
 
 Il convient de crééer ces dossiers, avant de démarrer kolekti :
 
-    mkdir -p run/db run/logs run/fonts run/prince run/projects run/svn run/log/kolekti
+    mkdir -p run/db run/fonts run/prince run/projects run/svn run/log/kolekti run/log/apache2
 
 
 Lancement du serveur
