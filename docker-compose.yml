@@ -5,7 +5,7 @@ services:
 #    image: local-kolekti-base-stretch
     image: sbonhomme/kolekti-base:stretch
     volumes:
-      - "${KOLEKTI_SRC}:/kolekti:rw"
+      - "${KOLEKTI_SRC}:/kolekti/src:rw"
       - "${KOLEKTI_STATIC}:/static:rw"
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_PROJECTS}:/projects:rw"
@@ -44,7 +44,7 @@ services:
     image: sbonhomme/kolekti-front
 #    image: local-kolekti-front
     volumes:
-      - "${KOLEKTI_SRC}:/kolekti:rw"      
+      - "${KOLEKTI_SRC}:/kolekti/src:rw"      
       - "${KOLEKTI_STATIC}:/static:ro"
       - "${KOLEKTI_SVN}:/svn:rw"
       - "${KOLEKTI_LOG}:/var/log:rw"
