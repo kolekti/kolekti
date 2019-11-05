@@ -2,8 +2,9 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 
 from kserver_saas.models import Project, UserProfile, UserProject
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from allauth.account.models import Account, EmailAddress 
+from allauth.account.models import EmailAddress
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 
@@ -16,22 +17,18 @@ class Command(BaseCommand):
         parser.add_argument('project', type=str)
 
     def _create_user(self, username, password):
-        user = User(
-            username = username,            
-        )
-        user.set_password(password)
-        user.email = "dummy@kolekti.org"
+        User = get_user_model()
+        user = User.objects.create_user(username, password=password)
+        user.is_superuser=False
+        user.is_staff=False
+        user.email = username + "@dummy.org"
         user.save()
-        account = Account(
-            user=user
-            )
-        account.save()
+
+        email = EmailAddress.objects.create(user = user,
+                                    email = username + "dummy.org",
+                                    primary = True,
+                                    verified = True)
         
-        email = EmailAddress(
-            email = "dummy@kolekti.org",
-        )
-        email.user=user
-        email.verified=True
         email.save()
         
         return user
@@ -47,10 +44,11 @@ class Command(BaseCommand):
 
     
     def handle(self, *args, **options):
-        from django.conf import settings
+        User = get_user_model()
         user = options['user']
         project = options['project']
         password = options['password']
+        
         try :
             user = User.objects.get(username=user)
             self.stdout.write("User already exist")
