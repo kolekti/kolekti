@@ -84,10 +84,21 @@
       </span>
       <xsl:choose>
 	    <xsl:when test="@id">
-	      <a href="#{@id}"><xsl:apply-templates  mode="titletoc"/></a>
+	      <a href="#{@id}">
+            <xsl:apply-templates  mode="titletoc"/>
+            <xsl:if test="/html:html/html:body[@lang='he'] or /html:html/html:body[@lang='ar']">
+              <span>&#8207;</span>
+            </xsl:if>
+          </a>
 	    </xsl:when>
 	    <xsl:otherwise>
-	      <a href="#toc{generate-id()}"><xsl:apply-templates  mode="titletoc"/></a>
+	      <a href="#toc{generate-id()}">
+            <xsl:apply-templates  mode="titletoc"/>
+            <xsl:if test="/html:html/html:body[@lang='he'] or /html:html/html:body[@lang='ar']">
+              <span>&#8207;</span>
+            </xsl:if>
+      
+          </a>
 	    </xsl:otherwise>
       </xsl:choose>
     </p>
