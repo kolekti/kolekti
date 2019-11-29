@@ -12,6 +12,7 @@ import traceback
 from datetime import datetime
 import time
 from lxml import etree as ET
+from xml.sax.saxutils import escape
 import base64
 from PIL import Image
 import urllib, urllib2
@@ -1372,11 +1373,30 @@ class VariablesListView(kolektiMixin, TemplateView):
     template_name = "variables/list.html"
     
 class VariablesMixin(kolektiMixin):
+
+    def iterval(self,root):
+        if root.text:
+            yield escape(root.text)
+        for el in root:
+            yield ET.tostring(el)
+        if root.tail:
+            yield escape(root.tail)
+            
     def getval(self, val):
         try:
-            return val.find('content').text
+#            return val.find('content').text
+            return "".join(self.iterval(val.find("content")))
         except AttributeError:
             return ""
+        
+    def setval(self, val, content):
+        span = ET.XML("<span>" + content +"</span>")
+        if span.text:
+            val.text = span.text
+        for el in span:
+            val.append(el)
+        if span.tail:
+            val.tail = span.tail
         
     def variable_details(self, context, kolekti, release, lang, path, include_values = False):
         name = path.rsplit('/',1)[-1]
@@ -1427,7 +1447,8 @@ class VariablesPostMixin(VariablesMixin):
             xvar = kolekti.parse(variables_file)
             for var, mvar in zip(xvar.xpath('/variables/variable'), payload.get('data')):
                 for (val, mval) in zip(var.xpath('value/content'), mvar):
-                    val.text = mval
+                    self.setval(val, mval)
+            logger.debug(variables_file)
             kolekti.xwrite(xvar, variables_file)
             return HttpResponse('ok')
         except:

@@ -168,4 +168,10 @@ version="1.0"
   </text:span>
 </xsl:template>
 
+<xsl:template match="a" mode="table-rowvalues">
+  <text:a xlink:href="{@href}" xlink:type="simple">
+    <xsl:apply-templates mode="table-rowvalues"/>
+  </text:a>
+</xsl:template>
+
 </xsl:stylesheet>

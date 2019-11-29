@@ -7,7 +7,7 @@ xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
 xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" 
 xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" 
 xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
-
+xmlns:xlink="http://www.w3.org/1999/xlink"
   exclude-result-prefixes="office style text table fo"
   version="1.0">
 
@@ -70,6 +70,12 @@ xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
      <xsl:apply-templates/>
   </xsl:template>
 
+  <xsl:template match="text:a">
+    <a href="{@xlink:href}">
+      <xsl:apply-templates/>
+    </a>
+  </xsl:template>
+  
   <xsl:template match="text:span[@text:style-name]">
     <xsl:message>span <xsl:value-of select="@text:style-name"/></xsl:message>
     <xsl:call-template name="checksup">
@@ -79,7 +85,8 @@ xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
   </xsl:template>
 
   <xsl:template match="text()">
-    <xsl:value-of select="normalize-space(.)"/>
+<!--    <xsl:value-of select="normalize-space(.)"/> -->
+    <xsl:copy/>
   </xsl:template>
 
   <xsl:template name="checksup">
