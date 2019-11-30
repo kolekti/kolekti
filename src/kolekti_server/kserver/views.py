@@ -1390,13 +1390,14 @@ class VariablesMixin(kolektiMixin):
             return ""
         
     def setval(self, val, content):
+        for el in val:
+            val.remove(el)
+            val.text=""
         span = ET.XML("<span>" + content +"</span>")
         if span.text:
             val.text = span.text
         for el in span:
             val.append(el)
-        if span.tail:
-            val.tail = span.tail
         
     def variable_details(self, context, kolekti, release, lang, path, include_values = False):
         name = path.rsplit('/',1)[-1]
