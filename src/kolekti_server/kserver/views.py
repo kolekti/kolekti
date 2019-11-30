@@ -1379,9 +1379,9 @@ class VariablesMixin(kolektiMixin):
             yield escape(root.text)
         for el in root:
             yield ET.tostring(el)
-        if root.tail:
-            yield escape(root.tail)
-            
+#            if el.tail:
+#                yield escape(el.tail)
+
     def getval(self, val):
         try:
 #            return val.find('content').text
