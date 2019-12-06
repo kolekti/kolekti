@@ -36,7 +36,7 @@ class plugin(pluginBase.plugin):
         sk = _winreg.OpenKey(aKey, gsversion)
         gspaths = _winreg.QueryValueEx(sk,'GS_LIB')
         path = gspaths[0].split(';')[0]
-        print 'ghostscript path',path
+#        print 'ghostscript path',path
         return path
     
     def postpub(self):
@@ -45,7 +45,7 @@ class plugin(pluginBase.plugin):
         """
         res = []
         logging.debug( "serialize pdf  : %s %s"%(self.assembly_dir,self.publication_dir))
-        print "serialize pdf",self.assembly_dir,self.publication_dir,self.pivot
+#        print "serialize pdf",self.assembly_dir,self.publication_dir,self.pivot
         res = self.start_cmd()
         return res
     
