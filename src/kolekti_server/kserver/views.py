@@ -2541,8 +2541,8 @@ class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
             })
         
         xsl = kolekti.get_xsl('django_edit_topic_assembly')
-        
-        assembly = kolekti.parse('/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang))
+        assembly_path = u'/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
+        assembly = kolekti.parse(assembly_path)
 
         topic = xsl(assembly, topic_id= "'%s'"%topic_id)
         doctype = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -2562,7 +2562,8 @@ class ReleaseLangEditTopicView(kolektiMixin, TemplateView):
         try:
             topic = request.body
             xtopic = kolekti.parse_string(topic)
-            assembly_path = '/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
+            assembly_path = u'/releases/{r}/sources/{l}/assembly/{r}_asm.html'.format(r=release, l=lang)
+
             assembly = kolekti.parse(assembly_path)
 
             assembly_topic = assembly.xpath('//*[@id="%s"]'%topic_id)[0]
