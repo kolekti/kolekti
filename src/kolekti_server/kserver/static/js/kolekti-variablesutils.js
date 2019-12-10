@@ -58,6 +58,7 @@ var upload_varfile = function(e) {
         url: uploadurl,
         type: 'POST',
         xhr: function() {  // custom xhr
+            $("#uploadprogress").modal('show');
             myXhr = $.ajaxSettings.xhr();
             if(myXhr.upload){ // if upload property exists
                 myXhr.upload.addEventListener('progress', progressHandlingFunction, false); // progressbar
@@ -66,10 +67,12 @@ var upload_varfile = function(e) {
         },
         //Ajax events
         success: function() {
+            $("#uploadprogress").modal('hide');
             window.location.reload()
             //	    update_function()
 	    },
         error: errorHandler = function(jqXHR,textStatus,errorThrown) {
+            $("#uploadprogress").modal('hide');
             //	    console.log(textStatus);
             //	    console.log(errorThrown);
             alert("Erreur lors du transfert");

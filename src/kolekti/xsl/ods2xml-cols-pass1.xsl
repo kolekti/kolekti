@@ -8,7 +8,7 @@ xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
 xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" 
 xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
 xmlns:xlink="http://www.w3.org/1999/xlink"
-  exclude-result-prefixes="office style text table fo"
+  exclude-result-prefixes="office style text table fo xlink"
   version="1.0">
 
   <xsl:output method="xml" indent="yes"/>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet 
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"   
-  exclude-result-prefixes="v"
-  version="1.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    exclude-result-prefixes="v"
+    version="1.0">
 
  <xsl:output method="xml" indent="yes"/>
 
   <xsl:template match="/">
     <variables>
       <critlist>
-	<xsl:apply-templates select="variables/critlist/row/hcell" mode="critlist"/>
+	    <xsl:apply-templates select="variables/critlist/row/hcell" mode="critlist"/>
       </critlist>
       <xsl:apply-templates select="variables/values/row"/>
     </variables>
@@ -28,11 +28,13 @@
   </xsl:template>
 
   <xsl:template match="cell">
-    <value>
-      <xsl:variable name="pos" select="position()"/>
-      <xsl:apply-templates select="/variables/critlist/row/cell[$pos]" mode="crits"/>
-      <content><xsl:copy-of select="node()"/></content>
-    </value>
+    <xsl:variable name="pos" select="position()"/>
+    <xsl:if test="/variables/critlist/row/cell[$pos][text()]">
+      <value>
+        <xsl:apply-templates select="/variables/critlist/row/cell[$pos]" mode="crits"/>
+        <content><xsl:copy-of select="node()"/></content>
+      </value>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template match="cell" mode="crits">
