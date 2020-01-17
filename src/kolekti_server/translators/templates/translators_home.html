@@ -38,8 +38,10 @@
     <div class="panel panel-default">
       <div class="panel-body">
         {% for release in releases %}
-        <p><a class="sidelink" href="#{{ release.project.directory }}_{{ release.release_name }}">
+        {% with release.project.directory|add:'_'|add:release.release_name|slugify as rel_id %}
+        <p><a class="sidelink" href="#{{ rel_id }}">
             [{{ release.project.directory }}] {{ release.release_name }}</a></p>
+        {% endwith %}
         {% endfor %}
       </div>
     </div>
@@ -48,7 +50,7 @@
   <div class="col-md-7">
 
     {% for release in releases %}
-    {% with release.project.directory|add:'_'|add:release.release_name as rel_id %}
+    {% with release.project.directory|add:'_'|add:release.release_name|slugify as rel_id %}
     <div class="panel panel-default release"
          data-project="{{ release.project.directory }}"
          data-release="{{ release.release_name }}"
