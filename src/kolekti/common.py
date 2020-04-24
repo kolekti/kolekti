@@ -26,8 +26,15 @@ from lxml import etree as ET
 
 from kolekti.exceptions import *
 from settings import settings
-from synchro import SynchroManager
-from searchindex import IndexManager
+try:
+    from synchro import SynchroManager
+except:
+    pass
+
+try:
+    from searchindex import IndexManager
+except:
+    pass
 
 LOCAL_ENCODING=sys.getfilesystemencoding()
 

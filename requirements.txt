@@ -5,4 +5,5 @@ lxml
 pypdf2
 whoosh
 unidecode
+django
 # WeasyPrint

@@ -7,10 +7,10 @@ shift
 
 # echo \
 docker run --rm \
-           -v $PROJECT:/project \
+           -v $PROJECT:/usr/lib/kolekti/project \
            -v $PROJECT/kolekti/fonts:/usr/share/fonts/extra \
            -v $PROJECT/kolekti/princexml:/usr/lib/prince/license \
            -ti \
            --entrypoint "kolekti" \
-           kolekti-cli -b /project $@
+           kolekti-cli -b /usr/lib/kolekti/project $@
 }

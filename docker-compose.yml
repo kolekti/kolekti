@@ -4,7 +4,7 @@ services:
     build: .
     image: kolekti-cli
     volumes:
-      - "${KOLEKTI_PROJECT}:/project:rw"
+      - "${KOLEKTI_PROJECT}:/usr/lib/kolekti/project:rw"
       - "${KOLEKTI_PROJECT}/kolekti/fonts:/usr/share/fonts/extra"
       - "${KOLEKTI_PROJECT}/kolekti/princexml:/usr/lib/prince/license"
     environment:
