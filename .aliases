@@ -1,2 +1,16 @@
-alias kolekti-manage="docker exec -ti kolekti_kolekti_1 python /kolekti/src/kolekti_server/manage.py"
-alias kolekti="docker exec -ti kolekti_kolekti_1 python /kolekti/src/kolekti_run.py"
+# alias kolekti="docker run -ti kolekti-cli kolekti"
+
+kolekti() {
+
+PROJECT=$1
+shift
+
+# echo \
+docker run --rm \
+           -v $PROJECT:/project \
+           -v $PROJECT/kolekti/fonts:/usr/share/fonts/extra \
+           -v $PROJECT/kolekti/princexml:/usr/lib/prince/license \
+           -ti \
+           --entrypoint "kolekti" \
+           kolekti-cli -b /project $@
+}

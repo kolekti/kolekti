@@ -48,3 +48,4 @@ RUN update-alternatives --install /usr/bin/kolekti  kolekti /usr/lib/kolekti/kol
 
 ENV LANG C.UTF-8
 
+CMD ["kolekti"]
