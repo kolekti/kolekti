@@ -1,0 +1,8 @@
+pygal
+diff_match_patch
+xmldiff
+lxml
+pypdf2
+whoosh
+unidecode
+# WeasyPrint
