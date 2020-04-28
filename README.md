@@ -71,6 +71,7 @@ Vous pouvez alors utiliser les alias :
     `kolekti /my/project ... ` : pour lancer kolekti en CLI
     
 Pour que la commande kolekti soit toujours disponible dans les shells (lançable depuis n'importe quel emplacement), copiez le contenu de .aliases et ajoutez-le à la fin de ~/.bashrc
+
 Cela peut être effectué à l'aide de la commande : 
 
      cat .aliases >> ~/.bashrc
