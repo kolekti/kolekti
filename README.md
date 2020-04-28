@@ -38,13 +38,13 @@ Prérequis
 Initialisation
 --------------
 
-Pour initialiser l'image kolekti-cli, lancez la commande (toujours dans le dossier kolekti)
+Pour initialiser l'image kolekti-cli, lancez la commande (toujours dans le dossier `kolekti`)
 
     docker-compose build
     
 Note : plus de 1 Go sont téléchargés (patience)
     
-Lancer kolekti
+Lancement
 --------------
 
 Pour lancer kolekti, lancez le conteneur en lui spécifiant le chemin d'accès à la base kolekti :
@@ -58,17 +58,22 @@ Dans le dossier `kolekti`
 
     KOLEKTI_PROJECT=/my/project docker-compose run --rm kolekti -b /project ...
 
-### en utilisant un alias 
+### En utilisant un alias 
 
-le fichier .aliases contient des alias utiles pour administrer et utiliser kolekti en ligne de commande.
+Le fichier .aliases contient des alias utiles pour administrer et utiliser kolekti en ligne de commande.
 
-pour installer les alias dans votre shell :
+Pour installer les alias dans votre shell (toujours dans le dossier `kolekti`) :
 
     source .aliases
 
-vous pouvez alors utiliser les alias :
+Vous pouvez alors utiliser les alias :
 
     `kolekti /my/project ... ` : pour lancer kolekti en CLI
+    
+Pour que la commande kolekti soit toujours disponible dans les shells (lançable depuis n'importe quel emplacement), copiez le contenu de .aliases et ajoutez-le à la fin de ~/.bashrc
+Cela peut être effectué à l'aide de la commande : 
+
+     cat .aliases >> ~/.bashrc
 
 
 Configuration
