@@ -194,6 +194,26 @@
     </parameters>
   </pubscript>
 
+  <pubscript id="plaintext" type="shell">
+    <name>Générer fichier de contrôle TXT</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t plain -o "_PUBDIR_/_PUBNAME_.txt"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.txt"/>
+    <parameters />
+  </pubscript>
+
+    <pubscript id="markdown" type="shell">
+    <name>Générer fichier de contrôle MKD</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t markdown -o "_PUBDIR_/_PUBNAME_.md"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.md"/>
+    <parameters />
+  </pubscript>
+
+    <pubscript id="asciidoc" type="shell">
+    <name>Générer fichier de contrôle ADOC</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t asciidoc -o "_PUBDIR_/_PUBNAME_.adoc"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.adoc"/>
+    <parameters />
+  </pubscript>
 
 
 
