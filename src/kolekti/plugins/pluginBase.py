@@ -42,8 +42,38 @@ class PluginsExtensions(PublisherExtensions):
     def process_path(self, path):
         return self._resdir + "/" +super(PluginsExtensions, self).process_path(path)
     
+    def picture_info(self, _, *args):
+        picture_path = args[0]
+        path = self.process_path(picture_path)
+        ospath = self.syspath(path)
+        from PIL import Image
+        try:
+            im = Image.open(ospath)
+            try :
+                dpi = im.info['dpi']
+            except KeyError:
+                dpi = "?"
+            info = "{fileweight}o {format} {mode} {size}px  dpi:{dpi}".format(
+                fileweight = os.path.getsize(ospath),
+                format = im.format,
+                mode = im.mode,
+                size = im.size,
+                dpi = dpi,
+            )
+        except IOError:
+            info = ""
+        return info
     
-
+    def picture_hash(self, _, *args):
+        picthash =""
+        picture_path = args[0]
+        path = self.process_path(picture_path)
+        ospath = self.syspath(path)
+        import hashlib
+        with open(ospath) as pictfile:
+            picthash = hashlib.md5(pictfile.read()).hexdigest()
+        return picthash
+    
 class plugin(PublisherMixin,kolektiBase):
     _plugin="dummy"
     LOCAL_ENCODING=sys.getfilesystemencoding()

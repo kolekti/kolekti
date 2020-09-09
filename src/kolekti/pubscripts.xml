@@ -21,6 +21,7 @@
     </parameters>
   </pubscript>
 
+   
   <pubscript id="princexml_nbpage" type="plugin" multi="yes" input="pivot" output="pdf">
     <name>Générer pdf avec PrinceXML 2 passes (comptage pages)</name>
     <plugin>princexml_nbpage</plugin>
@@ -32,6 +33,32 @@
     </parameters>
   </pubscript>
 
+
+
+  <pubscript id="plaintext_multi" type="shell" multi="yes" input="pivot" output="txt">
+    <name>Générer fichier de contrôle TXT</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t plain -o "_PUBDIR_/_PUBNAME_.txt"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.txt"/>
+    <parameters />
+  </pubscript>
+
+    <pubscript id="markdown_multi" type="shell" multi="yes" input="pivot" output="md">
+    <name>Générer fichier de contrôle MKD</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t markdown -o "_PUBDIR_/_PUBNAME_.md"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.md"/>
+    <parameters />
+  </pubscript>
+
+    <pubscript id="asciidoc_multi" type="shell" multi="yes" input="pivot" output="adoc">
+    <name>Générer fichier de contrôle ADOC</name>
+    <cmd>pandoc -s -r html "_PIVOT_" -t asciidoc -o "_PUBDIR_/_PUBNAME_.adoc"</cmd>
+    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.adoc"/>
+    <parameters />
+  </pubscript>
+
+  
+
+  
   <pubscript id="weasyprint" type="plugin">
     <name>Générer pdf avec weasyprint</name>
     <plugin>pdf_weasyprint</plugin>
@@ -42,7 +69,6 @@
     </parameters>
   </pubscript>
 
-  
   <pubscript id="ExportPublicationToFolder" multi="yes" type="plugin">
     <name>Copier la publication vers un dossier</name>
     <plugin>ExportPublicationToFolder</plugin>
