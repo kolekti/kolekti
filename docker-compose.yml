@@ -1,9 +1,7 @@
 version: '2'
 services:
   kolekti:
-#    image: local-kolekti-base
-#    image: local-kolekti-base-stretch
-    image: sbonhomme/kolekti-base:stretch
+    image: sbonhomme/kolekti-base:${DEBIAN_VERSION}
     volumes:
       - "${KOLEKTI_SRC}:/kolekti/src:rw"
       - "${KOLEKTI_STATIC}:/static:rw"
@@ -22,7 +20,6 @@ services:
       GUNICORN_OPTS:
       UID:
       GID:
-#      KOLEKTI_DBFILE: /db/db.sqlite3
       KOLEKTI_PRIVATE: /private
       KOLEKTI_EMAIL_HOST:
       KOLEKTI_EMAIL_PORT:
@@ -43,8 +40,7 @@ services:
       
   front:
     # the front is an apache, acting as a proxy to wsgi, serving static content and doing svn
-    image: sbonhomme/kolekti-front
-#    image: local-kolekti-front
+    image: sbonhomme/kolekti-front:${DEBIAN_VERSION}
     volumes:
       - "${KOLEKTI_SRC}:/kolekti/src:rw"      
       - "${KOLEKTI_STATIC}:/static:ro"
