@@ -45,14 +45,14 @@
     <pubscript id="markdown_multi" type="shell" multi="yes" input="pivot" output="md">
     <name>Générer fichier de contrôle MKD</name>
     <cmd>pandoc -s -r html "_PIVOT_" -t markdown -o "_PUBDIR_/_PUBNAME_.md"</cmd>
-    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.md"/>
+    <link name="_PUBNAME_.md" ref="_PUBDIR_/_PUBNAME_.md"/>
     <parameters />
   </pubscript>
 
     <pubscript id="asciidoc_multi" type="shell" multi="yes" input="pivot" output="adoc">
     <name>Générer fichier de contrôle ADOC</name>
     <cmd>pandoc -s -r html "_PIVOT_" -t asciidoc -o "_PUBDIR_/_PUBNAME_.adoc"</cmd>
-    <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.adoc"/>
+    <link name="_PUBNAME_.adoc" ref="_PUBDIR_/_PUBNAME_.adoc"/>
     <parameters />
   </pubscript>
 
