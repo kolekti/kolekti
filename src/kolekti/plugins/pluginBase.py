@@ -46,6 +46,8 @@ class PluginsExtensions(PublisherExtensions):
         picture_path = args[0]
         path = self.process_path(picture_path)
         ospath = self.syspath(path)
+        if not os.path.exists(ospath):
+            return "[DANGER] Image Manquante"
         from PIL import Image
         try:
             im = Image.open(ospath)
@@ -69,6 +71,8 @@ class PluginsExtensions(PublisherExtensions):
         picture_path = args[0]
         path = self.process_path(picture_path)
         ospath = self.syspath(path)
+        if not os.path.exists(ospath):
+            return "[DANGER] Image Manquante"
         import hashlib
         with open(ospath) as pictfile:
             picthash = hashlib.md5(pictfile.read()).hexdigest()
