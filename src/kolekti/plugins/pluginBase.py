@@ -72,7 +72,7 @@ class PluginsExtensions(PublisherExtensions):
         path = self.process_path(picture_path)
         ospath = self.syspath(path)
         if not os.path.exists(ospath):
-            return "[DANGER] Image Manquante"
+            return ""
         import hashlib
         with open(ospath) as pictfile:
             picthash = hashlib.md5(pictfile.read()).hexdigest()
