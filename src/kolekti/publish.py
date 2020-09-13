@@ -241,7 +241,7 @@ class Publisher(PublisherMixin, kolektiBase):
                     
                 # invoke scripts
 #                logger.debug( "starting scripts %s", profilename)
-#                logger.debug(ET.tostring(xjob))
+                logger.debug(ET.tostring(xjob))
                     
                 for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
                     indata = pivot
@@ -701,7 +701,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         xl=scrdef.find('link')
                         outfile=self._substscript(xl.get('name'), subst, profile)
                         outref=self._substscript(xl.get('ref'), subst, profile)
-                        outtype=xl.get('type')
+                        outtype=scrdef.get('output')
                         logger.debug("Exécution du script %(label)s réussie"% {'label': scriptlabel.encode('utf-8')})
                         res=[{"type":outtype, "label":outfile, "url":outref, "file":outref}]
                         

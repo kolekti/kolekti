@@ -46,13 +46,21 @@ class PluginsExtensions(PublisherExtensions):
         picture_path = args[0]
         path = self.process_path(picture_path)
         ospath = self.syspath(path)
+        result = ET.Element('{http://www.exselt.com/ns/kolekti}imageinfo')
+        result.attrib['src'] = picture_path
+        result.attrib['path'] = path
         if not os.path.exists(ospath):
-            return "[DANGER] Image Manquante"
+            result.attrib['error'] = "Image not found"
+            return result
+        import hashlib
+        with open(ospath) as pictfile:
+            result.attrib['hash'] = hashlib.md5(pictfile.read()).hexdigest()
         from PIL import Image
         try:
             im = Image.open(ospath)
             try :
                 dpi = im.info['dpi']
+                result.attrib['dpi'] = "{dpi}".format(dpi = dpi)                
             except KeyError:
                 dpi = "?"
             info = "{fileweight}o {format} {mode} {size}px  dpi:{dpi}".format(
@@ -62,21 +70,14 @@ class PluginsExtensions(PublisherExtensions):
                 size = im.size,
                 dpi = dpi,
             )
+            result.attrib['fileweight'] = "{w}".format(w = os.path.getsize(ospath))
+            result.attrib['format'] = im.format
+            result.attrib['mode'] = im.mode
+            result.attrib['size'] = "{s}".format(s = im.size)
         except IOError:
-            info = ""
-        return info
-    
-    def picture_hash(self, _, *args):
-        picthash =""
-        picture_path = args[0]
-        path = self.process_path(picture_path)
-        ospath = self.syspath(path)
-        if not os.path.exists(ospath):
-            return ""
-        import hashlib
-        with open(ospath) as pictfile:
-            picthash = hashlib.md5(pictfile.read()).hexdigest()
-        return picthash
+            pass
+        return [result]
+
     
 class plugin(PublisherMixin,kolektiBase):
     _plugin="dummy"
