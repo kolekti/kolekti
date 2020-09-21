@@ -92,7 +92,7 @@ class plugin(PublisherMixin,kolektiBase):
         self._draft = True
         
     def get_xsl(self, xslfile, **kwargs):
-        logger.debug("get xsl from plugin %s"%self._plugindir)
+        logger.debug("get xsl from plugin : %s/%s"%(self._plugindir,xslfile))
         
         try:
             xslpath = '/'.join([self.assembly_dir,'kolekti','publication-templates',self._plugin,'xsl'])
@@ -115,7 +115,6 @@ class plugin(PublisherMixin,kolektiBase):
         return xsl
     
     def get_project_xsl(self,xslfile, **kwargs):
-        logger.debug("get xsl from plugin %s"%self._plugindir)
         return super(plugin,self).get_xsl(xslfile, extclass = self.__ext,
                                           xsldir = self._plugindir,
                                           system_path = True,
@@ -128,12 +127,9 @@ class plugin(PublisherMixin,kolektiBase):
         #        _, tmpname = tempfile.mkstemp(dir = self.getOsPath(self.pubdir(self.assembly_dir, self.profile)))
         _, tmpname = tempfile.mkstemp()
         inputtype = self.scriptspec.get("input")
-        logger.debug(type(self.input))
         for item in self.input:
-            logger.debug(item)
             if item.get('type', '') == inputtype:
                 if 'ET' in item.keys():
-                    logger.debug(item['ET'].xpath('//h:body/@*',namespaces=self.nsmap))
                     with open(tmpname, 'w') as tmpfile:
                         tmpfile.write(ET.tostring(item['ET']))
                 if "file"  in item.keys():
@@ -185,7 +181,6 @@ class plugin(PublisherMixin,kolektiBase):
 
             if cmd.find("_INCOPY_") >= 0:
                 tmpfile = self.copyinput()
-                logger.debug(tmpfile)
                 subst.update({'INCOPY':tmpfile})
                                             
             cmd=self._substscript(cmd, subst, self.profile)
@@ -244,12 +239,12 @@ class plugin(PublisherMixin,kolektiBase):
     
     def __call__(self, scriptdef, profile, assembly_dir, inputs):
         self.scriptname = scriptdef.get('name')
-        logger.debug("calling script %s", self.scriptname)
+        logger.debug("\ncalling script %s", self.scriptname)
 
         # check if execute in release or not
         self.release = None
         adparts = assembly_dir[1:].split('/')
-        logger.debug("adparts: %s ", str(adparts))
+#        logger.debug("adparts: %s ", str(adparts))
         if len(adparts) == 2 and adparts[0] in release_root_dirs:
             self.release = adparts[1]
             self.release_root_dir = adparts[0]
@@ -312,13 +307,13 @@ class plugin(PublisherMixin,kolektiBase):
                 refdir = "/".join([self.publication_plugin_dir]+ref.split('/')[:-1])
                 self.makedirs(refdir)
             except OSError:
-                logger.debug('makedir failed')
+                logger.error('makedir failed')
                 import traceback
                 logger.debug(traceback.format_exc())
             try:
                 self.copyFile("/".join([self.assembly_dir,ref]), "/".join([self.publication_plugin_dir,ref]) )
             except:
-                logger.debug('unable to copy media')
+                logger.error('unable to copy media')
                 import traceback
                 logger.debug(traceback.format_exc())
             

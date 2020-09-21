@@ -8,6 +8,8 @@
     <parameters>
       <parameter name="filter" label="Filtre de pivot" 
 		 type="filelist" dir="kolekti/publication-templates/filterpivot/xsl" ext="xsl"/>
+      <parameter name="filter_parameters" label="Paramètres du filtre" 
+		 type="text"/>
     </parameters>
   </pubscript>
   

@@ -21,6 +21,7 @@ import os
 import time
 import shutil
 import logging
+logger = logging.getLogger(__name__)
 
 from lxml import etree as ET
 
@@ -33,18 +34,29 @@ class plugin(pluginBase.plugin):
         main publication function
         """
         res = []
-        logging.debug( "filterpivot  : %s %s"%(self.assembly_dir,self.publication_dir))
+        logger.debug( "filterpivot  : %s %s"%(self.assembly_dir,self.publication_dir))
 
         # ouvrir le fichier template
-        xslparam = self.get_script_parameter('filter')
-        print "*************************",xslparam
-        print ET.tostring(self.scriptdef)
-        xslt=self.get_xsl(xslparam, profile = self.profile, lang = self._publang)
+        xslfilter = self.get_script_parameter('filter')
+        xslparams = self.get_script_parameter('filter_parameters')
+        try:
+            xsl_parameters = eval(xslparams)
+        except:
+            logger.warning('Error evaluating filter_parameters')
+            xsl_parameters = {}
+        xslt=self.get_xsl(xslfilter, profile = self.profile, lang = self._publang)
         puburl=self.getUrlPath(self.publication_plugin_dir)
         # try:
+        rooturl = self.getUrlPath(self.process_path('/'))
+        logger.debug( "filter parameters  : %s"%str(xsl_parameters))
         doc=xslt(self.pivot,
-                pubdir=u"'%s'"%puburl,
-            )
+                 pubdir=u"'%s'"%puburl,
+                 rootdir=u"'%s'"%rooturl,
+                 **xsl_parameters
+        )        
+        for entry in xslt.error_log:
+            logger.debug("xsl> ", entry.message)
+                    
         res.append({'type':"pivot",
                     "label":"%s_%s"%(self.publication_file,self.scriptname),
 #                    "url": "%s/pivot.html"%self.publication_plugin_dir
