@@ -6,7 +6,9 @@
   version="1.0">
   
   <xsl:param name="tabsfile" select="'sources/share/tabs.xml'"/>
-  <xsl:variable name="tabs" select="concat($rootdir, '/sources/share/tabs.xml')"/>
+
+  <xsl:variable name="tabs" select="concat($rootdir, '/', $tabsfile , '.xml')"/>
+
     
   <xsl:template match="node()|@*" name="id">
     <xsl:copy>
@@ -17,6 +19,7 @@
   <xsl:template match="h:head">
     
     <xsl:message>tabsfile : <xsl:value-of select="$tabsfile"/></xsl:message>
+    <xsl:message>tabsfile : <xsl:value-of select="$pubdir"/></xsl:message>
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:apply-templates select="node()"/>
@@ -93,8 +96,11 @@
       <style type="text/css">
         <xsl:variable name="lang" select="/h:html/h:body/@lang"/>
         .tabs_group {
-        <xsl:value-of select="document($tabs)/tabs/volume[tag/@lang = $lang]/style"/>
         <xsl:value-of select="document($tabs)/tabs/style"/>
+        <xsl:value-of select="document($tabs)/tabs/volume[tag/@lang = $lang]/style"/>
+        }
+        .tab {
+        <xsl:value-of select="document($tabs)/tabs/volume/tab[not(@lang)]/style"/>
         }
         <xsl:for-each select="document($tabs)/tabs/volume[tag/@lang = $lang]/tab[style]">
         .tab-<xsl:value-of select="@lang"/> {

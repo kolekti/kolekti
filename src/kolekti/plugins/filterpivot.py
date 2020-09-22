@@ -41,6 +41,8 @@ class plugin(pluginBase.plugin):
         xslparams = self.get_script_parameter('filter_parameters')
         try:
             xsl_parameters = eval(xslparams)
+            for k,v in xsl_parameters.iteritems():
+                xsl_parameters[k] = "'%s'"%v
         except:
             logger.warning('Error evaluating filter_parameters')
             xsl_parameters = {}
@@ -55,7 +57,7 @@ class plugin(pluginBase.plugin):
                  **xsl_parameters
         )        
         for entry in xslt.error_log:
-            logger.debug("xsl> ", entry.message)
+            logger.debug("xsl> %s", entry.message)
                     
         res.append({'type':"pivot",
                     "label":"%s_%s"%(self.publication_file,self.scriptname),
