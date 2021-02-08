@@ -1126,6 +1126,30 @@ class ReleasePublishView(kolektiMixin, TemplateView):
 
             return self.render_to_response(context)
     
+class ReleaseMultilangPublishView(kolektiMixin, TemplateView):
+    template_name = "publication.html"
+    def post (self, request, project, release):        
+        context, kolekti = self.get_context_data({'project':project})
+        langs = request.POST.getlist('langs[]')
+        prefix = request.POST.get('prefix', '/releases/')
+        profiles = request.POST.getlist('profiles[]', None)
+        outputs = request.POST.getlist('outputs[]', None)
+        try:
+            p = publish.ReleasePublisher(prefix + release, *kolekti.args, langs=langs)
+            return StreamingHttpResponse(
+                self.format_iterator(p.publish_assembly_multilang(release + "_asm", profiles, outputs), project),
+                content_type="text/html"
+                )
+
+        except:
+            import traceback
+            print traceback.format_exc()
+            context.update({'success':False})
+#            context.update({'logger':self.loggerstream.getvalue()})        
+            context.update({'stacktrace':traceback.format_exc()})
+
+            return self.render_to_response(context)
+    
 class ReleaseLangPublishView(kolektiMixin, TemplateView):
     template_name = "publication.html"
     def post (self, request, project, release, lang):

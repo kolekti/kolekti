@@ -1211,6 +1211,38 @@ class ReleasePublisher(Publisher):
             yield ev
         return
 
+    def publish_assembly_multilang(self, assembly, active_profiles = None, active_outputs = None):
+        try :
+            xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+        except:
+            import traceback
+            errev = {
+                'event':'error',
+                'msg':"parametres de publication invalides",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            yield errev
+
+        if active_profiles is not None:
+            for p in xjob.xpath('/job/profiles/profile'):
+                if p.find('label').text in active_profiles:
+                    p.set('enabled', '1')
+                else:
+                    p.set('enabled', '0')
+                    
+        if active_outputs is not None:
+            for o in xjob.xpath('/job/scripts/script'):
+                if o.find('label').text in active_outputs:
+                    o.set('enabled', '1')
+                else:
+                    o.set('enabled', '0')
+            
+        for ev in self.publish_release_multilang(assembly, xjob):
+            yield ev
+        return
+
+    
     def release_script_filename(self, release, lang, profile, script):
         scriptname = script.get('name')
         if scriptname == "multiscript":
@@ -1309,19 +1341,37 @@ class ReleasePublisher(Publisher):
             yield ev
 
         return
+
+    def merge_pivots(self, pivots):
+        srclang = 'en'
+        
+        pivot = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head></head><body></body></html>")
+        head = pivot.xpath('/h:html/h:head', namespaces=self.nsmap)[0]
+        body = pivot.xpath('/h:html/h:body', namespaces=self.nsmap)[0]
+        srchead = pivots[srclang].xpath("/h:html/h:head", namespaces=self.nsmap)[0]
+        for el in srchead:
+            head.append(el)
+
+        for pivlang, xpiv in pivots.iteritems():
+            srcbody = xpiv.xpath('/h:html/h:body/*', namespaces=self.nsmap)
+            div = ET.SubElement(body, '{http://www.w3.org/1999/xhtml}div', attrib = {"class":"body-lang", "data-lang":pivlang})
+            for el in srcbody:
+                div.append(el)
+        
+        return pivot
     
-    def publish_release(self, assembly, xjob):
+    def publish_release_multilang(self, assembly, xjob):
         """ publish an assembly"""
         pubevents = []
         logger.debug('publish')
         logger.debug(self._publangs)
+        xassemblies = {}
         try :
             for lang in self._publangs:
-                langpubevt = []
-                
+                langpubevt = []                
                 self._publang = lang
                 try:
-                    xassembly = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                    xassemblies[lang] = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
                 except:
                     import traceback
                     errevt = {
@@ -1334,11 +1384,80 @@ class ReleasePublisher(Publisher):
                     langpubevt.append(errevt)
                     yield errevt
                     return
+                
+            for profile in xjob.xpath('/job/profiles/profile'):
+                if profile.get('enabled','0') == '1':
+                    xpivots = {}
+                    profilename = profile.find('label').text
+                    for lang in self._publangs:
+                        self._publang = lang
+                        assembly_dir = self.assembly_dir(xjob)
+                        try:
+                            xpivots[lang] = self.publish_profile(xassemblies[lang], profile, assembly_dir)
+                        except:
+                            import traceback
+                            logger.exception("Assembly Error")
+                            yield {
+                                'event':'error',
+                                'msg':"erreur lors de l'assemblage",
+                                'stacktrace':traceback.format_exc(),
+                                'time':time.time(),
+                            }
+                    
+                    self._publang = "share"                    
+                    # invoke scripts
+                    pivot = self.merge_pivots(xpivots)
 
+                    for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
+                        indata = ET.ElementTree(pivot)
+                        listres = []
+                        for script in output.xpath('publication/script'):
+                            scriptlabel = script.xpath('string(ancestor::script/label)')
+                            logger.debug(scriptlabel)
+                            logger.debug(indata)
+                            try:
+                                outdata = self.start_script(script, profile, assembly_dir, indata)
+                                listres.append(outdata)
+                                indata = outdata
+                            except:
+                                import traceback
+                                logger.exception("Script %s finished with errors"%scriptlabel)
+                                yield {
+                                    'event':'error',
+                                    'msg':"Erreur d'execution du script %s"%scriptlabel,
+                                    'stacktrace':traceback.format_exc(),
+                                    'time':time.time(),
+                                }
+                            
+                        yield {
+                            'event':'result',
+                            'script':scriptlabel,
+                            'docs':outdata,
+                            'steps':listres,
+                            'time':time.time()
+                        }
+                        
+                    for script in xjob.xpath("/job/scripts/script[@enabled = 1][not(.//script)]"):
+                        try:
+                            resscript = self.start_script(script, profile, assembly_dir, pivot)
+                            yield {
+                                'event':'result',
+                                'script':script.find('label').text,
+                                'docs':resscript,
+                                'time':time.time(),
+                            }
+                        except:
+                            import traceback
+                            logger.exception("Script %s finished with errors"%script.find('label').text)
+                            yield {
+                                'event':'error',
+                                'msg':"Erreur d'execution du script %s"%script.find('label').text,
+                                'stacktrace':traceback.format_exc(),
+                                'time':time.time(),
+                            }
+                    if self._cleanup:
+                        self.delete_resource(self.pubdir(assembly_dir, profile)+ "/document.xhtml")
 
-                for pubres in self.publish_job(xassembly, xjob.getroot()):
-                    langpubevt.append(pubres)
-                    yield pubres
                 
                 pubres = {"event":"publication_dir", "path":self._release_dir}
                 langpubevt.append(pubres)
@@ -1391,6 +1510,89 @@ class ReleasePublisher(Publisher):
 
         return
 
+
+    def publish_release(self, assembly, xjob):
+        """ publish an assembly"""
+        pubevents = []
+        logger.debug('publish multilang')
+        logger.debug(self._publangs)
+        try :
+            for lang in self._publangs:
+                langpubevt = []
+                
+                self._publang = lang
+                try:
+                    xassembly = self.parse(self._release_dir + '/sources/' + self._publang + '/assembly/'+ assembly + '.html')
+                except:
+                    import traceback
+                    errevt = {
+                        'event':'error',
+                        'msg':"impossible de lire l'assemblage",
+                        'stacktrace':traceback.format_exc(),
+                        'time':time.time(),
+                        }
+                    logger.exception("unable to read assembly %s"%assembly)
+                    langpubevt.append(errevt)
+                    yield errevt
+                    return
+
+
+                for pubres in self.publish_job(xassembly, xjob.getroot()):
+                    langpubevt.append(pubres)
+                    yield pubres
+                
+                pubres = {"event":"publication_dir", "path":self._release_dir}
+                langpubevt.append(pubres)
+                yield pubres
+                pubevents.append({'event':'lang', 'label':'all', 'content':langpubevt})
+        except:
+            import traceback
+            logger.exception('erreur lors de la publication')
+            errev = {
+                'event':'error',
+                'msg':"erreur lors de la publication",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            pubevents.append(errev)
+            yield errev
+
+        finally:
+            self.purge_manifest_events(pubevents)
+            try:
+                try:
+                    mfevents = json.loads(self.read(self._release_dir + '/manifest.json'))
+                    for event in mfevents:
+                        if event.get('event','') == "release_publication":
+                            for event2 in event.get('content'):
+                                if event2.get('event','') == "lang" and event2.get('label','') in self._publangs:
+                                    event2.update({'content':[]})
+                except IOError:
+                    mfevents = []
+                     
+                mfevents.append({
+                    "event":"release_publication",
+                    "path":self._release_dir,
+                    "time": int(time.time()),
+                    "content":pubevents,
+                    })
+                self.write(json.dumps(mfevents), self._release_dir + '/manifest.json', sync = False)
+    
+            except:
+                import traceback
+                
+                yield {
+                    'event':'error',
+                    'msg':"impossible d'ouvrir le fichier manifeste",
+                    'stacktrace':traceback.format_exc(),
+                    'time':time.time(),
+                    }
+            
+                return
+
+        return
+
+    
     def validate_script(self, xjob, profilename, scriptname, puboutput):
         validscripts = xjob.xpath('/job/scripts/script[label = "%s"]/validation/script'%scriptname)
         if not len(validscripts):
