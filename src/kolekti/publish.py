@@ -1202,13 +1202,24 @@ class ReleasePublisher(Publisher):
                     
         if active_outputs is not None:
             for o in xjob.xpath('/job/scripts/script'):
+                o.set('enabled', '0')
                 if o.find('label').text in active_outputs:
-                    o.set('enabled', '1')
-                else:
-                    o.set('enabled', '0')
-            
+                    if o.get('multilang') is None:
+                        o.set('enabled', '1')
+
         for ev in self.publish_release(assembly, xjob):
             yield ev
+
+        if active_outputs is not None:
+            for o in xjob.xpath('/job/scripts/script'):
+                o.set('enabled', '0')
+                if o.find('label').text in active_outputs:
+                    if o.get('multilang'):
+                        o.set('enabled', '1')
+                        
+            for ev in self.publish_release_multilang(assembly, xjob):
+                yield ev            
+            
         return
 
     def publish_assembly_multilang(self, assembly, active_profiles = None, active_outputs = None):
@@ -1232,11 +1243,11 @@ class ReleasePublisher(Publisher):
                     p.set('enabled', '0')
                     
         if active_outputs is not None:
-            for o in xjob.xpath('/job/scripts/script'):
+            for o in xjob.xpath('/job/scripts/script[@multilang]'):
+                o.set('enabled', '0')
                 if o.find('label').text in active_outputs:
-                    o.set('enabled', '1')
-                else:
-                    o.set('enabled', '0')
+                    if o.get('multilang'):
+                        o.set('enabled', '1')
             
         for ev in self.publish_release_multilang(assembly, xjob):
             yield ev
@@ -1342,7 +1353,7 @@ class ReleasePublisher(Publisher):
 
         return
 
-    def merge_pivots(self, pivots):
+    def merge_pivots(self, pivots, listlang):
         srclang = 'en'
         
         pivot = ET.XML("<html xmlns='http://www.w3.org/1999/xhtml'><head></head><body></body></html>")
@@ -1351,8 +1362,9 @@ class ReleasePublisher(Publisher):
         srchead = pivots[srclang].xpath("/h:html/h:head", namespaces=self.nsmap)[0]
         for el in srchead:
             head.append(el)
-
-        for pivlang, xpiv in pivots.iteritems():
+            
+        for pivlang in listlang:
+            xpiv = pivots[pivlang]
             srcbody = xpiv.xpath('/h:html/h:body/*', namespaces=self.nsmap)
             div = ET.SubElement(body, '{http://www.w3.org/1999/xhtml}div', attrib = {"class":"body-lang", "data-lang":pivlang})
             for el in srcbody:
@@ -1366,8 +1378,25 @@ class ReleasePublisher(Publisher):
         logger.debug('publish')
         logger.debug(self._publangs)
         xassemblies = {}
+        publangs = []        
         try :
-            for lang in self._publangs:
+            langspec = self.parse(self._release_dir + '/sources/share/multilang.xml')
+            for lang in langspec.xpath('/languages/language'):
+                publangs.append(lang.text)
+        except:
+            import traceback
+            errevt = {
+                'event':'error',
+                'msg':"impossible de lire la liste des langues",
+                'stacktrace':traceback.format_exc(),
+                'time':time.time(),
+            }
+            logger.exception("unable to read language list for  %s"%assembly)
+            yield errevt
+            return
+        
+        try :
+            for lang in publangs:
                 langpubevt = []                
                 self._publang = lang
                 try:
@@ -1389,7 +1418,7 @@ class ReleasePublisher(Publisher):
                 if profile.get('enabled','0') == '1':
                     xpivots = {}
                     profilename = profile.find('label').text
-                    for lang in self._publangs:
+                    for lang in publangs:
                         self._publang = lang
                         assembly_dir = self.assembly_dir(xjob)
                         try:
@@ -1406,7 +1435,7 @@ class ReleasePublisher(Publisher):
                     
                     self._publang = "share"                    
                     # invoke scripts
-                    pivot = self.merge_pivots(xpivots)
+                    pivot = self.merge_pivots(xpivots, publangs)
 
                     for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
                         indata = ET.ElementTree(pivot)
@@ -1483,7 +1512,7 @@ class ReleasePublisher(Publisher):
                     for event in mfevents:
                         if event.get('event','') == "release_publication":
                             for event2 in event.get('content'):
-                                if event2.get('event','') == "lang" and event2.get('label','') in self._publangs:
+                                if event2.get('event','') == "lang" and event2.get('label','') in publangs:
                                     event2.update({'content':[]})
                 except IOError:
                     mfevents = []
@@ -1514,8 +1543,6 @@ class ReleasePublisher(Publisher):
     def publish_release(self, assembly, xjob):
         """ publish an assembly"""
         pubevents = []
-        logger.debug('publish multilang')
-        logger.debug(self._publangs)
         try :
             for lang in self._publangs:
                 langpubevt = []
