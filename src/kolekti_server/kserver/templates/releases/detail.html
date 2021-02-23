@@ -6,7 +6,8 @@
     <link rel="stylesheet" type="text/css"  href="{% static "css/kolekti-releases.css" %}"/>
     <link rel="stylesheet" type="text/css"  href="{% url 'kolekti_criteria_css' project=project %}" />
 <!--    <script src="{% static "ckeditor/ckeditor.js" %}"></script> -->
-{% endblock %}
+    <link rel="stylesheet" type="text/css"  href="{% url 'kolekti_project_static' project=project path='/kolekti/ui-stylesheets/assembly.css' %}" />
+    {% endblock %}
 
 {% block extrascripts %}
 <script src="{% static "js/kolekti-illustrationsutils.js" %}"></script>
