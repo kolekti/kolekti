@@ -384,9 +384,12 @@ class kolektiBase(object):
                         continue
                     try:
                         for name in files:
-                            arcname=str(os.path.join(rt, name))
+                            logger.debug(name)
+#                            arcname=str(os.path.join(rt, name))
+                            arcname=os.path.join(rt, name)
                             ET.SubElement(archindex, 'file').set('path',arcname)
-                            zippy.write(str(os.path.join(root, name)), arcname)
+#                            zippy.write(str(os.path.join(root, name)), arcname)
+                            zippy.write(os.path.join(root, name), arcname)
                     except IndexError:
                         pass
 
