@@ -46,7 +46,7 @@
 
     <pubscript id="markdown_multi" type="shell" multi="yes" input="pivot" output="md">
     <name>Générer fichier de contrôle MKD</name>
-    <cmd>pandoc -s -r html "_PIVOT_" -t markdown -o "_PUBDIR_/_PUBNAME_.md"</cmd>
+    <cmd>pandoc -s -r html "_PIVOT_" -t markdown-smart -o "_PUBDIR_/_PUBNAME_.md"</cmd>
     <link name="_PUBNAME_.md" ref="_PUBURI_/_PUBNAME_.md"/>
     <parameters />
   </pubscript>
@@ -231,7 +231,7 @@
 
     <pubscript id="markdown" type="shell">
     <name>Générer fichier de contrôle MKD</name>
-    <cmd>pandoc -s -r html "_PIVOT_" -t markdown -o "_PUBDIR_/_PUBNAME_.md"</cmd>
+    <cmd>pandoc -s -r html "_PIVOT_" -t markdown-smart -o "_PUBDIR_/_PUBNAME_.md"</cmd>
     <link name="_PUBNAME_.txt" ref="_PUBDIR_/_PUBNAME_.md"/>
     <parameters />
   </pubscript>
