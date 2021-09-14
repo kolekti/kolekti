@@ -158,10 +158,22 @@ class SVNUtils(object):
                 if os.path.exists(project_directory):
                     logins = [userproject.user.username for userproject in UserProject.objects.filter(project = project)]
                     groupfile.write("%s_%d = %s\n" % (project.directory.encode('utf-8'), project.id, ', '.join(login.encode('utf-8') for login in logins)))
+            demo_groups = []
             for project in projects:
-                # same there, an empty name project just blocks all other
+                # handle demo repositories
+                if project.directory == "demo":
+                    demo_groups.append('demo_%d'%(project.id,))
+                    continue
+                # same there, an empty name project just blocks all other                
                 project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
                 if os.path.exists(project_directory):
                     groupfile.write('\n')
                     groupfile.write('[%s:/]\n' % project.directory.encode('utf-8'))
                     groupfile.write('@%s_%d = rw\n' % (project.directory.encode('utf-8'), project.id))
+
+            # set demo rights
+            groupfile.write('\n')
+            groupfile.write('[demo:/]\n')
+            for group in demo_groups:
+                groupfile.write('@%s = r\n' % (group,))
+            
