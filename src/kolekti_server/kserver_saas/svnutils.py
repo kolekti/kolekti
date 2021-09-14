@@ -157,11 +157,11 @@ class SVNUtils(object):
                 project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
                 if os.path.exists(project_directory):
                     logins = [userproject.user.username for userproject in UserProject.objects.filter(project = project)]
-                    groupfile.write("%s = %s\n" % (project.directory.encode('utf-8'),', '.join(login.encode('utf-8') for login in logins)))
+                    groupfile.write("%s_%d = %s\n" % (project.directory.encode('utf-8'), project.id, ', '.join(login.encode('utf-8') for login in logins)))
             for project in projects:
                 # same there, an empty name project just blocks all other
                 project_directory = os.path.join(settings.KOLEKTI_SVN_ROOT,project.directory)
                 if os.path.exists(project_directory):
                     groupfile.write('\n')
                     groupfile.write('[%s:/]\n' % project.directory.encode('utf-8'))
-                    groupfile.write('@%s = rw\n' % project.directory.encode('utf-8'))
+                    groupfile.write('@%s_%d = rw\n' % (project.directory.encode('utf-8'), project.id))
