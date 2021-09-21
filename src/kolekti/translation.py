@@ -22,7 +22,7 @@ from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherE
 from .common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError, KolektiValidationMissing
 from kolekti import plugins
 from .synchro import SvnClient
-
+from pysvn import ClientError
 logger = logging.getLogger(__name__)
 
 
@@ -65,10 +65,16 @@ class TranslatorSynchro(SvnClient):
 
     def update_release(self):
         if os.path.exists(self._base):
-            self._client.update(self._base)
+            try:
+                self._client.update(self._base)
+            except ClientError:
+                self._notifications += {'action' : '%s release could not be updated'%self._release}
         else:
             url = "file://%s/%s/releases/%s"%(settings.KOLEKTI_SVN_ROOT, self._project,self._release)
-            self._client.checkout(url, self._base)
+            try:
+                self._client.checkout(url, self._base)
+            except ClientError:
+                self._notifications += {'action' : '%s release could not be updated'%self._release}
         return self._notifications
 
 class TranslatorInitProject(SvnClient):
