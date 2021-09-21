@@ -1,0 +1,26 @@
+{% extends 'translators_base.html' %}
+{% load static %}
+{% load bootstrap %}
+
+{% block extracss %}
+<link href="{% static "css/translation-langlist.css"%}" type="text/css" rel="stylesheet"/>
+{% endblock %}
+
+{% block extrascripts %}
+<script type="text/javascript" src="{% static "js/translators.js" %}"></script>
+<script type="text/javascript" src="{% static "js/translators-upload.js" %}"></script>
+<script src="/jsreverse/" type="text/javascript"></script>
+{% endblock %}
+
+{% block page-content %}
+<div class="row">  
+  <div class="col-md-7">
+    <ul>
+      {% for release, messages in notifications.items %}
+      <li>{{ release }} :<br/>
+        {% for message in messages %}{{ message.action }} <br/>{% endfor %}</li>      
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -16,6 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.utils.text import get_valid_filename
+from django.conf import settings
 
 from publish_utils import PublisherMixin, PublisherExtensions, ReleasePublisherExtensions
 from .common import kolektiTests, XSLExtensions, LOCAL_ENCODING, KolektiValidationError, KolektiValidationMissing
@@ -29,7 +30,9 @@ class TranslatorSynchro(SvnClient):
     def __init__(self, basepath, username, project, release):
         super(TranslatorSynchro, self).__init__(username = username)
         self._base = os.path.join(basepath, username, project, 'releases', release)
+        self._projectdir = os.path.join(basepath, username, project)        
         self._release = release
+        self._project = project
 
     def __makepath(self, path):
         # returns os absolute path from relative path
@@ -60,6 +63,38 @@ class TranslatorSynchro(SvnClient):
         except:
             return None
 
+    def update_release(self):
+        if os.path.exists(self._base):
+            self._client.update(self._base)
+        else:
+            url = "file://%s/%s/releases/%s"%(settings.KOLEKTI_SVN_ROOT, self._project,self._release)
+            self._client.checkout(url, self._base)
+        return self._notifications
+
+class TranslatorInitProject(SvnClient):
+    
+    def __init__(self, username, project):
+        super(TranslatorInitProject, self).__init__(username = username)
+        basepath = settings.KOLEKTI_BASE
+        projectdir = os.path.join(basepath, username, project)        
+        if not os.path.exists(os.path.join(projectdir, 'releases')):
+            self.makedirs(os.path.join(projectdir, 'releases'))
+            
+        sourcesdir = os.path.join(projectdir, 'sources')
+        if not os.path.exists(sourcesdir):
+            url = "file://%s/%s/sources"%(settings.KOLEKTI_SVN_ROOT, project)
+            self._client.checkout(url, sourcesdir)
+        else:
+            self._client.update(sourcesdir)
+            
+        kdir = os.path.join(projectdir, 'kolekti')
+        if not os.path.exists(kdir):
+            url = "file://%s/%s/kolekti"%(settings.KOLEKTI_SVN_ROOT, project)
+            self._client.checkout(url, kdir)
+        else:
+            self._client.update(kdir)
+    
+    
 class TranslationImporter(kolektiTests):
 
     html = "{http://www.w3.org/1999/xhtml}"
@@ -395,7 +430,6 @@ def cmd_import(args):
     
 def main():
     import argparse
-    from django.conf import settings
 
     
     argparser = argparse.ArgumentParser()

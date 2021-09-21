@@ -7,6 +7,7 @@ urlpatterns = [
 
     url(r'^$', TranslatorsHomeView.as_view(), name='translators_home'),
     url(r'^upload/$', TranslatorsAssemblyUploadView.as_view(), name='translators_upload_assembly'),
+    url(r'^update/check/$', TranslatorsCheckUpdateView.as_view(), name='translators_check_updates'),
     url(r'^svnhook/(?P<rev>[^/]+)/(?P<path>.*)$', TranslatorsHook.as_view(), name='translators_hook'),
     
     url(r'^(?P<project>[0-9_.\w-]+)/', include([
@@ -21,6 +22,7 @@ urlpatterns = [
             url(r'^states/$', TranslatorsReleaseStatusesView.as_view(), name='translators_statuses'),
             url(r'^admin/states/$', TranslatorsAdminReleaseStatusesView.as_view(), name='admin_translators_statuses'),
             url(r'^upload/$', TranslatorsUploadView.as_view(), name='translators_upload'),
+            url(r'^update/$', TranslatorsUpdateView.as_view(), name='translators_update'),
 
 
             url(r'^source/zip/$', TranslatorsSourceZipView.as_view(), name='translators_src_zip'),

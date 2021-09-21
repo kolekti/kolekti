@@ -1,13 +1,13 @@
 
 // 
 
-var update_documents = function(project, release, lang, container, statecell, status ) {
+var update_documents = function(project, release, lang, container, staterow ) {
     /* updates the document table for a relase, lang couple
        project : the project to which the release belongs
        release : the release to be updated
        lang :    the language to be updated
        container:the element to contain the documents (tbody) 
-       statecell:the <td/th> element to contain controls for all the documents in the lang
+       staterow :the <tr> element to contain controls for all the documents in the lang
        status  : the release status for this lang (validation / publication / translation)
     */
     var time = new Date().getTime();
@@ -15,12 +15,13 @@ var update_documents = function(project, release, lang, container, statecell, st
     // perform ajax request to get the documents statuses
 	$.getJSON(
         Urls.translators_documents(project, release, lang)
-	).success(function(data) {
-       	console.log(data)
+	).success(function(ddata) {
+       	console.log(ddata)
         console.log(container)
-        console.log(statecell)
+        console.log(staterow)
         console.log(status)
-        
+        var status = ddata['state'];
+        var data = ddata['docs'];
 		var refresh = false;
 
         // if no row inserted ... create table rows
@@ -112,42 +113,62 @@ var update_documents = function(project, release, lang, container, statecell, st
                     'class': "fa fa-question"
                 })
             };
-            
-            row.append($('<td>', {
-                html:doclink
-            }));
+            //             var row = container.find('tr.t'+index)
+            if(row.find('td.lang-'+lang).length) {
+                row.find('td.lang-'+lang).html(doclink)
+            } else {
+                row.append($('<td>', {
+                    'class': 'lang-'+lang,
+                    'html':doclink
+                }));
+            }
         });
             
-            
-        $(statecell).append(
-            $('<th>',{
-                'html':[
-                    $('<span>', {
-			            "html":lang
-                    }),
-                    (!can_validate_all)?"":$('<a>', {
-                        'title':"Validate all documents in this language ",
-                        'class':"btn btn-xs btn-default",
-                        'style':"margin-left:6px",
-                        'html': $("<i>", {
-                            'class': "fa fa-check-square"
-                        })
-                    }).on('click', function(){
+        var statecell = [
+            $('<span>', {
+			    "html":lang
+            }),
+            (!can_validate_all)?"":$('<a>', {
+                'title':"Validate all documents in this language ",
+                'class':"btn btn-xs btn-default",
+                'style':"margin-left:6px",
+                'html': $("<i>", {
+                    'class': "fa fa-check-square"
+                })
+            }).on('click', function(){
                         var url = Urls.translators_commit_lang(project, release, lang);
-                        $.ajax({
-                            url : url,
-                            type : 'POST',
-                            processData: false,
-                            contentType: false,
-                        }).done(function(data){
-                            data = JSON.parse(data)
-                            //console.log(data)
-                            window.location.reload()
-                        })
-                    })
-                ]
-		    })
-        )
+                $.ajax({
+                    url : url,
+                    type : 'POST',
+                    processData: false,
+                    contentType: false,
+                }).done(function(vdata){
+                    vdata = JSON.parse(vdata)
+                    //console.log(data)
+                    window.location.reload()
+                })
+            }),
+            (status == "translation" || status == "validation")?$('<button>', {                       
+                'title':"Generate pdf ",
+                        'data-lang':lang,
+                'class':"btn btn-xs btn-default republish",
+                'style':"margin-left:6px",
+                'html': $("<i>", {
+                    'class': "fa fa-refresh"
+                })
+            })    :""                
+        ];
+        
+        if ($(staterow).find('th.lang-'+lang).length) {
+            $(staterow).find('th.lang-'+lang).html(statecell)
+        } else {
+            $(staterow).append(
+                $('<th>', {
+                    'class':'lang-'+lang,
+                    'html': statecell
+                })
+            )
+        }
         
 	})
 };
@@ -165,11 +186,11 @@ var update_releases_langs = function(release) {
     var sourcelang,
 	    releasename = release.data('release'),
 	    project = release.data('project'),
-	    statecell = release.find('.kolekti-release-langs'),
+	    staterow = release.find('.kolekti-release-langs'),
         documentscell = release.find('.kolekti-release-documents');
     
     
-    statecell.html("<td></td>")
+    staterow.html("<td></td>")
     documentscell.html("")
     $.getJSON(
         Urls.translators_statuses(project, releasename)
@@ -181,7 +202,7 @@ var update_releases_langs = function(release) {
             
 		    if (v == 'sourcelang' || v == "translation" || v == "validation" || v == "publication" )
             {
-                update_documents(project, releasename, i, documentscell, statecell, v);
+                update_documents(project, releasename, i, documentscell, staterow);
             }
         });
 	});
@@ -435,24 +456,43 @@ $(function() {
 	    var project = $(releaseo).data('project')
 	    var lang = $(this).data('lang')
 	    $(releaseo).data('lang',lang)
-	    var statecell = $(this).closest('.kolekti-release-langs')
+	    var staterow = $(this).closest('.kolekti-release-langs')
 	    var documentcell = $(releaseo).find('.kolekti-release-documents')
-        update_documents(project, release, lang, documentcell)
-	    statecell.find('span').removeClass('active')
-	    statecell.find('.lg-'+lang).addClass('active')
+        update_documents(project, release, lang, documentcell, staterow);
+	    staterow.find('span').removeClass('active')
+	    staterow.find('.lg-'+lang).addClass('active')
     })
 	
     $('body').on('click','.republish', function() {
         var release_elt = $(this).closest('.release');
         var project = release_elt.data('project')
         var release = release_elt.data('release')
-        var lang = release_elt.data('lang')
+        var lang = $(this).data('lang')
+	    var staterow = $(this).closest('.kolekti-release-langs')        
         var documentcell = release_elt.find('.kolekti-release-documents')
         console.log('republish', project, release, lang, documentcell)
-        republish_documents(release_elt, {
-            'success': function() {
-            	update_documents(project, release, lang, documentcell)
-            }
+        $("#publishModal").modal()
+        republish_documents(project, release, lang, {
+            'success': function(pdata) {
+                update_documents(project, release, lang, documentcell, staterow)
+                $('#publishModal .publish-status').html(pdata)
+                $('#publishModal .publish-status').append(
+                    $('<div>', {
+                        'class':'alert alert-success',
+                        'html':$('<div>', {
+                            'class':'alert-content',
+                            'html':"publication sucessful"
+                        })
+                    })
+                )
+            },
+            'always': function(data) {
+                $('#publishModal .publish-progress').hide()                
+            },
+            'stream': function(pdata) {
+                console.log(pdata)
+                $('#publishModal .publish-status').html(pdata)
+            },
         })
     })
     
@@ -461,13 +501,14 @@ $(function() {
 	    var release = $(this).closest('.release').data('release')
 	    var project = $(this).closest('.release').data('project')
 	    var documentcell = $(this).closest('.release').find('.kolekti-release-documents')
+	    var staterow = $(this).closest('.kolekti-release-langs')
 	    var lang = $(this).closest('.release').data('lang')
 	    $(this).closest('.release').find('.processing-commit').removeClass('hidden')
 	    $(this).closest('.release').find('.commit').addClass('hidden')
 	    $.post(
             Urls.translators_commit_lang(project, release, lang)
         ).success(function(data) {
-		    update_documents(project, release, lang, documentcell)
+		    update_documents(project, release, lang, documentcell, staterow)
 	    }).always(function() {
 		    $(this).closest('.release').find('.commit').removeClass('hidden')
 		    $(this).closest('.release').find('.processing-commit').addClass('hidden')
@@ -514,7 +555,9 @@ $(function() {
         var lang = $('#upload_delivery_dialog form').data('lang');
         var certif_url = Urls.translators_certif(project, release, lang)
         var formdata = new FormData($('#upload_delivery_dialog form')[0])
-        
+        var release_elt = $('.release[data-project="'+ project +'"][data-release="'+ release +'"]');
+        var documentcell = release_elt.find('.kolekti-release-documents')
+	    var staterow = release_elt.find('.kolekti-release-langs')
         $.ajax({
             url : certif_url,
             data : formdata,
@@ -523,7 +566,14 @@ $(function() {
             contentType: false,
         }).done(function(data){
             data = JSON.parse(data)
-            console.log(data)            
+            console.log(data)
+            if(data.status == "success") {
+                alert('Translation has been validated')
+                $('#upload_delivery_dialog').modal('hide')
+
+                update_documents(project, release, lang, documentcell, staterow)
+            }
+                
         })
     })
 
@@ -560,7 +610,8 @@ $(function() {
             $('#certificates').show();
             var release_elt = $('.release[data-project="'+ project +'"][data-release="'+ release +'"]');
             var documentcell=  release_elt.find('.kolekti-release-documents')
-            update_documents(project, release, lang, documentcell)
+	        var staterow = release_elt.find('.kolekti-release-langs')
+            update_documents(project, release, lang, documentcell, staterow)
             
         })        
     })

@@ -37,6 +37,13 @@
     </div>
     <div class="panel panel-default">
       <div class="panel-body">
+        <div class="panel-heading">
+          <h3 class="panel-title">Available directories
+          <div class="pull-right">
+		    <a href="{% url 'translators_check_updates' %}" class="btn btn-primary">Check updates</a>
+		  </div>
+          </h3>
+        </div>
         {% for release in releases %}
         {% with release.project.directory|add:'_'|add:release.release_name|slugify as rel_id %}
         <p><a class="sidelink" href="#{{ rel_id }}">
@@ -253,6 +260,27 @@
         </div>
       </div>
     </div>
-    
   </div>
+  
+  <div class="modal fade" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="publishModallLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="publishModalLabel">PDF Generation</h4>
+        </div>
+        <div class="modal-body">
+          <div class="publish-status">                
+          </div>
+          <div class="publish-progress">
+            <div class="alert alert-info" role="alert">
+	          <div class="alert-content"><i class="fa fa-spinner fa-spin"></i> <span class="progresstxt"></span> PDF generation in progress</div>
+	          <div class="alert-content-stream"></div>
+	        </div>                
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}

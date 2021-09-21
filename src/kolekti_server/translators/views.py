@@ -34,7 +34,7 @@ from .forms import UploadTranslationForm, UploadAssemblyForm, UploadCertificateF
 
 from kolekti.common import kolektiBase, KolektiValidationError, KolektiValidationMissing 
 from kolekti.publish import ReleasePublisher
-from kolekti.translation import  TranslatorSynchro, TranslationImporter, AssemblyImporter
+from kolekti.translation import  TranslatorSynchro, TranslationImporter, AssemblyImporter, TranslatorInitProject
 
 def in_translator_group(user):
     if user:
@@ -137,8 +137,8 @@ class TranslatorsSharedMixin(kolektiMixin):
         try:
             project_settings = kolekti.parse('/kolekti/settings.xml')
             return (
-                [l.text for l in project_settings.xpath('/settings/languages/lang')],
-                [l.text for l in project_settings.xpath('/settings/releases/lang')],
+                sorted([l.text for l in project_settings.xpath('/settings/languages/lang')]),
+                sorted([l.text for l in project_settings.xpath('/settings/releases/lang')]),
                 project_settings.xpath('string(/settings/@sourcelang)'))
         except IOError:
             return ['en'],['en','fr','de'],'en'
@@ -238,6 +238,27 @@ class TranslatorsProjectView(TranslatorsHomeMixin, TemplateView):
         context, kolekti = self.get_context_data({'project':project})
         return self.render_to_response(context)
 
+class TranslatorsCheckUpdateView(TranslatorsMixin, TemplateView):    
+    template_name = "translators_check_updates.html"
+    def get(self, request):
+        notifications = {}
+        treleases = TranslatorRelease.objects.filter(user = self.request.user).order_by("project", "release_name")
+        for trelease in treleases:
+            TranslatorInitProject(self.request.user.username, trelease.project.directory)            
+            context, kolekti = self.get_context_data({'project':trelease.project.directory})
+            
+            sync_mgr = TranslatorSynchro(*kolekti.args, release=trelease.release_name)
+            notif = sync_mgr.update_release()
+            notifications[trelease]=notif
+            context, kolekti = self.get_context_data({'notifications':notifications})                
+        return self.render_to_response(context)
+
+class TranslatorsUpdateView(TranslatorsMixin, TemplateView):    
+    template_name = "translators_check_update.html"
+    def get(self, request, project, release):
+        context, kolekti = self.get_context_data({'project':project, 'release':release})        
+        return self.render_to_response(context)
+
 class TranslatorsReleaseView(TranslatorsHomeMixin, TemplateView):    
     template_name = "translators_home.html"
     def get(self, request, project, release):            
@@ -263,11 +284,15 @@ class TranslatorsLangsView(TranslatorsMixin, View):
         context, kolekti = self.get_context_data({'project':project})
         return HttpResponse(json.dumps(self.project_languages(kolekti)),content_type="application/json")
 
+
 class TranslatorsDocumentsView(TranslatorsMixin, View):
     def get(self, request, project, release, lang):
         context, kolekti = self.get_context_data({'project':project, 'release':release, 'lang':lang})
         publisher = ReleasePublisher('/releases/'+release, *kolekti.args, langs = [lang])
-        res = []
+        res = {}
+        sync_mgr = TranslatorSynchro(*kolekti.args, release=release)  
+        res['state'] = sync_mgr.lang_state(lang)
+        res['docs'] = []
         try:
             for item in publisher.documents_release(release):
                 logger.debug(item)
@@ -277,7 +302,7 @@ class TranslatorsDocumentsView(TranslatorsMixin, View):
                 except OSError:
                     v = []
                 
-                res.append((l, p.replace('/releases/',''), e, v, t, r))
+                res['docs'].append((l, p.replace('/releases/',''), e, v, t, r))
         except:
             logger.exception('could not get documents for release')
         return HttpResponse(json.dumps(res), content_type="application/json")
@@ -347,6 +372,10 @@ class TranslatorsCertifyDocumentView(TranslatorsMixin, View):
             certpath = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath + '.cert')
             doc_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", docpath)
             sync_mgr = TranslatorSynchro(*kolekti.args, release = release)
+
+            assembly_res = os.path.join(settings.KOLEKTI_BASE, request.user.username, project, "releases", release, "sources", lang, "assembly", release + "_asm.html")
+            sync_mgr._client.propset( 'release_state', 'publication', assembly_res)
+            
                 # adds publications to svn
             try:
                 sync_mgr._client.add(doc_res, recurse = False, add_parents = True)                
