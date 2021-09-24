@@ -430,6 +430,7 @@ $(document).ready( function () {
 	    var params = {}
 	    params['release']=release;
 	    var alllang = ($(this).attr('id') == "btn_publish_all")
+	    var multilang = ($(this).attr('id') == "btn_publish_multi")
 	    var langs = get_publish_languages(alllang);
 	    params['langs'] = langs;
 	    var lang = langs[0];
@@ -455,6 +456,8 @@ $(document).ready( function () {
         var url;
         if (alllang)
             url = Urls.kolekti_release_publish(kolekti.project, release)
+        else if (multilang)
+            url = Urls.kolekti_release_publish_multilang(kolekti.project, release)
         else
             url = Urls.kolekti_release_lang_publish(kolekti.project, release, lang)
         

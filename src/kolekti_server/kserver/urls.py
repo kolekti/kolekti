@@ -91,6 +91,7 @@ urlpatterns = [
         url(r'^releases/archive$', ReleaseArchiveView.as_view(),name="kolekti_release_archive_form"),
         url(r'^releases/(?P<release>[^/\?]+)/', include([
             url(r'^publish/$', ReleasePublishView.as_view(),name='kolekti_release_publish'),
+            url(r'^publish_multilang/$', ReleaseMultilangPublishView.as_view(),name='kolekti_release_publish_multilang'),
             url(r'^archive', ReleaseArchiveView.as_view(),name="kolekti_release_archive"),
             url(r'^states/$', ReleaseStatesView.as_view(), name='kolekti_release_states'),
             url(r'^delete/$', ReleaseDeleteView.as_view(), name='kolekti_release_delete'),
