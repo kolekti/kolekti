@@ -9,6 +9,7 @@ import filterpivot
 import html
 import serializepdf
 import princexml_nbpage
+import html_autonome
 import logging
 logger = logging.getLogger(__name__)
 

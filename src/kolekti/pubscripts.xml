@@ -2,6 +2,16 @@
 <scripts>
 
   <!-- chained pubscripts -->
+  <pubscript id="htmlautonome" type="plugin" multi="yes" input="pivot" output="pivot">
+    <name>HTML autonome</name>
+    <plugin>html_autonome</plugin>
+    <parameters>
+      <parameter name="CSS" label="Feuille de style" 
+		 type="filelist" dir="kolekti/publication-templates/html_autonome/css" ext="css"/>
+    </parameters>
+  </pubscript>
+  
+
   <pubscript id="filterpivot" type="plugin" multi="yes" input="pivot" output="pivot">
     <name>Filtrage du pivot</name>
     <plugin>filterpivot</plugin>
