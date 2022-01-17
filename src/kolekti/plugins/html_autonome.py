@@ -81,7 +81,8 @@ class plugin(pluginBase.plugin):
             f.write(str(pivot))
         logger.debug( "html autonome  : %s"%(hf,))
         res.append({'type':"pivot",
-                    "label":"%s_%s"%(self.publication_file,self.scriptname),
+                    'url':"%s/%s"%(self.publication_dir, filename),
+                    "label":filename,
                     "ET": pivot})
         
         return res
