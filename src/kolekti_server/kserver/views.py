@@ -1806,7 +1806,8 @@ class JobEditView(kolektiMixin, TemplateView):
         except:
             logger.exception('unable to get local script definitions')
 
-        xsl = kolekti.get_xsl('django_job_edit', extclass=PublisherExtensions, lang=self.request.kolekti_userproject.srclang)
+        xsl = kolekti.get_xsl('django_job_edit', extclass=PublisherExtensions,
+                              lang = kolekti.project_default_language())
         try:
             ejob = xsl(xjob, path="'/kolekti/publication-parameters/%s'"%job_path, jobname="'%s'"%kolekti.basename(job_path))
         except:
