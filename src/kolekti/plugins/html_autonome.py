@@ -70,13 +70,15 @@ class plugin(pluginBase.plugin):
         # remplace les attribut src des images par leur équivalient en base64
         for media in pivot.xpath("//h:img[@src]|//h:embed[@src]", namespaces=self.nsmap):
             src = media.get('src')
-            img_type = os.path.splitext(src)[1][1:]                        
-            with open(self.getOsPath(src)) as f:
+            img_type = os.path.splitext(src)[1][1:]
+#            logger.debug( "include image  : %s from %s [%s -- %s]"%(src, self.getOsPath(src), '/'.join([self.assembly_dir,src]), self.getOsPath('/'.join([self.assembly_dir,src]))))
+            img_file = self.getOsPath('/'.join([self.assembly_dir,src]))
+            with open(img_file) as f:
                 data = base64.encodestring(f.read())
             media.set('src', 'data:image/' + img_type + ';base64,' + data)
         filename="%s.html" %(self.publication_file,)
         top = self.getOsPath(self.publication_plugin_dir)
-        hf=os.path.join(self.getOsPath(self.publication_dir), filename)
+        hf=os.path.join(self.getOsPath(self.publication_dir), filename)        
         with open(hf,"w") as f:
             f.write(str(pivot))
         logger.debug( "html autonome  : %s"%(hf,))
