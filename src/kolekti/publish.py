@@ -1217,7 +1217,7 @@ class ReleasePublisher(Publisher):
                     if o.get('multilang'):
                         o.set('enabled', '1')
                         
-            for ev in self.publish_release_multilang(assembly, xjob):
+            for ev in self.publish_release(assembly, xjob):
                 yield ev            
             
         return
