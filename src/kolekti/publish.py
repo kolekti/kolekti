@@ -1183,6 +1183,8 @@ class ReleasePublisher(Publisher):
     def publish_assembly(self, assembly, active_profiles = None, active_outputs = None):
         try :
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
+            logger.debug(active_profiles)
+            logger.debug(active_outputs)
         except:
             import traceback
             errev = {
@@ -1199,30 +1201,35 @@ class ReleasePublisher(Publisher):
                     p.set('enabled', '1')
                 else:
                     p.set('enabled', '0')
-                    
+
+        has_output = False                    
         if active_outputs is not None:
             for o in xjob.xpath('/job/scripts/script'):
                 o.set('enabled', '0')
                 if o.find('label').text in active_outputs:
                     if o.get('multilang') is None:
                         o.set('enabled', '1')
-
-        for ev in self.publish_release(assembly, xjob):
-            yield ev
-
-        if active_outputs is not None:
-            for o in xjob.xpath('/job/scripts/script'):
-                o.set('enabled', '0')
-                if o.find('label').text in active_outputs:
-                    if o.get('multilang'):
-                        o.set('enabled', '1')
-                        
+                        has_output = True
+        if has_output :
             for ev in self.publish_release(assembly, xjob):
-                yield ev            
+                yield ev
+                
+        # has_output = False                    
+        # if active_outputs is not None:
+        #     for o in xjob.xpath('/job/scripts/script'):
+        #         o.set('enabled', '0')
+        #         if o.find('label').text in active_outputs:
+        #             if o.get('multilang'):
+        #                 o.set('enabled', '1')
+        #                 has_output = True                        
+        # if has_output :
+        #     for ev in self.publish_release_multilang(assembly, xjob):
+        #         yield ev            
             
         return
 
     def publish_assembly_multilang(self, assembly, active_profiles = None, active_outputs = None):
+        """ publish an assembly in several languages to produce one document"""        
         try :
             xjob = self.parse(self._release_dir + '/kolekti/publication-parameters/'+ assembly +'.xml')
         except:
@@ -1241,16 +1248,18 @@ class ReleasePublisher(Publisher):
                     p.set('enabled', '1')
                 else:
                     p.set('enabled', '0')
-                    
+
+        has_output = False
         if active_outputs is not None:
             for o in xjob.xpath('/job/scripts/script[@multilang]'):
                 o.set('enabled', '0')
                 if o.find('label').text in active_outputs:
                     if o.get('multilang'):
                         o.set('enabled', '1')
-            
-        for ev in self.publish_release_multilang(assembly, xjob):
-            yield ev
+                        has_output = True
+        if has_output:
+            for ev in self.publish_release_multilang(assembly, xjob):
+                yield ev
         return
 
     
@@ -1373,7 +1382,9 @@ class ReleasePublisher(Publisher):
         return pivot
     
     def publish_release_multilang(self, assembly, xjob):
-        """ publish an assembly"""
+        """ publish an assembly in several languages to produce one document
+            iterates on languages, profiles and outputs
+        """
         pubevents = []
         logger.debug('publish')
         logger.debug(self._publangs)
@@ -1437,6 +1448,7 @@ class ReleasePublisher(Publisher):
                     # invoke scripts
                     pivot = self.merge_pivots(xpivots, publangs)
 
+                    logger.debug("multiscripts")                    
                     for output in xjob.xpath("/job/scripts/script[@enabled = 1][.//script]"):
                         indata = ET.ElementTree(pivot)
                         listres = []
@@ -1466,6 +1478,7 @@ class ReleasePublisher(Publisher):
                             'time':time.time()
                         }
                         
+                    logger.debug("scripts")                                            
                     for script in xjob.xpath("/job/scripts/script[@enabled = 1][not(.//script)]"):
                         try:
                             resscript = self.start_script(script, profile, assembly_dir, pivot)
@@ -1484,6 +1497,8 @@ class ReleasePublisher(Publisher):
                                 'stacktrace':traceback.format_exc(),
                                 'time':time.time(),
                             }
+                            
+                    logger.debug("cleanup")                                                                        
                     if self._cleanup:
                         self.delete_resource(self.pubdir(assembly_dir, profile)+ "/document.xhtml")
 
@@ -1541,8 +1556,11 @@ class ReleasePublisher(Publisher):
 
 
     def publish_release(self, assembly, xjob):
-        """ publish an assembly"""
+        """ publish an assembly one document per language
+            iterates on languages, profiles and outputs
+        """
         pubevents = []
+        logger.debug('publish_release')
         try :
             for lang in self._publangs:
                 langpubevt = []
@@ -1571,7 +1589,7 @@ class ReleasePublisher(Publisher):
                 pubres = {"event":"publication_dir", "path":self._release_dir}
                 langpubevt.append(pubres)
                 yield pubres
-                pubevents.append({'event':'lang', 'label':'all', 'content':langpubevt})
+                pubevents.append({'event':'lang', 'label':lang, 'content':langpubevt})
         except:
             import traceback
             logger.exception('erreur lors de la publication')

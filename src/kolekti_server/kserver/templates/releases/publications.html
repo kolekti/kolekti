@@ -1,6 +1,6 @@
-    {% if publications %}
-    <div class="panel panel-default" >
-      <div class="panel-heading">
+{% if publications %}
+<div class="panel panel-default" >
+  <div class="panel-heading">
 	<h4 class="panel-title">
 	  <a data-toggle="collapse" href="#collapsePU" class="collapsed">
 	    <small>
@@ -10,29 +10,29 @@
 	    Publications
 	  </a>
 	</h4>
+  </div>
+  
+  <div id="collapsePU" class="panel-collapse collapse in ">
+      {% for publication in publications %}
+	  <div class="panel-body">
+        <h5>{{ publication.date }}</h5>
       </div>
-      
-      <div id="collapsePU" class="panel-collapse collapse in ">
-	<div class="panel-body">
-	  <div class="row">
-	    <div class="col-sm-12 col-md-12">
-
-	      {% for publication in publications %}
-	      {% if publication.event == 'profile' %}
-	      <p>{{ publication.label }}</p>
-	      {% endif %}
-	      
-	      {% if publication.event == 'result' %}
-	      <ul>
-		{% for doc in publication.docs %}
-		<li><a href="{% url 'kolekti_project_static' project=project path=doc.url %}">{{doc.label}}</a></li>
+	  <ul class="list-group">          
+  	    {% for langinfo in publication.languages %}
+	    {% for id, docs in langinfo.result.items %}
+        {% for doc in docs.docs %}
+		<li class="list-group-item"><small>{{ langinfo.label }}</small><br> <a href="{% url 'kolekti_project_static' project=project path=doc.url %}">{{doc.label}}</a>   
+        </li>
 		{% endfor %}
-	      </ul>
-	      {% endif %}
-	      
-	      {% endfor %}
-	    </div>
-	</div>
+		{% endfor %}
+	    
+	    {% endfor %}
+      </ul>
+      <div class="panel-footer">
+        <a href="{% url 'kolekti_release_publications_zip' project=project release=release timestamp=publication.time %}">Zip des fichiers</a>
       </div>
-    </div>
-    {% endif %}
+	  {% endfor %}
+  </div>
+</div>
+{% endif %}
+  

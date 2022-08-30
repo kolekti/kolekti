@@ -839,13 +839,34 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
     
     def __release_publications(self, kolekti, release, lang):
         publications = []
+        latest = 0
         try:
             mf = json.loads(kolekti.read("/releases/" + release + "/manifest.json"))
             for event in mf:
                 if event.get('event','') == "release_publication":
+                    
+                    if event.get('time', 0) < latest:
+                        continue
+                    latest = event.get('time', 0) 
+                    languages = []
+                    
                     for event2 in event.get('content'):
-                        if event2.get('event','') == "lang" and event2.get('label','') == lang:
-                            publications.extend(event2.get('content'))
+                        if event2.get('event','') == "lang":
+                            langinfo = {'result':{}}
+                            for event3 in event2.get('content'):
+                                if event3.get('event','') == "profile":
+                                    langinfo['label'] = event3.get('label','')
+                                if event3.get('event','') == "result":
+                                    langinfo['result'][event3.get('id')] = {
+                                        "script" : event3.get('script',''),
+                                        "docs" : event3.get('docs','')
+                                    }
+                            languages.append(langinfo)
+                    publications=[{
+                        'date' : time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(event.get('time'))),
+                        'time' : event.get('time'),
+                        'languages': languages
+                    }]
         except:
             logger.exception('manifest not found [%s]'%release)
         return publications
@@ -854,6 +875,7 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
         try:
             context, kolekti = self.get_context_data({
                 'project': project,
+                'release': release,
                 'lang':lang
                 })
             context.update({'publications':self.__release_publications(kolekti, release, lang)})
@@ -867,6 +889,51 @@ class ReleaseLangPublicationsView(kolektiMixin, TemplateView):
                 "message":"could not get release assembly"
                 }), content_type='application/json', status=500)
 
+class ReleaseLangPublicationsZipView(kolektiMixin, View):
+    def __get_zipdata(self, kolekti, release, timestamp):
+
+        logger.debug("zip " + timestamp)
+        zf = StringIO()
+        with ZipFile(zf, "w") as zippy:
+            mf = json.loads(kolekti.read("/releases/" + release + "/manifest.json"))
+            for event in mf:
+                if event.get('event','') == "release_publication":
+                    logger.debug("event " + str(event.get('time', 0)))
+                    if event.get('time', 0) != int(timestamp):
+                        continue
+                    logger.debug("event ok")
+                    for event2 in event.get('content'):
+                        if event2.get('event','') == "lang":
+                            langinfo = {'result':{}}
+                            for event3 in event2.get('content'):
+                                if event3.get('event','') == "result":
+                                    for doc in event3.get('docs',[]):
+                                        logger.debug(doc)
+                                        path = kolekti.getOsPath(doc.get('file'))
+                                        zippy.write(str(path), arcname=str(doc.get('file')))
+        z =  zf.getvalue()
+        zf.close()
+        return z
+        
+                      
+    def get(self, request, project, release, timestamp):
+        try:
+            context, kolekti = self.get_context_data({
+                'project': project,
+                'release': release
+            })
+            
+
+            zipdata = self.__get_zipdata(kolekti, release, timestamp)
+            response = HttpResponse(zipdata, content_type="application/zip")#, meta = meta.getroot())
+            response['Content-Disposition'] = 'attachment; filename=%s_%s.zip'%(release, timestamp)
+            add_never_cache_headers(response)
+            return response
+        except:
+            logger.exception('error while creating zip')
+            return HttpResponse(status=404)
+
+        
 class ReleaseLangDetailsBase(kolektiMixin, TemplateView):
     template_name = "releases/detail.html"
 

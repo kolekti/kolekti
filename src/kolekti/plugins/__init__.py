@@ -13,11 +13,11 @@ import html_autonome
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import pdf_weasyprint
-except:
-    logger.exception('could not load weasyprint plugin')
-    pass
+#try:
+#    import pdf_weasyprint
+#except:
+#    logger.exception('could not load weasyprint plugin')
+#    pass
 import ExportPublicationToFolder
 
 #def getPlugin(plugin, path):
