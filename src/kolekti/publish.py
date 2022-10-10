@@ -230,6 +230,7 @@ class Publisher(PublisherMixin, kolektiBase):
                 try:
                     pivot = self.publish_profile(assembly, profile, assembly_dir)
                 except:
+                    pivot = None
                     import traceback
                     logger.exception("Assembly Error")
                     yield {
@@ -238,7 +239,7 @@ class Publisher(PublisherMixin, kolektiBase):
                         'stacktrace':traceback.format_exc(),
                         'time':time.time(),
                         }
-                    
+                    continue
                 # invoke scripts
 #                logger.debug( "starting scripts %s", profilename)
                 logger.debug(ET.tostring(xjob))
@@ -373,7 +374,7 @@ class Publisher(PublisherMixin, kolektiBase):
         pivot = assembly
         pivfile = pubdir + "/document.xhtml"
         self.xwrite(pivot, pivfile, sync = False)
-        pivfile = pubdir + "/" + profile.find('label').text + ".xhtml"
+        pivfile = pubdir + "/" + get_valid_filename(profile.find('label').text) + ".xhtml"
         self.xwrite(pivot, pivfile, sync = False)  
 
         return pivot
